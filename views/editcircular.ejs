@@ -1,0 +1,149 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit Expenditure</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewexpenditure">Criteria 4-Infrastructure-Learning Resources</a></li>
+                    <li class="breadcrumb-item"><a href="/viewexpenditure">Infrastructure Augmentation</a></li>
+                    <li class="breadcrumb-item active">Edit Expenditures</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Circular</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editcircular/<%= pub._id %>">
+                            <div class="row">
+                              
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Title</label>
+                                        <input required value="<%= pub.title %>" type="text" class="form-control" placeholder="Enter the Title" name="title">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Link</label>
+                                        <input required value="<%= pub.link %>" type="text" class="form-control" placeholder="Enter the Link" name="link">
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Semester</label>
+                                        <select class="form-control" name="semester">
+                                            <option <% if(pub.semester == '1'){ %>  selected <% } %> value="1">1</option>
+                                            <option <% if(pub.semester == '2'){ %> selected <%  }  %> value="2">2</option>
+                                            <option <% if(pub.semester == '3'){ %> selected <%  }  %> value="3">3</option>
+                                            <option <% if(pub.semester == '4'){ %> selected <%  }  %> value="4">4</option>
+                                            <option <% if(pub.semester == '5'){ %> selected <%  }  %> value="5">5</option>
+                                            <option <% if(pub.semester == '6'){ %> selected <%  }  %> value="6">6</option>
+                                            <option <% if(pub.semester == '7'){ %> selected <%  }  %> value="7">7</option>
+                                            <option <% if(pub.semester == '8'){ %> selected <%  }  %> value="8"8</option>
+                                            <option <% if(pub.semester == '9'){ %> selected <%  }  %> value="9">9</option>
+                                            <option <% if(pub.semester == '10'){ %> selected <%  }  %> value="10">10</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Section</label>
+                                        <select class="form-control" name="section">
+                                            <option <% if(pub.section == 'A'){ %>  selected <% } %> value="A">A</option>
+                                            <option <% if(pub.section == 'B'){ %> selected <%  }  %> value="B">B</option>
+                                            <option <% if(pub.section == 'C'){ %> selected <%  }  %> value="C">C</option>
+                                            <option <% if(pub.section == 'D'){ %> selected <%  }  %> value="D">D</option>
+                                            <option <% if(pub.section == 'E'){ %> selected <%  }  %> value="E">E</option>
+                                            <option <% if(pub.section == 'F'){ %> selected <%  }  %> value="F">F</option>
+                                            <option <% if(pub.section == 'G'){ %> selected <%  }  %> value="G">G</option>
+                                            <option <% if(pub.section == 'H'){ %> selected <%  }  %> value="H"H</option>
+                                            <option <% if(pub.section == 'I'){ %> selected <%  }  %> value="I">I</option>
+                                          
+                                        </select>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Program</label>
+                                        <input required value="<%= pub.program %>" type="text" class="form-control" placeholder="Enter the Program" name="program">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Published Date</label>
+                                        <input required value="<%= (pub.publisheddate.getMonth() + 1) + '/' + pub.publisheddate.getDate() + '/' + pub.publisheddate.getFullYear() %>" type="date" class="form-control" placeholder="Enter the Published Date" name="publisheddate">
+                                    </div>
+                                </div>
+
+
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Description</label>
+                                        <input required value="<%= pub.description %>" type="text" class="form-control" placeholder="Enter the Description" name="description">
+                                    </div>
+                                </div>
+
+
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select class="form-control" name="status1">
+                                            <option <% if(pub.status1 == 'Active'){ %>  selected <% } %> value="Active">Active</option>
+                                            <option <% if(pub.status1 == 'Not Active'){ %> selected <%  }  %> value="Not Active">Not Active</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

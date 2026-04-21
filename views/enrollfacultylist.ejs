@@ -1,0 +1,101 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Enrolled Student List for exam <%= examcode %></h1>
+            </div> -->
+            <!-- /.col -->
+            <div class="col-sm-8">
+                <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item active">Allocated Faculty List for exam <%= examcode %></li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">View Enrolled Students List under Allocated Faculty</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <a class="btn btn-dark" href="/addfacultyenrol/<%= examcode %>">+ Allocate Faculty</a>
+                        <br><br>
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <!-- <th>Coursecode</th> -->
+                                    <th>Name of Faculty</th>
+                                    <th>Faculty email</th> 
+                                    <th>Student Reg No</th>  
+                                    <!-- <th>Classdate</th> -->
+                                    <!-- <th>Class time</th> -->
+                                    <!-- <th>Audience</th> -->
+                                    <!-- <th>Semester</th>-->
+                                    
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    <td><%= data.faculty %></td>
+                                    <td><%= data.email %>  </td>
+                                    <td><%= data.regno %>  </td>
+                                    <!-- <td><%= data.classdate %></td> -->
+                                    <!-- <td><%= data.classtime %></td> -->
+                                    <!-- <td>Section <%= data.section %> Semester <%= data.semester %></td> -->
+                                    <!-- <td><%= data.semester %></td> -->
+                                    <!-- <td><%= data.link %></td> -->
+                                    <td>
+                                       
+                                        <a href="/viewanswer?examid=<%= data.examcode %>&regno=<%= data.regno %>" class="btn btn-primary"><i class="fas fa-clipboard-list" title="view answers"></i></a>
+                                        <form method="post" action="/deletefacultyenrol/<%= data.examcode %>" id="frm-delete-category-<%= data.id %>">
+                                        
+                                            <input type="hidden" value="<%= data.id %>" name="category_id"/>
+
+                                        </form>
+
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure you want to delete ? ')){  $('#frm-delete-category-<%= data.id %>').submit()  }" class="btn btn-danger"><i class="fa fa-trash" title="delete class"></i></a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

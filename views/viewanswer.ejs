@@ -1,0 +1,172 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+
+
+
+<h4 style="margin-top: 20px;">Answer Script and Evaluation form</h4>
+<br>
+<br>
+
+
+<br>
+<% categories.forEach(function(data){ %>
+   
+        <!-- <td><%= data.id %></td> -->
+        <h5>Question - <%= data.question %></h5>
+       
+       
+        <br>
+        <% if(data.link=="NA"){ %>
+            Option Selected: <br> <%= data.option %>
+            <br>
+            Score <%= data.score %>
+            <br>
+            Full marks 
+        <div id="namediv-<%= data.id %>">
+            <%= data.fullmarks %>
+        </div>
+          <% } else { %>
+            <img src="<%= data.link %>" style="width:800px;" />
+            <br>
+           
+            <br>
+        
+       
+        <p id="namediv-<%= data.id %>">Full Marks <%= data.fullmarks %></p>
+        <p id="qid-<%= data.id %>" style="display:none;">Question ID <%= data.questionid %></p>
+        <p id="po-<%= data.id %>" style="display:none;"><%= data.po %></p>
+        <p id="co-<%= data.id %>" style="display:none;"><%= data.co %></p>
+        <p id="examid-<%= data.id %>" style="display:none;"><%= data.examid %></p>
+        <p id="regno-<%= data.id %>" style="display:none;"><%= data.regno %></p>
+        <p id="coursecode-<%= data.id %>" style="display:none;"><%= data.coursecode %></p>
+        <p id="difficulty-<%= data.id %>" style="display:none;"><%= data.difficulty %></p>
+        <p id="module-<%= data.id %>" style="display:none;"><%= data.module %></p>
+        <p id="name-<%= data.id %>" style="display:none;"><%= data.name %></p>
+        <p id="option-<%= data.id %>" style="display:none;"><%= data.option %></p>
+        <p id="questiongroup-<%= data.id %>" style="display:none;"><%= data.questiongroup %></p>
+        <p id="question-<%= data.id %>" style="display:none;"><%= data.question %></p>
+        <p id="colid-<%= data.id %>" style="display:none;"><%= data.colid %></p>
+        <p id="user-<%= data.id %>" style="display:none;"><%= data.user %></p>
+
+        
+        <form method="post" action="/updatescore" id="frm-delete-category-<%= data.id %>">
+            <div class="form-group">
+                <label>Update Score</label>
+                <input required type="number" width="400px" id="text-<%= data.id %>" class="form-control" placeholder="Enter score" name="score">
+            </div>
+            <input type="hidden" value="<%= data.id %>" name="category_id"/>
+            <input type="hidden" value="<%= data.questionid %>" name="questionid"/>
+            
+
+        </form>
+        <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to update ? ')){  $('#frm-delete-category-<%= data.id %>').submit()  }" class="btn btn-danger"><i class="fa fa-trash" title="delete exam"></i></a> -->
+        <a href="javascript:void(0)" onclick="updatescore('<%= data.id %>')" class="btn btn-danger"><i class="fas fa-marker"></i></a>
+        <br>
+        <p id="result-<%= data.id %>"></p>
+            <br> 
+          <% } %>
+       
+        <br><br>
+        
+        
+        
+    <% }) %>
+<br><br>
+
+</div>
+<script src="plugins/jquery/jquery.min.js"></script>
+<script>
+    var prevquestion = "";
+    function updatescore(itemid) {
+
+       
+
+
+
+        var fullmarks=parseInt($("#namediv-" + itemid).html().replace('Full Marks ','')); 
+        var score=parseInt($("#text-" + itemid).val().replace('Full Marks ',''));  
+        var qid=  $("#qid-" + itemid).html().replace('Question ID ','');
+        var po=  $("#po-" + itemid).html();
+        var co=  $("#co-" + itemid).html();
+        var examid=  $("#examid-" + itemid).html();
+        var regno=  $("#regno-" + itemid).html();
+        var coursecode=  $("#coursecode-" + itemid).html();
+        var difficulty=  $("#difficulty-" + itemid).html();
+        var name=  $("#name-" + itemid).html();
+        var option=  $("#option-" + itemid).html();
+        var questiongroup=  $("#questiongroup-" + itemid).html();
+        var question=  $("#question-" + itemid).html();
+        var module=  $("#module-" + itemid).html();
+        var colid=  $("#colid-" + itemid).html();
+        var user=  $("#user-" + itemid).html();
+        var pscore=(score/fullmarks) * 100;
+
+        if(score>fullmarks) {
+            alert('Invalid score. Score must be less than ' + fullmarks);
+            return;
+        }
+        
+        //alert(itemid + '-' + fullmarks +'-' + score + '-' + qid + '-' + po + '-' + co);
+        $.ajax({
+            method: "POST",
+            url: "https://ctnodeapps2.azurewebsites.net/api/v1/recorddescriptivef", // "http://localhost:3000/api/v1/recorddescriptivef",
+            data: { 
+                fullmarks: fullmarks, 
+                score: score,
+                questionid: qid,
+                examid: examid,
+                regno: regno,
+                name: name,
+                module: module,
+                coursecode: coursecode,
+                difficulty: difficulty,
+                pscore: pscore,
+                link: 'NA',
+                status: 'Checked',
+                option: option,
+                questiongroup: questiongroup,
+                question: question,
+                score: score,
+                po: po,
+                co: co,
+                colid: colid,
+                user: user,
+                timeinsec: 0
+
+
+            }
+        })
+        .done(function( msg ) {
+            //alert( "Data Saved: " + msg );
+            $("#result-" + itemid).html('Score update ' + msg.status);
+        });
+
+
+    }
+
+    function getquestions(question) {
+        if (question == prevquestion) {
+            return "";
+        } else {
+            prevquestion=question;
+            return "Question - " + question;
+        }
+
+    }
+    
+
+
+    $( document ).ready(function() {
+       
+
+        
+    
+});
+</script>
+
+
+
+
+
+<%- include("footer") %> 

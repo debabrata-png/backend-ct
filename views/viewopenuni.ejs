@@ -1,0 +1,658 @@
+<%- include("header") %> 
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View MoU</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewopenuni">NAAC Criterion</a></li>
+                    <li class="breadcrumb-item"><a href="/viewopenuni">Open Universities</a></li>
+                    <li class="breadcrumb-item active">All Criteria</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">All NAAC Criteria</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <!-- <a class="btn btn-dark" href="/addmou">+ Add New</a> -->
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Criteria No.</th>
+                                    <th>Criteria</th>
+                                    <th>Metric No.</th>
+                                    <th>Sub-Criteria</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    
+                                    <td>1</td>
+                                    <td>Curicular Aspects</td>
+                                    <td>1.1.2 - 1.1.3</td>
+                                    <td>Syllabus Revision</td>
+                                    <td>
+                                        <a href="/viewsyllabusprog" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Add data for last five academic years&link=/viewsyllabusprog&title=Syllabus revision&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=1&metric=1.1.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>1</td>
+                                    <td>Curicular Aspects</td>
+                                    <td>1.1.4</td>
+                                    <td>MOOC Courses</td>
+                                    <td><a href="/viewaddoncourse" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Add data for last five academic years&link=/viewaddoncourse&title=MOOC course&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=1&metric=1.1.4&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>1</td>
+                                    <td>Curicular Aspects</td>
+                                    <td>1.1.5</td>
+                                    <td>Programwise Electronic Media Incorporated</td>
+                                    <td>
+                                        <a href="/viewmedia" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Add data for last five academic years&link=/viewmedia&title=Programwise Electronic Media icorporated&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=1&metric=1.1.5&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>1</td>
+                                    <td>Curicular Aspects</td>
+                                    <td>1.2.2</td>
+                                    <td>CBCS</td>
+                                    <td>
+                                        <a href="/viewcbcsprogram" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Add data for last five academic years&link=/viewsyllabusrev&title=Syllabus revision&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=1&metric=1.2.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>1</td>
+                                    <td>Curicular Aspects</td>
+                                    <td>1.2.3</td>
+                                    <td>Admission through lateral entry</td>
+                                    <td>
+                                        <a href="/viewadmission" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Add data for last five academic years&link=/viewsyllabusrev&title=Syllabus revision&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=1&metric=1.2.3&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                
+                                <tr>
+                                    
+                                    <td>1</td>
+                                    <td>Curicular Aspects</td>
+                                    <td>1.3.2</td>
+                                    <td>Value Added Courses</td>
+                                    <td><a href="/viewaddoncourse" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Add data for last five academic years&link=/viewaddoncourse&title=Value added course&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=1&metric=1.3.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>1</td>
+                                    <td>Curicular Aspects</td>
+                                    <td>1.3.3</td>
+                                    <td>Experential Learning</td>
+                                    <td><a href="/viewevent" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Add data for last five academic years&link=/viewevent&title=Experiential learning&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=1&metric=1.3.3&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>1</td>
+                                    <td>Curicular Aspects</td>
+                                    <td>1.3.4</td>
+                                    <td>Activities focused on Employability/Enterpreneurship/Skill Development</td>
+                                    <td><a href="/viewevent" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Add data for last five academic years&link=/viewevent&title=Employability activities&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=1&metric=1.3.4&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>1</td>
+                                    <td>Curicular Aspects</td>
+                                    <td>1.4.1 - 1.4.2</td>
+                                    <td>Feedback</td>
+                                    <td><a href="/myfeedback" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Give curriculum feedback and also ask students to give feedback about yourself&link=/myfeedback&title=Feedback&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=1&metric=1.4.1-1.4.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.1.1</td>
+                                    <td>Seat Enrollment Percentage</td>
+                                    <td><a href="/viewadmission" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewadmission&title=Admission data&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.1.1&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.2.1</td>
+                                    <td>Student Seats against Rural Category</td>
+                                    <td><a href="/viewrural" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewrural&title=Rural category admission&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.2.1&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.2.2</td>
+                                    <td>Student Seats against Reserved Category</td>
+                                    <td><a href="/viewreservecat" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewreservecat&title=Reserved category admission&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.2.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.2.3</td>
+                                    <td>Student Seats against PWD Category</td>
+                                    <td><a href="/viewpwd" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewpwd&title=PWD category admission&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.2.3&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.2.4</td>
+                                    <td>Student Seats against Gender Category</td>
+                                    <td><a href="/viewgender" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewgender&title=Gender category admission&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.2.4&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.2.5</td>
+                                    <td>Student Seats against Employability Category</td>
+                                    <td><a href="/viewemployed" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewemployed&title=Employed category admission&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.2.5&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.2.6</td>
+                                    <td>Student Seats against Prisoners Category</td>
+                                    <td><a href="/viewprisoner" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewprisoner&title=Prisoner category admission&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.2.6&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.2.7</td>
+                                    <td>Student Seats against Defence Category</td>
+                                    <td><a href="/viewdefence" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewdefence&title=Defence category admission&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.2.7&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.4.1</td>
+                                    <td>Full time Teachers</td>
+                                    <td><a href="/viewteacherdata" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewteacherdata&title=Full time teachers&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.4.1&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.4.2</td>
+                                    <td>Research Guide</td>
+                                    <td><a href="/viewphdguide" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewphdguide&title=PhD Guide&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.4.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr> 
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.4.6</td>
+                                    <td>Academic Counsellor</td>
+                                    <td><a href="/viewcounsellor" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewcounsellor&title=Academic Counsellor&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.4.6&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>                                
+
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.5.4</td>
+                                    <td>Exam Automation</td>
+                                    <td><a href="/viewautomation" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewautomation&title=Exam Automation&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.5.4&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>2.5.5</td>
+                                    <td>External Evaluation</td>
+                                    <td><a href="/viewextevaluation" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewextevaluationt&title=External Evaluation&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=2&metric=2.5.5&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+
+                                <tr>
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>3.2.1 - 3.2.2</td>
+                                    <td>Gov./Non-Governmnet Funds</td>
+                                    <td><a href="/viewproject" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewproject&title=Funding support&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.2.1-3.2.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>3.3.2</td>
+                                    <td>Workshops/Seminars/Conferences</td>
+                                    <td><a href="/viewevent" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewevent&title=Seminar and workshop on IPR, Research and Entrepreneurship&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.3.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>2.3.4-3.3.3</td>
+                                    <td>Innovative contents(E-contents)</td>
+                                    <td><a href="/viewecontent" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewecontent&title=E-content&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.3.3&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>3.3.4</td>
+                                    <td>Awards for Innovations/Discoveries</td>
+                                    <td><a href="/viewinnovation" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewinnovation&title=Innovations/Discoveries&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.3.4&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>3.4.2</td>
+                                    <td>Research Guide</td>
+                                    <td><a href="/viewphdguide" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewphdguide&title=PhD Guide&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.4.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>3.4.3</td>
+                                    <td>Research Papers</td>
+                                    <td><a href="/viewpub" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewpub&title=Research paper&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.4.3&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>3.4.4 - 3.4.5</td>
+                                    <td>Books & Chapters</td>
+                                    <td><a href="/viewbook" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewbook&title=Books&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.4.4-3.4.5&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>3.5.2-3.5.3</td>
+                                    <td>Revenue generated from Consultancy/ Corporate Trainings</td>
+                                    <td><a href="/viewconsultancy" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewconsultancy&title=Consultancy&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.5.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>3.6.2</td>
+                                    <td>Institutional Awards</td>
+                                    <td><a href="/viewextawards" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewextawards&title=Institution / department awards&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.6.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>3.6.3 - 3.6.4</td>
+                                    <td>Extension Activities</td>
+                                    <td><a href="/viewextact" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewextact&title=Extension activities&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.6.3 - 3.6.4&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>2.4.3-3.7.1</td>
+                                    <td>Collaborative Activities</td>
+                                    <td><a href="/viewcollaboration" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewcollaboration&title=Collaboration&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.7.1&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>3.7.2</td>
+                                    <td>MoU Activities</td>
+                                    <td><a href="/viewmou" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewmou&title=MoU&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=3&metric=3.7.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    
+                                    <td>4</td>
+                                    <td>Infrastructure-Learning Resources</td>
+                                    <td>4.1.2 - 4.1.3 -6.4.3</td>
+                                    <td>Infrastructure Augmentation</td>
+                                    <td><a href="/viewexpenditure" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewexpenditure&title=Budget&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=4/6&metric=4.1.2-4.1.3-6.4.3&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>4</td>
+                                    <td>Infrastructure-Learning Resources</td>
+                                    <td>4.2.1 - 4.2.2 - 4.2.3</td>
+                                    <td>ICT Enabled Classrooms & Seminar Halls</td>
+                                    <td><a href="/viewict" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewict&title=ICT facilities&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=4&metric=4.2.1-4.2.2-4.2.3&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>3</td>
+                                    <td>Research-Consultancy-Extension</td>
+                                    <td>4.2.6</td>
+                                    <td>E-content developed by Teachers</td>
+                                    <td><a href="/viewecontent" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewecontent&title=E-content developed by faculties&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=4&metric=4.2.6&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>4</td>
+                                    <td>Infrastructure-Learning Resources</td>
+                                    <td>4.3.4</td>
+                                    <td>Library Expenditures</td>
+                                    <td><a href="/viewlibrary" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewlibrary&title=Library spend&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=4&metric=4.3.4&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+
+
+                                <tr>
+                                    
+                                    <td>5</td>
+                                    <td>Student Support-Progression</td>
+                                    <td>5.1.5</td>
+                                    <td>Modes for attending Learner's Queries</td>
+                                    <td><a href="/viewquerymode" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewquerymode&title=Qualifying Higher education&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=5&metric=5.1.5&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                            
+                                <tr>
+                                    
+                                    <td>5</td>
+                                    <td>Student Support-Progression</td>
+                                    <td>5.1.6</td>
+                                    <td>Modes for Academic Counselling</td>
+                                    <td><a href="/viewcareercounsel" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewcareercounsel&title=Academic counselling activities&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=5&metric=5.1.6&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>5</td>
+                                    <td>Student Support-Progression</td>
+                                    <td>5.1.9</td>
+                                    <td>Student Financial Support</td>
+                                    <td><a href="/viewscholarship" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewscholarship&title=Scholarships&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=5&metric=5.1.9&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>5</td>
+                                    <td>Student Support-Progression</td>
+                                    <td>5.2.1</td>
+                                    <td>Assignments Submitted Programwise</td>
+                                    <td><a href="/viewassignmentsub" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewassignmentsub&title=Assignments submitted programwise&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=5&metric=5.2.1&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>2</td>
+                                    <td>Teaching-Learning-Evaluation</td>
+                                    <td>5.2.2 - 5.2.3 - 5.2.4</td>
+                                    <td>Student Pass Percentage</td>
+                                    <td><a href="/viewpassexam" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewpassexam&title=Pass percentage&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=5&metric=5.2.2-5.2.3-5.2.4&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>5</td>
+                                    <td>Student Support-Progression</td>
+                                    <td>5.2.5</td>
+                                    <td>Student Placement</td>
+                                    <td><a href="/viewplacement" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewplacement&title=Placement&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=5&metric=5.2.5&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td>5</td>
+                                    <td>Student Support-Progression</td>
+                                    <td>5.3.1 - 5.3.2</td>
+                                    <td>Alumni Asssociation</td>
+                                    <td><a href="/viewalumni" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewalumni&title=Alumni association&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=5&metric=5.3.1-5.3.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                               
+
+                                <tr>
+                                    
+                                    <td>6</td>
+                                    <td>Governance-Leadership-Management</td>
+                                    <td>6.2.3</td>
+                                    <td>Implementation of E Governance</td>
+                                    <td><a href="/viewegovern" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewegovern&title=E-governance&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=6&metric=6.2.3&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>6</td>
+                                    <td>Governance-Leadership-Management</td>
+                                    <td>6.3.2</td>
+                                    <td>Financial Support provided for Faculty</td>
+                                    <td><a href="/viewteacherfs" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewteacherfs&title=Financial support to faculties for attending conference&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=6&metric=6.3.2&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>6</td>
+                                    <td>Governance-Leadership-Management</td>
+                                    <td>6.3.3</td>
+                                    <td>Professional development/Administrative Training Programs</td>
+                                    <td><a href="/viewevent" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewevent&title=Professional development&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=6&metric=6.3.3&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>6</td>
+                                    <td>Governance-Leadership-Management</td>
+                                    <td>6.3.4</td>
+                                    <td>Faculty Development Programs</td>
+                                    <td><a href="/viewevent" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewevent&title=FDP&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=6&metric=6.3.4&type=openUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td>6</td>
+                                    <td>Governance-Leadership-Management</td>
+                                    <td>6.3.5</td>
+                                    <td>Training Programs for Non-teaching Staff</td>
+                                    <td><a href="/viewevent" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewevent&title=Non-teaching staff training programs&category=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=6&metric=6.3.5&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+
+
+                                <tr>
+                                    
+                                    <td>6</td>
+                                    <td>Governance-Leadership-Management</td>
+                                    <td>6.5.1</td>
+                                    <td>Institutional Quality Initiatives</td>
+                                    <td><a href="/viewquality" class="btn btn-primary"><i class="fas fa-external-link-alt"></i></a>
+                                        <a href="/addtasksurl?topic=Provide data for last five academic years&link=/viewquality&title=Institution Quality initiatives=IQAC" class="btn btn-primary"><i class="fas fa-briefcase" title="Add task"></i></a>
+                                        <a href="/viewkpi?criteria=6&metric=6.5.1&type=OpenUniversity" class="btn btn-primary"><i class="fas fa-poll" title="Add KPI"></i></a>
+                                    </td>
+                                </tr>
+                                    
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

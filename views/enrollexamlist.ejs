@@ -1,0 +1,177 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Enrolled Student List for exam <%= examcode %></h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">List Enrolled Students</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">List Enrolled Students</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table>
+                            <tr>
+                                <td>
+                                    <a class="btn btn-dark" href="/addexamenrol/<%= examcode %>">+ Enroll Students</a>
+                                </td>
+                                <td width="20px"></td>
+                                <td>
+                                    <form method="post" action="/delallexamenrollment" id="frm-delete-category">
+                                        
+                                        <input type="hidden" value="<%= examcode %>" name="examcode"/>
+
+                                        <button class="btn btn-dark" type="submit">Delete all enrollment</button>
+
+                                    </form>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <br><br>
+                        
+<h5>Update Start date and End date for all students</h5>
+<br>
+<form method="post" action="/updateexamenr" id="frm-export-category4">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>Start time (e.g. 16:40 and NOT 16:40 PM or 16.40 or anything else)</label>
+                    <input required type="text" class="form-control" placeholder="Enter start time" name="ltime">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="gdate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End time (e.g. 16:40 and NOT 16:40 PM or 16.40 or anything else)</label>
+                    <input required type="text" class="form-control" placeholder="Enter end date" name="gtime">
+                </div>
+            </td>
+        </tr>
+        
+    </table>
+    <input type="hidden" value="<%= examcode %>" name="examcode"/>
+    <br>
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+<br>
+<form method="post" action="/updateproctor" id="frm-export-category56">
+            <div class="form-group">
+                <label>Proctor email</label>
+                <input required type="text" class="form-control" placeholder="Enter proctor email" name="proctoremail">
+            </div>
+            <input type="hidden" value="<%= examcode %>" name="examcode"/>
+            <br>
+            <button class="btn btn-dark" type="submit">Submit</button>
+            <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+        </form>
+       
+
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <!-- <th>Coursecode</th> -->
+                                    <th>Student</th> 
+                                    <th>Reg No</th>
+                                    <th>Start date</th>
+                                    <th>End date</th>
+                                    <th>Proctor email</th>
+                                    <th>Proctor link</th>
+                                    <!-- <th>Classdate</th> -->
+                                    <!-- <th>Class time</th> -->
+                                    <!-- <th>Audience</th> -->
+                                    <!-- <th>Semester</th>-->
+                                    
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    <td><%= data.student %></td>
+                                    <td><%= data.regno %>  </td>
+                                    <td><%= data.startdate %>  </td>
+                                    <td><%= data.enddate %>  </td>
+                                    <td><%= data.proctoremail %>  </td>
+                                    <td><%= data.proctorlink %>  </td>
+                                    <!-- <td><%= data.classdate %></td> -->
+                                    <!-- <td><%= data.classtime %></td> -->
+                                    <!-- <td>Section <%= data.section %> Semester <%= data.semester %></td> -->
+                                    <!-- <td><%= data.semester %></td> -->
+                                    <!-- <td><%= data.link %></td> -->
+                                    <td>
+                                        <a href="/editexamenr/<%= data.id %>?examcode=<%= data.examcode %>" class="btn btn-primary"><i class="fa fa-edit"></i></a>
+                                        <a href="/viewanswer?examid=<%= data.examcode %>&regno=<%= data.regno %>" class="btn btn-primary"><i class="fas fa-clipboard-list" title="view answers"></i></a>
+                                        <a href="/viewfinalanswer?examid=<%= data.examcode %>&regno=<%= data.regno %>" class="btn btn-primary"><i class="fas fa-signal"></i></a>
+                                        <form method="post" action="/deleteexamenrol/<%= data.examcode %>" id="frm-delete-category-<%= data.id %>">
+                                        
+                                            <input type="hidden" value="<%= data.id %>" name="category_id"/>
+
+                                        </form>
+
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to delete ? ')){  $('#frm-delete-category-<%= data.id %>').submit()  }" class="btn btn-danger"><i class="fa fa-trash" title="delete class"></i></a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

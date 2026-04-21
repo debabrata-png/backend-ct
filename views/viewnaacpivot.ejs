@@ -1,0 +1,77 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Advanced Dynamic Data Visualization for DVV Files</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">DVV Workbench</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">DVV Workbench</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+
+                        Load any DVV file and analyze data.
+                        <br /><br />
+                        Step 1: Remove header and save the dvv file as csv. Step 2: Load the dvv file from Connect -> Load Local CSV. Step 3: Go to Fields and select as per your requirements.
+                        <br /><br />
+                       
+                        <div id="wdr-component"></div>
+                        <link href="https://cdn.webdatarocks.com/latest/webdatarocks.min.css" rel="stylesheet"/>
+                        <script src="https://cdn.webdatarocks.com/latest/webdatarocks.toolbar.min.js"></script>
+                        <script src="https://cdn.webdatarocks.com/latest/webdatarocks.js"></script>
+                        <script>
+                            const instructiondata = [
+	                            {
+		                            "Category": "Instruction",
+		                            "Details": "Please load data file from connect menu"
+	                            }
+                            ]
+                            var pivot = new WebDataRocks({
+	                            container: "#wdr-component",
+	                            toolbar: true,
+                            	report: {
+		                            dataSource: {
+			                            data: instructiondata
+		                            }
+	                            }
+                            });
+                        </script>
+
+
+
+
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

@@ -1,0 +1,79 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add CBCS Programs</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/createcbcsprogram">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Program Code</label>
+                <input required type="text" class="form-control" placeholder="Enter program code" name="programcode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Program Name </label>
+                <input required type="text" class="form-control" placeholder="Enter program name" name="programname">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Year of Introduction </label>
+                <input required type="text" class="form-control" placeholder="Enter year of introduction of program" name="yearofintro">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Status of CBCS Implementation </label>
+                <select class="form-control" name="statusofimplement">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Year of CBCS Implementation </label>
+                <input required type="text" class="form-control" placeholder="Enter year of implementation of cbcs" name="yearofimplement">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Document link (Default link will be created if you write NA)</label>
+                <input required type="text" class="form-control" placeholder="Enter link of document " name="link">
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Status</label>
+                <input required type="text" class="form-control" placeholder="Enter the Status" name="status1">
+            </div>
+        </div>
+
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+            </div>
+        </div>
+  
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

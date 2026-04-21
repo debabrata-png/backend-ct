@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Admin Log in</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body>
+<div class="login-box1" style="width: 100%; margin-top: -60px;">
+  
+  <!-- <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %> -->
+
+<br><br>
+<div id="meet">
+</div>
+
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+<script src='https://meet.jit.si/external_api.js'></script>
+<script>
+
+const domain = 'meet.jit.si';
+const options = {
+    roomName: '<%= classid %>',
+    width: window.innerWidth,
+    height: window.innerHeight,
+    userInfo: {
+        email: '<%= user %>',
+        displayName: '<%= name %>'
+    },
+    configOverwrite: { 
+        startWithAudioMuted: true,
+        toolbarButtons: [
+        'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+        'fodeviceselection', 'hangup',  'raisehand',
+        'videoquality', 'filmstrip', 
+        'tileview' 
+     ],
+     remoteVideoMenu: {
+        // If set to true the 'Kick out' button will be disabled.
+        disableKick: true,
+        // If set to true the 'Grant moderator' button will be disabled.
+        disableGrantModerator: true
+    },
+
+    //If set to true all muting operations of remote participants will be disabled
+    disableRemoteMute: true,
+    enableWelcomePage: false,
+    disableProfile: true,
+    prejoinPageEnabled: false,
+    enableInsecureRoomNameWarning: false,
+    maxFullResolutionParticipants: 20
+
+    
+    },
+    interfaceConfigOverwrite: {
+         DISABLE_DOMINANT_SPEAKER_INDICATOR: true,
+         HIDE_INVITE_MORE_HEADER: true,
+         RECENT_LIST_ENABLED: false,
+         SETTINGS_SECTIONS: [ 'devices' ],
+         SHARING_FEATURES: [],
+         GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
+         MOBILE_APP_PROMO: false
+        },
+    parentNode: document.querySelector('#meet')
+};
+const api = new JitsiMeetExternalAPI(domain, options);
+const participants = api.getParticipantsInfo();
+//alert(participants.id + ' ' + participants.displayName + ' ' + participants.email);
+
+
+</script>
+</body>
+</html>

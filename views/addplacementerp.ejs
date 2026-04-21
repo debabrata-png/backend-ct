@@ -1,0 +1,92 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Outgoing Student Placement details</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addplacementerp">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Academic Year</label>
+                <select class="form-control" name="year">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of student placed</label>
+                <input required type="text" class="form-control" placeholder="Enter the name of student placed" name="studentname">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Reg no of student placed</label>
+                <input required type="text" class="form-control" placeholder="Enter reg no of student placed" name="regno">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Contact details of the student placed</label>
+                <input required type="number" class="form-control" placeholder="Enter contact details of the student placed" name="studcontactdetails">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of program student graduated form</label>
+                <input required type="text" class="form-control" placeholder="Enter the name of program student graduated from" name="programname">
+            </div>
+        </div>
+      
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Contact details of the employer</label>
+                <input required type="number" class="form-control" placeholder="Enter contact details of the employer" name="empcontactdetails">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Pay package at appointmnet(in INR/annum)</label>
+                <input required type="number" class="form-control" placeholder="Enter the pay package at appointment(in INR per annum)" name="salary">
+            </div>
+        </div>
+
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Status</label>
+                <input required type="text" class="form-control" placeholder="Enter the Status" name="status1">
+            </div>
+        </div>
+
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+            </div>
+        </div>
+  
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

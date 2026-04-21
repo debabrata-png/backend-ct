@@ -1,0 +1,155 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit Students</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewquality">Criteria 6-Governance-Leadership-Management</a></li>
+                    <li class="breadcrumb-item"><a href="/viewquality">Institutional Quality Initiatives</a></li>
+                    <li class="breadcrumb-item active">Edit quality initiatives</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Institutional Quality Initiatives</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editquality/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Academic Year</label>
+                                        <select class="form-control" name="year">
+                                            <option <% if(pub.year == '2015-16'){ %>  selected <% } %> value="2015-16">2015-16</option>
+                                            <option <% if(pub.year == '2016-17'){ %> selected <%  }  %> value="2016-17">2016-17</option>
+                                            <option <% if(pub.year == '2017-18'){ %> selected <%  }  %> value="2017-18">2017-18</option>
+                                            <option <% if(pub.year == '2018-19'){ %> selected <%  }  %> value="2018-19">2018-19</option>
+                                            <option <% if(pub.year == '2019-20'){ %> selected <%  }  %> value="2019-20">2019-20</option>
+                                            <option <% if(pub.year == '2020-21'){ %> selected <%  }  %> value="2020-21">2020-21</option>
+                                            <option <% if(pub.year == '2021-22'){ %> selected <%  }  %> value="2021-22">2021-22</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Type of Quality Initiatives</label>
+                                        <select class="form-control" name="type">
+                                            <option <% if(pub.type == 'Academic Administrative Audit'){ %>  selected <% } %> value="Academic Administrative Audit">Academic Administrative Audit</option>
+                                            <option <% if(pub.type == 'Conferences/Seminars/Workshops'){ %> selected <%  }  %> value="Conferences/Seminars/Workshops">Conferences/Seminars/Workshops</option>
+                                            <option <% if(pub.type == 'Collaborations'){ %> selected <%  }  %> value="Collaborations">Collaborations</option>
+                                            <option <% if(pub.type == 'Orientation Programs'){ %> selected <%  }  %> value="Orientation Programs">Orientation Programs</option>
+                                            <option <% if(pub.type == 'Participation in NIRF'){ %> selected <%  }  %> value="Participation in NIRF">Participation in NIRF</option>
+                                            <option <% if(pub.type == 'Other quality audit recognised by state/national/international agencies'){ %> selected <%  }  %> value="Other quality audit recognised by state/national/international agencies">Other quality audit recognised by state/national/international agencies</option>
+                                            
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Follow up Action</label>
+                                        <input required value="<%= pub.action %>" type="text" class="form-control" placeholder="Enter follow up actions taken in academic administartive audit" name="action">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name of Collaborating Institution</label>
+                                        <input required value="<%= pub.instname %>" type="text" class="form-control" placeholder="Enter name of collaborating institution" name="instname">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name of Collaborative Activity</label>
+                                        <input required value="<%= pub.activity %>" type="text" class="form-control" placeholder="Enter name of collaborative activity" name="activity">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Start date</label>
+                                        <input required value="<%= pub.startdate %>" type="date" class="form-control" placeholder="Enter start date of activity/ation program" name="startdate">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>End date</label>
+                                        <input required value="<%= pub.enddate %>" type="date" class="form-control" placeholder="Enter end date of activityorientation program" name="enddate">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Status of Participation in NIRF</label>
+                                        <input required value="<%= pub.partstatus %>" type="text" class="form-control" placeholder="Enter participation in NIRF" name="partstatus">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name of any other quality audit</label>
+                                        <input required value="<%= pub.other %>" type="text" class="form-control" placeholder="Enter name of any other quality audit adopted(ISO certification/NBA)" name="other">
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <input required value="<%= pub.status1 %>" type="text" class="form-control" placeholder="Enter the Status" name="status1">
+                                    </div>
+                                </div>
+
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Comments</label>
+                                        <input required value="<%= pub.comments %>" type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+                                    </div>
+                                </div>
+                                
+                                
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

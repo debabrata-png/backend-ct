@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Admin Log in</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width:100%; margin: 20px; padding: 20px;">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br>
+     Registration Form
+  </div>
+  <br>
+  Instructions: Please fill in all details. All questions are mandatory. 
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/createalumniusers">
+       
+     
+
+    Enter Alumni name<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Alumni name" id="alumni" name="alumni" />
+<br /><br />
+
+Enter Address<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Address" id="address" name="address" />
+<br /><br />
+
+Enter City<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter City" id="city" name="city" />
+<br /><br />
+
+Enter Country<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Country" id="country" name="country" />
+<br /><br />
+
+Enter Email<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Email" id="email" name="email" />
+<br /><br />
+
+Enter Phone<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Phone" id="phone" name="phone" />
+<br /><br />
+
+Enter Program studied<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Program studied" id="program" name="program" />
+<br /><br />
+
+Enter Institution reg no<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Institution reg no" id="regno" name="regno" />
+<br /><br />
+
+Enter Batch (Year of passing)<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Batch (Year of passing)" id="batch" name="batch" />
+<br /><br />
+
+Enter Payment reference no<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Payment reference no" id="paymentref" name="paymentref" />
+<br /><br />
+
+Enter Amount paid<br /><br />
+
+<input type="number" required style="width:100%;" className="form-control" placeholder="Enter Amount paid" id="payamount" name="payamount" />
+<br /><br />
+
+Enter date of payment<br /><br />
+
+<input type="date" required style="width:100%;" className="form-control" placeholder="Enter date of payment" id="paydate" name="paydate" />
+<br /><br />
+
+Enter Mode of payment<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Mode of payment" id="paymode" name="paymode" />
+<br /><br />
+
+Enter Username<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Username" id="username" name="username" />
+<br /><br />
+
+Enter Password<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Password" id="password" name="password" />
+<br /><br />
+
+
+
+
+
+              
+             
+             
+              
+             
+               
+        <br>
+        <input type="hidden" value="<%= colid %>" name="colid"/>
+        <input type="hidden" value="<%= name %>" name="name"/>
+        <input type="hidden" value="<%= user %>" name="user"/>
+      
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

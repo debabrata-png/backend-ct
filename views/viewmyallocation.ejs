@@ -1,0 +1,92 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-8">
+                <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item active">Allocated Student List</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">View Allocated Student List</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <!-- <th>Coursecode</th> -->
+                                    <th>Exam Code</th>
+                                    <th>Exam Name</th> 
+                                    <th>Course</th> 
+                                    <th>Student Reg No</th>  
+                                    <!-- <th>Classdate</th> -->
+                                    <!-- <th>Class time</th> -->
+                                    <!-- <th>Audience</th> -->
+                                    <!-- <th>Semester</th>-->
+                                    
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    <td><%= data.examcode %></td>
+                                    <td><%= data.examname %></td>
+                                    <td><%= data.course %></td>
+                                    <td><%= data.regno %>  </td>
+                                    <!-- <td><%= data.classdate %></td> -->
+                                    <!-- <td><%= data.classtime %></td> -->
+                                    <!-- <td>Section <%= data.section %> Semester <%= data.semester %></td> -->
+                                    <!-- <td><%= data.semester %></td> -->
+                                    <!-- <td><%= data.link %></td> -->
+                                    <td>
+                                       
+                                        <a href="/viewanswer?examid=<%= data.examcode %>&regno=<%= data.regno %>" class="btn btn-primary"><i class="fas fa-clipboard-list" title="view answers"></i></a>
+                                        <!-- <a href="/getallfinalanswers?examid=<%= data.examcode %>" class="btn btn-primary"><i class="fas fa-database" title="tabulation sheet"></i></a> -->
+                                        <a href="/getmyfinalanswers?examid=<%= data.examcode %>" class="btn btn-primary"><i class="fas fa-poll" title="tabulation sheet"></i></a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

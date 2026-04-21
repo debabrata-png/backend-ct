@@ -1,0 +1,119 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit reserved category seats</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewreservecat">Criteria 2-Teaching-Learning-Evaluation</a></li>
+                    <li class="breadcrumb-item"><a href="/viewreservecat">Student Seats against Reserved Category</a></li>
+                    <li class="breadcrumb-item active">Edit seats</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Student Seats against Reserved Category</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editreservecat/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Academic Year</label>
+                                        <select class="form-control" name="year">
+                                            <option <% if(pub.year == '2015-16'){ %>  selected <% } %> value="2015-16">2015-16</option>
+                                            <option <% if(pub.year == '2016-17'){ %> selected <%  }  %> value="2016-17">2016-17</option>
+                                            <option <% if(pub.year == '2017-18'){ %> selected <%  }  %> value="2017-18">2017-18</option>
+                                            <option <% if(pub.year == '2018-19'){ %> selected <%  }  %> value="2018-19">2018-19</option>
+                                            <option <% if(pub.year == '2019-20'){ %> selected <%  }  %> value="2019-20">2019-20</option>
+                                            <option <% if(pub.year == '2020-21'){ %> selected <%  }  %> value="2020-21">2020-21</option>
+                                            <option <% if(pub.year == '2021-22'){ %> selected <%  }  %> value="2021-22">2021-22</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Reserved Category</label>
+                                        <select class="form-control" name="category">
+                                            <option <% if(pub.category == 'SC'){ %>  selected <% } %> value="SC">SC</option>
+                                            <option <% if(pub.category == 'ST'){ %> selected <%  }  %> value="ST">ST</option>
+                                            <option <% if(pub.category == 'OBC'){ %> selected <%  }  %> value="OBC">OBC</option>
+                                            <option <% if(pub.category == 'Divyangjan'){ %> selected <%  }  %> value="Divyangjan">Divyangjan</option>
+                                            <option <% if(pub.category == 'General'){ %> selected <%  }  %> value="General">General</option>
+                                            <option <% if(pub.category == 'Others/Minorities'){ %> selected <%  }  %> value="Others/Minorities">Others/Minorities</option>
+                                            
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Number of seats sanctioned for reserved category</label>
+                                        <input required value="<%= pub.sancseat %>" type="text" class="form-control" placeholder="Enter the number of seats sanctioned for reserved category" name="sancseat">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Number of students admitted from reserved category</label>
+                                        <input required value="<%= pub.studadmt %>" type="text" class="form-control" placeholder="Enter the number of students admitted from reserved category" name="studadmt">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <input required value="<%= pub.status1 %>" type="text" class="form-control" placeholder="Enter the Status" name="status1">
+                                    </div>
+                                </div>
+
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Comments</label>
+                                        <input required value="<%= pub.comments %>" type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

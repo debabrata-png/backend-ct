@@ -1,0 +1,106 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Task</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addtasks">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Description</label>
+                <input required type="text" class="form-control" placeholder="Enter description" name="topic">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Title</label>
+                <input required type="text" class="form-control" placeholder="Enter title" name="title">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Task documents link</label>
+                <input required type="text" class="form-control" placeholder="Enter online link" name="link">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Supporting documents link (type NA if not applicable)</label>
+                <input required type="text" class="form-control" placeholder="Enter minutes link" name="documentlink">
+            </div>
+        </div>
+       
+       
+        
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Due Date</label>
+                <input required type="date" class="form-control" placeholder="Enter due date" name="classdate">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Due by Time (HH:MM) for eg, 14:30</label>
+                <input required type="text" class="form-control" placeholder="Enter due time" name="classtime">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Academic Year</label>
+                <select class="form-control" name="academicyear">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Category</label>
+                <select class="form-control" name="category">
+                    <option value="IQAC">IQAC</option>
+                    <option value="Academic council">Academic council</option>
+                    <option value="BoS">BoS</option>
+                    <option value="NSS">NSS</option>
+                    <option value="NCC">NCC</option>
+                    <option value="Departmental">Departmental / School</option>
+                    <option value="Institution">Institution</option>
+                    <option value="Placement">Placement</option>
+                    <option value="Skill development">Skill development</option>
+                    <option value="Value added course">Value added course</option>
+                    <option value="Performance">Performance appraisal</option>
+                </select>
+            </div>
+        </div>
+        
+     
+        
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" name="status">
+                    <option value="Active">Active</option>
+                    <option value="Not active">Not active</option>
+                </select>
+            </div>
+        </div>
+      
+       
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

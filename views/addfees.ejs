@@ -1,0 +1,56 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add fees template</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addfees" enctype="multipart/form-data">
+    <div class="row123">
+        <!-- <div class="col-sm-6">
+            
+            <div class="form-group">
+                <label>Course Code</label>
+                <input required type="text" class="form-control" placeholder="Enter course code" name="coursecode">
+            </div>
+        </div> -->
+       <!--  <div class="col-sm-6">
+           
+            <div class="form-group">
+                <label>File name</label>
+                <input required type="text" class="form-control" placeholder="Enter file name" name="filename">
+            </div>
+        </div>
+        <div class="col-sm-6">
+          
+            <div class="form-group">
+                <label>Online file link</label>
+                <input required type="text" class="form-control" placeholder="Enter online link" name="link">
+            </div>
+        </div> -->
+       
+  
+        <!-- <div class="col-sm-6">
+            <div class="form-group">
+                <label>Displayed in app</label>
+                <select class="form-control" name="status">
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+        </div> -->
+        <a href="https://drive.google.com/file/d/1tQ5lq_d5tp6Ef3_h2oObT22pYD_TUouK/view?usp=sharing" target="_blank">Sample file</a>
+        <br><br>
+        <div class="form-group">
+            <label>Select Excel File to upload. Batch process to upload will not upload if format is not correct.</label>
+            <input type="file" name="upl" id="upl">
+        </div>
+        <br><br>
+        <div class="col-sm-6">
+            
+        </div>
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

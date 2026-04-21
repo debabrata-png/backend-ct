@@ -1,0 +1,389 @@
+<html>
+  <head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      // Load the Visualization API and the corechart package.
+      google.charts.load('current', {'packages':['corechart']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart() {
+
+        // Create the data table.
+        // var data = new google.visualization.DataTable();
+        // data.addColumn('string', 'Topping');
+        // data.addColumn('number', 'Slices');
+        // data.addRows([
+        //   ['Mushrooms', 3],
+        //   ['Onions', 1],
+        //   ['Olives', 1],
+        //   ['Zucchini', 1],
+        //   ['Pepperoni', 2]
+        // ]);
+
+        var data1 = new google.visualization.DataTable();
+data1.addColumn("string", "Selection");
+data1.addColumn("number", "No of responses");
+data1.addRows([
+["Five", 6],
+["Four", 5],
+["Three", 2]
+]);
+
+var data2 = new google.visualization.DataTable();
+data2.addColumn("string", "Selection");
+data2.addColumn("number", "No of responses");
+data2.addRows([
+["Five", 7],
+["Four", 4],
+["Three", 2]
+]);
+
+var data3 = new google.visualization.DataTable();
+data3.addColumn("string", "Selection");
+data3.addColumn("number", "No of responses");
+data3.addRows([
+["Five", 7],
+["Four", 5],
+["Three", 1]
+]);
+
+var data4 = new google.visualization.DataTable();
+data4.addColumn("string", "Selection");
+data4.addColumn("number", "No of responses");
+data4.addRows([
+["Five", 7],
+["Four", 4],
+["Three", 2]
+]);
+
+var data5 = new google.visualization.DataTable();
+data5.addColumn("string", "Selection");
+data5.addColumn("number", "No of responses");
+data5.addRows([
+["Five", 7],
+["Four", 5],
+["Three", 1]
+]);
+
+var data6 = new google.visualization.DataTable();
+data6.addColumn("string", "Selection");
+data6.addColumn("number", "No of responses");
+data6.addRows([
+["Five", 6],
+["Four", 5],
+["Three", 2]
+]);
+
+var data7 = new google.visualization.DataTable();
+data7.addColumn("string", "Selection");
+data7.addColumn("number", "No of responses");
+data7.addRows([
+["Five", 7],
+["Four", 5],
+["Three", 1]
+]);
+
+var data8 = new google.visualization.DataTable();
+data8.addColumn("string", "Selection");
+data8.addColumn("number", "No of responses");
+data8.addRows([
+["Five", 7],
+["Four", 5],
+["Three", 1]
+]);
+
+var data9 = new google.visualization.DataTable();
+data9.addColumn("string", "Selection");
+data9.addColumn("number", "No of responses");
+data9.addRows([
+["Five", 6],
+["Four", 6],
+["Three", 1]
+]);
+
+var data10 = new google.visualization.DataTable();
+data10.addColumn("string", "Selection");
+data10.addColumn("number", "No of responses");
+data10.addRows([
+["Five", 6],
+["Four", 5],
+["Three", 2]
+]);
+
+var data11 = new google.visualization.DataTable();
+data11.addColumn("string", "Selection");
+data11.addColumn("number", "No of responses");
+data11.addRows([
+["Five", 6],
+["Four", 6],
+["Three", 1]
+]);
+
+var data12 = new google.visualization.DataTable();
+data12.addColumn("string", "Selection");
+data12.addColumn("number", "No of responses");
+data12.addRows([
+["Five", 7],
+["Four", 4],
+["Three", 2]
+]);
+
+var dataavgchart = new google.visualization.DataTable();
+dataavgchart.addColumn("string", "Question");
+dataavgchart.addColumn("number", "Avergae score");
+dataavgchart.addRows([
+["The curriculum inculcates soft skills, life skills employability skills and encourage to participate in extra-curricular activities", 4.3076923076923075],
+["The curriculum is well organised and easy to follow", 4.384615384615385],
+["The curriculum brings in balance between theory and practicals", 4.461538461538462],
+["The Curriculum is comprehensive and relevant to industry standards", 4.384615384615385],
+["The curriculum equips the students to pursue higher studies and engage in research", 4.461538461538462],
+["The class activities conducted have relevance to the objectives of the course and overall teaching learning quality", 4.3076923076923075],
+["Syllabus is need-based and suitable to the course", 4.461538461538462],
+["The curriculum provides experiential learning through student seminars, group discussions, projects, field visits", 4.461538461538462],
+["The curriculum gives exposure to the latest developments in the field", 4.384615384615385],
+["The curriculum has components to address the requirements of the job", 4.3076923076923075],
+["The curriculum facilitates adequate self learning", 4.384615384615385],
+["The time provided to complete the curriculum is adequate", 4.384615384615385],
+]);
+
+
+
+        // Set chart options
+        // var options = {'title':'How Much Pizza I Ate Last Night',
+        //                'width':400,
+        //                'height':300};
+
+        var options1 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options2 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options3 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options4 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options5 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options6 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options7 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options8 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options9 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options10 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options11 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var options12 = {"title":"Response analysis",
+"width":700,
+"height":450};
+
+var optionsavgchart = {"title":"Average score analysis",
+"width":700,
+"height":450};
+
+
+
+        // Instantiate and draw our chart, passing in some options.
+        // var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        // chart.draw(data, options);
+
+        var chart_div1 = document.getElementById("1");
+var chart1 = new google.visualization.PieChart(document.getElementById("1"));
+google.visualization.events.addListener(chart1, "ready", function () {
+chart_div1.innerHTML = '<img src="' + chart1.getImageURI() + '">';
+});
+chart1.draw(data1, options1);
+
+var chart_div2 = document.getElementById("2");
+var chart2 = new google.visualization.PieChart(document.getElementById("2"));
+google.visualization.events.addListener(chart2, "ready", function () {
+chart_div2.innerHTML = '<img src="' + chart2.getImageURI() + '">';
+});
+chart2.draw(data2, options2);
+
+var chart_div3 = document.getElementById("3");
+var chart3 = new google.visualization.PieChart(document.getElementById("3"));
+google.visualization.events.addListener(chart3, "ready", function () {
+chart_div3.innerHTML = '<img src="' + chart3.getImageURI() + '">';
+});
+chart3.draw(data3, options3);
+
+var chart_div4 = document.getElementById("4");
+var chart4 = new google.visualization.PieChart(document.getElementById("4"));
+google.visualization.events.addListener(chart4, "ready", function () {
+chart_div4.innerHTML = '<img src="' + chart4.getImageURI() + '">';
+});
+chart4.draw(data4, options4);
+
+var chart_div5 = document.getElementById("5");
+var chart5 = new google.visualization.PieChart(document.getElementById("5"));
+google.visualization.events.addListener(chart5, "ready", function () {
+chart_div5.innerHTML = '<img src="' + chart5.getImageURI() + '">';
+});
+chart5.draw(data5, options5);
+
+var chart_div6 = document.getElementById("6");
+var chart6 = new google.visualization.PieChart(document.getElementById("6"));
+google.visualization.events.addListener(chart6, "ready", function () {
+chart_div6.innerHTML = '<img src="' + chart6.getImageURI() + '">';
+});
+chart6.draw(data6, options6);
+
+var chart_div7 = document.getElementById("7");
+var chart7 = new google.visualization.PieChart(document.getElementById("7"));
+google.visualization.events.addListener(chart7, "ready", function () {
+chart_div7.innerHTML = '<img src="' + chart7.getImageURI() + '">';
+});
+chart7.draw(data7, options7);
+
+var chart_div8 = document.getElementById("8");
+var chart8 = new google.visualization.PieChart(document.getElementById("8"));
+google.visualization.events.addListener(chart8, "ready", function () {
+chart_div8.innerHTML = '<img src="' + chart8.getImageURI() + '">';
+});
+chart8.draw(data8, options8);
+
+var chart_div9 = document.getElementById("9");
+var chart9 = new google.visualization.PieChart(document.getElementById("9"));
+google.visualization.events.addListener(chart9, "ready", function () {
+chart_div9.innerHTML = '<img src="' + chart9.getImageURI() + '">';
+});
+chart9.draw(data9, options9);
+
+var chart_div10 = document.getElementById("10");
+var chart10 = new google.visualization.PieChart(document.getElementById("10"));
+google.visualization.events.addListener(chart10, "ready", function () {
+chart_div10.innerHTML = '<img src="' + chart10.getImageURI() + '">';
+});
+chart10.draw(data10, options10);
+
+var chart_div11 = document.getElementById("11");
+var chart11 = new google.visualization.PieChart(document.getElementById("11"));
+google.visualization.events.addListener(chart11, "ready", function () {
+chart_div11.innerHTML = '<img src="' + chart11.getImageURI() + '">';
+});
+chart11.draw(data11, options11);
+
+var chart_div12 = document.getElementById("12");
+var chart12 = new google.visualization.PieChart(document.getElementById("12"));
+google.visualization.events.addListener(chart12, "ready", function () {
+chart_div12.innerHTML = '<img src="' + chart12.getImageURI() + '">';
+});
+chart12.draw(data12, options12);
+
+var chartavgchart = new google.visualization.BarChart(document.getElementById("averagechart"));
+chartavgchart.draw(dataavgchart, optionsavgchart);
+
+
+      }
+    </script>
+    <style>
+        table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  border-color: #96D4D4;
+  padding: 15px;
+}
+    </style>
+  </head>
+
+  <body>
+    <!--Div that will hold the pie chart-->
+    <!-- <div id="chart_div"></div> -->
+    <div style="margin:20px auto; width: 700px; padding: 40px;">
+        <h3>Curriculum feedback for parents</h3>
+        <hr />
+        IQAC has conducted a feedback from all stakeholders as part of annual quality assurance activities. An analysis report is also created for every question.
+        <br /><br />
+        Recommendations are prepared based on the analysis report and forwarded to the management for further action.
+        <br /><br />
+        The questionwise response analysis is presented below.
+        <br /><br />
+    <h3>Question: The curriculum inculcates soft skills, life skills employability skills and encourage to participate in extra-curricular activities</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>6</td></tr><tr><td>Four</td><td>5</td></tr><tr><td>Three</td><td>2</td></tr></table><br /><br /><div id="1"></div><br /><br />
+
+<h3>Question: The curriculum is well organised and easy to follow</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>7</td></tr><tr><td>Four</td><td>4</td></tr><tr><td>Three</td><td>2</td></tr></table><br /><br /><div id="2"></div><br /><br />
+
+<h3>Question: The curriculum brings in balance between theory and practicals</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>7</td></tr><tr><td>Four</td><td>5</td></tr><tr><td>Three</td><td>1</td></tr></table><br /><br /><div id="3"></div><br /><br />
+
+<h3>Question: The Curriculum is comprehensive and relevant to industry standards</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>7</td></tr><tr><td>Four</td><td>4</td></tr><tr><td>Three</td><td>2</td></tr></table><br /><br /><div id="4"></div><br /><br />
+
+<h3>Question: The curriculum equips the students to pursue higher studies and engage in research</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>7</td></tr><tr><td>Four</td><td>5</td></tr><tr><td>Three</td><td>1</td></tr></table><br /><br /><div id="5"></div><br /><br />
+
+<h3>Question: The class activities conducted have relevance to the objectives of the course and overall teaching learning quality</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>6</td></tr><tr><td>Four</td><td>5</td></tr><tr><td>Three</td><td>2</td></tr></table><br /><br /><div id="6"></div><br /><br />
+
+<h3>Question: Syllabus is need-based and suitable to the course</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>7</td></tr><tr><td>Four</td><td>5</td></tr><tr><td>Three</td><td>1</td></tr></table><br /><br /><div id="7"></div><br /><br />
+
+<h3>Question: The curriculum provides experiential learning through student seminars, group discussions, projects, field visits</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>7</td></tr><tr><td>Four</td><td>5</td></tr><tr><td>Three</td><td>1</td></tr></table><br /><br /><div id="8"></div><br /><br />
+
+<h3>Question: The curriculum gives exposure to the latest developments in the field</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>6</td></tr><tr><td>Four</td><td>6</td></tr><tr><td>Three</td><td>1</td></tr></table><br /><br /><div id="9"></div><br /><br />
+
+<h3>Question: The curriculum has components to address the requirements of the job</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>6</td></tr><tr><td>Four</td><td>5</td></tr><tr><td>Three</td><td>2</td></tr></table><br /><br /><div id="10"></div><br /><br />
+
+<h3>Question: The curriculum facilitates adequate self learning</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>6</td></tr><tr><td>Four</td><td>6</td></tr><tr><td>Three</td><td>1</td></tr></table><br /><br /><div id="11"></div><br /><br />
+
+<h3>Question: The time provided to complete the curriculum is adequate</h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Rating</td><td>No. of responses</td></tr><tr><td>Five</td><td>7</td></tr><tr><td>Four</td><td>4</td></tr><tr><td>Three</td><td>2</td></tr></table><br /><br /><div id="12"></div><br /><br />
+
+<h3>Average score: </h3><br /><br />
+<table style="width:100%;  border: 1px solid black; border-collapse: collapse;"><tr><td>Question</td><td>Average score</td></tr><tr><td>The curriculum inculcates soft skills, life skills employability skills and encourage to participate in extra-curricular activities</td><td>4.31</td></tr><tr><td>The curriculum is well organised and easy to follow</td><td>4.38</td></tr><tr><td>The curriculum brings in balance between theory and practicals</td><td>4.46</td></tr><tr><td>The Curriculum is comprehensive and relevant to industry standards</td><td>4.38</td></tr><tr><td>The curriculum equips the students to pursue higher studies and engage in research</td><td>4.46</td></tr><tr><td>The class activities conducted have relevance to the objectives of the course and overall teaching learning quality</td><td>4.31</td></tr><tr><td>Syllabus is need-based and suitable to the course</td><td>4.46</td></tr><tr><td>The curriculum provides experiential learning through student seminars, group discussions, projects, field visits</td><td>4.46</td></tr><tr><td>The curriculum gives exposure to the latest developments in the field</td><td>4.38</td></tr><tr><td>The curriculum has components to address the requirements of the job</td><td>4.31</td></tr><tr><td>The curriculum facilitates adequate self learning</td><td>4.38</td></tr><tr><td>The time provided to complete the curriculum is adequate</td><td>4.38</td></tr></table><br /><br /><div id="averagechart"></div><br /><br />
+
+
+    <br /><br />
+    <h3>Conclusion</h3>
+    <hr />
+    Feedback collection and analysis is a regular exercise conducted by IQAC for every semester. Feedback is analysed and Action Taken report is also prepared for each feedback. The corresponding details are also noted in the annual report.
+    <br /><br /><br /><br />
+    ________________________________
+    <br /><br />
+    IQAC Coordinator
+    <br /><br /><br /><br />
+
+
+
+</div>
+  </body>
+</html>

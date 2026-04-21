@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Admin Log in</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width:100%; margin: 20px; padding: 20px;">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br>
+    Curriculum Feedback
+  </div>
+  <br>
+  Instructions: Please fill in all details. All questions are mandatory. Current time is <%= time1 %>
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/curriculum2/<%= type1 %>/<%= type2 %>">
+       
+        <div class="row">
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Name</label>
+                    <input required type="text" class="form-control" placeholder="Enter name" name="name">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Email</label>
+                    <input required type="text" class="form-control" placeholder="Enter email" name="email">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Program code</label>
+                    <input required type="text" class="form-control" placeholder="Enter program code" name="coursecode">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Department</label>
+                    <input type="text" required class="form-control" placeholder="Enter department" name="regno">
+                </div>
+            </div>
+            <!-- <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Institution code</label>
+                    <input type="text" class="form-control" placeholder="Enter institution code" name="colid">
+                </div>
+            </div> -->
+        </div>
+
+         1. Board of studies is taking care to ensure the currency and relevance of the programme offering <br />
+         <input type="radio" id="1a" name="one" value="5" required>Strongly agree<br />
+         <input type="radio" id="1b" name="one" value="4">Agree<br />
+         <input type="radio" id="1c" name="one" value="3">Neutral<br />
+         <input type="radio" id="1d" name="one" value="2">Disagree<br />
+         <input type="radio" id="1e" name="one" value="1">Strongly disagree<br />
+         <br /><br />
+
+         2. Employability is given weightage in curriculum design and development. <br />
+         <input type="radio" id="2a" name="two" value="5" required>Strongly agree<br />
+         <input type="radio" id="2b" name="two" value="4">Agree<br />
+         <input type="radio" id="2c" name="two" value="3">Neutral<br />
+         <input type="radio" id="2d" name="two" value="2">Disagree<br />
+         <input type="radio" id="2e" name="two" value="1">Strongly disagree<br />
+         <br /><br />
+
+         3. Enough freedom to contribute my ideas on curriculum design and development. <br />
+         <input type="radio" id="3a" name="three" value="5" required>Strongly agree<br />
+         <input type="radio" id="3b" name="three" value="4">Agree<br />
+         <input type="radio" id="3c" name="three" value="3">Neutral<br />
+         <input type="radio" id="3d" name="three" value="2">Disagree<br />
+         <input type="radio" id="3e" name="three" value="1">Strongly disagree<br />
+         <br /><br />
+
+         4. The system followed by the University for the design and development of curriculum is effective. <br />
+         <input type="radio" id="4a" name="four" value="5" required>Strongly agree<br />
+         <input type="radio" id="4b" name="four" value="4">Agree<br />
+         <input type="radio" id="4c" name="four" value="3">Neutral<br />
+         <input type="radio" id="4d" name="four" value="2">Disagree<br />
+         <input type="radio" id="4e" name="four" value="1">Strongly disagree<br />
+         <br /><br />
+
+         5. The curriculum has been updated from time to time.<br />
+         <input type="radio" id="5a" name="five" value="5" required>Strongly agree<br />
+         <input type="radio" id="5b" name="five" value="4">Agree<br />
+         <input type="radio" id="5c" name="five" value="3">Neutral<br />
+         <input type="radio" id="5d" name="five" value="2">Disagree<br />
+         <input type="radio" id="5e" name="five" value="1">Strongly disagree<br />
+         <br /><br />
+
+         6. Representation from business and industry in Boards of studies is helpful in designing and improving the courses. <br />
+         <input type="radio" id="6a" name="six" value="5" required>Strongly agree<br />
+         <input type="radio" id="6b" name="six" value="4">Agree<br />
+         <input type="radio" id="6c" name="six" value="3">Neutral<br />
+         <input type="radio" id="6d" name="six" value="2">Disagree<br />
+         <input type="radio" id="6e" name="six" value="1">Strongly disagree<br />
+         <br /><br />
+
+         7.Course outcomes and program outcomes are well defined and clear<br />
+         <input type="radio" id="7a" name="seven" value="5" required>Strongly agree<br />
+         <input type="radio" id="7b" name="seven" value="4">Agree<br />
+         <input type="radio" id="7c" name="seven" value="3">Neutral<br />
+         <input type="radio" id="7d" name="seven" value="2">Disagree<br />
+         <input type="radio" id="7e" name="seven" value="1">Strongly disagree<br />
+         <br /><br />
+
+         8. Course contents is research oriented <br />
+         <input type="radio" id="8a" name="eight" value="5" required>Strongly agree<br />
+         <input type="radio" id="8b" name="eight" value="4">Agree<br />
+         <input type="radio" id="8c" name="eight" value="3">Neutral<br />
+         <input type="radio" id="8d" name="eight" value="2">Disagree<br />
+         <input type="radio" id="8e" name="eight" value="1">Strongly disagree<br />
+         <br /><br />
+
+         9.Curriculum has good balance between theory and practicals <br />
+         <input type="radio" id="9a" name="nine" value="5" required>Strongly agree<br />
+         <input type="radio" id="9b" name="nine" value="4">Agree<br />
+         <input type="radio" id="9c" name="nine" value="3">Strongly disagree<br />
+         <input type="radio" id="9d" name="nine" value="2">Disagree<br />
+         <input type="radio" id="9e" name="nine" value="1">Strongly disagree<br />
+         <br /><br />
+
+         10. Curriculum developed and implementation have relevance to the local and national care needs <br />
+         <input type="radio" id="10a" name="ten" value="5" required>Strongly agree<br />
+         <input type="radio" id="10b" name="ten" value="4">Agree <br />
+         <input type="radio" id="10c" name="ten" value="3">Neutral <br />
+         <input type="radio" id="10d" name="ten" value="2">Disagree<br />
+         <input type="radio" id="10e" name="ten" value="1">Strongly disagree <br />
+         <br /><br />         
+
+
+
+
+
+              
+             
+             
+              
+             
+               
+        <br>
+        <input type="hidden" value="<%= type2 %>" name="colid"/>
+        <input type="hidden" value="<%= type1 %>" name="type"/>
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

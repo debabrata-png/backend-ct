@@ -1,0 +1,46 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add File Link</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addcfileslink/<%= coursecode %>">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Course Code</label>
+                <input required type="text" readonly value="<%= coursecode %>" class="form-control" placeholder="Enter course code" name="coursecode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>File name</label>
+                <input required type="text" class="form-control" placeholder="Enter file name" name="filename">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Online file link</label>
+                <input required type="text" class="form-control" placeholder="Enter online link" name="link">
+            </div>
+        </div>
+       
+  
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" name="status">
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

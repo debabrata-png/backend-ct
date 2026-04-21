@@ -1,0 +1,98 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View Student Scholarship</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewnaac">Criteria 5-Student Support-Progression</a></li>
+                    <li class="breadcrumb-item"><a href="/viewsholarship">Student Scholarships</a></li>
+                    <li class="breadcrumb-item active">List of Scholarships</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-14">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">View Student Scholarships</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form method="post" action="/exportscholarship" id="frm-export-category"></form>
+                        <table>
+                            <tr>
+                                
+                                <td>
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category').submit()  }" class="btn btn-dark">Export to excel</a>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Academic Year</th>
+                                    <th>Name of the Scheme</th>
+                                    <th>Number of students benefitted by government scheme</th>
+                                    <th>Amount received from government as financial support</th>
+                                    <th>Number of students benefitted by institutional scheme</th>
+                                    <th>Amount received from institution as financial support</th>
+                                    <th>Status</th>
+                                    <th>Comments</th>
+                                   
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    <td><%= data.year %></td>
+                                    <td><%= data.scheme %></td>
+                                    <td><%= data.noofgovstud %></td>
+                                    <td><%= data.amountgov %></td>
+                                    <td><%= data.noofinststud %></td>
+                                    <td><%= data.amountinst %></td>
+                                    <td><%= data.status1 %></td>
+                                    <td><%= data.comments %></td>
+                                    
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

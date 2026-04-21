@@ -1,0 +1,718 @@
+<!-- Main Sidebar Container -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="https://campus.technology" class="brand-link">
+        <img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
+            style="opacity: .8">
+        <span class="brand-text font-weight-light">Campus canvas</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Sidebar user panel (optional) -->
+        <!-- <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="image">
+                 <img src="dist/img/avatar.png" class="img-circle elevation-2" alt="User Image"> 
+                
+            </div>
+            <div class="info">
+                <a href="#" class="d-block">Admin</a>
+            </div>
+        </div> -->
+
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <!-- Add icons to the links using the .nav-icon class
+               with font-awesome or any other icon font library -->
+
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>
+                            Dashboard
+                        </p>
+                    </a>
+                </li>
+
+
+                <!-- <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-th"></i>
+                        <p>
+                            Category
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/addcategory" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Add Category</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewcategory" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>List Category</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li> -->
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-th"></i>
+                        <p>
+                            My Details
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/viewpub" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Research publication</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewpatent" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Patents</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewbook" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Book chapters</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewproject" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Projects</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewseminar" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Seminar and Membership</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-edit"></i>
+                        <p>
+                            Online Class
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/viewclass" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>All Classes</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewclasstoday" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Todays Class</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/enroldashboard" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Enroll Students</p>
+                            </a>
+                        </li>
+                       
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-edit"></i>
+                        <p>
+                            CO PO Attainment
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/viewco" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Course Outcome (CO)</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewpo" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Program Outcome (PO)</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/getcoattainment" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>CO Attainment (Exam)</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewcocal" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>CO Attainment (Upload)</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/getcoursecodeattainment" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>CO Attainment (Bulk)</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-edit"></i>
+                        <p>
+                            Online Exam
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/viewexam" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>All Exams</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewmyproctor" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>My Proctoring</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewmyallocation" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>My Evaluation</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-list"></i>
+                        <p>
+                            NAAC Criterion
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        
+                        <li class="nav-item">
+                            <a href="/viewallkpi" class="nav-link">
+                                <i class="nav-icon fas fa-university"></i>
+                                <p>All KPI</p>
+                            </a>
+                        </li>
+                                <li class="nav-item">
+                                    <a href="/viewnaac" class="nav-link">
+                                        <i class="nav-icon fas fa-graduation-cap"></i>
+                                        <p>Affiliated Institutions</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/viewnaacuni" class="nav-link">
+                                        <i class="nav-icon fas fa-university"></i>
+                                        <p>University</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/viewnaacautonomous" class="nav-link">
+                                        <i class="nav-icon fas fa-university"></i>
+                                        <p>Autonomous institutions</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/viewopenuni" class="nav-link">
+                                        <i class="nav-icon fas fa-university"></i>
+                                        <p>Open university</p>
+                                    </a>
+                                </li>
+                        
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-list"></i>
+                        <p>
+                            My Profile
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="/editprofile" class="nav-link">
+                                        <i class="nav-icon fas fa-graduation-cap"></i>
+                                        <p>Edit profile</p>
+                                    </a>
+                                </li>
+                              
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-list"></i>
+                        <p>
+                            Data management
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="/viewcompany" class="nav-link">
+                                        <i class="nav-icon fas fa-graduation-cap"></i>
+                                        <p>Placement</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/viewhigherexam" class="nav-link">
+                                        <i class="nav-icon fas fa-graduation-cap"></i>
+                                        <p>Higher education</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/viewmeeting" class="nav-link">
+                                        <i class="nav-icon fas fa-graduation-cap"></i>
+                                        <p>Meeting minutes</p>
+                                    </a>
+                                </li>
+                              
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-edit"></i>
+                        <p>
+                            Fees and Scholarships
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/viewfees" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Fees templates</p>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/viewscholarships" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Scholarship templates</p>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/addstudentledger" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Upload student ledger</p>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/selectstudentbyregno" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>View student ledger</p>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/deleteallledgerentry" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Delete all ledger entries</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-edit"></i>
+                        <p>
+                            Value Added Courses
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/viewaddoncourse" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>All Courses</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-edit"></i>
+                        <p>
+                            Activities
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/viewevent" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>All Events</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewtasks" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Tasks</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewtaskmy" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Tasks for me</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewclub" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Clubs</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewcircular" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Circular</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewmeetingtoday" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Today's meeting</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-edit"></i>
+                        <p>
+                            Dynamic Reports
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/viewallclass" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>All Classes Conducted</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/getallattendance" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Attendance Data</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/naacpivot" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>DVV Analysis (CSV)</p>
+                            </a>
+                        </li>
+                        
+                       
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-edit"></i>
+                        <p>
+                            Feedback
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/myfeedback" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>My Feedback</p>
+                            </a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a href="/curriculum/Facultycurriculum/25" target="_blank" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Curriculum Feedback</p>
+                            </a>
+                        </li> -->
+                        <li class="nav-item">
+                            <a href="/curriculum2/Facultycurriculum/25" target="_blank" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Curriculum Feedback</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="/chat1" class="nav-link">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>
+                            Community Chat
+                        </p>
+                    </a>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>
+                            IQAC
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                       
+                        <li class="nav-item">
+                            <a href="/viewmeeting" class="nav-link">
+                                <i class="nav-icon fas fa-graduation-cap"></i>
+                                <p>Meeting minutes</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/exportdetails" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>IQAC Data</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewadminexportinst" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Export affiliated data</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewadminexportuni" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Export university data</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewadminexportautonomous" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Export autonomous data</p>
+                            </a>
+                        </li>
+                      
+                        <li class="nav-item">
+                            <a href="/viewallfaculty" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Faculty Report</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/sssreport" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>SSS Report</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/curriculumreport" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Curriculum Feedback Report</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/parentanalysis" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Parent Feedback Report</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/employeranalysis" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Employer Feedback Report</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/alumnianalysis" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Alumni Feedback Report</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/addbulksupportingdoc" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Supporting doc list</p>
+                            </a>
+                        </li>
+                       
+                      
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>
+                            Admin
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/viewallusers" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>All users</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/addusers" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Add User</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/addbulk" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Add Users Bulk</p>
+                            </a>
+                        </li>
+                       
+                        <li class="nav-item">
+                            <a href="/viewinstructions" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Manage Instructions</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewlink" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Manage Links</p>
+                            </a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a href="/viewallfaculty" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Faculty Report</p>
+                            </a>
+                        </li> -->
+                       
+                      
+                       
+                        <li class="nav-item">
+                            <a href="/viewstudents" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>All students</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/viewemailregform" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Website registrations</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-table"></i>
+                        <p>
+                            Issue Management
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/admin/issue-book" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Issue a Book</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/list-issue-book" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Issue History</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-table"></i>
+                        <p>
+                            Return Management
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/admin/return-a-book" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Return a Book</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/return-list-book" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Return History</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fa fa-cog"></i>
+                        <p>
+                            Settings
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/admin/currency-settings" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Currency Settings</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/days-settings" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Day Settings</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li> -->
+
+            </ul>
+        </nav>
+        <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+</aside>

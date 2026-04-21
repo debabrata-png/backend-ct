@@ -1,0 +1,105 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit KPI</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Edit KPI</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit KPI</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editkpi/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Comments</label>
+                                        <input required value="<%= pub.comments %>" type="text" class="form-control" placeholder="Enter comments" name="comments">
+                                    </div>
+                                </div>
+                               
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Current value</label>
+                                        <input required value="<%= pub.currentvalue %>" type="number" class="form-control" placeholder="Enter current value" name="currentvalue">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>One year target</label>
+                                        <input required value="<%= pub.firstkpi %>" type="number" class="form-control" placeholder="Enter target for one year" name="firstkpi">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Three years target</label>
+                                        <input required value="<%= pub.threekpi %>" type="number" class="form-control" placeholder="Enter target for three years" name="threekpi">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Five years target</label>
+                                        <input required value="<%= pub.fivekpi %>" type="number" class="form-control" placeholder="Enter target for five years" name="fivekpi">
+                                    </div>
+                                </div>
+                                
+                                
+                                
+                               
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Document link</label>
+                                        <input required value="<%= pub.link %>" type="text" class="form-control" placeholder="Enter link" name="link">
+                                    </div>
+                                </div>
+                               
+                               
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

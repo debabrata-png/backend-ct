@@ -1,0 +1,591 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Admin Log in</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width: 1000px; margin: 20px;">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br>
+    Application form
+  </div>
+  <br>
+  Instructions: Please fill in all details. All questions are mandatory.
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/application2?colid=<%= colid %>&source<%= source %>&programcode=<%= programcode %>">
+        <h5 class="login-box-msg">PERSONAL DETAILS</h5>
+        <div class="container">
+        <div class="row">
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Name</label>
+                    <input required type="text" class="form-control" placeholder="Enter name" name="name">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Email</label>
+                    <input required type="text" class="form-control" placeholder="Enter email" name="email">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input required type="text" class="form-control" placeholder="Enter phone" name="phone">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" required class="form-control" placeholder="Enter password" name="password">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Date of birth</label>
+                    <input type="date" class="form-control" required placeholder="Enter date of birth" name="dateofbirth">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Select marital status</label>
+                    <select class="form-control" name="marrital">
+                        <option value="Single">Single</option>
+                        <option value="Married">Married</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Blood Group</label>
+                    <select class="form-control" name="bloodgroup">
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                  </select>
+                </div>
+              </div> 
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Address</label>
+                    <input required type="text" class="form-control" placeholder="Enter address" name="address">
+                </div>
+            </div>
+        </div>
+    </div>
+            <h5 class="login-box-msg">PARENT/GUARDIAN DETAILS</h5>
+            <div class="container">
+            <div class="row">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Parent name</label>
+                    <input type="text" class="form-control" required placeholder="Enter parent name" name="parent">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Parent occupation</label>
+                    <input type="text" class="form-control" required placeholder="Enter parent occupation" name="occupation">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Parent phone</label>
+                    <input type="text" class="form-control" required placeholder="Enter parent phone" name="parentphone">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Parent annual income</label>
+                    <select class="form-control" name="annualincome">
+                        <option value="10k-50k">10k-50k</option>
+                        <option value="50k-1 lakh">50k-1 lakh</option>
+                        <option value="1 lakh-3 lakhs">1 lakh-3 lakhs</option>
+                        <option value="More than 3 lakhs">More than 3 lakhs</option>
+                        
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Guardian Name</label>
+                    <input type="text" class="form-control" required placeholder="Enter guardian name" name="guardian">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Guardian phone</label>
+                    <input type="text" class="form-control" required placeholder="Enter guardian phone" name="guardianphone">
+                </div>
+            </div>
+        </div>
+    </div>
+            <h5 class="login-box-msg">CATEGORY DETAILS</h5>
+            <div class="container">
+            <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Select category</label>
+                    <select class="form-control" name="category">
+                        <option value="General">General</option>
+                        <option value="SC">SC</option> 
+                        <option value="ST">ST</option> 
+                        <option value="OBC">OBC</option>
+                        <option value="OBC-A">OBC-A</option>
+                        <option value="OBC-B">OBC-B</option> 
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Caste</label>
+                    <input type="text" required class="form-control" placeholder="Enter caste" name="caste">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Reserved category</label>
+                    <select class="form-control" name="reservedcategory">
+                        <option value="NCC">NCC</option>
+                        <option value="NSS">NSS</option> 
+                        <option value="Ex-Servicemen">Ex-Servicemen</option> 
+                        <option value="Sports">Sports</option> 
+                        <option value="Illiteracy Eradiction Programme">Illiteracy Eradiction Programme</option>
+                        <option value="Arts">Arts</option> 
+                        <option value="Physically Handicapped">Physically Handicapped</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Select religion</label>
+                    <select class="form-control" name="religion">
+                        <option value="Hindu">Hindu</option>
+                        <option value="Muslim">Muslim</option> 
+                        <option value="Christian">Christian</option> 
+                        <option value="Others">Others</option> 
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+            <h5 class="login-box-msg">OTHER DETAILS</h5>
+            <div class="container">
+            <div class="row">
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Previous qualifying exam reg. no.</label>
+                    <input required type="text" class="form-control" placeholder="Enter previous qualifying exam reg no" name="previousregno">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Program opting for</label>
+                    <input type="text" value="<%= programcode %>" required class="form-control" placeholder="Enter program code" name="programcode">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Hostel required</label>
+                    <select class="form-control" name="hostelrequired">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Transportation required</label>
+                    <select class="form-control" name="transportation">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>CAP ID</label>
+                    <input type="text" class="form-control" placeholder="Enter CAP ID if available" name="capid">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Reference number (type NA if not available)</label>
+                    <input type="text" class="form-control" placeholder="Enter ref. no. if available" name="refno">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Language 1</label>
+                    <input type="text" class="form-control" required placeholder="Enter language 1" name="language1">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Language 2</label>
+                    <select class="form-control" name="language2">
+                        <option value="Hindi">Hindi</option>
+                        <option value="Malaylam">Malaylam</option>
+                        <option value="Arabic">Arabic</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Aadhar (type NA if not available)</label>
+                    <input type="text" required class="form-control" placeholder="Select aadhar" name="aadhar">
+                </div>
+            </div>
+        </div>
+    </div>
+        
+            <h5 class="login-box-msg">10th DETAILS</h5>
+            <div class="container">
+            <div class="row">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th Exam Name</label>
+                    <select class="form-control" name="tenthexam">
+                        <option value="10th standard">10th standard</option>
+                        <option value="SSLC">SSLC</option> 
+                        
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th Exam Board</label>
+                    <select class="form-control" name="tenthboard">
+                        <option value="CBSE">CBSE</option>
+                        <option value="ICSE">ICSE</option> 
+                        <option value="VHSE">VHSE</option> 
+                        <option value="KHSE">KHSE</option> 
+                        <option value="NIOS">NIOS</option>
+                        <option value="WBCHE">WBCHE</option> 
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th Percentage Marks</label>
+                    <input type="number" class="form-control" placeholder="Enter 10th percentage marks" name="tenthpercentagemarks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th School Name</label>
+                    <input type="text" class="form-control" required placeholder="Enter 10th school name" name="tenthschool">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th Year of Passing</label>
+                    <input type="text" class="form-control" required placeholder="Enter 10th year of passing" name="tenthyop">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>No. of attempts in qualifying 10th standard</label>
+                    <select class="form-control" name="tenthattempts">
+                        <option value="1">1</option>
+                        <option value="2">2</option> 
+                        <option value="3">3</option> 
+                        <option value="4">4</option> 
+                        <option value="5">5</option>
+                        
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th Subject 1</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 1 name" name="tenthsubject1">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 1 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 1 marks" name="tenthsub1marks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th Subject 2</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 2 name" name="tenthsubject2">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 2 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 2 marks" name="tenthsub2marks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th Subject 3</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 3 name" name="tenthsubject3">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 3 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 3 marks" name="tenthsub3marks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th Subject 4</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 4 name" name="tenthsubject4">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 4 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 4 marks" name="tenthsub4marks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th Subject 5</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 5 name" name="tenthsubject5">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 5 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 5 marks" name="tenthsub5marks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>10th Subject 6</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 6 name" name="tenthsubject6">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 6 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 6 marks" name="tenthsub6marks">
+                </div>
+            </div>
+        </div>
+    </div>
+            <h5 class="login-box-msg">12th DETAILS</h5>
+            <div class="container">
+            <div class="row">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th Exam Name</label>
+                    <select class="form-control" name="twelfthexam">
+                        <option value="12th standard">12th standard</option>
+                        <option value="Plus two">Plus two</option> 
+                        <option value="II PUC">II PUC</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th Exam Board</label>
+                    <select class="form-control" name="twelfthboard">
+                        <option value="CBSE">CBSE</option>
+                        <option value="ICSE">ICSE</option> 
+                        <option value="VHSE">VHSE</option> 
+                        <option value="KHSE">KHSE</option> 
+                        <option value="NIOS">NIOS</option>
+                        <option value="WBCHE">WBCHE</option> 
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th Percentage Marks</label>
+                    <input type="number" class="form-control" placeholder="Enter 12th percentage marks" name="twelfthpercentagemarks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th school name</label>
+                    <input type="text" class="form-control" required placeholder="Enter 12th school name" name="twelfthschool">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th Year of Passing</label>
+                    <input type="text" class="form-control" required placeholder="Enter 12th year of passing" name="twelfthyop">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>No. of attempts in qualifying 12th standard</label>
+                    <select class="form-control" name="twelfthattempts">
+                        <option value="1">1</option>
+                        <option value="2">2</option> 
+                        <option value="3">3</option> 
+                        <option value="4">4</option> 
+                        <option value="5">5</option>
+                        
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th Subject 1</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 1 name" name="twelfthsubject1">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 1 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 1 marks" name="twelfthsub1marks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th Subject 2</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 2 name" name="twelfthsubject2">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 2 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 2 marks" name="twelfthsub2marks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th Subject 3</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 3 name" name="twelfthsubject3">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 3 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 3 marks" name="twelfthsub3marks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th Subject 4</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 4 name" name="twelfthsubject4">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 4 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 4 marks" name="twelfthsub4marks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th Subject 5</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 5 name" name="twelfthsubject5">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 5 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 5 marks" name="twelfthsub5marks">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>12th Subject 6</label>
+                    <input type="text" class="form-control" required placeholder="Enter subject 6 name" name="twelfthsubject6">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Subject 6 marks</label>
+                    <input type="number" class="form-control" required placeholder="Enter subject 6 marks" name="twelfthsub6marks">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row"> 
+        <div class="col-sm-6">
+        <div class="form-check">
+            <input class="form-check-input" required type="checkbox" value="agreed" id="flexCheckDefault" >
+            <label class="form-check-label" for="flexCheckDefault">
+                The information entered is true to my knowledge.
+            </label>
+          </div>  
+
+        <!-- <div class="row">       
+        <div class="col-sm-6">
+        <div class="form-group">
+            <label>The information entered is true to my knowledge</label>
+            <input type="checkbox" class="form-control" name="checkbox">
+            
+        </div>
+    </div>
+    </div> -->
+        
+        <br>
+        <input type="hidden" value="<%= colid %>" name="colid"/>
+        <input type="hidden" value="<%= source %>" name="source"/>
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

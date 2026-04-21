@@ -1,0 +1,308 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Parent Feddback</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width: 100%; margin: 20px; padding: 20px;">
+  <div class="login-logo">
+    <!-- <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br> -->
+    Parent Feedback
+  </div>
+  <br>
+  Instructions: Please fill in all details. All questions are mandatory.
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/addparentfeedback/<%= colid %>">
+
+        Parent Name <br />
+        <input required type="text"  placeholder="Enter name" name="pname">
+
+        <br /><br />
+        Parent Email <br />
+        <input required type="text" class="form-control1" placeholder="Enter email" name="pemail">
+        <br /><br />
+
+        Parent Phone No <br />
+        <input required type="text" class="form-control1" placeholder="Enter phone number" name="pphone">
+        <br /><br />
+
+        Student name <br />
+        <input required type="text" class="form-control1" placeholder="Enter name" name="sname">
+        <br /><br />
+
+        Student reg no <br />
+        <input type="text" class="form-control1" placeholder="Enter registration no" name="sregno">
+        <br /><br />
+
+        Program name <br />
+        <input required type="text" class="form-control1" placeholder="Enter program name" name="program">
+        <br /><br />
+
+        Academic year <br />
+        <input required type="text" class="form-control1" placeholder="Enter academic year" name="academicyear">
+        <br /><br />
+
+        Semester <br />
+        <input required type="text" class="form-control1" placeholder="Enter semester" name="semester">
+        <br /><br />
+
+        Section <br />
+        <input required type="text" class="form-control1" placeholder="Enter section" name="section">
+        <br /><br />
+
+
+        1. This institution is suitable for your child’s education <br />
+        <input type="radio" id="1a" name="one" value="5" required><label for="1a">Strongly agree</label>&nbsp;
+        <input type="radio" id="1b" name="one" value="4"><label for="1b">Agree</label>&nbsp;
+        <input type="radio" id="1c" name="one" value="3"><label for="1c">Neutral</label>&nbsp;
+        <input type="radio" id="1d" name="one" value="2"><label for="1d">Disagree</label>&nbsp;
+        <input type="radio" id="1e" name="one" value="1"><label for="1e">Strongly disagree</label>
+    
+        
+        <br /><br />
+        2. Facilities provided by the institution is helpful for your child<br />
+        <input type="radio" id="2a" name="two" value="5" required><label for="2a">Strongly agree</label>&nbsp;
+        <input type="radio" id="2b" name="two" value="4"><label for="2b">Agree</label>&nbsp;
+        <input type="radio" id="2c" name="two" value="3"><label for="2c">Neutral</label>&nbsp;
+        <input type="radio" id="2d" name="two" value="2"><label for="2d">Disagree</label>&nbsp;
+        <input type="radio" id="2e" name="two" value="1"><label for="2e">Strongly disagree</label>
+
+        <br /><br />
+        3. Direct communication with the teaching staff is available in the institution <br />
+        <input type="radio" id="3a" name="three" value="5" required><label for="3a">Strongly agree</label>&nbsp;
+        <input type="radio" id="3b" name="three" value="4"><label for="3b">Agree</label>&nbsp;
+        <input type="radio" id="3c" name="three" value="3"><label for="3c">Neutral</label>&nbsp;
+        <input type="radio" id="3d" name="three" value="2"><label for="3d">Disagree</label>&nbsp;
+        <input type="radio" id="3e" name="three" value="1"><label for="3e">Strongly disagree</label>
+
+        <br /><br />
+
+        4. Hostel facilities are satisfactory for your child <br />
+        <input type="radio" id="4a" name="four" value="5" required><label for="4a">Strongly agree</label>&nbsp;
+        <input type="radio" id="4b" name="four" value="4"><label for="4b">Agree</label>&nbsp;
+        <input type="radio" id="4c" name="four" value="3"><label for="4c">Neutral</label>&nbsp;
+        <input type="radio" id="4d" name="four" value="2"><label for="4d">Disagree</label>&nbsp;
+        <input type="radio" id="4e" name="four" value="1"><label for="4e">Strongly disagree</label>
+
+        <br /><br />
+
+        5. Administrative staff in the institution is cooperative <br />
+
+        <input type="radio" id="5a" name="five" value="5" required><label for="5a">Strongly agree</label>&nbsp;
+        <input type="radio" id="5b" name="five" value="4"><label for="5b">Agree</label>&nbsp;
+        <input type="radio" id="5c" name="five" value="3"><label for="5c">Neutral</label>&nbsp;
+        <input type="radio" id="5d" name="five" value="2"><label for="5d">Disagree</label>&nbsp;
+        <input type="radio" id="5e" name="five" value="1"><label for="5e">Strongly disagree</label>
+
+        <br /><br />
+        6. Institution provides upgradation of hard & soft skills for children <br />
+        <input type="radio" id="6a" name="six" value="5" required><label for="6a">Strongly agree</label>&nbsp;
+        <input type="radio" id="6b" name="six" value="4"><label for="6b">Agree</label>&nbsp;
+        <input type="radio" id="6c" name="six" value="3"><label for="6c">Neutral</label>&nbsp;
+        <input type="radio" id="6d" name="six" value="2"><label for="6d">Disagree</label>&nbsp;
+        <input type="radio" id="6e" name="six" value="1"><label for="6e">Strongly disagree</label>
+
+        <br /><br />
+
+        7. Institution provides physical safety for your child <br />
+
+        <input type="radio" id="7a" name="seven" value="5" required><label for="7a">Strongly agree</label>&nbsp;
+        <input type="radio" id="7b" name="seven" value="4"><label for="7b">Agree</label>&nbsp;
+        <input type="radio" id="7c" name="seven" value="3"><label for="7c">Neutral</label>&nbsp;
+        <input type="radio" id="7d" name="seven" value="2"><label for="7d">Disagree</label>&nbsp;
+        <input type="radio" id="7e" name="seven" value="1"><label for="7e">Strongly disagree</label>
+
+        <br /><br />
+
+        8. Institution provides a fair rate of transparency for evaluation system to children <br />
+        <input type="radio" id="8a" name="eight" value="5" required><label for="8a">Strongly agree</label>&nbsp;
+        <input type="radio" id="8b" name="eight" value="4"><label for="8b">Agree</label>&nbsp;
+        <input type="radio" id="8c" name="eight" value="3"><label for="8c">Neutral</label>&nbsp;
+        <input type="radio" id="8d" name="eight" value="2"><label for="8d">Disagree</label>&nbsp;
+        <input type="radio" id="8e" name="eight" value="1"><label for="8e">Strongly disagree</label>
+
+        <br /><br />
+
+        9. Library Infrastructure is helpful for your child <br />
+
+        <input type="radio" id="9a" name="nine" value="5" required><label for="9a">Strongly agree</label>&nbsp;
+        <input type="radio" id="9b" name="nine" value="4"><label for="9b">Agree</label>&nbsp;
+        <input type="radio" id="9c" name="nine" value="3"><label for="9c">Neutral</label>&nbsp;
+        <input type="radio" id="9d" name="nine" value="2"><label for="9d">Disagree</label>&nbsp;
+        <input type="radio" id="9e" name="nine" value="1"><label for="9e">Strongly disagree</label>
+
+        <br /><br />
+
+        10. Institution provides a standard academic growth for child <br />
+
+        <input type="radio" id="10a" name="ten" value="5" required><label for="10a">Strongly agree</label>&nbsp;
+        <input type="radio" id="10b" name="ten" value="4"><label for="10b">Agree</label>&nbsp;
+        <input type="radio" id="10c" name="ten" value="3"><label for="10c">Neutral</label>&nbsp;
+        <input type="radio" id="10d" name="ten" value="2"><label for="10d">Disagree</label>&nbsp;
+        <input type="radio" id="10e" name="ten" value="1"><label for="10e">Strongly disagree</label>
+
+        <br /><br />
+
+
+
+
+
+
+
+
+
+         
+<!-- 
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sl. No.</th>
+                    <th>Question</th>
+                    <th>Strongly agree</th>
+                    <th>Agree</th>
+                    <th>Neutral</th>
+                    <th>Disagree</th>
+                    <th>Strongly Disagree</th>
+                </tr>
+            </thead>
+            <tbody>
+             
+                <tr>
+                    <td>2.</td>
+                    <td></td>
+                    <td><input type="radio" id="2a" name="two" value="5" required></td>
+                    <td><input type="radio" id="2b" name="two" value="4"></td>
+                    <td><input type="radio" id="2c" name="two" value="3"></td>
+                    <td><input type="radio" id="2d" name="two" value="2"></td>
+                    <td><input type="radio" id="2e" name="two" value="1"></td>
+                </tr>
+                <tr>
+                    <td>3.</td>
+                    <td>Direct communication with the teaching staff is available in the institution</td>
+                    <td><input type="radio" id="3a" name="three" value="5" required></td>
+                    <td><input type="radio" id="3b" name="three" value="4"></td>
+                    <td><input type="radio" id="3c" name="three" value="3"></td>
+                    <td><input type="radio" id="3d" name="three" value="2"></td>
+                    <td><input type="radio" id="3e" name="three" value="1"></td>
+                </tr>
+                <tr>
+                    <td>4.</td>
+                    <td>Hostel facilities are satisfactory for your child</td>
+                    <td><input type="radio" id="4a" name="four" value="5" required></td>
+                    <td><input type="radio" id="4b" name="four" value="4"></td>
+                    <td><input type="radio" id="4c" name="four" value="3"></td>
+                    <td><input type="radio" id="4d" name="four" value="2"></td>
+                    <td><input type="radio" id="4e" name="four" value="1"></td>
+                </tr>
+                <tr>
+                    <td>5.</td>
+                    <td>Administrative staff in the institution is cooperative</td>
+                    <td><input type="radio" id="5a" name="five" value="5" required></td>
+                    <td><input type="radio" id="5b" name="five" value="4"></td>
+                    <td><input type="radio" id="5c" name="five" value="3"></td>
+                    <td><input type="radio" id="5d" name="five" value="2"></td>
+                    <td><input type="radio" id="5e" name="five" value="1"></td>
+                </tr>
+                <tr>
+                    <td>6.</td>
+                    <td>Institution provides upgradation of hard & soft skills for children</td>
+                    <td><input type="radio" id="6a" name="six" value="5" required></td>
+                    <td><input type="radio" id="6b" name="six" value="4"></td>
+                    <td><input type="radio" id="6c" name="six" value="3"></td>
+                    <td><input type="radio" id="6d" name="six" value="2"></td>
+                    <td><input type="radio" id="6e" name="six" value="1"></td>
+                </tr>
+                <tr>
+                    <td>7.</td>
+                    <td>Institution provides physical safety for your child</td>
+                    <td><input type="radio" id="7a" name="seven" value="5" required></td>
+                    <td><input type="radio" id="7b" name="seven" value="4"></td>
+                    <td><input type="radio" id="7c" name="seven" value="3"></td>
+                    <td><input type="radio" id="7d" name="seven" value="2"></td>
+                    <td><input type="radio" id="7e" name="seven" value="1"></td>
+                </tr>
+                <tr>
+                    <td>8.</td>
+                    <td>Institution provides a fair rate of transparency for evaluation system to children</td>
+                    <td><input type="radio" id="8a" name="eight" value="5" required></td>
+                    <td><input type="radio" id="8b" name="eight" value="4"></td>
+                    <td><input type="radio" id="8c" name="eight" value="3"></td>
+                    <td><input type="radio" id="8d" name="eight" value="2"></td>
+                    <td><input type="radio" id="8e" name="eight" value="1"></td>
+                </tr>
+                <tr>
+                    <td>9.</td>
+                    <td>Library Infrastructure is helpful for your child</td>
+                    <td><input type="radio" id="9a" name="nine" value="5" required></td>
+                    <td><input type="radio" id="9b" name="nine" value="4"></td>
+                    <td><input type="radio" id="9c" name="nine" value="3"></td>
+                    <td><input type="radio" id="9d" name="nine" value="2"></td>
+                    <td><input type="radio" id="9e" name="nine" value="1"></td>
+                </tr>
+                <tr>
+                    <td>10.</td>
+                    <td>Institution provides a standard academic growth for child</td>
+                    <td><input type="radio" id="10a" name="ten" value="5" required></td>
+                    <td><input type="radio" id="10b" name="ten" value="4"></td>
+                    <td><input type="radio" id="10c" name="ten" value="3"></td>
+                    <td><input type="radio" id="10d" name="ten" value="2"></td>
+                    <td><input type="radio" id="10e" name="ten" value="1"></td>
+                </tr>
+                
+            </tbody>
+            </table>    
+        <br>
+         -->
+        <input type="hidden" value="<%= colid %>" name="colid"/>
+
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

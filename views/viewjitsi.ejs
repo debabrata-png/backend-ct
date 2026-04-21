@@ -1,0 +1,105 @@
+<%- include("header") %> 
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View awards</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewnaac">Criteria 5-Student-Support-Progression</a></li>
+                    <li class="breadcrumb-item"><a href="/viewawards">Student Awards/Medals</a></li>
+                    <li class="breadcrumb-item active">List of awards</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Online Class</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                      <div id="meet">
+
+
+                      </div>  
+                        
+                        
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<script src='https://meet.jit.si/external_api.js'></script>
+<script>
+
+const domain = 'meet.jit.si';
+const options = {
+    roomName: '<%= classid %>',
+    width: 700,
+    height: 700,
+    userInfo: {
+        email: '<%= user %>',
+        displayName: '<%= name %>'
+    },
+    configOverwrite: { 
+        startWithAudioMuted: true,
+        toolbarButtons: [
+        'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+        'fodeviceselection', 'hangup',  'raisehand',
+        'videoquality', 'filmstrip', 
+        'tileview' 
+     ],
+     remoteVideoMenu: {
+        // If set to true the 'Kick out' button will be disabled.
+        disableKick: true,
+        // If set to true the 'Grant moderator' button will be disabled.
+        disableGrantModerator: true
+    },
+
+    //If set to true all muting operations of remote participants will be disabled
+    disableRemoteMute: true,
+    enableWelcomePage: false,
+    disableProfile: true,
+    prejoinPageEnabled: false,
+    enableInsecureRoomNameWarning: false,
+    maxFullResolutionParticipants: 20
+
+    
+    },
+    interfaceConfigOverwrite: {
+         DISABLE_DOMINANT_SPEAKER_INDICATOR: true,
+         HIDE_INVITE_MORE_HEADER: true,
+         RECENT_LIST_ENABLED: false,
+         SETTINGS_SECTIONS: [ 'devices' ],
+         SHARING_FEATURES: [],
+         GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
+         MOBILE_APP_PROMO: false
+        },
+    parentNode: document.querySelector('#meet')
+};
+const api = new JitsiMeetExternalAPI(domain, options);
+const participants = api.getParticipantsInfo();
+//alert(participants.id + ' ' + participants.displayName + ' ' + participants.email);
+
+
+</script>
+
+<%- include("footer") %> 

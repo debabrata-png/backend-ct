@@ -1,0 +1,107 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View Files and Links</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">List Files</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">List Files and Links</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table>
+                            <tr>
+                                <td>
+                                    <a class="btn btn-dark" href="/addcfiles/<%= coursecode %>">+ Add New Files</a>
+                                </td>
+                                <td width="20px"></td>
+                                <td>
+                                    <a class="btn btn-dark" href="/addcfileslink/<%= coursecode %>">+ Add New Link</a>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <!-- <th>Coursecode</th> -->
+                                    <th>Coursecode</th>
+                                    <th>Filename</th>
+                                    <!-- <th>Class time</th> -->
+                                    <th>Link</th>
+                                    <!-- <th>Semester</th>
+                                    <th>Link</th> -->
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    <!-- <td><%= data.coursecode %></td> -->
+                                    <td><%= data.coursecode %></td>
+                                    <td><%= data.filename %></td>
+                                    <!-- <td><%= data.classtime %></td> -->
+                                    <td><%= data.link %></td>
+                                    <!-- <td><%= data.semester %></td> -->
+                                    <!-- <td><%= data.link %></td> -->
+                                    <td>
+                                        <a href="/editcfiles/<%= data.id %>" class="btn btn-primary"><i class="fa fa-edit"></i></a>
+                                       
+                                       
+                                        <form method="post" action="/deletecfiles" id="frm-delete-category-<%= data.id %>">
+                                        
+                                            <input type="hidden" value="<%= data.id %>" name="category_id"/>
+
+                                        </form>
+
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to delete ? ')){  $('#frm-delete-category-<%= data.id %>').submit()  }" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

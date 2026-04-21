@@ -1,0 +1,103 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit ICT enabled Classrooms and Seminar Halls</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewict">Criteria 4-Infrastructure-Learning Resources</a></li>
+                    <li class="breadcrumb-item"><a href="/viewict">ICT enabled Classrooms and Seminar Halls</a></li>
+                    <li class="breadcrumb-item active">Edit classrooms & halls </li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit ICT enabled Classrooms and Seminar Halls</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editict/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Room number/Name of Classroom</label>
+                                        <input required value="<%= pub.classroom %>" type="text" class="form-control" placeholder="Enter room no./name of classroom" name="classroom">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Room number/Name of Seminar Hall</label>
+                                        <input required value="<%= pub.seminarhall %>" type="text" class="form-control" placeholder="Enter room no./name of seminar hall" name="seminarhall">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Type of ICT Facility</label>
+                                        <input required value="<%= pub.facitype %>" type="text" class="form-control" placeholder="Enter type of ICT facility" name="facitype">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Link to geo tagged photos</label>
+                                        <input required value="<%= pub.link %>" type="text" class="form-control" placeholder="Enter link to geo tagged photos" name="link">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <input required value="<%= pub.status1 %>" type="text" class="form-control" placeholder="Enter the Status" name="status1">
+                                    </div>
+                                </div>
+
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Comments</label>
+                                        <input required value="<%= pub.comments %>" type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

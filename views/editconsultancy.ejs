@@ -1,0 +1,133 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit awards</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewawards">Criteria 5-Student-Support-Progression</a></li>
+                    <li class="breadcrumb-item"><a href="/viewawards">Student Awards/Medals</a></li>
+                    <li class="breadcrumb-item active">Edit Student Award</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Consultancy</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editconsultancy/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Academic Year</label>
+                                        <select class="form-control" name="year">
+                                            <option <% if(pub.year == '2015-16'){ %>  selected <% } %> value="2015-16">2015-16</option>
+                                            <option <% if(pub.year == '2016-17'){ %> selected <%  }  %> value="2016-17">2016-17</option>
+                                            <option <% if(pub.year == '2017-18'){ %> selected <%  }  %> value="2017-18">2017-18</option>
+                                            <option <% if(pub.year == '2018-19'){ %> selected <%  }  %> value="2018-19">2018-19</option>
+                                            <option <% if(pub.year == '2019-20'){ %> selected <%  }  %> value="2019-20">2019-20</option>
+                                            <option <% if(pub.year == '2020-21'){ %> selected <%  }  %> value="2020-21">2020-21</option>
+                                            <option <% if(pub.year == '2021-22'){ %> selected <%  }  %> value="2021-22">2021-22</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name of the Consultant</label>
+                                        <input required value="<%= pub.consultant %>" type="text" class="form-control" placeholder="Enter name of the consultant" name="consultant">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name of the Advisor</label>
+                                        <input required value="<%= pub.advisor %>" type="text" class="form-control" placeholder="Enter name of the advisor" name="advisor">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name of Agency</label>
+                                        <input required value="<%= pub.agency %>" type="text" class="form-control" placeholder="Enter name of the agency" name="agency">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Contact Details of Agency</label>
+                                        <input required value="<%= pub.contact %>" type="number" class="form-control" placeholder="Enter contact details" name="contact">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Revenue Generated (INR in lakhs)</label>
+                                        <input required value="<%= pub.revenue %>" type="number" class="form-control" placeholder="Enter revenue generated" name="revenue">
+                                    </div>
+                                </div>
+
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select class="form-control" name="status1">
+                                            <option <% if(pub.status1 == 'Submitted'){ %>  selected <% } %> value="Submitted">Submitted</option>
+                                            <option <% if(pub.status1 == 'In Process'){ %> selected <%  }  %> value="In Process">In Process</option>
+                                            <option <% if(pub.status1 == 'Incomplete Documentation'){ %> selected <%  }  %> value="Incomplete Documentation">Incomplete Documentation</option>
+                                            <option <% if(pub.status1 == 'Reviewed'){ %> selected <%  }  %> value="Reviewed">Reviewed</option>
+                                            
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Comments</label>
+                                        <input required value="<%= pub.comments %>" type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+                                    </div>
+                                </div>
+
+                                
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

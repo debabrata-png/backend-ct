@@ -1,0 +1,71 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+
+<div>
+<img src="<%= photo %>" style="width: 100px; height: 100px; border-radius: 50px; float:left; margin-right: 60px;" />
+<div id="namediv" style="margin-left: 60px; font-size: 30px; font-weight: bold;">
+    <%= name %>
+
+</div>
+</div>
+<br><br>
+<h4 style="margin-top: 20px;">What do you want to do today</h4>
+<br>
+<table>
+    <tr>
+        <td>
+            <a class="btn btn-dark" href="/viewworkload/<%= user %>?name=<%= name %>">+ Manage My Workload / Courses</a>
+        </td>
+        <td width="20px"></td>
+        <td>
+            <a class="btn btn-dark" href="/viewclass">+ Manage All Classes</a>
+        </td>
+    </tr>
+</table>
+<br>
+<h4>Mentor / Teach Students for Campus Skill</h4>
+
+<i><h5>Campus.Technology humbly acknowledges contribution of all teachers and provides an honorarium for your time</h5></i>
+
+Campus Skill program is designed to support students for their learning needs. Teach anything, Any topic or hobby classes.
+<br><br>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/VsIGbv7QJyI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<br><br>
+<% categories.forEach(function(data){ %>
+   
+        <!-- <td><%= data.id %></td> -->
+        <h5><%= data.title %></h5>
+        <br>
+        <%= data.content %>
+        <br><br>
+        Link: <%= data.link %>
+        <br><br>
+        
+    <% }) %>
+<br><br>
+
+</div>
+<script src="plugins/jquery/jquery.min.js"></script>
+<script>
+    $( document ).ready(function() {
+        var d1=new Date();
+        var i=d1.getHours();
+        var greetings;
+        if(i<12) {
+            greetings="Good Morning, ";
+        } else if(i<18) {
+            greetings="Good Afternoon, ";
+        } else {
+            greetings="Good Evening, ";
+        }
+        $('#namediv').html(greetings + $('#namediv').html());
+    
+});
+</script>
+
+
+
+
+
+<%- include("footer") %> 

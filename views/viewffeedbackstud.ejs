@@ -1,0 +1,141 @@
+<%- include("headerstud") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<p>Faculty feedback for faculty <%= facultyname %> <%= email %></p>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addfacultyfeedback/<%= email %>">
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sl. No.</th>
+            <th>Question</th>
+            <th>Excellent</th>
+            <th>Very Good</th>
+            <th>Good</th>
+            <th>Average</th>
+            <th>Below Average</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1.</td>
+            <td>Communication skill of the faculty</td>
+            <td><input type="radio" id="1a" name="one" value="5" required></td>
+            <td><input type="radio" id="1b" name="one" value="4"></td>
+            <td><input type="radio" id="1c" name="one" value="3"></td>
+            <td><input type="radio" id="1d" name="one" value="2"></td>
+            <td><input type="radio" id="1e" name="one" value="1"></td>
+        </tr>
+        <tr>
+            <td>2.</td>
+            <td>Availability of the faculty outside class hours for doubt clearing</td>
+            <td><input type="radio" id="2a" name="two" value="5" required></td>
+            <td><input type="radio" id="2b" name="two" value="4"></td>
+            <td><input type="radio" id="2c" name="two" value="3"></td>
+            <td><input type="radio" id="2d" name="two" value="2"></td>
+            <td><input type="radio" id="2e" name="two" value="1"></td>
+        </tr>
+        <tr>
+            <td>3.</td>
+            <td>Subject knowledge of the faculty</td>
+            <td><input type="radio" id="3a" name="three" value="5" required></td>
+            <td><input type="radio" id="3b" name="three" value="4"></td>
+            <td><input type="radio" id="3c" name="three" value="3"></td>
+            <td><input type="radio" id="3d" name="three" value="2"></td>
+            <td><input type="radio" id="3e" name="three" value="1"></td>
+        </tr>
+        <tr>
+            <td>4.</td>
+            <td>Preparedness of the faculty for the class</td>
+            <td><input type="radio" id="4a" name="four" value="5" required></td>
+            <td><input type="radio" id="4b" name="four" value="4"></td>
+            <td><input type="radio" id="4c" name="four" value="3"></td>
+            <td><input type="radio" id="4d" name="four" value="2"></td>
+            <td><input type="radio" id="4e" name="four" value="1"></td>
+        </tr>
+        <tr>
+            <td>5.</td>
+            <td>The teaching sessions are always participative and interactive</td>
+            <td><input type="radio" id="5a" name="five" value="5" required></td>
+            <td><input type="radio" id="5b" name="five" value="4"></td>
+            <td><input type="radio" id="5c" name="five" value="3"></td>
+            <td><input type="radio" id="5d" name="five" value="2"></td>
+            <td><input type="radio" id="5e" name="five" value="1"></td>
+        </tr>
+        <tr>
+            <td>6.</td>
+            <td>The faculty always answers questions effectively in the class</td>
+            <td><input type="radio" id="6a" name="six" value="5" required></td>
+            <td><input type="radio" id="6b" name="six" value="4"></td>
+            <td><input type="radio" id="6c" name="six" value="3"></td>
+            <td><input type="radio" id="6d" name="six" value="2"></td>
+            <td><input type="radio" id="6e" name="six" value="1"></td>
+        </tr>
+        <tr>
+            <td>7.</td>
+            <td>The faculty assesses the learning of the students through quiz and exams</td>
+            <td><input type="radio" id="7a" name="seven" value="5" required></td>
+            <td><input type="radio" id="7b" name="seven" value="4"></td>
+            <td><input type="radio" id="7c" name="seven" value="3"></td>
+            <td><input type="radio" id="7d" name="seven" value="2"></td>
+            <td><input type="radio" id="7e" name="seven" value="1"></td>
+        </tr>
+        <tr>
+            <td>8.</td>
+            <td>The faculty encourages experiential learning through student seminar, group discussion, projects, field visits</td>
+            <td><input type="radio" id="8a" name="eight" value="5" required></td>
+            <td><input type="radio" id="8b" name="eight" value="4"></td>
+            <td><input type="radio" id="8c" name="eight" value="3"></td>
+            <td><input type="radio" id="8d" name="eight" value="2"></td>
+            <td><input type="radio" id="8e" name="eight" value="1"></td>
+        </tr>
+        <tr>
+            <td>9.</td>
+            <td>The faculty uses ICT such as projector, slideshow, animation</td>
+            <td><input type="radio" id="9a" name="nine" value="5" required></td>
+            <td><input type="radio" id="9b" name="nine" value="4"></td>
+            <td><input type="radio" id="9c" name="nine" value="3"></td>
+            <td><input type="radio" id="9d" name="nine" value="2"></td>
+            <td><input type="radio" id="9e" name="nine" value="1"></td>
+        </tr>
+        <tr>
+            <td>10.</td>
+            <td>The faculty discusses topics outside syllabus but relevant for industry</td>
+            <td><input type="radio" id="10a" name="ten" value="5" required></td>
+            <td><input type="radio" id="10b" name="ten" value="4"></td>
+            <td><input type="radio" id="10c" name="ten" value="3"></td>
+            <td><input type="radio" id="10d" name="ten" value="2"></td>
+            <td><input type="radio" id="10e" name="ten" value="1"></td>
+        </tr>
+        <tr>
+            <td>11.</td>
+            <td>The faculty is punctual in taking classes</td>
+            <td><input type="radio" id="11a" name="eleven" value="5" required></td>
+            <td><input type="radio" id="11b" name="eleven" value="4"></td>
+            <td><input type="radio" id="11c" name="eleven" value="3"></td>
+            <td><input type="radio" id="11d" name="eleven" value="2"></td>
+            <td><input type="radio" id="11e" name="eleven" value="1"></td>
+        </tr>
+        <tr>
+            <td>12.</td>
+            <td>The faculty covers all topics in the syllabus</td>
+            <td><input type="radio" id="12a" name="twelve" value="5" required></td>
+            <td><input type="radio" id="12b" name="twelve" value="4"></td>
+            <td><input type="radio" id="12c" name="twelve" value="3"></td>
+            <td><input type="radio" id="12d" name="twelve" value="2"></td>
+            <td><input type="radio" id="12e" name="twelve" value="1"></td>
+        </tr>
+    </tbody>
+    </table>    
+<br>
+<input type="hidden" value="<%= email %>" name="email"/>
+<input type="hidden" value="<%= facultyname %>" name="facultyname"/>
+<button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+
+
+
+
+
+<%- include("footer") %> 

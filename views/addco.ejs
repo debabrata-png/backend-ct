@@ -1,0 +1,44 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Course Outcome(CO)</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/createco">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Course Code</label>
+                <input required type="text" class="form-control" placeholder="Enter course code" name="coursecode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Course Name </label>
+                <input required type="text" class="form-control" placeholder="Enter course name" name="coursename">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>CO Code</label>
+                <input required type="text" class="form-control" placeholder="Enter CO code" name="cocode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>CO</label>
+                <input required type="text" class="form-control" placeholder="Enter CO" name="co">
+            </div>
+        </div>
+  
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

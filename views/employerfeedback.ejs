@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Employer Feddback</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width: 1000px; margin: 20px;">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br>
+    Employer Feedback
+  </div>
+  <br>
+  Instructions: Please fill in all details. All questions are mandatory.
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/employerfeedback/<%= colid %>">
+       
+        <div class="row">
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Employer Name</label>
+                    <input required type="text" class="form-control" placeholder="Enter name" name="ename">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Employer Email</label>
+                    <input required type="text" class="form-control" placeholder="Enter email" name="email">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Student Name</label>
+                    <input required type="text" class="form-control" placeholder="Enter name" name="sname">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Department</label>
+                    <input required type="text" class="form-control" placeholder="Enter department" name="department">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Batch</label>
+                    <input type="text" class="form-control" placeholder="Enter batch" name="batch">
+                </div>
+            </div>
+            
+        </div>
+
+         
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sl. No.</th>
+                    <th>Question</th>
+                    <th>Strongly agree</th>
+                    <th>Agree</th>
+                    <th>Neutral</th>
+                    <th>Disagree</th>
+                    <th>Strongly Disagree</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1.</td>
+                    <td>Syllabus is need based and suitable to the course</td>
+                    <td><input type="radio" id="1a" name="one" value="5" required></td>
+                    <td><input type="radio" id="1b" name="one" value="4"></td>
+                    <td><input type="radio" id="1c" name="one" value="3"></td>
+                    <td><input type="radio" id="1d" name="one" value="2"></td>
+                    <td><input type="radio" id="1e" name="one" value="1"></td>
+                </tr>
+                <tr>
+                    <td>2.</td>
+                    <td>The curriculum has well defined objectives</td>
+                    <td><input type="radio" id="2a" name="two" value="5" required></td>
+                    <td><input type="radio" id="2b" name="two" value="4"></td>
+                    <td><input type="radio" id="2c" name="two" value="3"></td>
+                    <td><input type="radio" id="2d" name="two" value="2"></td>
+                    <td><input type="radio" id="2e" name="two" value="1"></td>
+                </tr>
+                <tr>
+                    <td>3.</td>
+                    <td>The curriculum has components to address requirements of job</td>
+                    <td><input type="radio" id="3a" name="three" value="5" required></td>
+                    <td><input type="radio" id="3b" name="three" value="4"></td>
+                    <td><input type="radio" id="3c" name="three" value="3"></td>
+                    <td><input type="radio" id="3d" name="three" value="2"></td>
+                    <td><input type="radio" id="3e" name="three" value="1"></td>
+                </tr>
+                <tr>
+                    <td>4.</td>
+                    <td>The curriculum gives exposure to latest developments in the field</td>
+                    <td><input type="radio" id="4a" name="four" value="5" required></td>
+                    <td><input type="radio" id="4b" name="four" value="4"></td>
+                    <td><input type="radio" id="4c" name="four" value="3"></td>
+                    <td><input type="radio" id="4d" name="four" value="2"></td>
+                    <td><input type="radio" id="4e" name="four" value="1"></td>
+                </tr>
+                <tr>
+                    <td>5.</td>
+                    <td>The curriculum contains adequate course content and reference material</td>
+                    <td><input type="radio" id="5a" name="five" value="5" required></td>
+                    <td><input type="radio" id="5b" name="five" value="4"></td>
+                    <td><input type="radio" id="5c" name="five" value="3"></td>
+                    <td><input type="radio" id="5d" name="five" value="2"></td>
+                    <td><input type="radio" id="5e" name="five" value="1"></td>
+                </tr>
+                <tr>
+                    <td>6.</td>
+                    <td>Reference books are available in the library</td>
+                    <td><input type="radio" id="6a" name="six" value="5" required></td>
+                    <td><input type="radio" id="6b" name="six" value="4"></td>
+                    <td><input type="radio" id="6c" name="six" value="3"></td>
+                    <td><input type="radio" id="6d" name="six" value="2"></td>
+                    <td><input type="radio" id="6e" name="six" value="1"></td>
+                </tr>
+                <tr>
+                    <td>7.</td>
+                    <td>The curriculum contains adequate balance between theory and practicals</td>
+                    <td><input type="radio" id="7a" name="seven" value="5" required></td>
+                    <td><input type="radio" id="7b" name="seven" value="4"></td>
+                    <td><input type="radio" id="7c" name="seven" value="3"></td>
+                    <td><input type="radio" id="7d" name="seven" value="2"></td>
+                    <td><input type="radio" id="7e" name="seven" value="1"></td>
+                </tr>
+                <tr>
+                    <td>8.</td>
+                    <td>The curriculum provides experiential learning through student seminar, group discussion, projects, field visits</td>
+                    <td><input type="radio" id="8a" name="eight" value="5" required></td>
+                    <td><input type="radio" id="8b" name="eight" value="4"></td>
+                    <td><input type="radio" id="8c" name="eight" value="3"></td>
+                    <td><input type="radio" id="8d" name="eight" value="2"></td>
+                    <td><input type="radio" id="8e" name="eight" value="1"></td>
+                </tr>
+                <tr>
+                    <td>9.</td>
+                    <td>The curriculum contains sufficient elective papers</td>
+                    <td><input type="radio" id="9a" name="nine" value="5" required></td>
+                    <td><input type="radio" id="9b" name="nine" value="4"></td>
+                    <td><input type="radio" id="9c" name="nine" value="3"></td>
+                    <td><input type="radio" id="9d" name="nine" value="2"></td>
+                    <td><input type="radio" id="9e" name="nine" value="1"></td>
+                </tr>
+                <tr>
+                    <td>10.</td>
+                    <td>The curriculum provides options for continuous assessment through quiz and exams</td>
+                    <td><input type="radio" id="10a" name="ten" value="5" required></td>
+                    <td><input type="radio" id="10b" name="ten" value="4"></td>
+                    <td><input type="radio" id="10c" name="ten" value="3"></td>
+                    <td><input type="radio" id="10d" name="ten" value="2"></td>
+                    <td><input type="radio" id="10e" name="ten" value="1"></td>
+                </tr>
+                <tr>
+                    <td>11.</td>
+                    <td>The time provided to complete the curriculum is adequate</td>
+                    <td><input type="radio" id="11a" name="eleven" value="5" required></td>
+                    <td><input type="radio" id="11b" name="eleven" value="4"></td>
+                    <td><input type="radio" id="11c" name="eleven" value="3"></td>
+                    <td><input type="radio" id="11d" name="eleven" value="2"></td>
+                    <td><input type="radio" id="11e" name="eleven" value="1"></td>
+                </tr>
+                <tr>
+                    <td>12.</td>
+                    <td>The curriculum facilitates adequate self learning</td>
+                    <td><input type="radio" id="12a" name="twelve" value="5" required></td>
+                    <td><input type="radio" id="12b" name="twelve" value="4"></td>
+                    <td><input type="radio" id="12c" name="twelve" value="3"></td>
+                    <td><input type="radio" id="12d" name="twelve" value="2"></td>
+                    <td><input type="radio" id="12e" name="twelve" value="1"></td>
+                </tr>
+            </tbody>
+            </table>      
+        <br>
+        
+        <input type="hidden" value="<%= colid %>" name="colid"/>
+
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

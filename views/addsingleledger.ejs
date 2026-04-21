@@ -1,0 +1,124 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add single entry</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addsingleledger">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Fee item</label>
+                <input required type="text" class="form-control" placeholder="Enter fee item" name="feeitem">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Fee category</label>
+                <input required type="text" value="<%= feecategory %>"" class="form-control" placeholder="Enter fee category" name="feecategory">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Fee group</label>
+                <input required type="text" value="<%= feegroup %>"" class="form-control" placeholder="Enter fee group" name="feegroup">
+            </div>
+        </div>
+       
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Transaction date</label>
+                <input required type="date" class="form-control" placeholder="Enter transaction date" name="classdate">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Paymode</label>
+                <input required type="text" class="form-control" placeholder="Enter pay mode" name="paymode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Amount</label>
+                <input required type="number" class="form-control" placeholder="Enter amount" name="amount">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Payment ref no</label>
+                <input required type="text" class="form-control" placeholder="Enter payment ref no" name="paydetails">
+            </div>
+        </div>
+       
+      
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Student name</label>
+                <input required type="text" class="form-control" placeholder="Enter student name" name="student">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Installment</label>
+                <input required type="text" class="form-control" placeholder="Enter installment details" name="installment">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter comments" name="comments">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Semester</label>
+                <select class="form-control" name="semester">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" name="status">
+                    <option value="Approved">Approved</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Academic year</label>
+                <select class="form-control" name="academicyear">
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+                </select>
+            </div>
+        </div>
+      
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

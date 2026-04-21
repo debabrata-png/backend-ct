@@ -1,0 +1,94 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit awards</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewawards">Criteria 5-Student-Support-Progression</a></li>
+                    <li class="breadcrumb-item"><a href="/viewawards">Student Awards/Medals</a></li>
+                    <li class="breadcrumb-item active">Edit Student Award</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Club</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editclub/<%= pub._id %>">
+                            <div class="row">
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name of the Club</label>
+                                        <input required value="<%= pub.clubname %>" type="text" class="form-control" placeholder="Enter name of the club" name="clubname">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Description</label>
+                                        <input required value="<%= pub.description %>" type="text" class="form-control" placeholder="Enter club description" name="description">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Link to Image</label>
+                                        <input required value="<%= pub.link %>" type="text" class="form-control" placeholder="Enter image link" name="link">
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <input required value="<%= pub.status1 %>" type="text" class="form-control" placeholder="Enter the Status" name="status1">
+                                    </div>
+                                </div>
+
+
+                                
+
+                                
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

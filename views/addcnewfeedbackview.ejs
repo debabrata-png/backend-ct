@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Admin Log in</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width:100%; margin: 20px; padding: 20px;">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br>
+    Feedback form
+  </div>
+  <br>
+  Instructions: Please fill in all details. All questions are mandatory. 
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/createcnewfeedback">
+       
+     
+
+
+
+Enter Your name<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Your name" id="respondent" name="respondent" />
+<br /><br />
+
+Enter Your email<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Your email" id="remail" name="remail" />
+<br /><br />
+
+Enter Your phone<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Your phone" id="rphone" name="rphone" />
+<br /><br />
+
+
+
+Rate the knowledge of the speaker<br />
+
+<input type="radio" id="knowledge" name="knowledge" value="5" required>5<br />
+<input type="radio" id="knowledge" name="knowledge" value="4" required>4<br />
+<input type="radio" id="knowledge" name="knowledge" value="3" required>3<br />
+<input type="radio" id="knowledge" name="knowledge" value="2" required>2<br />
+<input type="radio" id="knowledge" name="knowledge" value="1" required>1<br />
+<br /><br />
+
+How effective was the communication of the speaker<br />
+
+<input type="radio" id="communication" name="communication" value="5" required>5<br />
+<input type="radio" id="communication" name="communication" value="4" required>4<br />
+<input type="radio" id="communication" name="communication" value="3" required>3<br />
+<input type="radio" id="communication" name="communication" value="2" required>2<br />
+<input type="radio" id="communication" name="communication" value="1" required>1<br />
+<br /><br />
+
+How do you rate the confidence of the speaker in answering questions<br />
+
+<input type="radio" id="confidence" name="confidence" value="5" required>5<br />
+<input type="radio" id="confidence" name="confidence" value="4" required>4<br />
+<input type="radio" id="confidence" name="confidence" value="3" required>3<br />
+<input type="radio" id="confidence" name="confidence" value="2" required>2<br />
+<input type="radio" id="confidence" name="confidence" value="1" required>1<br />
+<br /><br />
+
+Have you understood the topic<br />
+
+<input type="radio" id="understood" name="understood" value="5" required>5<br />
+<input type="radio" id="understood" name="understood" value="4" required>4<br />
+<input type="radio" id="understood" name="understood" value="3" required>3<br />
+<input type="radio" id="understood" name="understood" value="2" required>2<br />
+<input type="radio" id="understood" name="understood" value="1" required>1<br />
+<br /><br />
+
+How satisfied are you for overall presentation<br />
+
+<input type="radio" id="satisfied" name="satisfied" value="5" required>5<br />
+<input type="radio" id="satisfied" name="satisfied" value="4" required>4<br />
+<input type="radio" id="satisfied" name="satisfied" value="3" required>3<br />
+<input type="radio" id="satisfied" name="satisfied" value="2" required>2<br />
+<input type="radio" id="satisfied" name="satisfied" value="1" required>1<br />
+<br /><br />
+
+Enter Any other note or comments<br /><br />
+
+<input type="text" required style="width:100%;" className="form-control" placeholder="Enter Any other note or comments" id="response" name="response" />
+<br /><br />
+
+
+
+
+
+              
+             
+             
+              
+             
+               
+        <br>
+        <input type="hidden" value="<%= colid %>" name="colid"/>
+        <input type="hidden" value="<%= name %>" name="name"/>
+        <input type="hidden" value="<%= user %>" name="user"/>
+        <input type="hidden" value="<%= meetingid %>" name="meetingid"/>
+      
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

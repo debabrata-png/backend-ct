@@ -1,0 +1,116 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View Class</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">List Class</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">List Class</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table>
+                            <tr>
+                                
+                                <td>
+                                    <a class="btn btn-dark" href="/addclassbycourse/<%= coursecode %> ">+ Add Class</a>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <!-- <th>Coursecode</th> -->
+                                    <th>Code</th> 
+                                    <th>Course</th>
+                                    <th>Classdate</th>
+                                    <!-- <th>Class time</th> -->
+                                    <th>Audience</th>
+                                    <!-- <th>Semester</th>-->
+                                    
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    <td><%= data.coursecode %></td>
+                                    <td><%= data.course %> <%= data.program %> <%= data.module %> <%= data.topic %> </td>
+                                    <td><%= data.classdate %></td>
+                                    <!-- <td><%= data.classtime %></td> -->
+                                    <td>Section <%= data.section %> Semester <%= data.semester %> Enrollment Required <%= data.enrollreq %></td>
+                                    <!-- <td><%= data.semester %></td> -->
+                                    <!-- <td><%= data.link %></td> -->
+                                    <td>
+                                        <a href="/editclass/<%= data.id %>" class="btn btn-primary"><i class="fa fa-edit" title="edit class"></i></a>
+                                        <a href="/classboard/<%= data.id %>" class="btn btn-primary" target="_blank"><i class="fas fa-chalkboard" title="classboard"></i></a>
+                                        <% if(data.link == 'NA'){ %>
+                                            <a href="https://meet.jit.si/<%= data.id %>" class="btn btn-primary" target="_blank"><i class="fas fa-video" title="join class"></i></a>
+                                            <% }else{ %>
+                                                <a href="<%= data.link %>" class="btn btn-primary" target="_blank"><i class="fas fa-video" title="join class"></i></a>
+                                            <% } %>
+                                        
+                                        <a href="/classchat/<%= data.id %>" class="btn btn-primary" target="_blank"><i class="fas fa-comments" title="classchat"></i></a>
+                                        
+                                        <a href="/viewcfiles/<%= data.coursecode %>" class="btn btn-primary"><i class="far fa-file-alt" title="files"></i></a>
+                                        <a href="/totalattended/<%= data.coursecode %>" class="btn btn-primary"><i class="fas fa-clipboard-list" title="attendance report"></i></a>
+                                        <a href="/attendance/<%= data.id %>?coursecode=<%= data.coursecode %>&course=<%= data.course %>&semester=<%= data.semester %>&section=<%= data.section %>" class="btn btn-primary"><i class="fab fa-autoprefixer" title="class attendance"></i></a>
+                                        <form method="post" action="/deleteclass" id="frm-delete-category-<%= data.id %>">
+                                        
+                                            <input type="hidden" value="<%= data.id %>" name="category_id"/>
+
+                                        </form>
+
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to delete ? ')){  $('#frm-delete-category-<%= data.id %>').submit()  }" class="btn btn-danger"><i class="fa fa-trash" title="delete class"></i></a>
+                                    </td>
+                                </tr>
+                                
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

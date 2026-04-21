@@ -1,0 +1,160 @@
+<%- include("header") %> 
+<!-- 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script> -->
+
+<!-- <script type="text/javascript">
+    $( document ).ready(function() {
+        $( "#gpdf" ).click(function() {
+            //alert($("#pdf1").html());
+
+            var doc = new jsPDF();          
+var elementHandler = {
+  '#ignorePDF': function (element, renderer) {
+    return true;
+  }
+};
+var source = window.document.getElementsByTagName("body")[0];
+doc.fromHTML(
+    $("#pdf1").html(),
+    15,
+    15,
+    {
+      'width': 1080,'elementHandlers': elementHandler
+    });
+
+doc.save("report.pdf");
+                
+        });
+
+        
+  // Handler for .ready() called.
+});
+</script> -->
+
+
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      // Load the Visualization API and the corechart package.
+      google.charts.load('current', {'packages':['corechart']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart() {
+
+        // Create the data table.
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Question');
+        data.addColumn('number', 'Avg_Score'); 
+         <% categories.forEach(function(data1){ %>
+            data.addRows([['<%= data1._id %>',<%= parseInt(data1.avg_score) %>]]);
+
+
+            <% }) %>
+            /* data.addRows([
+          ['Mushrooms', 3],
+          ['Onions', 1],
+          ['Olives', 1],
+          ['Zucchini', 1],
+          ['Pepperoni', 2]
+        ]); */
+
+        //var data = google.visualization.arrayToDataTable(<%- JSON.stringify(categories) %>);
+        /* var data = google.visualization.arrayToDataTable([
+            <% categories.forEach(function(data1){ %>
+            ['<%= data1._id %>',<%= parseInt(data1.avg_score) %>],
+
+
+            <% }) %>
+            ]);
+        data.addColumn('string', 'Question');
+        data.addColumn('number', 'Avg_Score'); */
+
+        //alert('test');
+            //alert(data.length);
+        // Set chart options
+        var options = {'title':'Feedback analysis',
+                       'width':900,
+                       'height':700};
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+        //chart.draw(new google.visualization.DataTable(<%- JSON.stringify(categories) %>), options);
+      }
+    </script>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View Feedback Report</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Feedback Report</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark" id="pdf1">
+                    <div class="card-header">
+                        <h3 class="card-title">Feedback Report</h3>
+                    </div>
+                    <!-- <button id="gpdf">Export</button> -->
+                    <div id="chart_div"></div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <div id="ignorePDF"></div>
+                       
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>Average Score</th>
+                                  
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    
+                                    <td><%= data._id %></td>
+                                    <td><%= data.avg_score %></td>
+                                    
+                                    
+                                   
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                          
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

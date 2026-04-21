@@ -1,0 +1,132 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit fees template</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Edit fees template</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit fees template</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editfees/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Programcode</label>
+                                        <input required value="<%= pub.programcode %>" type="text" class="form-control" placeholder="Enter program code" name="programcode">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Fee group</label>
+                                        <input required value="<%= pub.feegroup %>" type="text" class="form-control" placeholder="Enter fee group" name="feegroup">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Fee item</label>
+                                        <input required value="<%= pub.feeeitem %>" type="text" class="form-control" placeholder="Enter fee item" name="feeitem">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Fee category (template)</label>
+                                        <input required value="<%= pub.feecategory %>" type="text" class="form-control" placeholder="Enter fee category" name="feecategory">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Semester</label>
+                                        <input required value="<%= pub.semester %>" type="text" class="form-control" placeholder="Enter semester" name="semester">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Fee amount</label>
+                                        <input required value="<%= pub.amount %>" type="number" class="form-control" placeholder="Enter fee amount" name="amount">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Due date</label>
+                                        <input required value="<%= (pub.classdate.getMonth() + 1) + '/' + pub.classdate.getDate() + '/' + pub.classdate.getFullYear() %>" type="date" class="form-control" placeholder="Enter meeting date" name="classdate">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Admission Year</label>
+                                        <select class="form-control" name="academicyear">
+                                            <option <% if(pub.academicyear == '2015-16'){ %> selected <% } %> value="2015-16">2015-16</option>
+                                            <option <% if(pub.academicyear == '2016-17'){ %> selected <%  }  %> value="2016-17">2016-17</option>
+                                            <option <% if(pub.academicyear == '2017-18'){ %> selected <%  }  %> value="2017-18">2017-18</option>
+                                            <option <% if(pub.academicyear == '2018-19'){ %> selected <%  }  %> value="2018-19">2018-19</option>
+                                            <option <% if(pub.academicyear == '2019-20'){ %> selected <%  }  %> value="2019-20">2019-20</option>
+                                            <option <% if(pub.academicyear == '2020-21'){ %> selected <%  }  %> value="2020-21">2020-21</option>
+                                            <option <% if(pub.academicyear == '2021-22'){ %> selected <%  }  %> value="2021-22">2021-22</option>
+                                        </select>
+                                    </div>
+                                </div>
+                             
+                               
+                               
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select class="form-control" name="status">
+                                            <option <% if(pub.status == 'Active'){ %>  selected <% } %> value="Active">Active</option>
+                                            <option <% if(pub.status == 'Not active'){ %> selected <%  }  %> value="Not active">Not active</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

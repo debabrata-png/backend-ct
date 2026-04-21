@@ -1,0 +1,152 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit Skill Development Program</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewskilldev">Criteria 5-Student Support-Progression</a></li>
+                    <li class="breadcrumb-item"><a href="/viewskilldev">Skill Development Programs</a></li>
+                    <li class="breadcrumb-item active">Edit Programs</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Faculty</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editfaculty/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name</label>
+                                        <input required value="<%= pub.name %>" type="text" class="form-control" placeholder="Enter name" name="name">
+                                    </div>
+                                </div>
+                               
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Password</label>
+                                        <input required value="<%= pub.password %>" type="password" class="form-control" placeholder="Enter password" name="password">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Role</label>
+                                        <select class="form-control" name="role">
+                                            <option <% if(pub.role == 'Faculty'){ %> selected <%  }  %> value="Faculty">Faculty</option> 
+                                            <option <% if(pub.role == 'Admin'){ %> selected <%  }  %> value="Admin">Admin</option>                                            
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Department</label>
+                                        <input required value="<%= pub.department %>" type="text" class="form-control" placeholder="Enter department" name="department">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Address</label>
+                                        <input required value="<%= pub.address %>" type="text" class="form-control" placeholder="Enter address" name="address">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Employee No.</label>
+                                        <input required value="<%= pub.regno %>" type="text" class="form-control" placeholder="Enter employee no." name="regno">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Category</label>
+                                        <select class="form-control" name="category">
+                                            <option <% if(pub.category == 'SC'){ %>  selected <% } %> value="SC">SC</option>
+                                            <option <% if(pub.category == 'ST'){ %> selected <%  }  %> value="ST">ST</option>
+                                            <option <% if(pub.category == 'OBC'){ %> selected <%  }  %> value="OBC">OBC</option>
+                                            <option <% if(pub.category == 'OBC - A'){ %> selected <%  }  %> value="OBC - A">OBC - A</option>
+                                            <option <% if(pub.category == 'OBC - B'){ %> selected <%  }  %> value="OBC - B">OBC - B</option>
+                                            <option <% if(pub.category == 'General'){ %> selected <%  }  %> value="General">General</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Year of Joining</label>
+                                        <select class="form-control" name="admissionyear">
+                                            <option <% if(pub.admissionyear == '2015-16'){ %>  selected <% } %> value="2015-16">2015-16</option>
+                                            <option <% if(pub.admissionyear == '2016-17'){ %> selected <%  }  %> value="2016-17">2016-17</option>
+                                            <option <% if(pub.admissionyear == '2017-18'){ %> selected <%  }  %> value="2017-18">2017-18</option>
+                                            <option <% if(pub.admissionyear == '2018-19'){ %> selected <%  }  %> value="2018-19">2018-19</option>
+                                            <option <% if(pub.admissionyear == '2019-20'){ %> selected <%  }  %> value="2019-20">2019-20</option>
+                                            <option <% if(pub.admissionyear == '2020-21'){ %> selected <%  }  %> value="2020-21">2020-21</option>
+                                            <option <% if(pub.admissionyear == '2021-22'){ %> selected <%  }  %> value="2021-22">2021-22</option>
+                                            <option <% if(pub.admissionyear == 'Prior to 2015'){ %> selected <%  }  %> value="Prior to 2015">Prior to 2015</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Quota</label>
+                                        <select class="form-control" name="quota">
+                                            <option <% if(pub.quota == 'Same state'){ %>  selected <% } %> value="Same state">Same state</option>
+                                            <option <% if(pub.quota == 'Other state'){ %> selected <%  }  %> value="Other state">Other state</option>
+                                            <option <% if(pub.quota == 'NRI'){ %> selected <%  }  %> value="NRI">NRI</option>
+                                            <option <% if(pub.quota == 'PIO'){ %> selected <%  }  %> value="PIO">PIO</option>
+                                            <option <% if(pub.quota == 'MQ'){ %> selected <%  }  %> value="MQ">MQ</option>
+                                            <option <% if(pub.quota == 'Government'){ %> selected <%  }  %> value="Government">Government</option>
+                                        </select>
+                                    </div>
+                                </div>
+                               
+                              
+                                
+                                
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

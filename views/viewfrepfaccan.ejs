@@ -1,0 +1,104 @@
+<%- include("header") %> 
+
+
+
+
+<script>
+    window.onload = function () {
+    
+    var chart = new CanvasJS.Chart("chartContainer", {
+        animationEnabled: true,
+        theme: "light2", // "light1", "light2", "dark1", "dark2"
+        title:{
+            text: "Faculty feedback"
+        },
+        axisY: {
+            title: "Average score"
+        },
+        data: [{        
+            type: "column",  
+            showInLegend: true, 
+            legendMarkerColor: "grey",
+            legendText: "MMbbl = one million barrels",
+            dataPoints: [      
+            <% categories.forEach(function(data1){ %>
+                { y: <%= parseInt(data1.avg_score) %>, label: "<%= data1._id %>'" },
+            <% }) %>
+                
+            ]
+        }]
+    });
+    chart.render();
+    
+    }
+    </script>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View Faculty Feedback Report</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Faculty Feedback Report</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Feedback Report</h3>
+                    </div>
+                    <div id="chart_div"></div>
+                    <div id="chartContainer" style="height: 600px; width: 100%;"></div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                       
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>Average Score</th>
+                                  
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    
+                                    <td><%= data._id %></td>
+                                    <td><%= data.avg_score %></td>
+                                    
+                                    
+                                   
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                          
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+<%- include("footer") %> 

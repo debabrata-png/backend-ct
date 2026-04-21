@@ -1,0 +1,93 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Links</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addlink">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Criteria</label>
+                <select class="form-control" name="criteria">
+                    <option value="Faculty Engagement in Academic Bodies">Faculty Engagement in Academic Bodies</option>
+                    <option value="Syllabus Revision">Syllabus Revision</option>
+                    <option value="CBCS Programs">CBCS Programs</option>
+                    <option value="Value Added Courses">Value Added Courses</option>
+                    <option value="Activities">Activities</option>
+                    <option value="Feedback">Feedback</option>
+                    <option value="Seed Money">Seed Money</option>
+                    <option value="JRFs/SRFs/Phd Fellows/Research Associates">JRFs/SRFs/Phd Fellows/Research Associates</option>
+                    <option value="Awards/Recognitions for research/innovations">Awards/Recognitions for research/innovations</option>
+                    <option value="Revenue generated from Consultancy">Revenue generated from Consultancy</option>
+                    <option value="Student Enrollment for Admission">Student Enrollment for Admission</option>
+                    <option value="Student Seats against Reserved Category">Student Seats against Reserved Category</option>
+                    <option value="Full Time Teachers">Full Time Teachers</option>
+                    <option value="Result Publication">Result Publication</option>
+                    <option value="Student Pass Percentage">Student Pass Percentage</option>
+                    <option value="Published Patents">Published Patents</option>
+                    <option value="Research Projects">Research Projects</option>
+                    <option value="Research Papers">Research Papers</option>
+                    <option value="Books & Chapters">Books & Chapters</option>
+                    <option value="346">Books & Chapters (Old)</option>
+                    <option value="343">Patent (Old)</option>
+                    <option value="316">Research Projects (Old)</option>
+                    <option value="345">Publications (Old)</option>
+                    <option value="632">Seminar (Old)</option>
+                    <option value="E-content developed by Teachers">E-content developed by Teachers</option>
+                    <option value="Institutional Awards">Institutional Awards</option>
+                    <option value="Extension Activities">Extension Activities</option>
+                    <option value="Collaboration Activities">Collaboration Activities</option>
+                    <option value="MoU Activities">MoU Activities</option>
+                    <option value="ICT Enabled Classrooms & Seminar Halls">ICT Enabled Classrooms & Seminar Halls</option>
+                    <option value="Infrastructure Augmentation">Infrastructure Augmentation</option>
+                    <option value="Library Expenditures">Library Expenditures</option>
+                    <option value="Student Scholarships">Student Scholarships</option>
+                    <option value="Skill Development Programs">Skill Development Programs</option>
+                    <option value="Career Counselling Activities">Career Counselling Activities</option>
+                    <option value="Outgoing Student Placement">Outgoing Student Placement</option>
+                    <option value="Student Progression to Higher Education">Student Progression to Higher Education</option>
+                    <option value="Student Qualifying in Higher Examination">Student Qualifying in Higher Examination</option>
+                    <option value="Student Awards/Medals">Student Awards/Medals</option>
+                    <option value="Implementation of E Governance">Implementation of E Governance</option>
+                    <option value="Financial Support provided for Faculty">Financial Support provided for Faculty</option>
+                    <option value="Gov./Non-government Funds">Gov./Non-governmentFunds</option>
+                    <option value="Institutional Quality Initiatives">Institutional Quality Initiatives</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Upload Link</label>
+                <input required type="text" class="form-control" placeholder="Enter upload link" name="uploadlink">
+            </div>
+        </div>
+       
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Download / View Link</label>
+                <input required type="text" class="form-control" placeholder="Enter download link" name="viewlink">
+            </div>
+        </div>
+      
+       
+      
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" name="status">
+                    <option value="1">Active</option>
+                    <option value="0">Inactive</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

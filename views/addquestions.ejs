@@ -1,0 +1,77 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Questions</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addquestions/<%= examid %>">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Exam ID</label>
+                <input required type="text" readonly value="<%= examid %>" class="form-control" placeholder="Enter question" name="examid">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Type</label>
+                <select class="form-control" name="type">
+                    <option value="MCQ">MCQ</option>
+                    <option value="Descriptive">Descriptive</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Question</label>
+                <input required type="text" value="<%= examid %>" class="form-control" placeholder="Enter question" name="question">
+            </div>
+        </div>
+        <div class="col-sm-6" id="option">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Option</label>
+                <input required type="textarea" value="<%= examid %>" class="form-control" placeholder="Enter question" name="option">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Option</label>
+                <input required type="text" class="form-control" placeholder="Enter option" name="option">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Question Group</label>
+                <input required type="text" class="form-control" placeholder="Enter online link" name="link">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Option</label>
+                <input required type="text" class="form-control" placeholder="Enter online link" name="link">
+            </div>
+        </div>
+  
+        
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Difficulty</label>
+                <select class="form-control" name="status">
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

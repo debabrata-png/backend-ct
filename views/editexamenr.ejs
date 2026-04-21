@@ -1,0 +1,99 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit Exam Enrollment</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Edit Exam Enrollment</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Enrollment</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editexamenr/<%= pub._id %>?examcode=<%= examcode %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Reg No</label>
+                                        <input required value="<%= pub.regno %>" type="text" class="form-control" placeholder="Enter regno" name="regno">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Proctor email</label>
+                                        <input required value="<%= pub.proctoremail %>" type="text" class="form-control" placeholder="Enter proctor email" name="proctoremail">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Start date</label>
+                                        <input required value="<%= (pub.startdate.getMonth() + 1) + '/' + pub.startdate.getDate() + '/' + pub.startdate.getFullYear() %>" type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Start time (e.g. 16:40)</label>
+                                        <input required type="text" class="form-control" placeholder="Enter start time" name="ltime">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>End date</label>
+                                        <input required value="<%= (pub.enddate.getMonth() + 1) + '/' + pub.enddate.getDate() + '/' + pub.enddate.getFullYear() %>" type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>End time (e.g. 16:40)</label>
+                                        <input required type="text" class="form-control" placeholder="Enter end time" name="gtime">
+                                    </div>
+                                </div>
+                               
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

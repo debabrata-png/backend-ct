@@ -1,0 +1,14628 @@
+const express = require('express');
+const jwt=require('jsonwebtoken');
+//const env=require('config');
+const mongoose=require('mongoose');
+const helmet = require("helmet");
+const nocache = require("nocache");
+var path = require('path');
+var flash=require('express-flash');
+var session = require("express-session");
+var cookieParser = require('cookie-parser');
+
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
+
+
+
+const dotenv=require('dotenv');
+dotenv.config({path: './config.env'});
+
+require('./controllers/eventlistener');
+
+const DB=process.env.DATABASE.replace('<PASSWORD>',process.env.DATABASE_PASSWORD);
+const DB1=process.env.DATABASE2;
+
+mongoose.connect(DB1).then(con => {
+    console.log('Connected');
+})
+
+// mongoose.connect(DB1, {
+//     useNewUrlParser: true,
+//     useCreateIndex: true,
+//     useFindAndModify: false
+// }).then(con => {
+//     //console.log('Connected');
+// })
+
+var usernames = [];
+
+
+// const empschema = new mongoose.Schema({
+//     name: {
+//         type: String,
+//         required: [true,'Please enter name']
+//     },
+//     phone: {
+//         type: String,
+//         required: [true,'Please enter phone'],
+//         unique: true
+//     },
+//     email: {
+//         type: String,
+//         required: [true,'Please enter email'],
+//         unique: true
+//     },
+//     age: {
+//         type: Number,
+//         required: [true,'Please enter age']
+//     }
+// })
+// //
+// const Emp=mongoose.model('Emp',empschema);
+
+// const emp1=new Emp({
+//     name: 'Employee 1',
+//     email: 'nandy2k2@gmail.com',
+//     phone: '9008168822',
+//     age:40
+// });
+
+// emp1.save().then(doc => {
+//     console.log(doc);
+// }).catch(err => {
+//     console.log('Error ',err);
+// })
+
+
+const app=express();
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+// const http = require('http');
+// const server = http.createServer(app);
+// const io = require('socket.io')(server);
+//const io = require('socket.io')(app);
+
+
+
+
+  
+
+//app.set('view engine', 'pug');
+app.set('view engine', 'ejs');
+app.set('views',path.join(__dirname,'views'));
+app.use(express.json());
+app.use(session({
+    name: "my_session",
+    secret: "my_secret",
+    resave: false
+  }));
+app.use(flash());
+app.use(cookieParser());
+
+//app.use(nocache());
+//app.use(helmet());
+
+app.use(express.static(`${__dirname}/public`));
+app.use("/editcategory", express.static(path.join(__dirname, 'public')));
+app.use("/editpub", express.static(path.join(__dirname, 'public')));
+app.use("/editpatent", express.static(path.join(__dirname, 'public')));
+app.use("/editbook", express.static(path.join(__dirname, 'public')));
+app.use("/editproject", express.static(path.join(__dirname, 'public')));
+app.use("/editinstruction", express.static(path.join(__dirname, 'public')));
+app.use("/editseminar", express.static(path.join(__dirname, 'public')));
+app.use("/editlink", express.static(path.join(__dirname, 'public')));
+app.use("/editclass", express.static(path.join(__dirname, 'public')));
+app.use("/classchat", express.static(path.join(__dirname, 'public')));
+app.use("/classchatstud", express.static(path.join(__dirname, 'public')));
+app.use("/attend", express.static(path.join(__dirname, 'public')));
+app.use("/viewcfiles", express.static(path.join(__dirname, 'public')));
+app.use("/addcfiles", express.static(path.join(__dirname, 'public')));
+app.use("/addcfileslink", express.static(path.join(__dirname, 'public')));
+app.use("/editcfiles", express.static(path.join(__dirname, 'public')));
+app.use("/addfacultyfeedback", express.static(path.join(__dirname, 'public')));
+app.use("/facultyfeedbackreport", express.static(path.join(__dirname, 'public')));
+app.use("/totalattended", express.static(path.join(__dirname, 'public')));
+app.use("/viewcfilesstud", express.static(path.join(__dirname, 'public')));
+app.use("/addifiles", express.static(path.join(__dirname, 'public')));
+app.use("/viewquestions", express.static(path.join(__dirname, 'public')));
+app.use("/enrolllist", express.static(path.join(__dirname, 'public')));
+app.use("/attendance", express.static(path.join(__dirname, 'public')));
+app.use("/curriculum/:id", express.static(path.join(__dirname, 'public')));
+app.use("/curriculum2/:id", express.static(path.join(__dirname, 'public')));
+app.use("/classchatapp", express.static(path.join(__dirname, 'public')));
+app.use("/viewenrollexam", express.static(path.join(__dirname, 'public')));
+app.use("/addexamenrol", express.static(path.join(__dirname, 'public')));
+app.use("/editexam", express.static(path.join(__dirname, 'public')));
+app.use("/facultyclassreport", express.static(path.join(__dirname, 'public')));
+app.use("/addworkload", express.static(path.join(__dirname, 'public')));
+app.use("/viewworkload", express.static(path.join(__dirname, 'public')));
+app.use("/editworkload", express.static(path.join(__dirname, 'public')));
+app.use("/addclassbycourse", express.static(path.join(__dirname, 'public')));
+app.use("/viewclassbycourse", express.static(path.join(__dirname, 'public')));
+app.use("/addstudentsbycourse", express.static(path.join(__dirname, 'public')));
+app.use("/vaccourseattendance", express.static(path.join(__dirname, 'public')));
+app.use("/vacclassattendance", express.static(path.join(__dirname, 'public')));
+app.use("/editexamenr", express.static(path.join(__dirname, 'public')));
+app.use("/viewjitsi", express.static(path.join(__dirname, 'public')));
+app.use("/getcourseattendance", express.static(path.join(__dirname, 'public')));
+app.use("/editcompany", express.static(path.join(__dirname, 'public')));
+app.use("/editcompanyjobs", express.static(path.join(__dirname, 'public')));
+app.use("/editplacementerp", express.static(path.join(__dirname, 'public')));
+app.use("/viewiamarks", express.static(path.join(__dirname, 'public')));
+app.use("/addiamarks", express.static(path.join(__dirname, 'public')));
+app.use("/editmeeting", express.static(path.join(__dirname, 'public')));
+app.use("/edittasks", express.static(path.join(__dirname, 'public')));
+app.use("/edittaskassign", express.static(path.join(__dirname, 'public')));
+app.use("/edittaskmy", express.static(path.join(__dirname, 'public')));
+app.use("/viewtasksbyid", express.static(path.join(__dirname, 'public')));
+app.use("/editfees", express.static(path.join(__dirname, 'public')));
+app.use("/editscholarships", express.static(path.join(__dirname, 'public')));
+app.use("/editstudentledger", express.static(path.join(__dirname, 'public')));
+app.use("/editkpi", express.static(path.join(__dirname, 'public')));
+app.use("/editcocal", express.static(path.join(__dirname, 'public')));
+app.use("/viewiamarkssummary", express.static(path.join(__dirname, 'public')));
+app.use("/edituser", express.static(path.join(__dirname, 'public')));
+
+app.use("/addteachingfeedback", express.static(path.join(__dirname, 'public')));
+app.use("/adddeptfeedback", express.static(path.join(__dirname, 'public')));
+//app.use("/viewanswer", express.static(path.join(__dirname, 'public')));
+//app.use(express.static(`${__dirname}/admin-theme`));
+app.use(express.urlencoded({ extended: false }));
+
+
+const router1=require('./router/approuter.js');
+const routercat=require('./router/catrouter.js');
+const routercatv=require('./router/catviewrouter.js');
+const raddusers=require('./router/useraddroute.js');
+const rusersadmin=require('./router/useraddadminroute.js');
+const rlogin=require('./router/loginroute.js');
+const rlogincol=require('./router/logincolrouter.js');
+const reditcat=require('./router/editcatrouter.js');
+const rdelcat=require('./router/deletecatrouter.js');
+const rpubadd=require('./router/addpubrouter.js');
+const rpubview=require('./router/viewpubrouter.js');
+const rpubedit=require('./router/editpubrouter.js');
+const rpubdel=require('./router/deletepubrouter.js');
+
+const rpatadd=require('./router/addpatentrouter.js');
+const rpatview=require('./router/viewpatentrouter.js');
+const rpatedit=require('./router/editpatentrouter.js');
+const rpatdel=require('./router/deletepatentrouter.js');
+
+const rbookadd=require('./router/addbookrouter.js');
+const rbookview=require('./router/viewbookrouter.js');
+const rbookedit=require('./router/editbookrouter.js');
+const rbookdel=require('./router/deletebookrouter.js');
+
+const rdash=require('./router/viewdashboard.js');
+const narouter=require('./router/narouter.js');
+const expdetailsrouter=require('./router/exportdetailsrouter.js');
+
+const expprojrouter=require('./router/exportadmprojectr.js');
+const exppatrouter=require('./router/exportadmpatentsr.js');
+const exppubrouter=require('./router/exportadmpubr.js');
+const expbookrouter=require('./router/exportadmbookr.js');
+
+const rprojectadd=require('./router/addprojectrouter.js');
+const rprojectview=require('./router/viewprojectrouter.js');
+const rprojectedit=require('./router/editprojectrouter.js');
+const rprojectdel=require('./router/deleteprojectrouter.js');
+const rprojectexport=require('./router/exportprojectrouter.js');
+
+const rinsadd=require('./router/addinsrouter.js');
+const rinsview=require('./router/viewinsrouter.js');
+const rinsedit=require('./router/editinsrouter.js');
+const rinsdel=require('./router/deleteinsrouter.js');
+
+const rsemadd=require('./router/addseminarrouter.js');
+const rsemview=require('./router/viewseminarrouter.js');
+const rsemedit=require('./router/editseminarrouter.js');
+const rsemdel=require('./router/deleteseminarrouter.js');
+
+const rlinkadd=require('./router/addlinkrouter.js');
+const rlinkview=require('./router/viewlinkrouter.js');
+const rlinkedit=require('./router/editlinkrouter.js');
+const rlinkdel=require('./router/deletelinkrouter.js');
+
+const rclassadd=require('./router/addclassrouter.js');
+const rclassaddadv=require('./router/addclassadvrouter.js');
+const rclassview=require('./router/viewclassrouter.js');
+const rclassedit=require('./router/editclassrouter.js');
+const rclassdel=require('./router/deleteclassrouter.js');
+const rclassviewt=require('./router/viewclasstodayr.js');
+
+const rclassstud=require('./router/viewclassstudr.js');
+const rattend=require('./router/attendrouter.js');
+
+const rcfilesadd=require('./router/addcfrouter.js');
+const rcfileslinkadd=require('./router/addcflrouter.js');
+const rcfilesview=require('./router/viewcfrouter.js');
+const rcfilesedit=require('./router/editcfrouter.js');
+const rcfilesdel=require('./router/deletecfrouter.js');
+const rcfilesstudview=require('./router/viewcfstudrouter.js');
+
+const rffadd=require('./router/addffrouter.js');
+const rfsview=require('./router/viewfsrouter.js');
+
+const rffexport=require('./router/exportfacultyfrouter.js');
+const rfrepfacview=require('./router/viewfrepfacrouter.js');
+const rfallview=require('./router/viewfacallrouter.js');
+const rfdelview=require('./router/deletefacrouter.js');
+
+const rattrep1=require('./router/classattrouter.js');
+const ruploadphoto=require('./router/uploadphotorouter.js');
+
+const rexamadd=require('./router/addexamrouter.js');
+const rexamview=require('./router/viewexamrouter.js');
+const rexamedit=require('./router/editexamrouter.js');
+const rexamdel=require('./router/deleteexamrouter.js');
+
+const rpstudedit=require('./router/editprofilerouter.js');
+const rjoinclasscode=require('./router/joinclassrouter.js');
+const rselectclassstud=require('./router/selectclassstudrouter.js');
+
+const rviewstudents=require('./router/viewstudentsrouter.js');
+const rexportstudents=require('./router/exportstudentsrouter.js');
+const rimport1=require('./router/addifrouter.js');
+
+const rqdel=require('./router/deleteqrouter.js');
+const rqview=require('./router/viewqrouter.js');
+
+const renroldash=require('./router/enroldashrouter.js');
+const renroladd=require('./router/addclassenrouter.js');
+const renrollist=require('./router/enrollistrouter.js');
+const renroldelete=require('./router/deleteenrolrouter.js');
+
+const rdelstud=require('./router/deletestudrouter.js');
+const renrolcstud=require('./router/viewenrstudrouter.js');
+const renrolclassstud=require('./router/enrclassstudrouter.js');
+
+const rsss=require('./router/viewsssrouter.js');
+const rmyfeedback=require('./router/myfeedbackrouter.js');
+const rclassatt=require('./router/classattendancerouter.js');
+
+const rsssreport=require('./router/sssreprouter.js');
+const rsssexport=require('./router/exportsssrouter.js');
+
+const rcurfeedback=require('./router/currouter.js');
+const rcur2feedback=require('./router/cur2router.js');
+const rcurexport=require('./router/exportcurrouter.js');
+const rcurreport=require('./router/curreprouter.js');
+
+const rexamenroladd=require('./router/addexamenrrouter.js');
+const rexamenrollist=require('./router/viewexamenrolrouter.js');
+const rexamenroldelete=require('./router/deleteexamenrrouter.js');
+
+const ranswerview=require('./router/viewanswerrouter.js');
+const ranswerfinalview=require('./router/viewanswerfinalrouter.js');
+const ranswerallfinalview=require('./router/viewanswerallfrouter.js');
+
+const radminfacclass=require('./router/viewclassfrouter.js');
+
+const rworkadd=require('./router/addworkrouter.js');
+const rworkedit=require('./router/editworkrouter.js');
+const rworkview=require('./router/viewworkwouter.js');
+const rworkdel=require('./router/deleteworkwouter.js');
+
+const rviewclassbycourse=require('./router/viewclassbycr.js');
+const raddclassbycourse=require('./router/addclassbycr.js');
+const raddstudbycourse=require('./router/addstudbycourser.js');
+
+const rvaccourseatt=require('./router/viewvacattreportr.js');
+const rvacclassatt=require('./router/viewvacattlistr.js');
+
+const rupdateexamenr=require('./router/updateexamenrrouter.js');
+const rupdateproctor=require('./router/updateproctorrouter.js');
+const reditexamenr=require('./router/editexamenrrouter.js');
+const rviewmyproctor=require('./router/viewmyproctorrouter.js');
+
+const rviewallclass=require('./router/viewallclassrouter.js');
+const rstudproctor=require('./router/viewstudproctorrouter.js');
+
+const rproctoranswe=require('./router/proctoranswerrouter.js');
+const reditprofilefac=require('./router/editprofilefacrouter.js');
+
+const rdelallexamenrollment=require('./router/delallexamenrrouter.js');
+
+const rplerpadd=require('./router/addplacementerprouter.js');
+const rplerpview=require('./router/viewplacementerprouter.js');
+const rplerpedit=require('./router/editplacementerprouter.js');
+const rplerpdel=require('./router/deleteplacementerprouter.js');
+
+const rcompanyadd=require('./router/addcompanyrouter.js');
+const rcompanyview=require('./router/viewcompanyrouter.js');
+const rcompanyedit=require('./router/editcompanyrouter.js');
+const rcompanydel=require('./router/deletecompanyrouter.js');
+
+const rcompanyjobsadd=require('./router/addcompanyjobsrouter.js');
+const rcompanyjobsview=require('./router/viewcompanyjobsrouter.js');
+const rcompanyjobsedit=require('./router/editcompanyjobsrouter.js');
+const rcompanyjobsdel=require('./router/deletecompanyjobsrouter.js');
+
+const raddiamarks=require('./router/addiamarksrouter.js');
+const rviewiamarks=require('./router/viewiamarksrouter.js');
+const rdeleteiamarks=require('./router/deleteiamarksrouter.js');
+
+const rparentexport=require('./router/exportparentrouter.js');
+const rparentanalysis=require('./router/parentreprouter.js');
+
+const remployerexport=require('./router/exportemployerrouter.js');
+const remployeranalysis=require('./router/employerreprouter.js');
+
+const ralumniexport=require('./router/exportalumnirouter.js');
+const ralumnianalysis=require('./router/alumnireprouter.js');
+
+const rexportseminar=require('./router/exportseminarrouter.js');
+
+const rmeetingadd=require('./router/addmeetingrouter.js');
+const rmeetingview=require('./router/viewmeetingrouter.js');
+const rmeetingviewtoday=require('./router/viewmeetingtodayrouter.js');
+const rmeetingedit=require('./router/editmeetingrouter.js');
+const rmeetingdel=require('./router/deletemeetingrouter.js');
+
+const rtasksadd=require('./router/addtasksrouter.js');
+const rtasksaddurl=require('./router/addtasksurlrouter.js');
+const rtasksview=require('./router/viewtasksrouter.js');
+const rtasksedit=require('./router/edittasksrouter.js');
+const rtasksdel=require('./router/deletetasksrouter.js');
+
+const rselectfacultytask=require('./router/selectfacultytaskrouter.js');
+
+const rtaskassignadd=require('./router/addtaskassignrouter.js');
+const rtaskassignview=require('./router/viewtaskassignrouter.js');
+const rtaskassignedit=require('./router/edittaskassignrouter.js');
+const rtaskassigndel=require('./router/deletetaskassignrouter.js');
+
+const redittaskmy=require('./router/edittaskmyrouter.js');
+const rviewtaskmy=require('./router/viewtaskmyrouter.js');
+const rviewtasksbyid=require('./router/viewtasksbyidrouter.js');
+
+const raddfees=require('./router/addfeesrouter.js');
+const rviewfees=require('./router/viewfeesrouter.js');
+const reditfees=require('./router/editfeesrouter.js');
+const rdeletefees=require('./router/deletefeesrouter.js');
+const rdeleteallfees=require('./router/deleteallfeesrouter.js');
+
+const raddscholarships=require('./router/addscholarshipsrouter.js');
+const rviewscholarships=require('./router/viewscholarshipsrouter.js');
+const reditscholarships=require('./router/editscholarshipsrouter.js');
+const rdeletescholarships=require('./router/deletescholarshipsrouter.js');
+const rdeleteallscholarships=require('./router/deleteallscholarshipsrouter.js');
+
+const raddstudentledger=require('./router/addstudentledgerrouter.js');
+const rviewstudentledger=require('./router/viewstudentledgerrouter.js');
+const reditstudentledger=require('./router/editstudentledgerrouter.js');
+const rselectstudentbyregno=require('./router/selectstudentbyregnorouter.js');
+const rdeletestudentledger=require('./router/deletestudentledgerrouter.js');
+const rdeleteallstudentledger=require('./router/deleteallstudentledgerrouter.js');
+const rdeleteallledgerentry=require('./router/deleteallledgerentryrouter.js');
+
+const rapplyfees=require('./router/applyfeesrouter.js');
+const rapplyscholarship=require('./router/applyscholarshiprouter.js');
+
+const raddsingleledger=require('./router/addsingleledgerrouter.js');
+const rfeesreceipt=require('./router/feesreceiptrouter.js');
+
+const rprintstudentledger=require('./router/printstudentledgerrouter.js');
+const rapplication1=require('./router/application1router.js');
+const rapplication2=require('./router/application2router.js');
+
+const rselectprogram=require('./router/selectprogramrouter.js');
+
+const rkpiadd=require('./router/addkpirouter.js');
+const rkpiview=require('./router/viewkpirouter.js');
+const rallkpiview=require('./router/viewallkpirouter.js');
+const rkpiedit=require('./router/editkpirouter.js');
+const rkpidel=require('./router/deletekpirouter.js');
+
+const rbulkattainment=require('./router/bulkattainmentrouter.js');
+const rviewbulkattainment=require('./router/viewbulkattainmentrouter.js');
+
+const raddattendance=require('./router/addattendancerouter.js');
+const rdeleteattendance=require('./router/deleteattendancerouter.js');
+
+const rviewiamarkssummary=require('./router/viewiamarkssummaryrouter.js');
+const rfilteriamarkssummary=require('./router/filteriamarkssummaryrouter.js');
+
+const rviewclubregistrations=require('./router/viewclubregistrationsrouter.js');
+
+const rviewallusers=require('./router/viewallusersrouter.js');
+const redituser=require('./router/edituserrouter.js');
+const rdeleteuser=require('./router/deleteuserrouter.js');
+
+const rselectprograminst=require('./router/selectprograminstrouter.js');
+
+
+const User=require('./Models/user');
+const Admusers=require('./Models/admusers');
+
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// passport.serializeUser((user, done) => {
+//     done(null, user.id);
+//   });
+  
+//   passport.deserializeUser((id, done) => {
+//     User.findById(id).then(user => {
+//       done(null, user);
+//     });
+//   });
+
+passport.serializeUser(function(user, done) {
+    done(null, user);
+  });
+  
+  passport.deserializeUser(function(user, done) {
+    done(null, user);
+  });
+
+  //web app 3 localhost
+const clientidlocal= "1002415317254-pfv44icpr9pieueilcg9fke58c4fc4sc.apps.googleusercontent.com";
+const  clientsecretlocal = "LSwjYPPE0HYOJerRnO0EJcBw";
+const callbackurllocal="/auth/google/callback";
+
+
+  //web app 4 server
+const clientidserver = "1002415317254-hs8nnlhhsvsq4qkmhq9tjhhot7tssu7s.apps.googleusercontent.com";
+const clientsecretserver= "RTzL-OWFmo4ufaMdeMG3AcAO";
+const callbackurlserver="https://ctnodeapp1.azurewebsites.net/auth/google/callback";
+
+const clientidserver2="1002415317254-qgfe9d4m3ckqln7k5liqho808u9kcas4.apps.googleusercontent.com";
+const clientsecretserver2="jX0b3YpOMeIXlhaseVo8bS_a";
+const callbackurlserver2="https://ctnodeapps2.azurewebsites.net/auth/google/callback";
+
+const clientidserver3="1002415317254-fsgqh6056to5os241kgq1ij3p9m1en9q.apps.googleusercontent.com";
+const clientsecretserver3="4ujrNgBVixIZZ8G92RX4mrGp";
+const callbackurlserver3="https://campuscanvas.co.in/auth/google/callback";
+
+const clientidserver4="345956148647-3fm0r409j8i4g9hqsav6d214vb8pp1t7.apps.googleusercontent.com";
+const clientsecretserver4="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";
+//const callbackurlserver4="http://localhost:3000/auth/google/callback";
+const callbackurlserver4="https://canvasapi5.azurewebsites.net/auth/google/callback";
+
+
+// passport.use(new GoogleStrategy({
+//   clientID: clientidserver4,
+//   clientSecret: clientsecretserver4,
+//   callbackURL: callbackurlserver4,
+//   scope: [ 'profile','email' ]
+// }, function verify(issuer, profile, cb) {
+//   console.log('profile');
+//   console.log(profile);
+//   console.log('issuer');
+//   console.log(issuer);
+
+// }
+// ));
+
+passport.use(
+    new GoogleStrategy(
+      {
+        clientID: clientidserver4, // "1002415317254-hs8nnlhhsvsq4qkmhq9tjhhot7tssu7s.apps.googleusercontent.com", // "1002415317254-pfv44icpr9pieueilcg9fke58c4fc4sc.apps.googleusercontent.com",
+        clientSecret: clientsecretserver4, // "RTzL-OWFmo4ufaMdeMG3AcAO", // "LSwjYPPE0HYOJerRnO0EJcBw",
+        callbackURL: callbackurlserver4, // 'https://ctnodeapp1.azurewebsites.net/auth/google/callback'
+        scope: [ 'profile', 'email' ]
+      },
+      (accessToken, refreshToken, profile, done) => {
+        console.log('output');
+          console.log(profile);
+
+          console.log(profile.id + ' ' + profile._json.email + ' ' + profile._json.picture);
+        Admusers.findOne({ email: profile._json.email }).then(existingUser => {
+          if (existingUser) {
+            // we already have a record with the given profile ID
+            Admusers.findOneAndUpdate({email: profile._json.email},{
+              photo: profile._json.picture,
+              student: profile._json.name,
+              username: profile._json.email
+            })
+            .then(user => done(null, user));
+            //done(null, existingUser);
+          } else {
+            const password1=Math.floor((Math.random() * 10000) + 1);
+          //   const pub1= Admusers.create({
+          //     name: 'Online',
+          //     colid: 30,
+          //     user: 'Online',
+          //     student:profile._json.name,
+          //     address:'NA',
+          //     city:'NA',
+          //     country:'NA',
+          //     email:profile._json.email,
+          //     phone:'99',
+          //     refer:'NA',
+          //     referuser:'Online',
+          //     username:profile._json.email,
+          //     password:password1,
+          //     photo:profile._json.picture,
+          //     status1: 'Accepted',
+          //     comments: 'NA'
+          // });
+            new Admusers({ 
+                name: profile._json.name,
+                user: profile._json.email,
+                student: profile._json.name,
+                password: 'Password@123',
+                username: profile._json.email,
+                email: profile._json.email,
+                photo: profile._json.picture,
+                phone: "9999999999",
+                colid: 30,
+                status1: 'Accepted',
+                comments: 'NA'
+             })
+              .save()
+              .then(user => done(null, user));
+          }
+        });
+      }
+    )
+  );
+
+  app.get(
+    '/auth/google',
+    passport.authenticate('google', {
+      scope: ['profile', 'email']
+    })
+  );
+
+  app.get('/auth/google1/:colid', function(req,res,next){
+    req._toParam = req.params.colid;
+    passport.authenticate(
+        'google', { scope : ['profile', 'email'] }
+    )(req,res,next);
+})
+
+  app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  function(req, res) {
+    
+    console.log(req.user.name + ' ' + req.user.email + ' ' + req.user.colid + ' ' + req.user.photo + ' ' + req._toParam);
+    res.redirect('https://epaathsala.in');
+  //   res.cookie("user",req.user.email);
+  //   res.cookie("name",req.user.name);
+  //   res.cookie("department",req.user.department);
+  //   res.cookie("colid",req.user.colid);
+  //   res.cookie("photo",req.user.photo);
+  //   const token=jwt.sign({ user: req.user.email, colid: req.user.colid }, process.env.JWT_SECRET, {
+  //     expiresIn: process.env.JWT_EXPIRES_IN
+  // });
+    //res.cookie("colid",String([role.colid]));
+    // res.cookie("role",req.user.role);
+    // res.cookie("token",token);
+    // if(req.user.colid==25) {
+    //   res.redirect('/logincol');
+    // } else {
+    //   res.cookie("regno",req.user.regno);
+    //   res.cookie("semester",req.user.semester);
+    //   res.cookie("section",req.user.section);
+    //   //res.redirect('/dashboard');
+    //   if (req.user.role=="Student") {
+    //     req.flash("success", "You are logged in successfully");
+    //     res.redirect('/viewclassstud');
+    //    } else {
+    //     req.flash("success", "You are logged in Successfully");
+    //     res.redirect('/dashboard');
+    //    }
+    // }
+  });
+
+  const fappid="1991144837709170";
+  const fappsecret="c54e2718464cb2596a8205a0ff13b24e";
+
+  const fappid2="518977705789276";
+  const fappsecret2="388aad38b53545934eaeebfbbf8af736";
+
+  const rurl="http://localhost:3000/auth/facebook/callback";
+  const rurl2="https://ctnodeapps2.azurewebsites.net/auth/facebook/callback";
+
+  passport.use(
+    new FacebookStrategy(
+      {
+        clientID: fappid2, // "1002415317254-hs8nnlhhsvsq4qkmhq9tjhhot7tssu7s.apps.googleusercontent.com", // "1002415317254-pfv44icpr9pieueilcg9fke58c4fc4sc.apps.googleusercontent.com",
+        clientSecret: fappsecret2, // "RTzL-OWFmo4ufaMdeMG3AcAO", // "LSwjYPPE0HYOJerRnO0EJcBw",
+        callbackURL: rurl2, // 'https://ctnodeapp1.azurewebsites.net/auth/google/callback'
+        profileFields:['id', 'emails', 'link', 'locale', 'name', 'photos',
+        'timezone', 'updated_time', 'verified', 'displayName']
+      },
+      (accessToken, refreshToken, profile, done) => {
+          //console.log(profile);
+          //console.log(profile.emails[0].value);
+          //console.log(profile.photos[0].value);
+          //console.log(`https://graph.facebook.com/${profile.id}/picture?width=200&height=200&access_token=${accessToken}`);
+          //console.log(profile.id + ' ' + profile._json.email + ' ' + profile._json.picture);
+        User.findOne({ email: profile._json.email }).then(existingUser => {
+          if (existingUser) {
+            // we already have a record with the given profile ID
+            User.findOneAndUpdate({email: profile._json.email},{
+              photo: profile.photos[0].value
+            })
+            .then(user => done(null, user));
+            //done(null, existingUser);
+          } else {
+            const password1=Math.floor((Math.random() * 10000) + 1);
+            new User({ 
+                name: profile._json.name,
+                password: password1,
+                email: profile._json.email,
+                photo: profile.photos[0].value,
+                phone: "9999999999",
+                role: "Faculty",
+                colid: 25,
+                regno: "NA",
+                semester: "NA",
+                section: "NA",
+                admissionyear:"NA",
+                programcode: "NA",
+                department: "Admin",
+                status: 1
+             })
+              .save()
+              .then(user => done(null, user));
+          }
+        });
+      }
+    )
+  );
+
+  app.get(
+    '/auth/facebook',
+    passport.authenticate('facebook', {
+      scope: ['public_profile',  'email']
+    })
+  );
+
+  // app.get(
+  //   '/auth/facebook',
+  //   passport.authenticate('facebook')
+  // );
+
+  app.get('/auth/facebook/callback', 
+  passport.authenticate('facebook', { failureRedirect: '/login' }),
+  function(req, res) {
+    //console.log(req.user.name + ' ' + req.user.email + ' ' + req.user.colid + ' ' + req.user.photo);
+    res.cookie("user",req.user.email);
+    res.cookie("name",req.user.name);
+    res.cookie("department",req.user.department);
+    res.cookie("colid",req.user.colid);
+    res.cookie("photo",req.user.photo);
+    //res.cookie("colid",String([role.colid]));
+    res.cookie("role",req.user.role);
+    if(req.user.colid==25) {
+      res.redirect('/logincol');
+    } else {
+      res.cookie("regno",req.user.regno);
+      res.cookie("semester",req.user.semester);
+      res.cookie("section",req.user.section);
+      //res.redirect('/dashboard');
+      if (req.user.role=="Student") {
+        req.flash("success", "You are logged in successfully");
+        res.redirect('/viewclassstud');
+       } else {
+        req.flash("success", "You are logged in Successfully");
+        res.redirect('/dashboard');
+       }
+    }
+  });
+
+
+
+
+
+
+
+
+
+// app.get('/pug1', (req,res) => {
+//     res.status(200).render('v12',{
+//         course: 'Quantum mechanics',
+//         user: 'Akshata'
+//     });
+
+// });
+
+// app.get('/ejs1', (req,res) => {
+//     res.status(200).render('addcategory', {
+//         title: 'EJS pages'
+//     });
+
+// });
+
+app.get('/ejs2', (req,res) => {
+    //console.log(req.body);
+    res.status(200).render('d12', {
+        title: 'EJS pages'
+    });
+
+}).post('/ejs2', (req,res,next) => {
+    //console.log(req.body.name);
+    res.status(200).render('d12', {
+        title: 'EJS pages'
+    });
+
+});
+
+app.get('/chat23', (req,res) => {
+    res.sendFile(__dirname + '/public/socket1.html');
+});
+
+app.get('/chat', (req,res) => {
+    const user1=req.cookies['user'];
+    res.status(200).render('chat', {
+        title: 'Community Chat Window',
+        user1: user1
+    });
+});
+
+app.get('/chat1', (req,res) => {
+    const user1=req.cookies['user'];
+    const colid=req.cookies['colid'];
+    res.status(200).render('chat1', {
+        title: 'Community Chat Window',
+        user1: user1,
+        colid: colid
+    });
+});
+
+app.get('/classchat/:id', (req,res) => {
+  const user1=req.cookies['user'];
+  const colid=req.cookies['colid'];
+  
+  res.status(200).render('classchat', {
+      title: 'Classchat Online',
+      user1: user1,
+      colid: colid,
+      classid: req.params.id
+  });
+});
+
+app.get('/classchatstud/:id', (req,res) => {
+  const user1=req.cookies['user'];
+  const colid=req.cookies['colid'];
+  
+  res.status(200).render('classchatstud', {
+      title: 'Classchat Online',
+      user1: user1,
+      colid: colid,
+      classid: req.params.id
+  });
+});
+
+app.get('/classchatapp/:id', (req,res) => {
+
+  res.status(200).render('classchatstud', {
+      title: 'Classchat Online',
+      user1: req.query.user,
+      colid: req.query.colid,
+      classid: req.params.id
+  });
+});
+
+app.get('/classboard/:id', (req,res) => {
+  const user1=req.cookies['user'];
+  const colid=req.cookies['colid'];
+  
+  res.status(200).render('classboard4', {
+      title: 'Classboard Online',
+      user1: user1,
+      colid: colid,
+      classid: req.params.id
+  });
+});
+
+app.get('/classboardstud/:id', (req,res) => {
+  const user1=req.cookies['user'];
+  const colid=req.cookies['colid'];
+  res.status(200).render('classboard4stud', {
+      title: 'Classboard Online',
+      user1: user1,
+      colid: colid,
+      classid: req.params.id
+  });
+});
+
+app.get('/webvideo1', (req,res) => {
+  const user1=req.cookies['user'];
+  const colid=req.cookies['colid'];
+  res.status(200).render('webvideo1', {
+      title: 'Web video Online',
+      user1: user1,
+      colid: colid
+  });
+});
+
+// app.get('/', (req,res) => {
+//     res.status(200).send('Hello world');
+
+// });
+
+// const getalltours=(req,res) => {
+//      res.status(200).send('Hello world for all the tours through router');
+    
+// };
+
+
+
+// app.get('/api/v1/tours', (req,res) => {
+//     res.status(200).send('Hello world for the tours');
+
+// });
+
+// const gettour = (req,res) => {
+//     console.log(req.params);
+//     res.status(200).send('Hello world for the new get param tours through router');
+
+// };
+
+// app.get('/api/v1/tours', getalltours);
+// app.get('/api/v1/tours/:id/:x', gettour);
+
+const fucontroller=require('./controllers/fileuploadcontroller');
+const multer=require('multer');
+const aws=require('aws-sdk');
+const multerS3=require('multer-s3');
+aws.config.update({
+  accessKey: process.env.AWS_ACCESS_KEY_ID, // 'AKIAUAC655EBDFT6YKIL',
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY, // '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',
+  region: 'us-east-2'
+});
+
+const s3=new aws.S3({});
+
+var upload = multer({
+  storage: multerS3({
+      s3: s3,
+      bucket: 'campustech1',
+      key: function (req, file, cb) {
+          //console.log(file);
+          cb(null, Date.now().toString() + '-' + file.originalname); //use Date.now() for unique file keys
+      }
+  })
+});
+
+//app.post('/uploadfile1', upload.array('upl',1), fucontroller.postfileupload);
+app.post('/uploadfile1', upload.single('upl'), fucontroller.postfileupload);
+
+
+// const router1=express.Router();
+
+// router1.route('/').get(getalltours);
+// router1.route('/:id/:x').get(gettour);
+
+app.use('/api/v1/tours',router1);
+app.use('/addcategory',routercat);
+app.use('/viewcategory',routercatv);
+app.use('/addusers',raddusers);
+app.use('/addusersadmin',rusersadmin);
+app.use('/login',rlogin);
+app.use('/logincol',rlogincol);
+app.use('/editcategory',reditcat);
+app.use('/deletecategory',rdelcat);
+app.use('/addpub',rpubadd);
+app.use('/viewpub',rpubview);
+app.use('/editpub',rpubedit);
+app.use('/deletepub',rpubdel);
+
+app.use('/addpatent',rpatadd);
+app.use('/viewpatent',rpatview);
+app.use('/editpatent',rpatedit);
+app.use('/deletepatent',rpatdel);
+
+app.use('/addcompany',rcompanyadd);
+app.use('/viewcompany',rcompanyview);
+app.use('/editcompany',rcompanyedit);
+app.use('/deletecompany',rcompanydel);
+
+app.use('/addcompanyjobs',rcompanyjobsadd);
+app.use('/viewcompanyjobs',rcompanyjobsview);
+app.use('/editcompanyjobs',rcompanyjobsedit);
+app.use('/deletecompanyjobs',rcompanyjobsdel);
+
+app.use('/addbook',rbookadd);
+app.use('/viewbook',rbookview);
+app.use('/editbook',rbookedit);
+app.use('/deletebook',rbookdel);
+
+app.use('/dashboard',rdash);
+app.use('/notauthorized',narouter);
+app.use('/exportdetails',expdetailsrouter);
+
+app.use('/exportprojectadm',expprojrouter);
+app.use('/exportpatentadm',exppatrouter);
+app.use('/exportpubadm',exppubrouter);
+app.use('/exportbookadm',expbookrouter);
+
+
+app.use('/addproject',rprojectadd);
+app.use('/viewproject',rprojectview);
+app.use('/editproject',rprojectedit);
+app.use('/deleteproject',rprojectdel);
+app.use('/exportproject',rprojectexport);
+
+
+app.use('/addinstruction',rinsadd);
+app.use('/viewinstructions',rinsview);
+app.use('/editinstruction',rinsedit);
+app.use('/deleteinstruction',rinsdel);
+
+
+app.use('/addseminar',rsemadd);
+app.use('/viewseminar',rsemview);
+app.use('/editseminar',rsemedit);
+app.use('/deleteseminar',rsemdel);
+
+app.use('/addlink',rlinkadd);
+app.use('/viewlink',rlinkview);
+app.use('/editlink',rlinkedit);
+app.use('/deletelink',rlinkdel);
+
+
+app.use('/addclass',rclassadd);
+app.use('/addclassadv',rclassaddadv);
+app.use('/viewclass',rclassview);
+app.use('/editclass',rclassedit);
+app.use('/deleteclass',rclassdel);
+app.use('/viewclasstoday',rclassviewt);
+
+app.use('/viewclassstud',rclassstud);
+app.use('/attend',rattend);
+
+app.use('/addcfiles',rcfilesadd);
+app.use('/addcfileslink',rcfileslinkadd);
+app.use('/viewcfiles',rcfilesview);
+app.use('/editcfiles',rcfilesedit);
+app.use('/deletecfiles',rcfilesdel);
+app.use('/viewcfilesstud',rcfilesstudview);
+
+app.use('/addfacultyfeedback',rffadd);
+app.use('/selectfaculty',rfsview);
+
+app.use('/exportfacultyfeedback',rffexport);
+app.use('/facultyfeedbackreport',rfrepfacview);
+app.use('/viewallfaculty',rfallview);
+app.use('/deletefaculty',rfdelview);
+
+app.use('/totalattended',rattrep1);
+
+
+app.use('/uploadphoto',ruploadphoto);
+
+app.use('/addexam',rexamadd);
+app.use('/viewexam',rexamview);
+app.use('/editexam',rexamedit);
+app.use('/deleteexam',rexamdel);
+
+app.use('/editprofilestudent',rpstudedit);
+app.use('/joinclasswithcode',rjoinclasscode);
+app.use('/selectclassstudents',rselectclassstud);
+
+app.use('/viewstudents',rviewstudents);
+app.use('/exportstudents',rexportstudents);
+app.use('/addifiles',rimport1);
+app.use('/viewquestions',rqview);
+app.use('/deletequestions',rqdel);
+
+app.use('/enroldashboard',renroldash);
+app.use('/addclassenroll',renroladd);
+app.use('/enrolllist',renrollist);
+app.use('/deleteenrol',renroldelete);
+
+app.use('/deletestudent',rdelstud);
+app.use('/enroledclasslist',renrolcstud);
+app.use('/enrolclasslist',renrolclassstud);
+
+app.use('/sss',rsss);
+app.use('/myfeedback',rmyfeedback);
+app.use('/attendance',rclassatt);
+
+app.use('/sssreport',rsssreport);
+app.use('/sssexport',rsssexport);
+
+app.use('/curriculum',rcurfeedback);
+app.use('/curriculum2',rcur2feedback);
+app.use('/exportcurriculum',rcurexport);
+app.use('/curriculumreport',rcurreport);
+
+app.use('/addexamenrol',rexamenroladd);
+app.use('/viewenrollexam',rexamenrollist);
+app.use('/deleteexamenrol',rexamenroldelete);
+
+app.use('/viewanswer',ranswerview);
+app.use('/viewfinalanswer',ranswerfinalview);
+app.use('/viewallfinalanswer',ranswerallfinalview);
+app.use('/facultyclassreport',radminfacclass);
+
+app.use('/addworkload',rworkadd);
+app.use('/editworkload',rworkedit);
+app.use('/viewworkload',rworkview);
+app.use('/deleteworkload',rworkdel);
+
+app.use('/addplacementerp',rplerpadd);
+app.use('/editplacementerp',rplerpedit);
+app.use('/viewplacementerp',rplerpview);
+app.use('/deleteplacementerp',rplerpdel);
+
+app.use('/viewclassbycourse',rviewclassbycourse);
+app.use('/addclassbycourse',raddclassbycourse);
+app.use('/addstudentsbycourse',raddstudbycourse);
+
+app.use('/vaccourseattendance',rvaccourseatt);
+app.use('/vacclassattendance',rvacclassatt);
+
+app.use('/updateexamenr',rupdateexamenr);
+app.use('/updateproctor',rupdateproctor);
+app.use('/editexamenr',reditexamenr);
+app.use('/viewmyproctor',rviewmyproctor);
+
+app.use('/viewallclass',rviewallclass);
+app.use('/getstudproctor',rstudproctor);
+
+app.use('/viewanswerproctor',rproctoranswe);
+
+app.use('/editprofile',reditprofilefac);
+app.use('/delallexamenrollment',rdelallexamenrollment);
+
+app.use('/viewiamarks',rviewiamarks);
+app.use('/addiamarks',raddiamarks);
+app.use('/deleteiamarks',rdeleteiamarks);
+
+app.use('/exportparent',rparentexport);
+app.use('/parentanalysis',rparentanalysis);
+
+app.use('/exportemployer',remployerexport);
+app.use('/employeranalysis',remployeranalysis);
+
+app.use('/exportalumni',ralumniexport);
+app.use('/alumnianalysis',ralumnianalysis);
+
+app.use('/exportseminar',rexportseminar);
+
+app.use('/addmeeting',rmeetingadd);
+app.use('/editmeeting',rmeetingedit);
+app.use('/viewmeeting',rmeetingview);
+app.use('/deletemeeting',rmeetingdel);
+app.use('/viewmeetingtoday',rmeetingviewtoday);
+
+app.use('/addtasks',rtasksadd);
+app.use('/addtasksurl',rtasksaddurl);
+app.use('/edittasks',rtasksedit);
+app.use('/viewtasks',rtasksview);
+app.use('/deletetasks',rtasksdel);
+
+app.use('/addtaskassign',rtaskassignadd);
+app.use('/edittaskassign',rtaskassignedit);
+app.use('/viewtaskassign',rtaskassignview);
+app.use('/deletetaskassign',rtaskassigndel);
+
+app.use('/selectfacultytask',rselectfacultytask);
+
+app.use('/edittaskmy',redittaskmy);
+app.use('/viewtaskmy',rviewtaskmy);
+app.use('/viewtasksbyid',rviewtasksbyid);
+
+app.use('/addfees',raddfees);
+app.use('/viewfees',rviewfees);
+app.use('/editfees',reditfees);
+app.use('/deletefees',rdeletefees);
+app.use('/deleteallfees',rdeleteallfees);
+
+app.use('/addscholarships',raddscholarships);
+app.use('/viewscholarships',rviewscholarships);
+app.use('/editscholarships',reditscholarships);
+app.use('/deletescholarships',rdeletescholarships);
+app.use('/deleteallscholarships',rdeleteallscholarships);
+
+app.use('/addstudentledger',raddstudentledger);
+app.use('/viewstudentledger',rviewstudentledger);
+app.use('/selectstudentbyregno',rselectstudentbyregno);
+app.use('/editstudentledger',reditstudentledger);
+app.use('/deletestudentledger',rdeletestudentledger);
+app.use('/deleteallstudentledger',rdeleteallstudentledger);
+app.use('/deleteallledgerentry',rdeleteallledgerentry);
+
+app.use('/applyfees',rapplyfees);
+app.use('/applyscholarship',rapplyscholarship);
+
+app.use('/addsingleledger',raddsingleledger);
+app.use('/feesreceipt',rfeesreceipt);
+app.use('/printstudentledger',rprintstudentledger);
+
+app.use('/application1',rapplication1);
+app.use('/application2',rapplication2);
+
+app.use('/selectprogram',rselectprogram);
+
+app.use('/addkpi',rkpiadd);
+app.use('/editkpi',rkpiedit);
+app.use('/viewkpi',rkpiview);
+app.use('/viewallkpi',rallkpiview);
+app.use('/deletekpi',rkpidel);
+
+app.use('/getcoursecodeattainment',rbulkattainment);
+app.use('/viewbulkattainment',rviewbulkattainment);
+
+app.use('/addattendance',raddattendance);
+app.use('/deleteattendance',rdeleteattendance);
+
+app.use('/viewiamarkssummary',rviewiamarkssummary);
+app.use('/filteriamarkssummary',rfilteriamarkssummary);
+app.use('/viewclubregistrations',rviewclubregistrations);
+
+app.use('/viewallusers',rviewallusers);
+app.use('/edituser',redituser);
+app.use('/deleteuser',rdeleteuser);
+
+app.use('/selectprograminst',rselectprograminst);
+
+const naaccontroller=require('./controllers/naacpivotcontroller');
+app.get('/naacpivot',  naaccontroller.viewnaacpivot);
+app.post('/filterclassdata',  naaccontroller.filterclassdata);
+app.get('/getallattendance',  naaccontroller.getallattendance);
+app.post('/filterattendance',  naaccontroller.filterattendance);
+app.get('/getallfinalanswers',  naaccontroller.getallfinalanswers);
+app.get('/getmyfinalanswers',  naaccontroller.getmyfinalanswers);
+app.get('/generateotp',  naaccontroller.generateotp);
+app.get('/getcoattainment',  naaccontroller.getco);
+app.get('/viewstudcount',  naaccontroller.getstudcount);
+app.get('/getcourseattendance/:id',  naaccontroller.getcourseattendance);
+
+
+const apicontroller=require('./controllers/apicontroller');
+app.get('/api/v1/loginstud',  apicontroller.loginstud);
+app.get('/api/v1/getclassstud',  apicontroller.getclassstud);
+app.get('/api/v1/getclassstudr',  apicontroller.getclassstudr);
+app.get('/api/v1/getattend/:id',  apicontroller.getattend);
+app.get('/api/v1/getenrolcourse',  apicontroller.getenrolcourselist);
+app.get('/api/v1/getenrolcourseyr',  apicontroller.getenrolcourselistyr);
+app.get('/api/v1/getenrolclass',  apicontroller.getenrolclassstud);
+app.get('/api/v1/getcoursefile',  apicontroller.getviewcfilesstud);
+app.get('/api/v1/getclassattended',  apicontroller.getclassattended);
+app.get('/api/v1/getexamlist',  apicontroller.getexamlist);
+app.get('/api/v1/getquestions',  apicontroller.getquestions);
+app.post('/api/v1/recorddescriptive',  apicontroller.recorddescriptive);
+app.post('/api/v1/recorddescriptivef',  apicontroller.recorddescriptivef);
+app.post('/api/v1/recordmcq',  apicontroller.recordmcq);
+app.get('/api/v1/rgetdescriptive',  apicontroller.rgetdescriptive);
+app.get('/api/v1/rgetmcq',  apicontroller.rgetmcq);
+app.get('/api/v1/getmcq',  apicontroller.getMCQ);
+app.get('/api/v1/getexamdetails',  apicontroller.getexamdetails);
+app.get('/api/v1/getanswers',  apicontroller.getanswers);
+app.get('/api/v1/getanswerq',  apicontroller.getanswerq);
+app.get('/api/v1/valueaddedcourses',  apicontroller.getviewaddonc);
+app.get('/api/v1/valueaddedclass',  apicontroller.getviewvacclass);
+app.get('/api/v1/getvacattend/:id',  apicontroller.getvacattend);
+app.get('/api/v1/enrollstud',  apicontroller.getenrollstud);
+app.get('/api/v1/getvacenroll',  apicontroller.getvacenroll);
+app.get('/api/v1/getvacclasstoday',  apicontroller.getvacclasstoday);
+app.get('/api/v1/getviewclub',  apicontroller.getviewclub);
+app.get('/api/v1/getcirculars',  apicontroller.getcirculars);
+app.get('/api/v1/getassignmentlist',  apicontroller.getassignmentlist);
+app.get('/api/v1/getanswerstatus',  apicontroller.getanswerstatus);
+app.get('/api/v1/deleteanswer',  apicontroller.deleteanswer);
+app.get('/api/v1/submitassignment',  apicontroller.submitassignment);
+app.get('/api/v1/clubenrol',  apicontroller.clubenrol);
+app.get('/api/v1/getassigncomments',  apicontroller.getassigncomments);
+
+
+const rapicontroller=require('./controllers/rapicontroller');
+
+app.get('/api/v1/rgetclassstud',  rapicontroller.getclassstud);
+app.get('/api/v1/rgetclassstudr',  rapicontroller.getclassstudr);
+app.get('/api/v1/rgetattend/:id',  rapicontroller.getattend);
+app.get('/api/v1/rgetenrolcourse',  rapicontroller.getenrolcourselist);
+app.get('/api/v1/rgetenrolclass',  rapicontroller.getenrolclassstud);
+app.get('/api/v1/rgetcoursefile',  rapicontroller.getviewcfilesstud);
+app.get('/api/v1/rgetclassattended',  rapicontroller.getclassattended);
+app.get('/api/v1/rgetexamlist',  rapicontroller.getexamlist);
+app.get('/api/v1/rgetquestions',  rapicontroller.getquestions);
+app.post('/api/v1/rrecorddescriptive',  rapicontroller.recorddescriptive);
+app.post('/api/v1/rrecorddescriptivef',  rapicontroller.recorddescriptivef);
+app.post('/api/v1/rrecordmcq',  rapicontroller.recordmcq);
+app.get('/api/v1/rrgetdescriptive',  rapicontroller.rgetdescriptive);
+app.get('/api/v1/rrgetmcq',  rapicontroller.rgetmcq);
+app.get('/api/v1/rgetmcq',  rapicontroller.getMCQ);
+app.get('/api/v1/rgetexamdetails',  rapicontroller.getexamdetails);
+app.get('/api/v1/rgetanswers',  rapicontroller.getanswers);
+app.get('/api/v1/rgetanswerq',  rapicontroller.getanswerq);
+app.get('/api/v1/rvalueaddedcourses',  rapicontroller.getviewaddonc);
+app.get('/api/v1/rvalueaddedclass',  rapicontroller.getviewvacclass);
+app.get('/api/v1/rgetvacattend/:id',  rapicontroller.getvacattend);
+app.get('/api/v1/renrollstud',  rapicontroller.getenrollstud);
+app.get('/api/v1/rgetvacenroll',  rapicontroller.getvacenroll);
+app.get('/api/v1/rgetvacclasstoday',  rapicontroller.getvacclasstoday);
+app.get('/api/v1/rgetviewclub',  rapicontroller.getviewclub);
+app.get('/api/v1/rgetcirculars',  rapicontroller.getcirculars);
+app.get('/api/v1/rgetassignmentlist',  rapicontroller.getassignmentlist);
+
+app.get("/where", (req, res) => {
+  res.status(301).redirect("https://www.google.com")
+});
+
+
+const aws2ju=require('./controllers/aws2ju');
+app.post('/api/v1/uploadsupportingdoc',  aws2ju.uploadsupportingdoc);
+
+const diskpdfcontroller=require('./controllers/diskpdfcontroller');
+app.post('/api/v1/getpdf',  diskpdfcontroller.getpdf);
+
+const aws2files=require('./controllers/aws2files');
+app.get('/addsupportingdoc',  aws2files.getaddcfiles);
+app.post('/addsupportingdoc',  aws2files.uploadsupportingdoc);
+
+const aws2api=require('./controllers/aws2api');
+const facapicontroller=require('./controllers/facapicontroller');
+app.get('/api/v1/getworkload',  facapicontroller.getworkload);
+app.get('/api/v1/loginapi',  facapicontroller.loginapi);
+app.get('/api/v1/loginapif',  facapicontroller.loginapif);
+app.get('/api/v1/createworkload',  facapicontroller.createworkload);
+app.get('/api/v1/getqspeers',  facapicontroller.getqspeers);
+app.get('/api/v1/createqspeers',  facapicontroller.createqspeers);
+app.get('/api/v1/getqsemployers',  facapicontroller.getqsemployers);
+app.get('/api/v1/getperiod',  facapicontroller.getperiod);
+app.get('/api/v1/createperiod',  facapicontroller.createperiod);
+app.get('/api/v1/createclass',  facapicontroller.createclassadv);
+app.get('/api/v1/getclass',  facapicontroller.getviewclass);
+app.get('/api/v1/getclassbydate',  facapicontroller.getclassbydate);
+app.get('/api/v1/getclassbycourse',  facapicontroller.getclassbycourse);
+app.get('/api/v1/deleteperiod',  facapicontroller.deleteperiod);
+app.get('/api/v1/getclassstudlist',  facapicontroller.getclassstudlist);
+app.get('/api/v1/deleteclassenr',  facapicontroller.deleteclassenr);
+app.get('/api/v1/getattreport',  facapicontroller.getattreport);
+app.get('/api/v1/getattreportbydate',  facapicontroller.getattreportbydate);
+app.get('/api/v1/getattreportbyfac',  facapicontroller.getattreportbyfac);
+app.get('/api/v1/getattreportbyfaccl',  facapicontroller.getattreportbyfaccl);
+app.get('/api/v1/getlwattendance',  facapicontroller.getlwattendance);
+app.get('/api/v1/getmyfeedback',  facapicontroller.getmyfeedback);
+app.get('/api/v1/getmyfeedbackall',  facapicontroller.getmyfeedbackall);
+app.post('/api/v1/createassignment', aws2api.upload.single('upl'),  facapicontroller.createassignment);
+app.get('/api/v1/getassignmentlist',  facapicontroller.getassignmentlist);
+app.get('/api/v1/deleteassignment',  facapicontroller.deleteassignment);
+app.post('/api/v1/createcoursefiles', aws2api.upload.single('upl'),  facapicontroller.createcoursefiles);
+app.get('/api/v1/getcoursefiles',  facapicontroller.getcoursefiles);
+app.get('/api/v1/deletecoursefile',  facapicontroller.deletecoursefile);
+app.get('/api/v1/deleteallassignments',  facapicontroller.deleteallassignments);
+app.get('/api/v1/getmyproctoring',  facapicontroller.getmyproctoring);
+app.get('/api/v1/getexamenrlist',  facapicontroller.getexamenrlist);
+app.get('/api/v1/facassigncomments',  facapicontroller.facassigncomments);
+app.get('/api/v1/assigncomments',  facapicontroller.assigncomments);
+app.get('/api/v1/getbooklist',  facapicontroller.getbooklist);
+app.get('/api/v1/getbookbyauthor',  facapicontroller.getbookbyauthor);
+app.get('/api/v1/getbookbytitle',  facapicontroller.getbookbytitle);
+app.get('/api/v1/getbookbyaccno',  facapicontroller.getbookbyaccno);
+app.get('/api/v1/libissue',  facapicontroller.libissue);
+app.get('/api/v1/libreturn',  facapicontroller.libreturn);
+app.get('/api/v1/getbookissuelist',  facapicontroller.getbookissuelist);
+app.get('/api/v1/deletelibbook',  facapicontroller.deletelibbook);
+app.get('/api/v1/deleteworkloadapi',  facapicontroller.deleteworkloadapi);
+app.get('/api/v1/getseminaramount',  facapicontroller.getseminaramount);
+app.get('/api/v1/getseminarcount',  facapicontroller.getseminarcount);
+app.get('/api/v1/getbookcount',  facapicontroller.getbookcount);
+app.get('/api/v1/getprojectscount',  facapicontroller.getprojectscount);
+app.get('/api/v1/getpatentscount',  facapicontroller.getpatentsscount);
+app.get('/api/v1/getprojectsamount',  facapicontroller.getprojectsamount);
+app.get('/api/v1/getpublicationscount',  facapicontroller.getpublicationscount);
+app.get('/api/v1/bulkco1',  facapicontroller.bulkco1);
+app.get('/api/v1/getempfeedbackanalysis',  facapicontroller.getempfeedbackanalysis);
+app.get('/api/v1/getparentfeedbackscores',  facapicontroller.getparentfeedbackscores);
+app.get('/api/v1/getparentfeedbackscoresbyq',  facapicontroller.getparentfeedbackscoresbyq);
+app.get('/api/v1/getparentfeedbackq',  facapicontroller.getparentfeedbackq);
+app.get('/api/v1/getparentfeedbackavgscore',  facapicontroller.getparentfeedbackavgscore);
+app.get('/api/v1/getemployerfeedbackavgscore',  facapicontroller.getemployerfeedbackavgscore);
+app.get('/api/v1/getcurriculumfeedbackavgscore',  facapicontroller.getcurriculumfeedbackavgscore);
+app.get('/api/v1/getcurriculumfeedbackscoresbyq',  facapicontroller.getcurriculumfeedbackscoresbyq);
+app.get('/api/v1/getemployerfeedbackscoresbyq',  facapicontroller.getemployerfeedbackscoresbyq);
+app.get('/api/v1/getlastcurriculumfeedback',  facapicontroller.getlastcurriculumfeedback);
+app.get('/api/v1/getlastfacultyfeedback',  facapicontroller.getlastfacultyfeedback);
+app.get('/api/v1/getlastemployerfeedback',  facapicontroller.getlastemployerfeedback);
+app.get('/api/v1/getmoualert',  facapicontroller.getmoualert);
+app.get('/api/v1/getkpi',  facapicontroller.getkpi);
+app.get('/api/v1/deletekpi',  facapicontroller.deletekpi);
+app.get('/api/v1/getfacultyfeedbackcount',  facapicontroller.getfacultyfeedbackcount);
+app.get('/api/v1/getemployerfeedbackcount',  facapicontroller.getemployerfeedbackcount);
+app.get('/api/v1/getcurriculumfeedbackcount',  facapicontroller.getcurriculumfeedbackcount);
+app.get('/api/v1/getlastiqac',  facapicontroller.getlastiqac);
+app.get('/api/v1/getiqaccount',  facapicontroller.getiqaccount);
+app.get('/api/v1/getdynamicmodules',  facapicontroller.getdynamicmodules);
+app.get('/api/v1/getcourseworkdiary',  facapicontroller.getcourseworkdiary);
+app.get('/api/v1/getvaclist',  facapicontroller.getvaclist);
+app.get('/api/v1/getvaclistcount',  facapicontroller.getvaclistcount);
+app.get('/api/v1/getfacultylist',  facapicontroller.getfacultylist);
+app.get('/api/v1/deleteroleuser',  facapicontroller.deleteroleusers);
+app.get('/api/v1/deletestudentsprogramcode',  facapicontroller.deletestudentsprogramcode);
+app.get('/api/v1/deleteroleyruser',  facapicontroller.deleteroleyrusers);
+app.get('/api/v1/deleteallkpi',  facapicontroller.deleteallkpi);
+app.get('/api/v1/getalumnifeedbackavgscore',  facapicontroller.getalumnifeedbackavgscore);
+app.get('/api/v1/getalumnifeedbackscoresbyq',  facapicontroller.getalumnifeedbackscoresbyq);
+app.get('/api/v1/getdepartmentlist',  facapicontroller.getdepartmentlist);
+app.get('/api/v1/sendmail',  facapicontroller.sendmail);
+app.get('/api/v1/getmlink',  facapicontroller.getmlink);
+app.get('/api/v1/createmlink',  facapicontroller.createmlink);
+app.get('/api/v1/updatemlink',  facapicontroller.updatemlink);
+app.get('/api/v1/deletemlink',  facapicontroller.deletemlink);
+app.get('/api/v1/getdepartment',  facapicontroller.getdepartment);
+app.get('/api/v1/getalldepartments',  facapicontroller.getalldepartment);
+app.get('/api/v1/createdepartment',  facapicontroller.createdepartment);
+app.get('/api/v1/updatedepartment',  facapicontroller.updatedepartment);
+app.get('/api/v1/deletedepartment',  facapicontroller.deletedepartment);
+app.get('/api/v1/getaws',  facapicontroller.getaws);
+app.get('/api/v1/createaws',  facapicontroller.createaws);
+app.get('/api/v1/updateaws',  facapicontroller.updateaws);
+app.get('/api/v1/deleteaws',  facapicontroller.deleteaws);
+app.get('/api/v1/getcircularfac',  facapicontroller.getcircularfac);
+app.get('/api/v1/getcircularfacall',  facapicontroller.getcircularfacall);
+app.get('/api/v1/createcircularfac',  facapicontroller.createcircularfac);
+app.get('/api/v1/updatecircularfac',  facapicontroller.updatecircularfac);
+app.get('/api/v1/deletecircularfac',  facapicontroller.deletecircularfac);
+app.get('/api/v1/getmyinstitutions',  facapicontroller.getmyinstitutions);
+app.get('/api/v1/getinstitutionname',  facapicontroller.getinstitutionname);
+app.get('/api/v1/getallinstitutions',  facapicontroller.getallinstitutions);
+app.get('/api/v1/createinstitutions',  facapicontroller.createinstitutions);
+app.get('/api/v1/updateinstitutions',  facapicontroller.updateinstitutions);
+app.get('/api/v1/deleteinstitutions',  facapicontroller.deleteinstitutions);
+app.get('/api/v1/allattend',  facapicontroller.allattend);
+app.get('/api/v1/allattendbysec',  facapicontroller.allattendbysec);
+app.get('/api/v1/allattendbysec1',  facapicontroller.allattendbysec1);
+app.get('/api/v1/getclassattendance',  facapicontroller.getclassattendance);
+app.get('/api/v1/updateattendance',  facapicontroller.updateattendance);
+app.get('/api/v1/deleteattendance',  facapicontroller.deleteattendance);
+app.get('/api/v1/deppublist',  facapicontroller.deppublist);
+app.get('/api/v1/depsemlist',  facapicontroller.depsemlist);
+app.get('/api/v1/depprojectslist',  facapicontroller.depprojectslist);
+app.get('/api/v1/depbookslist',  facapicontroller.depbookslist);
+app.get('/api/v1/bookdoclist',  facapicontroller.bookdoclist);
+app.get('/api/v1/getstudentcount',  facapicontroller.getstudentcount);
+app.get('/api/v1/getfacultycount',  facapicontroller.getfacultycount);
+app.get('/api/v1/getclasscount',  facapicontroller.getclasscount);
+app.get('/api/v1/gettaskassignall',  facapicontroller.gettaskassign);
+app.get('/api/v1/getstudentbycategory',  facapicontroller.getstudentbycategory);
+app.get('/api/v1/getstudentbycatgender',  facapicontroller.getstudentbycatgender);
+app.get('/api/v1/getstudentbygender',  facapicontroller.getstudentbygender);
+app.get('/api/v1/getstudentbycatnew',  facapicontroller.getstudentbycatnew);
+app.get('/api/v1/getstudentbyquota',  facapicontroller.getstudentbyquota);
+app.get('/api/v1/getmetricrules',  facapicontroller.getmetricrules);
+app.get('/api/v1/getallmetricrules',  facapicontroller.getallmetricrules);
+app.get('/api/v1/createmetricrules',  facapicontroller.createmetricrules);
+app.get('/api/v1/updatemetricrules',  facapicontroller.updatemetricrules);
+app.get('/api/v1/deletemetricrules',  facapicontroller.deletemetricrules);
+app.get('/api/v1/getallusersbyrole',  facapicontroller.getallusersbyrole);
+app.get('/api/v1/depaddoncourselist',  facapicontroller.depaddoncourselist);
+app.get('/api/v1/depsyllabusrevlist',  facapicontroller.depsyllabusrevlist);
+app.get('/api/v1/depemployabilitylist',  facapicontroller.depemployabilitylist);
+app.get('/api/v1/depexplearninglist',  facapicontroller.depexplearninglist);
+app.get('/api/v1/updatepubcomments',  facapicontroller.updatepubcomments);
+app.get('/api/v1/getaccrcomments',  facapicontroller.getaccrcomments);
+app.get('/api/v1/getallaccrcomments',  facapicontroller.getallaccrcomments);
+app.get('/api/v1/createaccrcomments',  facapicontroller.createaccrcomments);
+app.get('/api/v1/deleteaccrcomments',  facapicontroller.deleteaccrcomments);
+app.get('/api/v1/updateseminarcomments',  facapicontroller.updateseminarcomments);
+app.get('/api/v1/updatesupportingcomments',  facapicontroller.updatesupportingcomments);
+app.get('/api/v1/updatepatentcomments',  facapicontroller.updatepatentcomments);
+app.get('/api/v1/updateprojectscomments',  facapicontroller.updateprojectscomments);
+app.get('/api/v1/updatebookscomments',  facapicontroller.updatebookscomments);
+app.get('/api/v1/getclassstudlistsec',  facapicontroller.getclassstudlistsec);
+app.get('/api/v1/deleteclassenrall',  facapicontroller.deleteclassenrall);
+app.get('/api/v1/updateaddonccomments',  facapicontroller.updateaddonccomments);
+app.get('/api/v1/updatesyllabusrevcomments',  facapicontroller.updatesyllabusrevcomments);
+app.get('/api/v1/updateemployabilitycomments',  facapicontroller.updateemployabilitycomments);
+//app.get('/api/v1/updateexplearningcomments',  facapicontroller.updateexplearningcomments);
+app.get('/api/v1/dephigheredulist',  facapicontroller.dephigheredulist);
+app.get('/api/v1/dephigherexamlist',  facapicontroller.dephigherexamlist);
+app.get('/api/v1/updatehighereducomments',  facapicontroller.updatehighereducomments);
+app.get('/api/v1/updatehigherexamcomments',  facapicontroller.updatehigherexamcomments);
+app.get('/api/v1/getallclass',  facapicontroller.getallclass);
+app.get('/api/v1/getallcoursefiles',  facapicontroller.getallcousefiles);
+app.get('/api/v1/getallassignments',  facapicontroller.getallassignments);
+app.get('/api/v1/getsemstatcount',  facapicontroller.getsemstatcount);
+app.get('/api/v1/getprojstatcount',  facapicontroller.getprojstatcount);
+app.get('/api/v1/getpubstatcount',  facapicontroller.getpubstatcount);
+app.get('/api/v1/getpatstatcount',  facapicontroller.getpatstatcount);
+app.get('/api/v1/getbookstatcount',  facapicontroller.getbookstatcount);
+app.get('/api/v1/depconsultancylist',  facapicontroller.depconsultancylist);
+app.get('/api/v1/deppatentslist',  facapicontroller.deppatentslist);
+app.get('/api/v1/projectdocs',  facapicontroller.projectdocs);
+app.get('/api/v1/getdeptfeedbackcount',  facapicontroller.getdeptfeedbackcount);
+app.get('/api/v1/getssscount',  facapicontroller.getssscount);
+app.get('/api/v1/getsssbyq',  facapicontroller.getsssbyq);
+app.get('/api/v1/getssstext',  facapicontroller.getssstext);
+
+const dvvcontroller=require('./controllers/dvvcontroller');
+//app.get('/api/v1/explearningdocs',  dvvcontroller.explearningdocs);
+app.get('/api/v1/explearnprojdocs',  dvvcontroller.explearnprojdocs);
+app.get('/api/v1/cbcsdocs',  dvvcontroller.cbcsdocs);
+app.get('/api/v1/syllabusrevdocs',  dvvcontroller.syllabusrevdocs);
+app.get('/api/v1/cbcsimpldocs',  dvvcontroller.cbcsimpldocs);
+app.get('/api/v1/researchfellowdocs',  dvvcontroller.researchfellowdocs);
+app.get('/api/v1/employabilitydocs',  dvvcontroller.employabilitydocs);
+app.get('/api/v1/admissiondocs',  dvvcontroller.admissiondocs);
+//app.get('/api/v1/reservecatdocs',  dvvcontroller.reservecatdocs);
+app.get('/api/v1/projectyrdocs',  dvvcontroller.projectyrdocs);
+//app.get('/api/v1/seminardocs',  dvvcontroller.seminardocs);
+app.get('/api/v1/publicationdocs',  dvvcontroller.publicationdocs);
+app.get('/api/v1/patentdocs',  dvvcontroller.patentdocs);
+//app.get('/api/v1/bookdocs',  dvvcontroller.bookdocs);
+app.get('/api/v1/projectdoccomments',  dvvcontroller.projectdoccomments);
+app.get('/api/v1/projectdoccommentsa',  dvvcontroller.projectdoccommentsa);
+app.get('/api/v1/bookdoccomments',  dvvcontroller.bookdoccomments);
+app.get('/api/v1/patentdoccomments',  dvvcontroller.patentdoccomments);
+app.get('/api/v1/pubdoccomments',  dvvcontroller.pubdoccomments);
+app.get('/api/v1/seminardoccomments',  dvvcontroller.seminardoccomments);
+app.get('/api/v1/seminardoccommentsa',  dvvcontroller.seminardoccommentsa);
+app.get('/api/v1/admissiondoccomments',  dvvcontroller.admissiondoccomments);
+app.get('/api/v1/admissiondoccommentsa',  dvvcontroller.admissiondoccommentsa);
+app.get('/api/v1/teacherawarddoccoms',  dvvcontroller.teacherawarddoccoms);
+app.get('/api/v1/innovationdoccomments',  dvvcontroller.innovationdoccomments);
+app.get('/api/v1/teacherfellowdoccomments',  dvvcontroller.teacherfellowdoccomments);
+app.get('/api/v1/eventdoccomments',  dvvcontroller.eventdoccomments);
+app.get('/api/v1/eventdoccommentsa',  dvvcontroller.eventdoccommentsa);
+app.get('/api/v1/seedmdoccomments',  dvvcontroller.seedmdoccomments);
+app.get('/api/v1/scholarshipdoccomments',  dvvcontroller.scholarshipdoccomments);
+app.get('/api/v1/careerdoccomments',  dvvcontroller.careerdoccomments);
+app.get('/api/v1/skilldevdoccomments',  dvvcontroller.skilldevdoccomments);
+app.get('/api/v1/placementdoccomments',  dvvcontroller.placementdoccomments);
+app.get('/api/v1/bosdoccomments',  dvvcontroller.bosdoccomments);
+app.get('/api/v1/ictdoccomments',  dvvcontroller.ictdoccomments);
+app.get('/api/v1/econtentdoccomments',  dvvcontroller.econtentdoccomments);
+app.get('/api/v1/extensiondoccomments',  dvvcontroller.extensiondoccomments);
+app.get('/api/v1/extawardsdoccomments',  dvvcontroller.extawardsdoccomments);
+app.get('/api/v1/collabdoccomments',  dvvcontroller.collabdoccomments);
+app.get('/api/v1/moudoccomments',  dvvcontroller.moudoccomments);
+app.get('/api/v1/librarydoccomments',  dvvcontroller.librarydoccomments);
+app.get('/api/v1/fundsdoccomments',  dvvcontroller.fundsdoccomments);
+app.get('/api/v1/teacherfsdoccomments',  dvvcontroller.teacherfsdoccomments);
+app.get('/api/v1/qualitydoccomments',  dvvcontroller.qualitydoccomments);
+app.get('/api/v1/addoncdoccomments',  dvvcontroller.addoncdoccomments);
+app.get('/api/v1/expendituredoccomments',  dvvcontroller.expendituredoccomments);
+app.get('/api/v1/teacherdatadoccomments',  dvvcontroller.teacherdatadoccomments);
+app.get('/api/v1/passdoccomments',  dvvcontroller.passdoccomments);
+app.get('/api/v1/passdoccommentsa',  dvvcontroller.passdoccommentsa);
+app.get('/api/v1/examdaysdoccomments',  dvvcontroller.examdaysdoccomments);
+app.get('/api/v1/consultancydoccomments',  dvvcontroller.consultancydoccomments);
+app.get('/api/v1/phdguidedoccomments',  dvvcontroller.phdguidedoccomments);
+app.get('/api/v1/incubationdocs',  dvvcontroller.incubationdocs);
+//app.get('/api/v1/higheredudocs',  dvvcontroller.higheredudocs);
+//app.get('/api/v1/higherexamdocs',  dvvcontroller.higherexamdocs);
+app.get('/api/v1/justawarddocs',  dvvcontroller.justawarddocs);
+app.get('/api/v1/sportsactdocs',  dvvcontroller.sportsactdocs);
+app.get('/api/v1/fdpcol',  dvvcontroller.fdpcol);
+
+
+const dvvfinaldepcontroller=require('./controllers/dvvfinaldepcontroller');
+app.get('/api/v1/syllabusrevdocsdep',  dvvfinaldepcontroller.syllabusrevdocs);
+app.get('/api/v1/explearningdocsdep',  dvvfinaldepcontroller.explearningdocs);
+app.get('/api/v1/econtentdoccommentsdep',  dvvfinaldepcontroller.econtentdoccomments);
+app.get('/api/v1/higherexamdocsdep',  dvvfinaldepcontroller.higherexamdocs);
+app.get('/api/v1/higheredudocsdep',  dvvfinaldepcontroller.higheredudocs);
+app.get('/api/v1/placementdoccommentsdep',  dvvfinaldepcontroller.placementdoccomments);
+app.get('/api/v1/depfacdocs',  dvvfinaldepcontroller.depfacdocs);
+app.get('/api/v1/depdata',  dvvfinaldepcontroller.depdata);
+app.get('/api/v1/depdata1',  dvvfinaldepcontroller.depdata1);
+
+
+
+const dvvfinalcontroller=require('./controllers/dvvfinalcontroller');
+app.get('/api/v1/explearningdocsd',  dvvfinalcontroller.explearningdocs);
+app.get('/api/v1/explearnprojdocsd',  dvvfinalcontroller.explearnprojdocs);
+app.get('/api/v1/fieldprojdd',  dvvfinalcontroller.fieldproj);
+app.get('/api/v1/cbcsdocsd',  dvvfinalcontroller.cbcsdocs);
+app.get('/api/v1/syllabusrevdocsd',  dvvfinalcontroller.syllabusrevdocs);
+app.get('/api/v1/cbcsimpldocsd',  dvvfinalcontroller.cbcsimpldocs);
+app.get('/api/v1/researchfellowdocsd',  dvvfinalcontroller.researchfellowdocs);
+app.get('/api/v1/employabilitydocsd',  dvvfinalcontroller.employabilitydocs);
+app.get('/api/v1/employabilitydocsdep',  dvvfinalcontroller.employabilitydocsdep);
+app.get('/api/v1/admissiondocsd',  dvvfinalcontroller.admissiondocs);
+app.get('/api/v1/reservecatdocsd',  dvvfinalcontroller.reservecatdocs);
+app.get('/api/v1/projectyrdocsd',  dvvfinalcontroller.projectyrdocs);
+app.get('/api/v1/seminardocsd',  dvvfinalcontroller.seminardocs);
+app.get('/api/v1/publicationdocsd',  dvvfinalcontroller.publicationdocs);
+app.get('/api/v1/patentdocsd',  dvvfinalcontroller.patentdocs);
+app.get('/api/v1/bookdocsd',  dvvfinalcontroller.bookdocs);
+app.get('/api/v1/projectdoccommentsd',  dvvfinalcontroller.projectdoccomments);
+app.get('/api/v1/bookdoccommentsd',  dvvfinalcontroller.bookdoccomments);
+app.get('/api/v1/patentdoccommentsd',  dvvfinalcontroller.patentdoccomments);
+app.get('/api/v1/pubdoccommentsd',  dvvfinalcontroller.pubdoccomments);
+app.get('/api/v1/seminardoccommentsd',  dvvfinalcontroller.seminardoccomments);
+app.get('/api/v1/admissiondoccommentsd',  dvvfinalcontroller.admissiondoccomments);
+app.get('/api/v1/teacherawarddoccomsd',  dvvfinalcontroller.teacherawarddoccoms);
+app.get('/api/v1/innovationdoccommentsd',  dvvfinalcontroller.innovationdoccomments);
+app.get('/api/v1/teacherfellowdoccommentsd',  dvvfinalcontroller.teacherfellowdoccomments);
+app.get('/api/v1/eventdoccommentsd',  dvvfinalcontroller.eventdoccomments);
+app.get('/api/v1/eventdoccommentsdbyuser',  dvvfinalcontroller.eventdoccommentsbyuser);
+app.get('/api/v1/seedmdoccommentsd',  dvvfinalcontroller.seedmdoccomments);
+app.get('/api/v1/scholarshipdoccommentsd',  dvvfinalcontroller.scholarshipdoccomments);
+app.get('/api/v1/careerdoccommentsd',  dvvfinalcontroller.careerdoccomments);
+app.get('/api/v1/skilldevdoccommentsd',  dvvfinalcontroller.skilldevdoccomments);
+app.get('/api/v1/skilldevdoccommentsall',  dvvfinalcontroller.skilldevdoccommentsall);
+app.get('/api/v1/placementdoccommentsd',  dvvfinalcontroller.placementdoccomments);
+app.get('/api/v1/bosdoccommentsd',  dvvfinalcontroller.bosdoccomments);
+app.get('/api/v1/ictdoccommentsd',  dvvfinalcontroller.ictdoccomments);
+app.get('/api/v1/econtentdoccommentsd',  dvvfinalcontroller.econtentdoccomments);
+app.get('/api/v1/extensiondoccommentsd',  dvvfinalcontroller.extensiondoccomments);
+app.get('/api/v1/extawardsdoccommentsd',  dvvfinalcontroller.extawardsdoccomments);
+app.get('/api/v1/collabdoccommentsd',  dvvfinalcontroller.collabdoccomments);
+app.get('/api/v1/moudoccommentsd',  dvvfinalcontroller.moudoccomments);
+app.get('/api/v1/librarydoccommentsd',  dvvfinalcontroller.librarydoccomments);
+app.get('/api/v1/fundsdoccommentsd',  dvvfinalcontroller.fundsdoccomments);
+app.get('/api/v1/teacherfsdoccommentsd',  dvvfinalcontroller.teacherfsdoccomments);
+app.get('/api/v1/qualitydoccommentsd',  dvvfinalcontroller.qualitydoccomments);
+app.get('/api/v1/addoncdoccommentsd',  dvvfinalcontroller.addoncdoccomments);
+app.get('/api/v1/expendituredoccommentsd',  dvvfinalcontroller.expendituredoccomments);
+app.get('/api/v1/teacherdatadoccommentsd',  dvvfinalcontroller.teacherdatadoccomments);
+app.get('/api/v1/passdoccommentsd',  dvvfinalcontroller.passdoccomments);
+app.get('/api/v1/examdaysdoccommentsd',  dvvfinalcontroller.examdaysdoccomments);
+app.get('/api/v1/consultancydoccommentsd',  dvvfinalcontroller.consultancydoccomments);
+app.get('/api/v1/phdguidedoccommentsd',  dvvfinalcontroller.phdguidedoccomments);
+app.get('/api/v1/incubationdocsd',  dvvfinalcontroller.incubationdocs);
+app.get('/api/v1/higheredudocsd',  dvvfinalcontroller.higheredudocs);
+app.get('/api/v1/higherexamdocsd',  dvvfinalcontroller.higherexamdocs);
+app.get('/api/v1/justawarddocsd',  dvvfinalcontroller.justawarddocs);
+app.get('/api/v1/sportsactdocsd',  dvvfinalcontroller.sportsactdocs);
+app.get('/api/v1/fdpcold',  dvvfinalcontroller.fdpcol);
+
+
+const dvvlinkcontrollerssr=require('./controllers/dvvlinkssrcontroller');
+app.get('/api/v1/boslinksssr',  dvvlinkcontrollerssr.bosdoccomments);
+app.get('/api/v1/cbcslinksssr',  dvvlinkcontrollerssr.cbcsdocs);
+app.get('/api/v1/addonlinksssr',  dvvlinkcontrollerssr.addoncdoccomments);
+app.get('/api/v1/explearnlinksssr',  dvvlinkcontrollerssr.explearningdocs);
+app.get('/api/v1/explearnprojlinksssr',  dvvlinkcontrollerssr.explearnprojdocs);
+app.get('/api/v1/admissionlinksssr',  dvvlinkcontrollerssr.admissiondoccomments);
+
+
+app.get('/api/v1/researchfellowlinksssr',  dvvlinkcontrollerssr.researchfellowdocs);
+// app.get('/api/v1/employabilitydocsd',  dvvfinalcontroller.employabilitydocs);
+app.get('/api/v1/admissionlinksssr',  dvvlinkcontrollerssr.admissiondocs);
+app.get('/api/v1/reservecatlinksssr',  dvvlinkcontrollerssr.reservecatdocs);
+app.get('/api/v1/projectyrlinksssr',  dvvlinkcontrollerssr.projectyrdocs);
+app.get('/api/v1/seminarlinksssr',  dvvlinkcontrollerssr.seminardocs);
+app.get('/api/v1/publicationlinksssr',  dvvlinkcontrollerssr.publicationdocs);
+app.get('/api/v1/patentlinksssr',  dvvlinkcontrollerssr.patentdocs);
+app.get('/api/v1/booklinksssr',  dvvlinkcontrollerssr.bookdocs);
+app.get('/api/v1/projectlinksssr',  dvvlinkcontrollerssr.projectdoccomments);
+app.get('/api/v1/booklinksallssr',  dvvlinkcontrollerssr.bookdoccomments);
+app.get('/api/v1/patentlinksallssr',  dvvlinkcontrollerssr.patentdoccomments);
+app.get('/api/v1/publinksallssr',  dvvlinkcontrollerssr.pubdoccomments);
+app.get('/api/v1/seminarlinksallssr',  dvvlinkcontrollerssr.seminardoccomments);
+app.get('/api/v1/admissionlinksallssr',  dvvlinkcontrollerssr.admissiondoccomments);
+app.get('/api/v1/teacherawardlinksssr',  dvvlinkcontrollerssr.teacherawarddoccoms);
+app.get('/api/v1/innovationlinksssr',  dvvlinkcontrollerssr.innovationdoccomments);
+app.get('/api/v1/teacherfellowlinksssr',  dvvlinkcontrollerssr.teacherfellowdoccomments);
+app.get('/api/v1/eventlinksssr',  dvvlinkcontrollerssr.eventdoccomments);
+app.get('/api/v1/seedmdoclinksssr',  dvvlinkcontrollerssr.seedmdoccomments);
+app.get('/api/v1/scholarshipdoclinksssr',  dvvlinkcontrollerssr.scholarshipdoccomments);
+app.get('/api/v1/careerlinksssr',  dvvlinkcontrollerssr.careerdoccomments);
+app.get('/api/v1/skilldevlinksssr',  dvvlinkcontrollerssr.skilldevdoccomments);
+app.get('/api/v1/placementdoclinksssr',  dvvlinkcontrollerssr.placementdoccomments);
+// app.get('/api/v1/bosdoccommentsd',  dvvlinkcontroller.bosdoccomments);
+app.get('/api/v1/ictlinksssr',  dvvlinkcontrollerssr.ictdoccomments);
+app.get('/api/v1/econtentlinksssr',  dvvlinkcontrollerssr.econtentdoccomments);
+app.get('/api/v1/extensionlinksssr',  dvvlinkcontrollerssr.extensiondoccomments);
+app.get('/api/v1/extawardslinksssr',  dvvlinkcontrollerssr.extawardsdoccomments);
+app.get('/api/v1/collablinksssr',  dvvlinkcontrollerssr.collabdoccomments);
+app.get('/api/v1/moulinksssr',  dvvlinkcontrollerssr.moudoccomments);
+app.get('/api/v1/librarylinksssr',  dvvlinkcontrollerssr.librarydoccomments);
+app.get('/api/v1/fundslinksssr',  dvvlinkcontrollerssr.fundsdoccomments);
+app.get('/api/v1/teacherfslinksssr',  dvvlinkcontrollerssr.teacherfsdoccomments);
+app.get('/api/v1/qualitylinksssr',  dvvlinkcontrollerssr.qualitydoccomments);
+// app.get('/api/v1/addoncdoccommentsd',  dvvlinkcontroller.addoncdoccomments);
+app.get('/api/v1/expenditurelinksssr',  dvvlinkcontrollerssr.expendituredoccomments);
+app.get('/api/v1/teacherdatadoclinksssr',  dvvlinkcontrollerssr.teacherdatadoccomments);
+app.get('/api/v1/passdoclinksssr',  dvvlinkcontrollerssr.passdoccomments);
+app.get('/api/v1/examdaysdoclinksssr',  dvvlinkcontrollerssr.examdaysdoccomments);
+app.get('/api/v1/consultancydoclinksssr',  dvvlinkcontrollerssr.consultancydoccomments);
+app.get('/api/v1/phdguidelinksssr',  dvvlinkcontrollerssr.phdguidedoccomments);
+app.get('/api/v1/incubationlinksssr',  dvvlinkcontrollerssr.incubationdocs);
+app.get('/api/v1/higheredulinksssr',  dvvlinkcontrollerssr.higheredudocs);
+app.get('/api/v1/higherexamlinksssr',  dvvlinkcontrollerssr.higherexamdocs);
+app.get('/api/v1/justawardlinksssr',  dvvlinkcontrollerssr.justawarddocs);
+app.get('/api/v1/sportsactlinksssr',  dvvlinkcontrollerssr.sportsactdocs);
+app.get('/api/v1/fdplinksssr',  dvvlinkcontrollerssr.fdpcol);
+
+
+
+const dvvlinkcontroller=require('./controllers/dvvlinkcontroller');
+app.get('/api/v1/boslinks',  dvvlinkcontroller.bosdoccomments);
+app.get('/api/v1/cbcslinks',  dvvlinkcontroller.cbcsdocs);
+app.get('/api/v1/addonlinks',  dvvlinkcontroller.addoncdoccomments);
+app.get('/api/v1/explearnlinks',  dvvlinkcontroller.explearningdocs);
+app.get('/api/v1/explearnprojlinks',  dvvlinkcontroller.explearnprojdocs);
+app.get('/api/v1/admissionlinks',  dvvlinkcontroller.admissiondoccomments);
+
+
+app.get('/api/v1/researchfellowlinks',  dvvlinkcontroller.researchfellowdocs);
+// app.get('/api/v1/employabilitydocsd',  dvvfinalcontroller.employabilitydocs);
+app.get('/api/v1/admissionlinks',  dvvlinkcontroller.admissiondocs);
+app.get('/api/v1/reservecatlinks',  dvvlinkcontroller.reservecatdocs);
+app.get('/api/v1/projectyrlinks',  dvvlinkcontroller.projectyrdocs);
+app.get('/api/v1/seminarlinks',  dvvlinkcontroller.seminardocs);
+app.get('/api/v1/publicationlinks',  dvvlinkcontroller.publicationdocs);
+app.get('/api/v1/patentlinks',  dvvlinkcontroller.patentdocs);
+app.get('/api/v1/booklinks',  dvvlinkcontroller.bookdocs);
+app.get('/api/v1/projectlinks',  dvvlinkcontroller.projectdoccomments);
+app.get('/api/v1/booklinksall',  dvvlinkcontroller.bookdoccomments);
+app.get('/api/v1/patentlinksall',  dvvlinkcontroller.patentdoccomments);
+app.get('/api/v1/publinksall',  dvvlinkcontroller.pubdoccomments);
+app.get('/api/v1/seminarlinksall',  dvvlinkcontroller.seminardoccomments);
+app.get('/api/v1/admissionlinksall',  dvvlinkcontroller.admissiondoccomments);
+app.get('/api/v1/teacherawardlinks',  dvvlinkcontroller.teacherawarddoccoms);
+app.get('/api/v1/innovationlinks',  dvvlinkcontroller.innovationdoccomments);
+app.get('/api/v1/teacherfellowlinks',  dvvlinkcontroller.teacherfellowdoccomments);
+app.get('/api/v1/eventlinks',  dvvlinkcontroller.eventdoccomments);
+app.get('/api/v1/seedmdoclinks',  dvvlinkcontroller.seedmdoccomments);
+app.get('/api/v1/scholarshipdoclinks',  dvvlinkcontroller.scholarshipdoccomments);
+app.get('/api/v1/careerlinks',  dvvlinkcontroller.careerdoccomments);
+app.get('/api/v1/skilldevlinks',  dvvlinkcontroller.skilldevdoccomments);
+app.get('/api/v1/placementdoclinks',  dvvlinkcontroller.placementdoccomments);
+// app.get('/api/v1/bosdoccommentsd',  dvvlinkcontroller.bosdoccomments);
+app.get('/api/v1/ictlinks',  dvvlinkcontroller.ictdoccomments);
+app.get('/api/v1/econtentlinks',  dvvlinkcontroller.econtentdoccomments);
+app.get('/api/v1/extensionlinks',  dvvlinkcontroller.extensiondoccomments);
+app.get('/api/v1/extawardslinks',  dvvlinkcontroller.extawardsdoccomments);
+app.get('/api/v1/collablinks',  dvvlinkcontroller.collabdoccomments);
+app.get('/api/v1/moulinks',  dvvlinkcontroller.moudoccomments);
+app.get('/api/v1/librarylinks',  dvvlinkcontroller.librarydoccomments);
+app.get('/api/v1/fundslinks',  dvvlinkcontroller.fundsdoccomments);
+app.get('/api/v1/teacherfslinks',  dvvlinkcontroller.teacherfsdoccomments);
+app.get('/api/v1/qualitylinks',  dvvlinkcontroller.qualitydoccomments);
+// app.get('/api/v1/addoncdoccommentsd',  dvvlinkcontroller.addoncdoccomments);
+app.get('/api/v1/expenditurelinks',  dvvlinkcontroller.expendituredoccomments);
+app.get('/api/v1/teacherdatadoclinks',  dvvlinkcontroller.teacherdatadoccomments);
+app.get('/api/v1/passdoclinks',  dvvlinkcontroller.passdoccomments);
+app.get('/api/v1/examdaysdoclinks',  dvvlinkcontroller.examdaysdoccomments);
+app.get('/api/v1/consultancydoclinks',  dvvlinkcontroller.consultancydoccomments);
+app.get('/api/v1/phdguidelinks',  dvvlinkcontroller.phdguidedoccomments);
+app.get('/api/v1/incubationlinks',  dvvlinkcontroller.incubationdocs);
+app.get('/api/v1/higheredulinks',  dvvlinkcontroller.higheredudocs);
+app.get('/api/v1/higherexamlinks',  dvvlinkcontroller.higherexamdocs);
+app.get('/api/v1/justawardlinks',  dvvlinkcontroller.justawarddocs);
+app.get('/api/v1/sportsactlinks',  dvvlinkcontroller.sportsactdocs);
+app.get('/api/v1/fdplinks',  dvvlinkcontroller.fdpcol);
+
+
+const naacddcontroller=require('./controllers/naacddcontroller');
+app.get('/api/v1/fieldprojd',  naacddcontroller.fieldproj);
+app.get('/api/v1/examautomationd',  naacddcontroller.examautomation);
+app.get('/api/v1/teacherguided',  naacddcontroller.teacherguide);
+app.get('/api/v1/incubationd',  naacddcontroller.incubation);
+app.get('/api/v1/alumnicond',  naacddcontroller.alumnicon);
+app.get('/api/v1/egovd',  naacddcontroller.egov);
+app.get('/api/v1/egovernd',  naacddcontroller.egovern);
+app.get('/api/v1/teacherfsd',  naacddcontroller.teacherfs);
+app.get('/api/v1/fundsd',  naacddcontroller.funds);
+app.get('/api/v1/qualityd',  naacddcontroller.quality);
+app.get('/api/v1/qualityinitd',  naacddcontroller.qualityinit);
+app.get('/api/v1/resultd',  naacddcontroller.result);
+app.get('/api/v1/econtentd',  naacddcontroller.econtent);
+app.get('/api/v1/consultancyd',  naacddcontroller.consultancy);
+app.get('/api/v1/extawardsd',  naacddcontroller.extawards);
+app.get('/api/v1/extactd',  naacddcontroller.extact);
+app.get('/api/v1/expenditured',  naacddcontroller.expenditure);
+app.get('/api/v1/libraryd',  naacddcontroller.library);
+app.get('/api/v1/higheredud',  naacddcontroller.higheredu);
+app.get('/api/v1/higherexamd',  naacddcontroller.higherexam);
+
+
+const naacallddcontroller=require('./controllers/naacallddcontroller');
+app.get('/api/v1/fieldprojdd',  naacallddcontroller.fieldproj);
+app.get('/api/v1/examautomationdd',  naacallddcontroller.examautomation);
+app.get('/api/v1/teacherguidedd',  naacallddcontroller.teacherguide);
+app.get('/api/v1/incubationdd',  naacallddcontroller.incubation);
+app.get('/api/v1/alumnicondd',  naacallddcontroller.alumnicon);
+app.get('/api/v1/egovdd',  naacallddcontroller.egov);
+app.get('/api/v1/egoverndd',  naacallddcontroller.egovern);
+app.get('/api/v1/teacherfsdd',  naacallddcontroller.teacherfs);
+app.get('/api/v1/fundsdd',  naacallddcontroller.funds);
+app.get('/api/v1/qualitydd',  naacallddcontroller.quality);
+app.get('/api/v1/qualityinitdd',  naacallddcontroller.qualityinit);
+app.get('/api/v1/resultdd',  naacallddcontroller.result);
+app.get('/api/v1/econtentdd',  naacallddcontroller.econtent);
+app.get('/api/v1/consultancydd',  naacallddcontroller.consultancy);
+app.get('/api/v1/extawardsdd',  naacallddcontroller.extawards);
+app.get('/api/v1/extactddd',  naacallddcontroller.extact);
+app.get('/api/v1/expendituredd',  naacallddcontroller.expenditure);
+app.get('/api/v1/librarydd',  naacallddcontroller.library);
+app.get('/api/v1/higheredudd',  naacallddcontroller.higheredu);
+app.get('/api/v1/higherexamdd',  naacallddcontroller.higherexam);
+
+
+const deletealluserapicontroller=require('./controllers/deletealluserapicontroller');
+app.get('/api/v1/deleteallskilldevbyuser',  deletealluserapicontroller.deleteallskilldevbyuser);
+app.get('/api/v1/deleteallteacherdatabyuser',  deletealluserapicontroller.deleteallteacherdatabyuser);
+app.get('/api/v1/deleteallcbcsbyuser',  deletealluserapicontroller.deleteallcbcsbyuser);
+app.get('/api/v1/deleteallbosbyuser',  deletealluserapicontroller.deleteallbosbyuser);
+app.get('/api/v1/deletealleventbyuser',  deletealluserapicontroller.deletealleventbyuser);
+app.get('/api/v1/deletealladmissionbyuser',  deletealluserapicontroller.deletealladmissionbyuser);
+app.get('/api/v1/deleteallreservecatbyuser',  deletealluserapicontroller.deleteallreservecatbyuser);
+app.get('/api/v1/deleteallpassexambyuser',  deletealluserapicontroller.deleteallpassexambyuser);
+app.get('/api/v1/deleteallawardsbyuser',  deletealluserapicontroller.deleteallawardsbyuser);
+app.get('/api/v1/deleteallextactbyuser',  deletealluserapicontroller.deleteallextactbyuser);
+app.get('/api/v1/deleteallcollabbyuser',  deletealluserapicontroller.deleteallcollabbyuser);
+app.get('/api/v1/deleteallmoubyuser',  deletealluserapicontroller.deleteallmoubyuser);
+app.get('/api/v1/deleteallictbyuser',  deletealluserapicontroller.deleteallictbyuser);
+app.get('/api/v1/deleteallexpenditurebyuser',  deletealluserapicontroller.deleteallexpenditurebyuser);
+app.get('/api/v1/deleteallscholarshipbyuser',  deletealluserapicontroller.deleteallscholarshipbyuser);
+app.get('/api/v1/deletealllibrarybyuser',  deletealluserapicontroller.deletealllibrarybyuser);
+app.get('/api/v1/deleteallfundsbyuser',  deletealluserapicontroller.deleteallfundsbyuser);
+app.get('/api/v1/deleteallqualitybyuser',  deletealluserapicontroller.deleteallqualitybyuser);
+app.get('/api/v1/deleteallcareercounselbyuser',  deletealluserapicontroller.deleteallcareercounselbyuser);
+app.get('/api/v1/deleteallplacementbyuser',  deletealluserapicontroller.deleteallplacementbyuser);
+app.get('/api/v1/deleteallhigheredubyuser',  deletealluserapicontroller.deleteallhigheredubyuser);
+app.get('/api/v1/deleteallhigherexambyuser',  deletealluserapicontroller.deleteallhigherexambyuser);
+app.get('/api/v1/deleteallteacherfsbyuser',  deletealluserapicontroller.deleteallteacherfsbyuser);
+app.get('/api/v1/deleteallegovernbyuser',  deletealluserapicontroller.deleteallegovernbyuser);
+app.get('/api/v1/deletealladdoncbyuser',  deletealluserapicontroller.deletealladdoncbyuser);
+app.get('/api/v1/deleteallextawardsbyuser',  deletealluserapicontroller.deleteallextawardsbyuser);
+app.get('/api/v1/deleteallresultbyuser',  deletealluserapicontroller.deleteallresultbyuser);
+app.get('/api/v1/deleteallecontentbyuser',  deletealluserapicontroller.deleteallecontentbyuser);
+app.get('/api/v1/deleteallseedmbyuser',  deletealluserapicontroller.deleteallseedmbyuser);
+app.get('/api/v1/deleteallconsultancybyuser',  deletealluserapicontroller.deleteallconsultancybyuser);
+app.get('/api/v1/deleteallsyllabusrevbyuser',  deletealluserapicontroller.deleteallsyllabusrevbyuser);
+app.get('/api/v1/deleteallexplearningbyuser',  deletealluserapicontroller.deleteallexplearningbyuser);
+app.get('/api/v1/deleteallemployabilitybyuser',  deletealluserapicontroller.deleteallemployabilitybyuser);
+app.get('/api/v1/deleteallphdbyuser',  deletealluserapicontroller.deleteallphdbyuser);
+app.get('/api/v1/deleteallteacherawardbyuser',  deletealluserapicontroller.deleteallteacherawardbyuser);
+app.get('/api/v1/deleteallexamautomationbyuser',  deletealluserapicontroller.deleteallexamautomationbyuser);
+app.get('/api/v1/deleteallteacherfellowbyuser',  deletealluserapicontroller.deleteallteacherfellowbyuser);
+app.get('/api/v1/deleteallresearchfellowbyuser',  deletealluserapicontroller.deleteallresearchfellowbyuser);
+app.get('/api/v1/deleteallalumniconbyuser',  deletealluserapicontroller.deleteallalumniconbyuser);
+app.get('/api/v1/deleteallmenteesbyuser',  deletealluserapicontroller.deleteallmenteesbyuser);
+
+app.get('/api/v1/deleteallpatentbyuser',  deletealluserapicontroller.deleteallpatentbyuser);
+app.get('/api/v1/deleteallbookbyuser',  deletealluserapicontroller.deleteallbookbyuser);
+app.get('/api/v1/deleteallprojectbyuser',  deletealluserapicontroller.deleteallprojectbyuser);
+app.get('/api/v1/deleteallseminarbyuser',  deletealluserapicontroller.deleteallseminarbyuser);
+app.get('/api/v1/deleteallpubbyuser',  deletealluserapicontroller.deleteallpubbyuser);
+app.get('/api/v1/deleteallinnovationbyuser',  deletealluserapicontroller.deleteallinnovationbyuser);
+
+
+
+
+const naacupdateapicontroller=require('./controllers/naacupdateapicontroller');
+
+app.get('/api/v1/updatescholarshiptitle',  naacupdateapicontroller.updatescholarshiptitle);
+app.get('/api/v1/updateustudschsptitle',  naacupdateapicontroller.updateustudschsptitle);
+
+
+app.get('/api/v1/updatemanybosbyfac',  naacupdateapicontroller.updatemanybosbyfac);
+app.get('/api/v1/updatemanyeventbyfac',  naacupdateapicontroller.updatemanyeventbyfac);
+app.get('/api/v1/updatemanycbcsbyfac',  naacupdateapicontroller.updatemanycbcsbyfac);
+app.get('/api/v1/updatemanyadmissionbyfac',  naacupdateapicontroller.updatemanyadmissionbyfac);
+app.get('/api/v1/updatemanyreservecatbyfac',  naacupdateapicontroller.updatemanyreservecatbyfac);
+app.get('/api/v1/updatemanyteacherdatabyfac',  naacupdateapicontroller.updatemanyteacherdatabyfac);
+app.get('/api/v1/updatemanypassexambyfac',  naacupdateapicontroller.updatemanypassexambyfac);
+app.get('/api/v1/updatemanyawardsbyfac',  naacupdateapicontroller.updatemanyawardsbyfac);
+app.get('/api/v1/updatemanyextactbyfac',  naacupdateapicontroller.updatemanyextactbyfac);
+app.get('/api/v1/updatemanycollabbyfac',  naacupdateapicontroller.updatemanycollabbyfac);
+app.get('/api/v1/updatemanymoubyfac',  naacupdateapicontroller.updatemanymoubyfac);
+app.get('/api/v1/updatemanyictbyfac',  naacupdateapicontroller.updatemanyictbyfac);
+app.get('/api/v1/updatemanyexpenditurebyfac',  naacupdateapicontroller.updatemanyexpenditurebyfac);
+app.get('/api/v1/updatemanyscholarshipbyfac',  naacupdateapicontroller.updatemanyscholarshipbyfac);
+app.get('/api/v1/updatemanylibrarybyfac',  naacupdateapicontroller.updatemanylibrarybyfac);
+app.get('/api/v1/updatemanyfundsbyfac',  naacupdateapicontroller.updatemanyfundsbyfac);
+app.get('/api/v1/updatemanyqualitybyfac',  naacupdateapicontroller.updatemanyqualitybyfac);
+app.get('/api/v1/updatemanyskilldevbyfac',  naacupdateapicontroller.updatemanyskilldevbyfac);
+app.get('/api/v1/updatemanycareercounselbyfac',  naacupdateapicontroller.updatemanycareercounselbyfac);
+app.get('/api/v1/updatemanyplacementbyfac',  naacupdateapicontroller.updatemanyplacementbyfac);
+app.get('/api/v1/updatemanyhigheredubyfac',  naacupdateapicontroller.updatemanyhigheredubyfac);
+app.get('/api/v1/updatemanyhigherexambyfac',  naacupdateapicontroller.updatemanyhigherexambyfac);
+app.get('/api/v1/updatemanyteacherfsbyfac',  naacupdateapicontroller.updatemanyteacherfsbyfac);
+app.get('/api/v1/updatemanyegovernbyfac',  naacupdateapicontroller.updatemanyegovernbyfac);
+app.get('/api/v1/updatemanyaddoncbyfac',  naacupdateapicontroller.updatemanyaddoncbyfac);
+app.get('/api/v1/updatemanyinstawardsbyfac',  naacupdateapicontroller.updatemanyinstawardsbyfac);
+app.get('/api/v1/updatemanyresultbyfac',  naacupdateapicontroller.updatemanyresultbyfac);
+app.get('/api/v1/updatemanyecontentbyfac',  naacupdateapicontroller.updatemanyecontentbyfac);
+app.get('/api/v1/updatemanyseedmbyfac',  naacupdateapicontroller.updatemanyseedmbyfac);
+//app.get('/api/v1/updatemanyconsultancybyfac',  naacupdateapicontroller.updatemanyconsultancybyfac);
+app.get('/api/v1/updatemanysyllabusrevbyfac',  naacupdateapicontroller.updatemanysyllabusrevbyfac);
+app.get('/api/v1/updatemanyexplearningbyfac',  naacupdateapicontroller.updatemanyexplearningbyfac);
+app.get('/api/v1/updatemanyemployabilitybyfac',  naacupdateapicontroller.updatemanyemployabilitybyfac);
+app.get('/api/v1/updatemanyphdbyfac',  naacupdateapicontroller.updatemanyphdbyfac);
+app.get('/api/v1/updatemanyteacherawardbyfac',  naacupdateapicontroller.updatemanyteacherawardbyfac);
+app.get('/api/v1/updatemanyexamautomationbyfac',  naacupdateapicontroller.updatemanyexamautomationbyfac);
+app.get('/api/v1/updatemanyteacherfellowbyfac',  naacupdateapicontroller.updatemanyteacherfellowbyfac);
+app.get('/api/v1/updatemanyresearchfellowbyfac',  naacupdateapicontroller.updatemanyresearchfellowbyfac);
+app.get('/api/v1/updatemanyalumniconbyfac',  naacupdateapicontroller.updatemanyalumniconbyfac);
+
+
+
+const diskfacapi=require('./controllers/diskfacapi');
+app.post('/api/v1/uploadclassenr',  diskfacapi.uploadclassenr);
+app.post('/api/v1/uploadclassenrext',  diskfacapi.uploadclassenrext);
+app.post('/api/v1/uploadclassenrexta',  diskfacapi.uploadclassenrexta);
+app.post('/api/v1/uploadbooks',  diskfacapi.uploadbooks);
+//app.post('/api/v1/uploadexplearning',  diskfacapi.uploadexplearning);
+app.post('/api/v1/uploadaddonc',  diskfacapi.uploadaddonc);
+
+const qspeercontroller=require('./controllers/qspeercontroller');
+app.get('/addqspeers',  qspeercontroller.getaddqspeers);
+app.post('/createqspeers',  qspeercontroller.createqspeers);
+
+const qsemployercontroller=require('./controllers/qsemployercontroller');
+app.get('/addqsemployers',  qsemployercontroller.getaddqsemployers);
+app.post('/createqsemployers',  qsemployercontroller.createqsemployers);
+
+// kavya
+
+// aug 10
+
+
+const rcocaladd=require('./router/addcocalrouter.js');
+const rcocalview=require('./router/viewcocalrouter.js');
+const rcocaledit=require('./router/editcocalrouter.js');
+const rcocaldel=require('./router/deletecocalrouter.js');
+const rbulkcocaladd=require('./router/addbulkcocalrouter.js');
+
+
+app.use('/addcocal',rcocaladd);
+app.use('/viewcocal',rcocalview);
+app.use('/editcocal',rcocaledit);
+app.use('/deletecocal',rcocaldel);
+app.use('/addbulkcocal',rbulkcocaladd);
+
+
+// end
+
+// jan 21
+
+const rteachingfeedbackadd=require('./router/addteachingfeedbackrouter.js');
+const rteachingfeedbackexport=require('./router/exportteachingfeedbackrouter.js');
+
+const rdeptfeedbackadd=require('./router/adddeptfeedbackrouter.js');
+const rdeptfeedbackexport=require('./router/exportdeptfeedbackrouter.js');
+
+
+app.use('/addteachingfeedback',rteachingfeedbackadd);
+app.use('/exportteachingfeedback',rteachingfeedbackexport);
+
+app.use('/adddeptfeedback',rdeptfeedbackadd);
+app.use('/exportdeptfeedback',rdeptfeedbackexport);
+
+
+// end
+
+// sep 5
+
+
+const deleteallapicontroller=require('./controllers/deleteallapicontroller');
+
+app.get('/api/v1/deleteallexamschedule',  deleteallapicontroller.deleteallexamschedule);
+app.get('/api/v1/deleteallworkloadbyfac',  deleteallapicontroller.deleteallworkloadbyfac);
+
+app.get('/api/v1/deleteallfeedback',  deleteallapicontroller.deleteallfeedback);
+app.get('/api/v1/deleteallnallcourses',  deleteallapicontroller.deleteallnallcourses);
+
+app.get('/api/v1/deleteallphdface',  deleteallapicontroller.deleteallphdface);
+app.get('/api/v1/deleteallnugrievance',  deleteallapicontroller.deleteallnugrievance);
+
+app.get('/api/v1/deleteallskilldevbyfac',  deleteallapicontroller.deleteallskilldevbyfac);
+app.get('/api/v1/deleteallteacherdatabyfac',  deleteallapicontroller.deleteallteacherdatabyfac);
+app.get('/api/v1/deleteallcbcsbyfac',  deleteallapicontroller.deleteallcbcsbyfac);
+app.get('/api/v1/deleteallbosbyfac',  deleteallapicontroller.deleteallbosbyfac);
+app.get('/api/v1/deletealleventbyfac',  deleteallapicontroller.deletealleventbyfac);
+app.get('/api/v1/deletealladmissionbyfac',  deleteallapicontroller.deletealladmissionbyfac);
+app.get('/api/v1/deleteallreservecatbyfac',  deleteallapicontroller.deleteallreservecatbyfac);
+app.get('/api/v1/deleteallpassexambyfac',  deleteallapicontroller.deleteallpassexambyfac);
+app.get('/api/v1/deleteallawardsbyfac',  deleteallapicontroller.deleteallawardsbyfac);
+app.get('/api/v1/deleteallextactbyfac',  deleteallapicontroller.deleteallextactbyfac);
+app.get('/api/v1/deleteallcollabbyfac',  deleteallapicontroller.deleteallcollabbyfac);
+app.get('/api/v1/deleteallmoubyfac',  deleteallapicontroller.deleteallmoubyfac);
+app.get('/api/v1/deleteallictbyfac',  deleteallapicontroller.deleteallictbyfac);
+app.get('/api/v1/deleteallexpenditurebyfac',  deleteallapicontroller.deleteallexpenditurebyfac);
+app.get('/api/v1/deleteallscholarshipbyfac',  deleteallapicontroller.deleteallscholarshipbyfac);
+app.get('/api/v1/deletealllibrarybyfac',  deleteallapicontroller.deletealllibrarybyfac);
+app.get('/api/v1/deleteallfundsbyfac',  deleteallapicontroller.deleteallfundsbyfac);
+app.get('/api/v1/deleteallqualitybyfac',  deleteallapicontroller.deleteallqualitybyfac);
+app.get('/api/v1/deleteallcareercounselbyfac',  deleteallapicontroller.deleteallcareercounselbyfac);
+app.get('/api/v1/deleteallplacementbyfac',  deleteallapicontroller.deleteallplacementbyfac);
+app.get('/api/v1/deleteallhigheredubyfac',  deleteallapicontroller.deleteallhigheredubyfac);
+app.get('/api/v1/deleteallhigherexambyfac',  deleteallapicontroller.deleteallhigherexambyfac);
+app.get('/api/v1/deleteallteacherfsbyfac',  deleteallapicontroller.deleteallteacherfsbyfac);
+app.get('/api/v1/deleteallegovernbyfac',  deleteallapicontroller.deleteallegovernbyfac);
+app.get('/api/v1/deletealladdoncbyfac',  deleteallapicontroller.deletealladdoncbyfac);
+app.get('/api/v1/deleteallextawardsbyfac',  deleteallapicontroller.deleteallextawardsbyfac);
+app.get('/api/v1/deleteallresultbyfac',  deleteallapicontroller.deleteallresultbyfac);
+app.get('/api/v1/deleteallecontentbyfac',  deleteallapicontroller.deleteallecontentbyfac);
+app.get('/api/v1/deleteallseedmbyfac',  deleteallapicontroller.deleteallseedmbyfac);
+app.get('/api/v1/deleteallconsultancybyfac',  deleteallapicontroller.deleteallconsultancybyfac);
+app.get('/api/v1/deleteallsyllabusrevbyfac',  deleteallapicontroller.deleteallsyllabusrevbyfac);
+app.get('/api/v1/deleteallexplearningbyfac',  deleteallapicontroller.deleteallexplearningbyfac);
+app.get('/api/v1/deleteallemployabilitybyfac',  deleteallapicontroller.deleteallemployabilitybyfac);
+app.get('/api/v1/deleteallphdbyfac',  deleteallapicontroller.deleteallphdbyfac);
+app.get('/api/v1/deleteallteacherawardbyfac',  deleteallapicontroller.deleteallteacherawardbyfac);
+app.get('/api/v1/deleteallexamautomationbyfac',  deleteallapicontroller.deleteallexamautomationbyfac);
+app.get('/api/v1/deleteallteacherfellowbyfac',  deleteallapicontroller.deleteallteacherfellowbyfac);
+app.get('/api/v1/deleteallresearchfellowbyfac',  deleteallapicontroller.deleteallresearchfellowbyfac);
+app.get('/api/v1/deleteallalumniconbyfac',  deleteallapicontroller.deleteallalumniconbyfac);
+app.get('/api/v1/deleteallmenteesbyfac',  deleteallapicontroller.deleteallmenteesbyfac);
+
+app.get('/api/v1/deleteallpatentbyfac',  deleteallapicontroller.deleteallpatentbyfac);
+app.get('/api/v1/deleteallbookbyfac',  deleteallapicontroller.deleteallbookbyfac);
+app.get('/api/v1/deleteallprojectbyfac',  deleteallapicontroller.deleteallprojectbyfac);
+app.get('/api/v1/deleteallseminarbyfac',  deleteallapicontroller.deleteallseminarbyfac);
+app.get('/api/v1/deleteallpubbyfac',  deleteallapicontroller.deleteallpubbyfac);
+app.get('/api/v1/deleteallinnovationbyfac',  deleteallapicontroller.deleteallinnovationbyfac);
+
+
+const officeapicontroller=require('./controllers/officeapicontroller');
+app.get('/api/v1/getleavebalancebyfac',  officeapicontroller.getleavebalancebyfac);
+app.get('/api/v1/getleavebalancebyfactype',  officeapicontroller.getleavebalancebyfactype);
+app.get('/api/v1/createleavebalance',  officeapicontroller.createleavebalance);
+app.get('/api/v1/approveleavebalance',  officeapicontroller.approveleavebalance);
+app.get('/api/v1/approvalleavebalance',  officeapicontroller.approvalleavebalance);
+app.get('/api/v1/updateleavebalance',  officeapicontroller.updateleavebalance);
+app.get('/api/v1/deleteleavebalance',  officeapicontroller.deleteleavebalance);
+
+app.get('/api/v1/getleaveapplybyfac',  officeapicontroller.getleaveapplybyfac);
+app.get('/api/v1/getleaveapplybyadmin',  officeapicontroller.getleaveapplybyadmin);
+app.get('/api/v1/getpendingleavelist',  officeapicontroller.getpendingleavelist);
+app.get('/api/v1/getpendingleavesumbyfac',  officeapicontroller.getpendingleavesumbyfac);
+app.get('/api/v1/getleaveapplyforhod',  officeapicontroller.getleaveapplyforhod);
+app.get('/api/v1/getleaveapplyforprincipal',  officeapicontroller.getleaveapplyforprincipal);
+app.get('/api/v1/createleaveapply',  officeapicontroller.createleaveapply);
+app.get('/api/v1/updateleaveapply',  officeapicontroller.updateleaveapply);
+app.get('/api/v1/updateleavestatus',  officeapicontroller.updateleavestatus);
+app.get('/api/v1/approvebyhod',  officeapicontroller.approvebyhod);
+app.get('/api/v1/approvebyprincipal',  officeapicontroller.approvebyprincipal);
+app.get('/api/v1/deleteleaveapply',  officeapicontroller.deleteleaveapply);
+
+app.get('/api/v1/getprojectbalancebyfac',  officeapicontroller.getprojectbalancebyfac);
+app.get('/api/v1/getprojectbalancebyproject',  officeapicontroller.getprojectbalancebyproject);
+app.get('/api/v1/createprojectbalance',  officeapicontroller.createprojectbalance);
+app.get('/api/v1/updateprojectbalance',  officeapicontroller.updateprojectbalance);
+app.get('/api/v1/deleteprojectbalance',  officeapicontroller.deleteprojectbalance);
+
+const divyacontroller=require('./controllers/divyacontroller');
+app.get('/api/v1/getinvoicebyfac',  divyacontroller.getinvoicebyfac);
+app.get('/api/v1/createinvoicebyfac',  divyacontroller.createinvoicebyfac);
+app.get('/api/v1/updateinvoicebyfac',  divyacontroller.updateinvoicebyfac);
+app.get('/api/v1/deleteinvoicebyfac',  divyacontroller.deleteinvoicebyfac);
+
+
+const academicapicontroller=require('./controllers/academicapicontroller');
+app.get('/api/v1/getlessonplanbyfac',  academicapicontroller.getlessonplanbyfac);
+app.get('/api/v1/getlessonplanbycfac',  academicapicontroller.getlessonplanbycfac);
+app.get('/api/v1/getlessonplanbyid',  academicapicontroller.getlessonplanbyid);
+app.get('/api/v1/getlessonplanbyadmin',  academicapicontroller.getlessonplanbyadmin);
+app.get('/api/v1/createlessonplan',  academicapicontroller.createlessonplan);
+app.get('/api/v1/updatelessonplan',  academicapicontroller.updatelessonplan);
+app.get('/api/v1/updatelessondiary',  academicapicontroller.updatelessondiary);
+app.get('/api/v1/deletelessonplan',  academicapicontroller.deletelessonplan);
+
+app.get('/api/v1/getlessonworkloadbyfac',  academicapicontroller.getlessonworkloadbyfac);
+app.get('/api/v1/getlessonworkloadbyadmin',  academicapicontroller.getlessonworkloadbyadmin);
+app.get('/api/v1/createlessonworkload',  academicapicontroller.createlessonworkload);
+app.get('/api/v1/updatelessonworkload',  academicapicontroller.updatelessonworkload);
+app.get('/api/v1/deletelessonworkload',  academicapicontroller.deletelessonworkload);
+
+app.get('/api/v1/getgoalsbyfac',  academicapicontroller.getgoalsbyfac);
+app.get('/api/v1/getgoalsbyadmin',  academicapicontroller.getgoalsbyadmin);
+app.get('/api/v1/creategoals',  academicapicontroller.creategoals);
+app.get('/api/v1/updategoals',  academicapicontroller.updategoals);
+app.get('/api/v1/deletegoals',  academicapicontroller.deletegoals);
+
+
+
+const naacadmincontroller=require('./controllers/naacadmincontroller');
+app.get('/api/v1/getaddoncbyadmin',  naacadmincontroller.getaddoncbyadmin);
+app.get('/api/v1/getcbcsbyadmin',  naacadmincontroller.getcbcsbyfac);
+app.get('/api/v1/getbosbyadmin',  naacadmincontroller.getbosbyfac);
+app.get('/api/v1/geteventbyadmin',  naacadmincontroller.geteventbyfac);
+app.get('/api/v1/geteventbyyear',  naacadmincontroller.geteventbyyear);
+app.get('/api/v1/geteventyearcount',  naacadmincontroller.geteventyearcount);
+app.get('/api/v1/geteventdepcount',  naacadmincontroller.geteventdepcount);
+app.get('/api/v1/getadmissionbyadmin',  naacadmincontroller.getadmissionbyfac);
+app.get('/api/v1/getreservecatbyadmin',  naacadmincontroller.getreservecatbyfac);
+app.get('/api/v1/getteacherdatabyadmin',  naacadmincontroller.getteacherdatabyfac);
+app.get('/api/v1/getpassexambyadmin',  naacadmincontroller.getpassexambyfac);
+app.get('/api/v1/getawardsbyadmin',  naacadmincontroller.getawardsbyfac);
+app.get('/api/v1/getextactbyadmin',  naacadmincontroller.getextactbyfac);
+app.get('/api/v1/getcollabbyadmin',  naacadmincontroller.getcollabbyfac);
+app.get('/api/v1/getmoubyadmin',  naacadmincontroller.getmoubyfac);
+app.get('/api/v1/getictbyadmin',  naacadmincontroller.getictbyfac);
+app.get('/api/v1/getexpenditurebyadmin',  naacadmincontroller.getexpenditurebyfac);
+app.get('/api/v1/getstudschspbyadmin',  naacadmincontroller.getstudschspbyfac);
+app.get('/api/v1/getlibrarybyadmin',  naacadmincontroller.getlibrarybyfac);
+app.get('/api/v1/getfundsbyadmin',  naacadmincontroller.getfundsbyfac);
+app.get('/api/v1/getqualitybyadmin',  naacadmincontroller.getqualitybyfac);
+app.get('/api/v1/getviewskilldevbyadmin',  naacadmincontroller.getviewskilldev);
+app.get('/api/v1/getcareercounselbyadmin',  naacadmincontroller.getcareercounselbyfac);
+app.get('/api/v1/getplacementbyadmin',  naacadmincontroller.getplacementbyfac);
+app.get('/api/v1/getplacementbyall',  naacadmincontroller.getplacementbyall);
+app.get('/api/v1/gethigheredubyadmin',  naacadmincontroller.gethigheredubyfac);
+app.get('/api/v1/gethigherexambyadmin',  naacadmincontroller.gethigherexambyfac);
+app.get('/api/v1/getteacherfsbyadmin',  naacadmincontroller.getteacherfsbyfac);
+app.get('/api/v1/getegovernbyadmin',  naacadmincontroller.getegovernbyfac);
+app.get('/api/v1/getipr',  naacadmincontroller.getipr);
+app.get('/api/v1/getextension',  naacadmincontroller.getextension);
+app.get('/api/v1/getphdguidebyadmin',  naacadmincontroller.getphdguidebyfac);
+app.get('/api/v1/getinnovationbyadmin',  naacadmincontroller.getinnovationbyfac);
+app.get('/api/v1/getsyllabusrevadmin',  naacadmincontroller.getsyllabusrevadmin);
+app.get('/api/v1/getemployabilityadmin',  naacadmincontroller.getemployabilityadmin);
+app.get('/api/v1/getexplearningadmin',  naacadmincontroller.getexplearningadmin);
+
+
+app.get('/api/v1/viewecontentbyadmin',  naacadmincontroller.viewecontentbyadmin);
+app.get('/api/v1/viewresultbyadmin',  naacadmincontroller.viewresultbyadmin);
+app.get('/api/v1/viewseedmbyadmin',  naacadmincontroller.viewseedmbyadmin);
+app.get('/api/v1/viewscholarshipbyadmin',  naacadmincontroller.viewscholarshipbyadmin);
+app.get('/api/v1/viewteacherawardbyadmin',  naacadmincontroller.viewteacherawardbyadmin);
+app.get('/api/v1/viewexamautomationbyadmin',  naacadmincontroller.viewexamautomationbyadmin);
+app.get('/api/v1/viewmenteesbyadmin',  naacadmincontroller.viewmenteesbyadmin);
+app.get('/api/v1/viewteacherfellowbyadmin',  naacadmincontroller.viewteacherfellowbyadmin);
+app.get('/api/v1/viewalumniconbyadmin',  naacadmincontroller.viewalumniconbyadmin);
+app.get('/api/v1/viewconsultancybyadmin',  naacadmincontroller.viewconsultancybyadmin);
+
+app.get('/api/v1/getincubationbyadmin',  naacadmincontroller.getincubationbyadmin);
+app.get('/api/v1/getsportsactbyadmin',  naacadmincontroller.getsportsactbyadmin);
+app.get('/api/v1/getfdpbyadmin',  naacadmincontroller.getfdpbyadmin);
+app.get('/api/v1/getfieldprojbyadmin',  naacadmincontroller.getfieldprojbyadmin);
+app.get('/api/v1/getfundsbyadmin',  naacadmincontroller.getfundsbyadmin);
+app.get('/api/v1/getqualityinitbyadmin',  naacadmincontroller.getqualityinitbyadmin);
+app.get('/api/v1/getexplearnprojbyadmin',  naacadmincontroller.getexplearnprojbyadmin);
+
+
+const naacapicontroller=require('./controllers/naacapicontroller');
+// app.get('/api/v1/getcbcsbyfac',  naacapicontroller.getcbcsbyfac);
+// app.get('/api/v1/createcbcsbyfac',  naacapicontroller.createcbcsbyfac);
+// app.get('/api/v1/updatecbcsbyfac',  naacapicontroller.updatecbcsbyfac);
+// app.get('/api/v1/deletecbcsbyfac',  naacapicontroller.deletecbcsbyfac);
+// app.get('/api/v1/getbosbyfac',  naacapicontroller.getbosbyfac);
+// app.get('/api/v1/createbosbyfac',  naacapicontroller.createbosbyfac);
+// app.get('/api/v1/updatebosbyfac',  naacapicontroller.updatebosbyfac);
+// app.get('/api/v1/deletebosbyfac',  naacapicontroller.deletebosbyfac);
+// app.get('/api/v1/geteventbyfac',  naacapicontroller.geteventbyfac);
+// app.get('/api/v1/createeventbyfac',  naacapicontroller.createeventbyfac);
+// app.get('/api/v1/updateeventbyfac',  naacapicontroller.updateeventbyfac);
+// app.get('/api/v1/deleteeventbyfac',  naacapicontroller.deleteeventbyfac);
+// app.get('/api/v1/getadmissionbyfac',  naacapicontroller.getadmissionbyfac);
+// app.get('/api/v1/createadmissionbyfac',  naacapicontroller.createadmissionbyfac);
+// app.get('/api/v1/updateadmissionbyfac',  naacapicontroller.updateadmissionbyfac);
+// app.get('/api/v1/deleteadmissionbyfac',  naacapicontroller.deleteadmissionbyfac);
+// app.get('/api/v1/getreservecatbyfac',  naacapicontroller.getreservecatbyfac);
+// app.get('/api/v1/createreservecatbyfac',  naacapicontroller.createreservecatbyfac);
+// app.get('/api/v1/updatereservecatbyfac',  naacapicontroller.updatereservecatbyfac);
+// app.get('/api/v1/deletereservecatbyfac',  naacapicontroller.deletereservecatbyfac);
+// app.get('/api/v1/getteacherdatabyfac',  naacapicontroller.getteacherdatabyfac);
+// app.get('/api/v1/createteacherdatabyfac',  naacapicontroller.createteacherdatabyfac);
+ app.get('/api/v1/updateteacherdata',  naacapicontroller.updateteacherdata);
+// app.get('/api/v1/deleteteacherdatabyfac',  naacapicontroller.deleteteacherdatabyfac);
+// app.get('/api/v1/getpassexambyfac',  naacapicontroller.getpassexambyfac);
+// app.get('/api/v1/createpassexambyfac',  naacapicontroller.createpassexambyfac);
+// app.get('/api/v1/updatepassexambyfac',  naacapicontroller.updatepassexambyfac);
+// app.get('/api/v1/deletepassexambyfac',  naacapicontroller.deletepassexambyfac);
+// app.get('/api/v1/getawardsbyfac',  naacapicontroller.getawardsbyfac);
+// app.get('/api/v1/createawardsbyfac',  naacapicontroller.createawardsbyfac);
+// app.get('/api/v1/updateawardsbyfac',  naacapicontroller.updateawardsbyfac);
+// app.get('/api/v1/deleteawardsbyfac',  naacapicontroller.deleteawardsbyfac);
+// app.get('/api/v1/getextactbyfac',  naacapicontroller.getextactbyfac);
+// app.get('/api/v1/createextactbyfac',  naacapicontroller.createextactbyfac);
+// app.get('/api/v1/updateextactbyfac',  naacapicontroller.updateextactbyfac);
+// app.get('/api/v1/deleteextactbyfac',  naacapicontroller.deleteextactbyfac);
+// app.get('/api/v1/getcollabbyfac',  naacapicontroller.getcollabbyfac);
+// app.get('/api/v1/createcollabbyfac',  naacapicontroller.createcollabbyfac);
+// app.get('/api/v1/updatecollabbyfac',  naacapicontroller.updatecollabbyfac);
+// app.get('/api/v1/deletecollabbyfac',  naacapicontroller.deletecollabbyfac);
+// app.get('/api/v1/getmoubyfac',  naacapicontroller.getmoubyfac);
+// app.get('/api/v1/createmoubyfac',  naacapicontroller.createmoubyfac);
+// app.get('/api/v1/updatemoubyfac',  naacapicontroller.updatemoubyfac);
+// app.get('/api/v1/deletemoubyfac',  naacapicontroller.deletemoubyfac);
+// app.get('/api/v1/getictbyfac',  naacapicontroller.getictbyfac);
+// app.get('/api/v1/createictbyfac',  naacapicontroller.createictbyfac);
+// app.get('/api/v1/updateictbyfac',  naacapicontroller.updateictbyfac);
+// app.get('/api/v1/deleteictbyfac',  naacapicontroller.deleteictbyfac);
+// app.get('/api/v1/getexpenditurebyfac',  naacapicontroller.getexpenditurebyfac);
+// app.get('/api/v1/createexpenditurebyfac',  naacapicontroller.createexpenditurebyfac);
+// app.get('/api/v1/updateexpenditure',  naacapicontroller.updateexpenditure);
+// app.get('/api/v1/deleteexpenditure',  naacapicontroller.deleteexpenditure);
+// app.get('/api/v1/getstudschspbyfac',  naacapicontroller.getstudschspbyfac);
+// app.get('/api/v1/createstudschspbyfac',  naacapicontroller.createstudschspbyfac);
+// app.get('/api/v1/updatestudschspbyfac',  naacapicontroller.updatestudschspbyfac);
+// app.get('/api/v1/deletestudschspbyfac',  naacapicontroller.deletestudschspbyfac);
+// app.get('/api/v1/getlibrarybyfac',  naacapicontroller.getlibrarybyfac);
+// app.get('/api/v1/createlibrarybyfac',  naacapicontroller.createlibrarybyfac);
+// app.get('/api/v1/updatelibrarybyfac',  naacapicontroller.updatelibrarybyfac);
+// app.get('/api/v1/deletelibrarybyfac',  naacapicontroller.deletelibrarybyfac);
+// app.get('/api/v1/getfundsbyfac',  naacapicontroller.getfundsbyfac);
+// app.get('/api/v1/createfundsbyfac',  naacapicontroller.createfundsbyfac);
+// app.get('/api/v1/updatefundsbyfac',  naacapicontroller.updatefundsbyfac);
+// app.get('/api/v1/deletefundsbyfac',  naacapicontroller.deletefundsbyfac);
+// app.get('/api/v1/getqualitybyfac',  naacapicontroller.getqualitybyfac);
+// app.get('/api/v1/createqualitybyfac',  naacapicontroller.createqualitybyfac);
+// app.get('/api/v1/updatequalitybyfac',  naacapicontroller.updatequalitybyfac);
+// app.get('/api/v1/deletequalitybyfac',  naacapicontroller.deletequalitybyfac);
+// app.get('/api/v1/getviewskilldev',  naacapicontroller.getviewskilldev);
+// app.get('/api/v1/createskilldevbyfac',  naacapicontroller.createskilldevbyfac);
+// app.get('/api/v1/updateskilldevbyfac',  naacapicontroller.updateskilldevbyfac);
+// app.get('/api/v1/deleteskilldevbyfac',  naacapicontroller.deleteskilldevbyfac);
+// app.get('/api/v1/getcareercounselbyfac',  naacapicontroller.getcareercounselbyfac);
+// app.get('/api/v1/createcareercounselbyfac',  naacapicontroller.createcareercounselbyfac);
+// app.get('/api/v1/updatecareercounselbyfac',  naacapicontroller.updatecareercounselbyfac);
+// app.get('/api/v1/deletecareercounselbyfac',  naacapicontroller.deletecareercounselbyfac);
+// app.get('/api/v1/getplacementbyfac',  naacapicontroller.getplacementbyfac);
+// app.get('/api/v1/createplacementbyfac',  naacapicontroller.createplacementbyfac);
+// app.get('/api/v1/updateplacementyfac',  naacapicontroller.updateplacementyfac);
+// app.get('/api/v1/deleteplacementbyfac',  naacapicontroller.deleteplacementbyfac);
+// app.get('/api/v1/gethigheredubyfac',  naacapicontroller.gethigheredubyfac);
+// app.get('/api/v1/createhigheredubyfac',  naacapicontroller.createhigheredubyfac);
+// app.get('/api/v1/updatehigheredubyfac',  naacapicontroller.updatehigheredubyfac);
+// app.get('/api/v1/deletehigheredubyfac',  naacapicontroller.deletehigheredubyfac);
+// app.get('/api/v1/gethigherexambyfac',  naacapicontroller.gethigherexambyfac);
+// app.get('/api/v1/createhigherexambyfac',  naacapicontroller.createhigherexambyfac);
+// app.get('/api/v1/updatehigherexambyfac',  naacapicontroller.updatehigherexambyfac);
+// app.get('/api/v1/deletehigherexambyfac',  naacapicontroller.deletehigherexambyfac);
+// app.get('/api/v1/getteacherfsbyfac',  naacapicontroller.getteacherfsbyfac);
+// app.get('/api/v1/createteacherfsbyfac',  naacapicontroller.createteacherfsbyfac);
+// app.get('/api/v1/updateteacherfsbyfac',  naacapicontroller.updateteacherfsbyfac);
+// app.get('/api/v1/deleteteacherfsbyfac',  naacapicontroller.deleteteacherfsbyfac);
+// app.get('/api/v1/getegovernbyfac',  naacapicontroller.getegovernbyfac);
+// app.get('/api/v1/createegovernbyfac',  naacapicontroller.createegovernbyfac);
+// app.get('/api/v1/updateegovernbyfac',  naacapicontroller.updateegovernbyfac);
+// app.get('/api/v1/deleteegovernbyfac',  naacapicontroller.deleteegovernbyfac);
+//app.get('/api/v1/loginapi',  naacapicontroller.loginapi);
+
+
+const email=require('./controllers/email');
+app.get('/api/v1/sendemail',  email.sendEmail);
+
+
+//const naacapicontroller=require('./controllers/naacapicontroller');
+app.get('/api/v1/getbosbyfac',  naacapicontroller.getbosbyfac);
+app.get('/api/v1/createbosbyfac',  naacapicontroller.createbosbyfac);
+app.get('/api/v1/updatebosbyfac',  naacapicontroller.updatebosbyfac);
+app.get('/api/v1/deletebosbyfac',  naacapicontroller.deletebosbyfac);
+// app.get('/api/v1/getaddoncbyfac',  naacapicontroller.getaddoncbyfac);
+// app.get('/api/v1/createaddoncbyfac',  naacapicontroller.createaddoncbyfac);
+// app.get('/api/v1/updateaddoncbyfac',  naacapicontroller.updateaddoncbyfac);
+// app.get('/api/v1/deleteaddoncbyfac',  naacapicontroller.deleteaddoncbyfac);
+app.get('/api/v1/getadmissionbyfac',  naacapicontroller.getadmissionbyfac);
+app.get('/api/v1/createadmissionbyfac',  naacapicontroller.createadmissionbyfac);
+app.get('/api/v1/updateadmissionbyfac',  naacapicontroller.updateadmissionbyfac);
+app.get('/api/v1/deleteadmissionbyfac',  naacapicontroller.deleteadmissionbyfac);
+app.get('/api/v1/getbosbyfac',  naacapicontroller.getbosbyfac);
+app.get('/api/v1/createbosbyfac',  naacapicontroller.createbosbyfac);
+app.get('/api/v1/updatebosbyfac',  naacapicontroller.updatebosbyfac);
+app.get('/api/v1/deletebosbyfac',  naacapicontroller.deletebosbyfac);
+app.get('/api/v1/getcbcsbyfac',  naacapicontroller.getcbcsbyfac);
+app.get('/api/v1/createcbcsbyfac',  naacapicontroller.createcbcsbyfac);
+app.get('/api/v1/updatecbcsbyfac',  naacapicontroller.updatecbcsbyfac);
+app.get('/api/v1/deletecbcsbyfac',  naacapicontroller.deletecbcsbyfac);
+app.get('/api/v1/getcollabbyfac',  naacapicontroller.getcollabbyfac);
+app.get('/api/v1/createcollabbyfac',  naacapicontroller.createcollabbyfac);
+app.get('/api/v1/updatecollabbyfac',  naacapicontroller.updatecollabbyfac);
+app.get('/api/v1/deletecollabbyfac',  naacapicontroller.deletecollabbyfac);
+//app.get('/api/v1/geteventbyfac',  naacapicontroller.geteventbyfac);
+//app.get('/api/v1/createeventbyfac',  naacapicontroller.createeventbyfac);
+//app.get('/api/v1/updateeventbyfac',  naacapicontroller.updateeventbyfac);
+//app.get('/api/v1/deleteeventbyfac',  naacapicontroller.deleteeventbyfac);
+app.get('/api/v1/getexpenditurebyfac',  naacapicontroller.getexpenditurebyfac);
+app.get('/api/v1/createexpenditurebyfac',  naacapicontroller.createexpenditurebyfac);
+app.get('/api/v1/updateexpenditure',  naacapicontroller.updateexpenditure);
+app.get('/api/v1/deleteexpenditure',  naacapicontroller.deleteexpenditure);
+app.get('/api/v1/getextactbyfac',  naacapicontroller.getextactbyfac);
+app.get('/api/v1/createextactbyfac',  naacapicontroller.createextactbyfac);
+app.get('/api/v1/updateextactbyfac',  naacapicontroller.updateextactbyfac);
+app.get('/api/v1/deleteextactbyfac',  naacapicontroller.deleteextactbyfac);
+app.get('/api/v1/getinstawardsbyfac',  naacapicontroller.getinstawardsbyfac);
+app.get('/api/v1/createinstawardsbyfac',  naacapicontroller.createinstawardsbyfac);
+app.get('/api/v1/updateinstawardsbyfac',  naacapicontroller.updateinstawardsbyfac);
+app.get('/api/v1/deleteinstawardsbyfac',  naacapicontroller.deleteinstawardsbyfac);
+app.get('/api/v1/getictbyfac',  naacapicontroller.getictbyfac);
+app.get('/api/v1/createictbyfac',  naacapicontroller.createictbyfac);
+app.get('/api/v1/updateictbyfac',  naacapicontroller.updateictbyfac);
+app.get('/api/v1/deleteictbyfac',  naacapicontroller.deleteictbyfac);
+app.get('/api/v1/getlibrarybyfac',  naacapicontroller.getlibrarybyfac);
+app.get('/api/v1/createlibrarybyfac',  naacapicontroller.createlibrarybyfac);
+app.get('/api/v1/updatelibrarybyfac',  naacapicontroller.updatelibrarybyfac);
+app.get('/api/v1/deletelibrarybyfac',  naacapicontroller.deletelibrarybyfac);
+// app.get('/api/v1/getmoubyfac',  naacapicontroller.getmoubyfac);
+// app.get('/api/v1/createmoubyfac',  naacapicontroller.createmoubyfac);
+// app.get('/api/v1/updatemoubyfac',  naacapicontroller.updatemoubyfac);
+// app.get('/api/v1/deletemoubyfac',  naacapicontroller.deletemoubyfac);
+app.get('/api/v1/getpassexambyfac',  naacapicontroller.getpassexambyfac);
+app.get('/api/v1/createpassexambyfac',  naacapicontroller.createpassexambyfac);
+app.get('/api/v1/updatepassexambyfac',  naacapicontroller.updatepassexambyfac);
+app.get('/api/v1/deletepassexambyfac',  naacapicontroller.deletepassexambyfac);
+// app.get('/api/v1/getreservecatbyfac',  naacapicontroller.getreservecatbyfac);
+// app.get('/api/v1/createreservecatbyfac',  naacapicontroller.createreservecatbyfac);
+// app.get('/api/v1/updatereservecatbyfac',  naacapicontroller.updatereservecatbyfac);
+// app.get('/api/v1/deletereservecatbyfac',  naacapicontroller.deletereservecatbyfac);
+//app.get('/api/v1/getteacherdatabyfac',  naacapicontroller.getteacherdatabyfac);
+//app.get('/api/v1/createteacherdatabyfac',  naacapicontroller.createteacherdatabyfac);
+//app.get('/api/v1/updateteacherdata',  naacapicontroller.updateteacherdata);
+//app.get('/api/v1/deleteteacherdatabyfac',  naacapicontroller.deleteteacherdatabyfac);
+//app.get('/api/v1/getawardsbyfac',  naacapicontroller.getawardsbyfac);
+//app.get('/api/v1/createawardsbyfac',  naacapicontroller.createawardsbyfac);
+//app.get('/api/v1/updateawardsbyfac',  naacapicontroller.updateawardsbyfac);
+//app.get('/api/v1/deleteawardsbyfac',  naacapicontroller.deleteawardsbyfac);
+app.get('/api/v1/getegovernbyfac',  naacapicontroller.getegovernbyfac);
+app.get('/api/v1/createegovernbyfac',  naacapicontroller.createegovernbyfac);
+app.get('/api/v1/updateegovernbyfac',  naacapicontroller.updateegovernbyfac);
+app.get('/api/v1/deleteegovernbyfac',  naacapicontroller.deleteegovernbyfac);
+app.get('/api/v1/getcareercounselbyfac',  naacapicontroller.getcareercounselbyfac);
+app.get('/api/v1/createcareercounselbyfac',  naacapicontroller.createcareercounselbyfac);
+app.get('/api/v1/updatecareercounselbyfac',  naacapicontroller.updatecareercounselbyfac);
+app.get('/api/v1/deletecareercounselbyfac',  naacapicontroller.deletecareercounselbyfac);
+//app.get('/api/v1/gethigheredubyfac',  naacapicontroller.gethigheredubyfac);
+//app.get('/api/v1/createhigheredubyfac',  naacapicontroller.createhigheredubyfac);
+//app.get('/api/v1/updatehigheredubyfac',  naacapicontroller.updatehigheredubyfac);
+//app.get('/api/v1/deletehigheredubyfac',  naacapicontroller.deletehigheredubyfac);
+//app.get('/api/v1/gethigherexambyfac',  naacapicontroller.gethigherexambyfac);
+//app.get('/api/v1/createhigherexambyfac',  naacapicontroller.createhigherexambyfac);
+//app.get('/api/v1/updatehigherexambyfac',  naacapicontroller.updatehigherexambyfac);
+//app.get('/api/v1/deletehigherexambyfac',  naacapicontroller.deletehigherexambyfac);
+//app.get('/api/v1/getplacementbyfac',  naacapicontroller.getplacementbyfac);
+//app.get('/api/v1/createplacementbyfac',  naacapicontroller.createplacementbyfac);
+//app.get('/api/v1/updateplacementbyfac',  naacapicontroller.updateplacementbyfac);
+//app.get('/api/v1/deleteplacementbyfac',  naacapicontroller.deleteplacementbyfac);
+app.get('/api/v1/getqualitybyfac',  naacapicontroller.getqualitybyfac);
+app.get('/api/v1/createqualitybyfac',  naacapicontroller.createqualitybyfac);
+app.get('/api/v1/updatequalitybyfac',  naacapicontroller.updatequalitybyfac);
+app.get('/api/v1/deletequalitybyfac',  naacapicontroller.deletequalitybyfac);
+app.get('/api/v1/getskilldevbyfac',  naacapicontroller.getskilldevbyfac);
+app.get('/api/v1/getskilldevbyadmin',  naacapicontroller.getskilldevbyadmin);
+app.get('/api/v1/createskilldevbyfac',  naacapicontroller.createskilldevbyfac);
+app.get('/api/v1/updateskilldevbyfac',  naacapicontroller.updateskilldevbyfac);
+app.get('/api/v1/deleteskilldevbyfac',  naacapicontroller.deleteskilldevbyfac);
+//app.get('/api/v1/getteacherfsbyfac',  naacapicontroller.getteacherfsbyfac);
+//app.get('/api/v1/createteacherfsbyfac',  naacapicontroller.createteacherfsbyfac);
+//app.get('/api/v1/updateteacherfsbyfac',  naacapicontroller.updateteacherfsbyfac);
+//app.get('/api/v1/deleteteacherfsbyfac',  naacapicontroller.deleteteacherfsbyfac);
+app.get('/api/v1/getphdguidebyfac',  naacapicontroller.getphdguidebyfac);
+//app.get('/api/v1/createphdguidebyfac',  naacapicontroller.createphdguidebyfac);
+//app.get('/api/v1/updatephdguidebyfac',  naacapicontroller.updatephdguidebyfac);
+app.get('/api/v1/deletephdguidebyfac',  naacapicontroller.deletephdguidebyfac);
+app.get('/api/v1/getinnovationbyfac',  naacapicontroller.getinnovationbyfac);
+app.get('/api/v1/createinnovationbyfac',  naacapicontroller.createinnovationbyfac);
+app.get('/api/v1/updateinnovationbyfac',  naacapicontroller.updateinnovationbyfac);
+app.get('/api/v1/deleteinnovationbyfac',  naacapicontroller.deleteinnovationbyfac);
+
+app.get('/api/v1/getemployabilitybyfac',  naacapicontroller.getemployabilitybyfac);
+app.get('/api/v1/createemployabilitybyfac',  naacapicontroller.createemployabilitybyfac);
+app.get('/api/v1/updateemployabilitybyfac',  naacapicontroller.updateemployabilitybyfac);
+app.get('/api/v1/deleteemployabilitybyfac',  naacapicontroller.deleteemployabilitybyfac);
+app.get('/api/v1/getphdguidebyfac',  naacapicontroller.getphdguidebyfac);
+app.get('/api/v1/createphdguidebyfac',  naacapicontroller.createphdguidebyfac);
+app.get('/api/v1/updatephdguidebyfac',  naacapicontroller.updatephdguidebyfac);
+app.get('/api/v1/deletephdguidebyfac',  naacapicontroller.deletephdguidebyfac);
+app.get('/api/v1/getteacherawardbyfac',  naacapicontroller.getteacherawardbyfac);
+app.get('/api/v1/createteacherawardbyfac',  naacapicontroller.createteacherawardbyfac);
+app.get('/api/v1/updateteacherawardbyfac',  naacapicontroller.updateteacherawardbyfac);
+app.get('/api/v1/deleteteacherawardbyfac',  naacapicontroller.deleteteacherawardbyfac);
+app.get('/api/v1/getexamautomationbyfac',  naacapicontroller.getexamautomationbyfac);
+app.get('/api/v1/createexamautomationbyfac',  naacapicontroller.createexamautomationbyfac);
+app.get('/api/v1/updateexamautomationbyfac',  naacapicontroller.updateexamautomationbyfac);
+app.get('/api/v1/deleteexamautomationbyfac',  naacapicontroller.deleteexamautomationbyfac);
+//app.get('/api/v1/getteacherfellowbyfac',  naacapicontroller.getteacherfellowbyfac);
+app.get('/api/v1/getteacherfellowbyadmin',  naacapicontroller.getteacherfellowbyadmin);
+//app.get('/api/v1/createteacherfellowbyfac',  naacapicontroller.createteacherfellowbyfac);
+//app.get('/api/v1/updateteacherfellowbyfac',  naacapicontroller.updateteacherfellowbyfac);
+//app.get('/api/v1/deleteteacherfellowbyfac',  naacapicontroller.deleteteacherfellowbyfac);
+app.get('/api/v1/getresearchfellowbyfac',  naacapicontroller.getresearchfellowbyfac);
+app.get('/api/v1/getresearchfellowbyadmin',  naacapicontroller.getresearchfellowbyadmin);
+app.get('/api/v1/createresearchfellowbyfac',  naacapicontroller.createresearchfellowbyfac);
+app.get('/api/v1/updateresearchfellowbyfac',  naacapicontroller.updateresearchfellowbyfac);
+app.get('/api/v1/deleteresearchfellowbyfac',  naacapicontroller.deleteresearchfellowbyfac);
+app.get('/api/v1/getmenteesbyfac',  naacapicontroller.getmenteesbyfac);
+app.get('/api/v1/creatementeesbyfac',  naacapicontroller.creatementeesbyfac);
+app.get('/api/v1/updatementeesbyfac',  naacapicontroller.updatementeesbyfac);
+app.get('/api/v1/deletementeesbyfac',  naacapicontroller.deletementeesbyfac);
+//app.get('/api/v1/getalumniconbyfac',  naacapicontroller.getalumniconbyfac);
+//app.get('/api/v1/createalumniconbyfac',  naacapicontroller.createalumniconbyfac);
+//app.get('/api/v1/updatealumniconbyfac',  naacapicontroller.updatealumniconbyfac);
+//app.get('/api/v1/deletealumniconbyfac',  naacapicontroller.deletealumniconbyfac);
+
+app.get('/api/v1/getincubationbyfac',  naacapicontroller.getincubationbyfac);
+app.get('/api/v1/getincubationbyadmin',  naacapicontroller.getincubationbyadmin);
+app.get('/api/v1/createincubationbyfac',  naacapicontroller.createincubationbyfac);
+app.get('/api/v1/updateincubationbyfac',  naacapicontroller.updateincubationbyfac);
+app.get('/api/v1/deleteincubationbyfac',  naacapicontroller.deleteincubationbyfac);
+
+app.get('/api/v1/getstartupadmin',  naacapicontroller.getstartupadmin);
+//app.get('/api/v1/getstartupbyfac',  naacapicontroller.getstartupbyfac);
+//app.get('/api/v1/createstartupbyfac',  naacapicontroller.createstartupbyfac);
+//app.get('/api/v1/updatestartupbyfac',  naacapicontroller.updatestartupbyfac);
+//app.get('/api/v1/deletestartupbyfac',  naacapicontroller.deletestartupbyfac);
+
+app.get('/api/v1/getcurgapbyadmin',  naacapicontroller.getcurgapbyadmin);
+app.get('/api/v1/getcurgapbyfac',  naacapicontroller.getcurgapbyfac);
+app.get('/api/v1/createcurgapbyfac',  naacapicontroller.createcurgapbyfac);
+app.get('/api/v1/updatecurgapbyfac',  naacapicontroller.updatecurgapbyfac);
+app.get('/api/v1/deletecurgapbyfac',  naacapicontroller.deletecurgapbyfac);
+
+app.get('/api/v1/getdepprogbyfac',  naacapicontroller.getdepprogbyfac);
+app.get('/api/v1/getdepprogbyadmin',  naacapicontroller.getdepprogbyadmin);
+app.get('/api/v1/createdepprogbyfac',  naacapicontroller.createdepprogbyfac);
+app.get('/api/v1/updatedepprogbyfac',  naacapicontroller.updatedepprogbyfac);
+app.get('/api/v1/deletedepprogbyfac',  naacapicontroller.deletedepprogbyfac);
+
+app.get('/api/v1/getdeppubbyfac',  naacapicontroller.getdeppubbyfac);
+app.get('/api/v1/getdeppubbyadmin',  naacapicontroller.getdeppubbyadmin);
+app.get('/api/v1/createdeppub',  naacapicontroller.createdeppub);
+app.get('/api/v1/updatedeppub',  naacapicontroller.updatedeppub);
+app.get('/api/v1/deletedeppub',  naacapicontroller.deletedeppub);
+
+app.get('/api/v1/getstudpubbyfac',  naacapicontroller.getstudpubbyfac);
+app.get('/api/v1/getstudpubbyadmin',  naacapicontroller.getstudpubbyadmin);
+app.get('/api/v1/createstudpub',  naacapicontroller.createstudpub);
+app.get('/api/v1/updatestudpub',  naacapicontroller.updatestudpub);
+app.get('/api/v1/deletestudpub',  naacapicontroller.deletestudpub);
+
+app.get('/api/v1/getremedialbyfac',  naacapicontroller.getremedialbyfac);
+app.get('/api/v1/getremedialbyadmin',  naacapicontroller.getremedialbyadmin);
+app.get('/api/v1/createremedial',  naacapicontroller.createremedial);
+app.get('/api/v1/updateremedial',  naacapicontroller.updateremedial);
+app.get('/api/v1/deleteremedial',  naacapicontroller.deleteremedial);
+
+
+app.get('/api/v1/getpoactionsbyfac',  naacapicontroller.getpoactionsbyfac);
+app.get('/api/v1/getpoactionsbyadmin',  naacapicontroller.getpoactionsbyadmin);
+app.get('/api/v1/createpoactions',  naacapicontroller.createpoactions);
+app.get('/api/v1/updatepoactions',  naacapicontroller.updatepoactions);
+app.get('/api/v1/deletepoactions',  naacapicontroller.deletepoactions);
+
+app.get('/api/v1/getcurstructurebyfac',  naacapicontroller.getcurstructurebyfac);
+app.get('/api/v1/getcurstructurebyadmin',  naacapicontroller.getcurstructurebyadmin);
+app.get('/api/v1/createcurstructure',  naacapicontroller.createcurstructure);
+app.get('/api/v1/updatecurstructure',  naacapicontroller.updatecurstructure);
+app.get('/api/v1/deletecurstructure',  naacapicontroller.deletecurstructure);
+app.get('/api/v1/updateresearchfellowprojects',  naacapicontroller.updateresearchfellowprojects);
+
+// end
+
+const diskbulkapicontroller=require('./controllers/diskbulkapicontroller');
+
+//pratiti
+
+// dec 21
+
+app.post('/api/v1/uploadfacexplearnproj',  diskbulkapicontroller.uploadfacexplearnproj);
+app.post('/api/v1/uploadfacfieldproj',  diskbulkapicontroller.uploadfacfieldproj);
+app.post('/api/v1/uploadfacteacherguide',  diskbulkapicontroller.uploadfacteacherguide);
+app.post('/api/v1/uploadfacsportsact',  diskbulkapicontroller.uploadfacsportsact);
+app.post('/api/v1/uploadfacegov',  diskbulkapicontroller.uploadfacegov);
+app.post('/api/v1/uploadfacqualityinit',  diskbulkapicontroller.uploadfacqualityinit);
+app.post('/api/v1/uploadfacfdp',  diskbulkapicontroller.uploadfacfdp);
+app.post('/api/v1/uploadfacevent',  diskbulkapicontroller.uploadfacevent);
+app.post('/api/v1/uploadfacmouact',  diskbulkapicontroller.uploadfacmouact);
+
+app.post('/api/v1/uploadfacphdguide',  diskbulkapicontroller.uploadfacphdguide);
+app.post('/api/v1/uploadkpi',  diskbulkapicontroller.uploadkpi);
+app.post('/api/v1/uploadkpiin',  diskbulkapicontroller.uploadkpiin);
+
+// end 
+
+// dec 13
+
+app.post('/api/v1/uploadfacbos',  diskbulkapicontroller.uploadfacbos);
+app.post('/api/v1/uploadfaccbcs',  diskbulkapicontroller.uploadfaccbcs);
+app.post('/api/v1/uploadfacsyllabusrev',  diskbulkapicontroller.uploadfacsyllabusrev);
+app.post('/api/v1/uploadfacemployability',  diskbulkapicontroller.uploadfacemployability);
+app.post('/api/v1/uploadfacexplearning',  diskbulkapicontroller.uploadfacexplearning);
+
+app.post('/api/v1/uploadfacadmission',  diskbulkapicontroller.uploadfacadmission);
+app.post('/api/v1/uploadfacreservecat',  diskbulkapicontroller.uploadfacreservecat);
+app.post('/api/v1/uploadfacteacherdata',  diskbulkapicontroller.uploadfacteacherdata);
+app.post('/api/v1/uploadfacpassexam',  diskbulkapicontroller.uploadfacpassexam);
+app.post('/api/v1/uploadfacresult',  diskbulkapicontroller.uploadfacresult);
+app.post('/api/v1/uploadfacteacheraward',  diskbulkapicontroller.uploadfacteacheraward);
+app.post('/api/v1/uploadfacexamautomation',  diskbulkapicontroller.uploadfacexamautomation);
+app.post('/api/v1/uploadfacmentees',  diskbulkapicontroller.uploadfacmentees);
+
+app.post('/api/v1/uploadfacinstawards',  diskbulkapicontroller.uploadfacinstawards);
+app.post('/api/v1/uploadfacextact',  diskbulkapicontroller.uploadfacextact);
+app.post('/api/v1/uploadfaccollaboration',  diskbulkapicontroller.uploadfaccollaboration);
+app.post('/api/v1/uploadfacmou',  diskbulkapicontroller.uploadfacmou);
+app.post('/api/v1/uploadfacecontent',  diskbulkapicontroller.uploadfacecontent);
+app.post('/api/v1/uploadfacseedm',  diskbulkapicontroller.uploadfacseedm);
+app.post('/api/v1/uploadfacteacherfellow',  diskbulkapicontroller.uploadfacteacherfellow);
+app.post('/api/v1/uploadfacresearchfellow',  diskbulkapicontroller.uploadfacresearchfellow);
+
+app.post('/api/v1/uploadfacict',  diskbulkapicontroller.uploadfacict);
+app.post('/api/v1/uploadfacexpenditure',  diskbulkapicontroller.uploadfacexpenditure);
+app.post('/api/v1/uploadfaclibrary',  diskbulkapicontroller.uploadfaclibrary);
+
+app.post('/api/v1/uploadfacscholarship',  diskbulkapicontroller.uploadfacscholarship);
+app.post('/api/v1/uploadfacskilldev',  diskbulkapicontroller.uploadfacskilldev);
+app.post('/api/v1/uploadfaccareercounsel',  diskbulkapicontroller.uploadfaccareercounsel);
+app.post('/api/v1/uploadfacplacement',  diskbulkapicontroller.uploadfacplacement);
+app.post('/api/v1/uploadfachigheredu',  diskbulkapicontroller.uploadfachigheredu);
+app.post('/api/v1/uploadfachigherexam',  diskbulkapicontroller.uploadfachigherexam);
+app.post('/api/v1/uploadfacawards',  diskbulkapicontroller.uploadfacawards);
+app.post('/api/v1/uploadfacalumnicon',  diskbulkapicontroller.uploadfacalumnicon);
+
+app.post('/api/v1/uploadfacegovern',  diskbulkapicontroller.uploadfacegovern);
+app.post('/api/v1/uploadfacteacherfs',  diskbulkapicontroller.uploadfacteacherfs);
+app.post('/api/v1/uploadfacfunds',  diskbulkapicontroller.uploadfacfunds);
+app.post('/api/v1/uploadfacquality',  diskbulkapicontroller.uploadfacquality);
+
+
+
+
+
+// end
+
+// oct 31
+
+
+app.post('/api/v1/uploadfacbooks',  diskbulkapicontroller.uploadfacbooks);
+app.post('/api/v1/uploadfacpatents',  diskbulkapicontroller.uploadfacpatents);
+app.post('/api/v1/uploadfacpublications',  diskbulkapicontroller.uploadfacpublications);
+app.post('/api/v1/uploadfacprojects',  diskbulkapicontroller.uploadfacprojects);
+app.post('/api/v1/uploadfacseminar',  diskbulkapicontroller.uploadfacseminar);
+app.post('/api/v1/uploaddepprog',  diskbulkapicontroller.uploaddepprog);
+app.post('/api/v1/uploadcurstructure',  diskbulkapicontroller.uploadcurstructure);
+
+app.post('/api/v1/uploadleavebalance',  diskbulkapicontroller.uploadleavebalance);
+
+// end
+
+// oct 28
+
+const supportingdocapicontroller=require('./controllers/supportingdocapicontroller');
+app.get('/api/v1/getsupportingdoc',  supportingdocapicontroller.getsupportingdoc);
+app.get('/api/v1/getsupportingdocbyfield1',  supportingdocapicontroller.getsupportingdocbyfield1);
+app.get('/api/v1/getsupportingdocbyfield2',  supportingdocapicontroller.getsupportingdocbyfield2);
+app.get('/api/v1/getsupportingdocbyfield23',  supportingdocapicontroller.getsupportingdocbyfield23);
+app.get('/api/v1/getallsupportingdocs',  supportingdocapicontroller.getallsupportingdocs);
+app.get('/api/v1/getallsupportingdocsbytype',  supportingdocapicontroller.getallsupportingdocsbytype);
+app.get('/api/v1/createsupportingdoc',  supportingdocapicontroller.createsupportingdoc);
+app.get('/api/v1/createsupportingdoc1',  supportingdocapicontroller.createsupportingdoc1);
+
+const rbulksupportingdocadd=require('./router/addbulksupportingdocrouter.js');
+
+app.use('/addbulksupportingdoc',rbulksupportingdocadd);
+
+const aqarapicontroller=require('./controllers/aqarapicontroller');
+app.get('/api/v1/getexplearnprojbyfac',  aqarapicontroller.getexplearnprojbyfac);
+app.get('/api/v1/createexplearnprojbyfac',  aqarapicontroller.createexplearnprojbyfac);
+app.get('/api/v1/updateexplearnprojbyfac',  aqarapicontroller.updateexplearnprojbyfac);
+app.get('/api/v1/deleteexplearnprojbyfac',  aqarapicontroller.deleteexplearnprojbyfac);
+app.get('/api/v1/getfieldprojbyfac',  aqarapicontroller.getfieldprojbyfac);
+app.get('/api/v1/createfieldprojbyfac',  aqarapicontroller.createfieldprojbyfac);
+app.get('/api/v1/updatefieldprojbyfac',  aqarapicontroller.updatefieldprojbyfac);
+app.get('/api/v1/deletefieldprojbyfac',  aqarapicontroller.deletefieldprojbyfac);
+app.get('/api/v1/getteacherguidebyfac',  aqarapicontroller.getteacherguidebyfac);
+app.get('/api/v1/createteacherguidebyfac',  aqarapicontroller.createteacherguidebyfac);
+app.get('/api/v1/updateteacherguidebyfac',  aqarapicontroller.updateteacherguidebyfac);
+app.get('/api/v1/deleteteacherguidebyfac',  aqarapicontroller.deleteteacherguidebyfac);
+app.get('/api/v1/getextawardsbyfac',  aqarapicontroller.getextawardsbyfac);
+app.get('/api/v1/getextawardsbyadmin',  aqarapicontroller.getextawardsbyadmin);
+app.get('/api/v1/createextawardsbyfac',  aqarapicontroller.createextawardsbyfac);
+app.get('/api/v1/updateextawardsbyfac',  aqarapicontroller.updateextawardsbyfac);
+app.get('/api/v1/deleteextawardsbyfac',  aqarapicontroller.deleteextawardsbyfac);
+app.get('/api/v1/getmouactbyfac',  aqarapicontroller.getmouactbyfac);
+app.get('/api/v1/createmouactbyfac',  aqarapicontroller.createmouactbyfac);
+app.get('/api/v1/updatemouactbyfac',  aqarapicontroller.updatemouactbyfac);
+app.get('/api/v1/deletemouactbyfac',  aqarapicontroller.deletemouactbyfac);
+app.get('/api/v1/getsportsactbyfac',  aqarapicontroller.getsportsactbyfac);
+app.get('/api/v1/createsportsactbyfac',  aqarapicontroller.createsportsactbyfac);
+app.get('/api/v1/updatesportsactbyfac',  aqarapicontroller.updatesportsactbyfac);
+app.get('/api/v1/deletesportsactbyfac',  aqarapicontroller.deletesportsactbyfac);
+app.get('/api/v1/getegovbyfac',  aqarapicontroller.getegovbyfac);
+app.get('/api/v1/createegovbyfac',  aqarapicontroller.createegovbyfac);
+app.get('/api/v1/updateegovbyfac',  aqarapicontroller.updateegovbyfac);
+app.get('/api/v1/deleteegovbyfac',  aqarapicontroller.deleteegovbyfac);
+app.get('/api/v1/getfdpbyfac',  aqarapicontroller.getfdpbyfac);
+app.get('/api/v1/createfdpbyfac',  aqarapicontroller.createfdpbyfac);
+app.get('/api/v1/updatefdpbyfac',  aqarapicontroller.updatefdpbyfac);
+app.get('/api/v1/deletefdpbyfac',  aqarapicontroller.deletefdpbyfac);
+app.get('/api/v1/getqualityinitbyfac',  aqarapicontroller.getqualityinitbyfac);
+app.get('/api/v1/createqualityinitbyfac',  aqarapicontroller.createqualityinitbyfac);
+app.get('/api/v1/updatequalityinitbyfac',  aqarapicontroller.updatequalityinitbyfac);
+app.get('/api/v1/deletequalityinitbyfac',  aqarapicontroller.deletequalityinitbyfac);
+
+// end
+
+// jun 29
+
+
+app.use("/addcurriculumstphilos", express.static(path.join(__dirname, 'public')));
+
+const rcurriculumstphilosadd=require('./router/addcurriculumstphilosrouter.js');
+const rcurriculumstphilosexport=require('./router/exportcurriculumstphilosrouter.js');
+
+
+app.use('/addcurriculumstphilos',rcurriculumstphilosadd);
+app.use('/exportcurriculumstphilos',rcurriculumstphilosexport);
+
+// end
+
+
+// oct 3
+
+const taskassignapicontroller=require('./controllers/taskassignapicontroller');
+app.get('/api/v1/gettaskassign',  taskassignapicontroller.gettaskassign);
+app.get('/api/v1/getmytaskassign',  taskassignapicontroller.getmytaskassign);
+app.get('/api/v1/createtaskassign',  taskassignapicontroller.createtaskassign);
+app.get('/api/v1/updatetaskassign',  taskassignapicontroller.updatetaskassign);
+app.get('/api/v1/deletetaskassign',  taskassignapicontroller.deletetaskassign);
+app.get('/api/v1/updatetaskassignticket',  taskassignapicontroller.updatetaskassignticket);
+
+
+// end
+
+// oct 1 naacapicontroller
+
+//app.get('/api/v1/getresultbyfac',  naacapicontroller.getresultbyfac);
+//app.get('/api/v1/createresultbyfac',  naacapicontroller.createresultbyfac);
+//app.get('/api/v1/updateresultbyfac',  naacapicontroller.updateresultbyfac);
+//app.get('/api/v1/deleteresultbyfac',  naacapicontroller.deleteresultbyfac);
+app.get('/api/v1/getecontentbyfac',  naacapicontroller.getecontentbyfac);
+app.get('/api/v1/createecontentbyfac',  naacapicontroller.createecontentbyfac);
+app.get('/api/v1/updateecontentbyfac',  naacapicontroller.updateecontentbyfac);
+app.get('/api/v1/deleteecontentbyfac',  naacapicontroller.deleteecontentbyfac);
+app.get('/api/v1/getstudschspbyfac',  naacapicontroller.getstudschspbyfac);
+app.get('/api/v1/createstudschspbyfac',  naacapicontroller.createstudschspbyfac);
+app.get('/api/v1/updatestudschspbyfac',  naacapicontroller.updatestudschspbyfac);
+app.get('/api/v1/deletestudschspbyfac',  naacapicontroller.deletestudschspbyfac);
+app.get('/api/v1/getfundsbyfac',  naacapicontroller.getfundsbyfac);
+app.get('/api/v1/createfundsbyfac',  naacapicontroller.createfundsbyfac);
+app.get('/api/v1/updatefundsbyfac',  naacapicontroller.updatefundsbyfac);
+app.get('/api/v1/deletefundsbyfac',  naacapicontroller.deletefundsbyfac);
+//app.get('/api/v1/getseedmbyfac',  naacapicontroller.getseedmbyfac);
+//app.get('/api/v1/createseedmbyfac',  naacapicontroller.createseedmbyfac);
+//app.get('/api/v1/updateseedmbyfac',  naacapicontroller.updateseedmbyfac);
+//app.get('/api/v1/deleteseedmbyfac',  naacapicontroller.deleteseedmbyfac);
+// app.get('/api/v1/getconsultancybyfac',  naacapicontroller.getconsultancybyfac);
+// app.get('/api/v1/createconsultancybyfac',  naacapicontroller.createconsultancybyfac);
+// app.get('/api/v1/updateconsultancybyfac',  naacapicontroller.updateconsultancybyfac);
+// app.get('/api/v1/deleteconsultancybyfac',  naacapicontroller.deleteconsultancybyfac);
+app.get('/api/v1/getsyllabusrevbyfac',  naacapicontroller.getsyllabusrevbyfac);
+app.get('/api/v1/createsyllabusrevbyfac',  naacapicontroller.createsyllabusrevbyfac);
+app.get('/api/v1/updatesyllabusrevbyfac',  naacapicontroller.updatesyllabusrevbyfac);
+app.get('/api/v1/deletesyllabusrevbyfac',  naacapicontroller.deletesyllabusrevbyfac);
+
+app.get('/api/v1/getctrainingbyfac',  naacapicontroller.getctrainingbyfac);
+app.get('/api/v1/getctrainingbyadmin',  naacapicontroller.getctrainingbyadmin);
+app.get('/api/v1/createctrainingbyfac',  naacapicontroller.createctrainingbyfac);
+app.get('/api/v1/updatectrainingbyfac',  naacapicontroller.updatectrainingbyfac);
+app.get('/api/v1/deletectrainingbyfac',  naacapicontroller.deletectrainingbyfac);
+
+
+// app.get('/api/v1/getexplearningbyfac',  naacapicontroller.getexplearningbyfac);
+// app.get('/api/v1/createexplearningbyfac',  naacapicontroller.createexplearningbyfac);
+// app.get('/api/v1/updateexplearningbyfac',  naacapicontroller.updateexplearningbyfac);
+// app.get('/api/v1/deleteexplearningbyfac',  naacapicontroller.deleteexplearningbyfac);
+
+app.get('/api/v1/deleteallskilldevbyfac',  naacapicontroller.deleteallskilldevbyfac);
+
+
+// end
+
+// sep 29
+
+const iqacalertcontroller=require('./controllers/iqacalertcontroller');
+app.get('/api/v1/geticollabalert',  iqacalertcontroller.getcollabalert);
+app.get('/api/v1/getiaddoncalert',  iqacalertcontroller.getaddoncalert);
+app.get('/api/v1/getiexplearningyear',  iqacalertcontroller.getexplearningyear);
+app.get('/api/v1/getiqualityalert',  iqacalertcontroller.getqualityalert);
+app.get('/api/v1/depnotexplist',  iqacalertcontroller.depnotexplist);
+app.get('/api/v1/getiiprbyyear',  iqacalertcontroller.getiprbyyear);
+app.get('/api/v1/getieventtypebyyear',  iqacalertcontroller.geteventtypebyyear);
+app.get('/api/v1/nopublist',  iqacalertcontroller.nopublist);
+app.get('/api/v1/nobooklist',  iqacalertcontroller.nobooklist);
+app.get('/api/v1/nosemlist',  iqacalertcontroller.nosemlist);
+app.get('/api/v1/noprojectlist',  iqacalertcontroller.noprojectlist);
+app.get('/api/v1/nopatentlist',  iqacalertcontroller.nopatentlist);
+app.get('/api/v1/nosyllabusrevprogs',  iqacalertcontroller.nosyllabusrevprogs);
+
+
+
+const kpialertcontroller=require('./controllers/kpialertcontroller');
+app.get('/api/v1/getcbcsalert',  kpialertcontroller.getcbcsalert);
+app.get('/api/v1/getbosalert',  kpialertcontroller.getbosalert);
+app.get('/api/v1/geteventalert',  kpialertcontroller.geteventalert);
+app.get('/api/v1/getadmissionalert',  kpialertcontroller.getadmissionalert);
+app.get('/api/v1/getreservecatalert',  kpialertcontroller.getreservecatalert);
+app.get('/api/v1/getteacherdataalert',  kpialertcontroller.getteacherdataalert);
+app.get('/api/v1/getteacherfsalert',  kpialertcontroller.getteacherfsalert);
+app.get('/api/v1/getpassexamalert',  kpialertcontroller.getpassexamalert);
+app.get('/api/v1/getawardsalert',  kpialertcontroller.getawardsalert);
+app.get('/api/v1/getextactalert',  kpialertcontroller.getextactalert);
+app.get('/api/v1/getcollabalert',  kpialertcontroller.getcollabalert);
+app.get('/api/v1/getmoualert',  kpialertcontroller.getmoualert);
+app.get('/api/v1/getictalert',  kpialertcontroller.getictalert);
+app.get('/api/v1/getexpenditurealert',  kpialertcontroller.getexpenditurealert);
+app.get('/api/v1/getscholarshipalert',  kpialertcontroller.getscholarshipalert);
+app.get('/api/v1/getlibraryalert',  kpialertcontroller.getlibraryalert);
+app.get('/api/v1/getfundsalert',  kpialertcontroller.getfundsalert);
+app.get('/api/v1/getqualityalert',  kpialertcontroller.getqualityalert);
+app.get('/api/v1/getskilldevalert',  kpialertcontroller.getskilldevalert);
+app.get('/api/v1/getcareercounselalert',  kpialertcontroller.getcareercounselalert);
+app.get('/api/v1/getplacementalert',  kpialertcontroller.getplacementalert);
+app.get('/api/v1/gethigheredualert',  kpialertcontroller.gethigheredualert);
+app.get('/api/v1/gethigherexamalert',  kpialertcontroller.gethigherexamalert);
+app.get('/api/v1/getegovernalert',  kpialertcontroller.getegovernalert);
+app.get('/api/v1/getaddoncalert',  kpialertcontroller.getaddoncalert);
+app.get('/api/v1/getinstawardsalert',  kpialertcontroller.getinstawardsalert);
+app.get('/api/v1/getsyllabusrevalert',  kpialertcontroller.getsyllabusrevalert);
+app.get('/api/v1/getprojectalert',  kpialertcontroller.getprojectalert);
+app.get('/api/v1/getseminaralert',  kpialertcontroller.getseminaralert);
+app.get('/api/v1/getpatentalert',  kpialertcontroller.getpatentalert);
+app.get('/api/v1/getpubalert',  kpialertcontroller.getpubalert);
+app.get('/api/v1/getbookalert',  kpialertcontroller.getbookalert);
+app.get('/api/v1/getexplearningalert',  kpialertcontroller.getexplearningalert);
+app.get('/api/v1/getemployabilityalert',  kpialertcontroller.getemployabilityalert);
+app.get('/api/v1/getkpibystatus',  kpialertcontroller.getkpibystatus);
+
+// end
+
+// sep 27
+
+const kpiapicontroller=require('./controllers/kpiapicontroller');
+app.get('/api/v1/getkpibycolid',  kpiapicontroller.getkpi);
+app.get('/api/v1/getkpibydate',  kpiapicontroller.getkpibydate);
+app.get('/api/v1/getkpibygroup',  kpiapicontroller.getkpibygroup);
+app.get('/api/v1/getkpibycriteria',  kpiapicontroller.getkpibycriteria);
+app.get('/api/v1/getkpicriterialist',  kpiapicontroller.getkpicriterialist);
+app.get('/api/v1/createkpi',  kpiapicontroller.createkpi);
+app.get('/api/v1/updatekpi',  kpiapicontroller.updatekpi);
+app.get('/api/v1/updatekpidate',  kpiapicontroller.updatekpidate);
+app.get('/api/v1/deletekpi',  kpiapicontroller.deletekpi);
+
+const taskapicontroller=require('./controllers/taskapicontroller');
+app.get('/api/v1/gettasks',  taskapicontroller.gettasks);
+app.get('/api/v1/gettasksbygroup',  taskapicontroller.gettasksbygroup);
+app.get('/api/v1/gettasksbycriteria',  taskapicontroller.gettasksbycriteria);
+app.get('/api/v1/gettasksbyintervention',  taskapicontroller.gettasksbyintervention);
+app.get('/api/v1/createtasks',  taskapicontroller.createtasks);
+app.get('/api/v1/updatetasks',  taskapicontroller.updatetasks);
+app.get('/api/v1/deletetasks',  taskapicontroller.deletetasks);
+app.get('/api/v1/getalltasks',  taskapicontroller.getalltasks);
+app.get('/api/v1/gettaskbyid',  taskapicontroller.gettaskbyid);
+app.get('/api/v1/updatetasksticket',  taskapicontroller.updatetasksticket);
+
+// end
+
+const nodedatacontroller=require('./controllers/nodedatacontroller');
+
+app.post('/api/v1/bulksyllabusrev',  nodedatacontroller.bulksyllabusrev);
+
+
+const aimobcontroller=require('./controllers/aimobcontroller');
+
+
+
+
+
+app.get('/api/v1/getaauc1byfacm',  aimobcontroller.getaauc1byfac);
+app.get('/api/v1/aauc1byprogm',  aimobcontroller.aauc1byprog);
+app.get('/api/v1/updateaauc1byfacm',  aimobcontroller.updateaauc1byfac);
+app.get('/api/v1/updateaauc1commentsm',  aimobcontroller.updateaauc1comments);
+app.get('/api/v1/aauc1linksm',  aimobcontroller.aauc1links);
+app.get('/api/v1/aauc1docsm',  aimobcontroller.aauc1docs);
+app.get('/api/v1/deleteaauc1byfacm',  aimobcontroller.deleteaauc1byfac);
+app.get('/api/v1/createaauc1byfacm',  aimobcontroller.createaauc1byfac);
+app.get('/api/v1/getaauc2byfacm',  aimobcontroller.getaauc2byfac);
+app.get('/api/v1/aauc2byprogm',  aimobcontroller.aauc2byprog);
+app.get('/api/v1/updateaauc2byfacm',  aimobcontroller.updateaauc2byfac);
+app.get('/api/v1/updateaauc2commentsm',  aimobcontroller.updateaauc2comments);
+app.get('/api/v1/aauc2linksm',  aimobcontroller.aauc2links);
+app.get('/api/v1/aauc2docsm',  aimobcontroller.aauc2docs);
+app.get('/api/v1/deleteaauc2byfacm',  aimobcontroller.deleteaauc2byfac);
+app.get('/api/v1/createaauc2byfacm',  aimobcontroller.createaauc2byfac);
+//app.get('/api/v1/createaauc2byfacm2',  aimobcontroller.createaauc2byfac2);
+app.get('/api/v1/getaaucotherbyfacm',  aimobcontroller.getaaucotherbyfac);
+app.get('/api/v1/aaucotherbyprogm',  aimobcontroller.aaucotherbyprog);
+app.get('/api/v1/updateaaucotherbyfacm',  aimobcontroller.updateaaucotherbyfac);
+app.get('/api/v1/updateaaucothercommentsm',  aimobcontroller.updateaaucothercomments);
+app.get('/api/v1/aaucotherlinksm',  aimobcontroller.aaucotherlinks);
+app.get('/api/v1/aaucotherdocsm',  aimobcontroller.aaucotherdocs);
+app.get('/api/v1/deleteaaucotherbyfacm',  aimobcontroller.deleteaaucotherbyfac);
+app.get('/api/v1/createaaucotherbyfacm',  aimobcontroller.createaaucotherbyfac);
+app.get('/api/v1/getaaucfeesbyfacm',  aimobcontroller.getaaucfeesbyfac);
+app.get('/api/v1/aaucfeesbyprogm',  aimobcontroller.aaucfeesbyprog);
+app.get('/api/v1/updateaaucfeesbyfacm',  aimobcontroller.updateaaucfeesbyfac);
+app.get('/api/v1/updateaaucfeescommentsm',  aimobcontroller.updateaaucfeescomments);
+app.get('/api/v1/aaucfeeslinksm',  aimobcontroller.aaucfeeslinks);
+app.get('/api/v1/aaucfeesdocsm',  aimobcontroller.aaucfeesdocs);
+app.get('/api/v1/deleteaaucfeesbyfacm',  aimobcontroller.deleteaaucfeesbyfac);
+app.get('/api/v1/createaaucfeesbyfacm',  aimobcontroller.createaaucfeesbyfac);
+
+
+
+app.get('/api/v1/getprojectsbyfacm',  aimobcontroller.getprojectsbyfac);
+app.get('/api/v1/projectsbyprogm',  aimobcontroller.projectsbyprog);
+app.get('/api/v1/updateprojectsbyfacm',  aimobcontroller.updateprojectsbyfac);
+app.get('/api/v1/updateprojectscommentsm',  aimobcontroller.updateprojectscomments);
+app.get('/api/v1/projectslinksm',  aimobcontroller.projectslinks);
+app.get('/api/v1/projectsdocsm',  aimobcontroller.projectsdocs);
+app.get('/api/v1/deleteprojectsbyfacm',  aimobcontroller.deleteprojectsbyfac);
+app.get('/api/v1/createprojectsbyfacm',  aimobcontroller.createprojectsbyfac);
+app.get('/api/v1/getpublicationsbyfacm',  aimobcontroller.getpublicationsbyfac);
+app.get('/api/v1/publicationsbyprogm',  aimobcontroller.publicationsbyprog);
+app.get('/api/v1/updatepublicationsbyfacm',  aimobcontroller.updatepublicationsbyfac);
+app.get('/api/v1/updatepublicationscommentsm',  aimobcontroller.updatepublicationscomments);
+app.get('/api/v1/publicationslinksm',  aimobcontroller.publicationslinks);
+app.get('/api/v1/publicationsdocsm',  aimobcontroller.publicationsdocs);
+app.get('/api/v1/deletepublicationsbyfacm',  aimobcontroller.deletepublicationsbyfac);
+app.get('/api/v1/createpublicationsbyfacm',  aimobcontroller.createpublicationsbyfac);
+app.get('/api/v1/getpatentsbyfacm',  aimobcontroller.getpatentsbyfac);
+app.get('/api/v1/patentsbyprogm',  aimobcontroller.patentsbyprog);
+app.get('/api/v1/updatepatentsbyfacm',  aimobcontroller.updatepatentsbyfac);
+app.get('/api/v1/updatepatentscommentsm',  aimobcontroller.updatepatentscomments);
+app.get('/api/v1/patentslinksm',  aimobcontroller.patentslinks);
+app.get('/api/v1/patentsdocsm',  aimobcontroller.patentsdocs);
+app.get('/api/v1/deletepatentsbyfacm',  aimobcontroller.deletepatentsbyfac);
+app.get('/api/v1/createpatentsbyfacm',  aimobcontroller.createpatentsbyfac);
+app.get('/api/v1/getteacherfellowbyfacm',  aimobcontroller.getteacherfellowbyfac);
+app.get('/api/v1/teacherfellowbyprogm',  aimobcontroller.teacherfellowbyprog);
+app.get('/api/v1/updateteacherfellowbyfacm',  aimobcontroller.updateteacherfellowbyfac);
+app.get('/api/v1/updateteacherfellowcommentsm',  aimobcontroller.updateteacherfellowcomments);
+app.get('/api/v1/teacherfellowlinksm',  aimobcontroller.teacherfellowlinks);
+app.get('/api/v1/teacherfellowdocsm',  aimobcontroller.teacherfellowdocs);
+app.get('/api/v1/deleteteacherfellowbyfacm',  aimobcontroller.deleteteacherfellowbyfac);
+app.get('/api/v1/createteacherfellowbyfacm',  aimobcontroller.createteacherfellowbyfac);
+app.get('/api/v1/getconsultancybyfacm',  aimobcontroller.getconsultancybyfac);
+app.get('/api/v1/consultancybyprogm',  aimobcontroller.consultancybyprog);
+app.get('/api/v1/updateconsultancybyfacm',  aimobcontroller.updateconsultancybyfac);
+app.get('/api/v1/updateconsultancycommentsm',  aimobcontroller.updateconsultancycomments);
+app.get('/api/v1/consultancylinksm',  aimobcontroller.consultancylinks);
+app.get('/api/v1/consultancydocsm',  aimobcontroller.consultancydocs);
+app.get('/api/v1/deleteconsultancybyfacm',  aimobcontroller.deleteconsultancybyfac);
+app.get('/api/v1/createconsultancybyfacm',  aimobcontroller.createconsultancybyfac);
+app.get('/api/v1/getphdguidebyfacm',  aimobcontroller.getphdguidebyfac);
+app.get('/api/v1/phdguidebyprogm',  aimobcontroller.phdguidebyprog);
+app.get('/api/v1/updatephdguidebyfacm',  aimobcontroller.updatephdguidebyfac);
+app.get('/api/v1/updatephdguidecommentsm',  aimobcontroller.updatephdguidecomments);
+app.get('/api/v1/phdguidelinksm',  aimobcontroller.phdguidelinks);
+app.get('/api/v1/phdguidedocsm',  aimobcontroller.phdguidedocs);
+app.get('/api/v1/deletephdguidebyfacm',  aimobcontroller.deletephdguidebyfac);
+app.get('/api/v1/createphdguidebyfacm',  aimobcontroller.createphdguidebyfac);
+
+
+app.get('/api/v1/getseminarbyfacm',  aimobcontroller.getseminarbyfac);
+app.get('/api/v1/seminarbyprogm',  aimobcontroller.seminarbyprog);
+app.get('/api/v1/updateseminarbyfacm',  aimobcontroller.updateseminarbyfac);
+app.get('/api/v1/updateseminarcommentsm',  aimobcontroller.updateseminarcomments);
+app.get('/api/v1/seminarlinksm',  aimobcontroller.seminarlinks);
+app.get('/api/v1/seminardocsm',  aimobcontroller.seminardocs);
+app.get('/api/v1/deleteseminarbyfacm',  aimobcontroller.deleteseminarbyfac);
+app.get('/api/v1/createseminarbyfacm',  aimobcontroller.createseminarbyfac);
+
+
+
+const nehalcontroller=require('./controllers/nehalcontroller');
+
+app.get('/api/v1/getseminarcounta',  nehalcontroller.getseminarcounta);
+app.get('/api/v1/getbookcounta',  nehalcontroller.getbookcounta);
+app.get('/api/v1/getprojectscounta',  nehalcontroller.getprojectscounta);
+app.get('/api/v1/getpatentscounta',  nehalcontroller.getpatentsscounta);
+
+app.get('/api/v1/getpublicationscounta',  nehalcontroller.getpublicationscounta);
+
+app.get('/api/v1/amastudnewsummary1',  nehalcontroller.amastudnewsummary1);
+app.get('/api/v1/amastudnewsummary1all',  nehalcontroller.amastudnewsummary1all);
+app.get('/api/v1/amastudnewsummarypb',  nehalcontroller.amastudnewsummarypb);
+
+app.get('/api/v1/amastudnewduplicate',  nehalcontroller.amastudnewduplicate);
+app.get('/api/v1/amastudnewduplicateu',  nehalcontroller.amastudnewduplicateu);
+
+app.get('/api/v1/addonCTemplate',  nehalcontroller.addonCTemplate);
+app.get('/api/v1/addonCTemplate1',  nehalcontroller.addonCTemplate1);
+app.get('/api/v1/dupallcourse',  nehalcontroller.dupallcourse);
+app.get('/api/v1/addoncdoccommentsd1',  nehalcontroller.addoncdoccommentsd1);
+app.get('/api/v1/addoncdoccommentsd2',  nehalcontroller.addoncdoccommentsd2);
+app.get('/api/v1/explearnewmatch',  nehalcontroller.explearnewmatch);
+
+app.get('/api/v1/amastudnewgroup',  nehalcontroller.amastudnewgroup);
+app.get('/api/v1/amastudnewgroup1',  nehalcontroller.amastudnewgroup1);
+
+app.get('/api/v1/createinstitution',  nehalcontroller.createinstitution);
+app.get('/api/v1/createinstitutionself',  nehalcontroller.createinstitutionself);
+
+app.get('/api/v1/updatephone',  nehalcontroller.updatephone);
+app.get('/api/v1/allcourset',  nehalcontroller.allcourset);
+
+
+
+const ainewcontroller=require('./controllers/ainewcontroller');
+
+app.get('/api/v1/getuserpassword',  ainewcontroller.getuserpassword);
+
+app.get('/api/v1/admcount',  ainewcontroller.admcount);
+app.get('/api/v1/expcount',  ainewcontroller.expcount);
+app.get('/api/v1/vaccount',  ainewcontroller.vaccount);
+app.get('/api/v1/doc132populate',  ainewcontroller.doc132populate);
+app.get('/api/v1/newcoursecount',  ainewcontroller.newcoursecount);
+app.get('/api/v1/doc121bospopulate',  ainewcontroller.doc121bospopulate);
+
+
+const nodebulkapicontroller=require('./controllers/nodebulkapicontroller');
+
+app.post('/api/v1/uploadnacademic',  nodebulkapicontroller.uploadnacademic);
+app.post('/api/v1/uploadnworkbook',  nodebulkapicontroller.uploadnworkbook);
+app.post('/api/v1/uploadnenrollment',  nodebulkapicontroller.uploadnenrollment);
+app.post('/api/v1/uploadncourseplan',  nodebulkapicontroller.uploadncourseplan);
+app.post('/api/v1/uploadninter',  nodebulkapicontroller.uploadninter);
+app.post('/api/v1/uploadnclinicskills',  nodebulkapicontroller.uploadnclinicskills);
+app.post('/api/v1/uploadnhlearner',  nodebulkapicontroller.uploadnhlearner);
+app.post('/api/v1/uploadnotherstud',  nodebulkapicontroller.uploadnotherstud);
+app.post('/api/v1/uploadnreval',  nodebulkapicontroller.uploadnreval);
+app.post('/api/v1/uploadnfacilities',  nodebulkapicontroller.uploadnfacilities);
+app.post('/api/v1/uploadndepfunding',  nodebulkapicontroller.uploadndepfunding);
+app.post('/api/v1/uploadnprogcourse',  nodebulkapicontroller.uploadnprogcourse);
+app.post('/api/v1/uploadnnursinginter',  nodebulkapicontroller.uploadnnursinginter);
+app.post('/api/v1/uploadnnvacstud',  nodebulkapicontroller.uploadnnvacstud);
+app.post('/api/v1/uploadnnexp',  nodebulkapicontroller.uploadnnexp);
+app.post('/api/v1/uploadnnexam',  nodebulkapicontroller.uploadnnexam);
+app.post('/api/v1/uploadnnmentor',  nodebulkapicontroller.uploadnnmentor);
+app.post('/api/v1/uploadnnratio',  nodebulkapicontroller.uploadnnratio);
+
+app.post('/api/v1/uploadnclient',  nodebulkapicontroller.uploadnclient);
+app.post('/api/v1/uploadnmilestone',  nodebulkapicontroller.uploadnmilestone);
+app.post('/api/v1/uploadninvoice',  nodebulkapicontroller.uploadninvoice);
+app.post('/api/v1/uploadngstgain',  nodebulkapicontroller.uploadngstgain);
+app.post('/api/v1/uploadnvendor',  nodebulkapicontroller.uploadnvendor);
+app.post('/api/v1/uploadnvworkorder',  nodebulkapicontroller.uploadnvworkorder);
+app.post('/api/v1/uploadnvinvoice',  nodebulkapicontroller.uploadnvinvoice);
+app.post('/api/v1/uploadntrialbalance',  nodebulkapicontroller.uploadntrialbalance);
+
+app.post('/api/v1/uploadnbudget',  nodebulkapicontroller.uploadnbudget);
+app.post('/api/v1/uploadnledger',  nodebulkapicontroller.uploadnledger);
+app.post('/api/v1/uploadnaccounts',  nodebulkapicontroller.uploadnaccounts);
+
+app.post('/api/v1/uploadnseedmoney',  nodebulkapicontroller.uploadnseedmoney);
+app.post('/api/v1/uploadnbudgetreq',  nodebulkapicontroller.uploadnbudgetreq);
+app.post('/api/v1/uploadnoodreq',  nodebulkapicontroller.uploadnoodreq);
+app.post('/api/v1/uploadneventreq',  nodebulkapicontroller.uploadneventreq);
+app.post('/api/v1/uploadnassistantreq',  nodebulkapicontroller.uploadnassistantreq);
+app.post('/api/v1/uploadnhousingreq',  nodebulkapicontroller.uploadnhousingreq);
+app.post('/api/v1/uploadntravelsupport',  nodebulkapicontroller.uploadntravelsupport);
+
+app.post('/api/v1/uploadncompanies',  nodebulkapicontroller.uploadncompanies);
+app.post('/api/v1/uploadnjobs',  nodebulkapicontroller.uploadnjobs);
+app.post('/api/v1/uploadnjobstudents',  nodebulkapicontroller.uploadnjobstudents);
+app.post('/api/v1/uploadnhighereducation',  nodebulkapicontroller.uploadnhighereducation);
+
+app.post('/api/v1/uploadnoffcampus',  nodebulkapicontroller.uploadnoffcampus);
+app.post('/api/v1/uploadnjobsapply',  nodebulkapicontroller.uploadnjobsapply);
+app.post('/api/v1/uploadnhigheredurep',  nodebulkapicontroller.uploadnhigheredurep);
+app.post('/api/v1/uploadnoffawards',  nodebulkapicontroller.uploadnoffawards);
+app.post('/api/v1/uploadnoffscholarship',  nodebulkapicontroller.uploadnoffscholarship);
+app.post('/api/v1/uploadnoffextension',  nodebulkapicontroller.uploadnoffextension);
+app.post('/api/v1/uploadnoffcourses',  nodebulkapicontroller.uploadnoffcourses);
+
+app.post('/api/v1/uploadncommittees',  nodebulkapicontroller.uploadncommittees);
+app.post('/api/v1/uploadncommembers',  nodebulkapicontroller.uploadncommembers);
+app.post('/api/v1/uploadncomminutes',  nodebulkapicontroller.uploadncomminutes);
+app.post('/api/v1/uploadncomtasks',  nodebulkapicontroller.uploadncomtasks);
+
+app.post('/api/v1/uploadworkload',  nodebulkapicontroller.uploadworkload);
+app.post('/api/v1/uploadworkloadbulk',  nodebulkapicontroller.uploadworkloadbulk);
+app.post('/api/v1/uploadlessonplan',  nodebulkapicontroller.uploadlessonplan);
+app.post('/api/v1/uploadlessonplannew',  nodebulkapicontroller.uploadlessonplannew);
+
+app.post('/api/v1/uploadClass',  nodebulkapicontroller.uploadClass);
+app.post('/api/v1/uploadcoursefiles',  nodebulkapicontroller.uploadcoursefiles);
+
+app.post('/api/v1/uploadco',  nodebulkapicontroller.uploadco);
+app.post('/api/v1/uploadlannouncement',  nodebulkapicontroller.uploadlannouncement);
+app.post('/api/v1/uploadlsyllabus',  nodebulkapicontroller.uploadlsyllabus);
+app.post('/api/v1/uploadlcalendar',  nodebulkapicontroller.uploadlcalendar);
+
+app.post('/api/v1/uploadstudents',  nodebulkapicontroller.uploadstudents);
+app.post('/api/v1/uploadothers',  nodebulkapicontroller.uploadothers);
+
+app.post('/api/v1/uploadcurrenyear',  nodebulkapicontroller.uploadcurrenyear);
+app.post('/api/v1/uploadstudparents',  nodebulkapicontroller.uploadstudparents);
+
+app.post('/api/v1/uploadprojectledger',  nodebulkapicontroller.uploadprojectledger);
+app.post('/api/v1/uploadprojectcentral',  nodebulkapicontroller.uploadprojectcentral);
+app.post('/api/v1/uploadmaintenance',  nodebulkapicontroller.uploadmaintenance);
+app.post('/api/v1/uploadotherincome',  nodebulkapicontroller.uploadotherincome);
+
+app.post('/api/v1/uploadnaccountheads',  nodebulkapicontroller.uploadnaccountheads);
+app.post('/api/v1/uploadntransactions',  nodebulkapicontroller.uploadntransactions);
+app.post('/api/v1/uploadntledger',  nodebulkapicontroller.uploadntledger);
+
+app.post('/api/v1/uploadnnursing812',  nodebulkapicontroller.uploadnnursing812);
+app.post('/api/v1/uploadnnursing814',  nodebulkapicontroller.uploadnnursing814);
+app.post('/api/v1/uploadnnursing815',  nodebulkapicontroller.uploadnnursing815);
+app.post('/api/v1/uploadnnursing818',  nodebulkapicontroller.uploadnnursing818);
+app.post('/api/v1/uploadnnursing424',  nodebulkapicontroller.uploadnnursing424);
+app.post('/api/v1/uploadncompetitive',  nodebulkapicontroller.uploadncompetitive);
+app.post('/api/v1/uploadnnursing515',  nodebulkapicontroller.uploadnnursing515);
+
+app.post('/api/v1/uploadndepmeetings',  nodebulkapicontroller.uploadndepmeetings);
+app.post('/api/v1/uploadnmeetingtasks',  nodebulkapicontroller.uploadnmeetingtasks);
+
+app.post('/api/v1/uploadndepmeetingsall',  nodebulkapicontroller.uploadndepmeetingsall);
+app.post('/api/v1/uploadnmeetingtasksall',  nodebulkapicontroller.uploadnmeetingtasksall);
+
+app.post('/api/v1/uploadnallcourses',  nodebulkapicontroller.uploadnallcourses);
+
+app.post('/api/v1/uploadverifystatus',  nodebulkapicontroller.uploadverifystatus);
+app.post('/api/v1/uploadnissuesall',  nodebulkapicontroller.uploadnissuesall);
+app.post('/api/v1/uploadntickets',  nodebulkapicontroller.uploadntickets);
+
+
+app.post('/api/v1/uploadadmission',  nodebulkapicontroller.uploadadmission);
+app.post('/api/v1/uploadpassexam',  nodebulkapicontroller.uploadpassexam);
+app.post('/api/v1/uploadnbaug33result',  nodebulkapicontroller.uploadnbaug33result);
+app.post('/api/v1/uploadplacement',  nodebulkapicontroller.uploadplacement);
+app.post('/api/v1/uploadwriterdb',  nodebulkapicontroller.uploadwriterdb);
+
+
+app.post('/api/v1/uploadhigheredu',  nodebulkapicontroller.uploadhigheredu);
+app.post('/api/v1/uploadhigherexam',  nodebulkapicontroller.uploadhigherexam);
+
+app.post('/api/v1/uploadreservecat',  nodebulkapicontroller.uploadreservecat);
+app.post('/api/v1/uploadphdfac',  nodebulkapicontroller.uploadphdfac);
+
+
+app.post('/api/v1/uploadteacherdata',  nodebulkapicontroller.uploadteacherdata);
+app.post('/api/v1/uploadresult',  nodebulkapicontroller.uploadresult);
+//app.post('/api/v1/uploadphdface',  nodebulkapicontroller.uploadphdface);
+
+app.post('/api/v1/uploadnmetricissues',  nodebulkapicontroller.uploadnmetricissues);
+
+app.post('/api/v1/uploadempexpenses',  nodebulkapicontroller.uploadempexpenses);
+app.post('/api/v1/uploadeventexpenses',  nodebulkapicontroller.uploadeventexpenses);
+
+app.post('/api/v1/uploadmentees',  nodebulkapicontroller.uploadmentees);
+
+app.post('/api/v1/uploadalumnicon',  nodebulkapicontroller.uploadalumnicon);
+app.post('/api/v1/uploadevent',  nodebulkapicontroller.uploadevent);
+
+app.post('/api/v1/uploadteacherfs',  nodebulkapicontroller.uploadteacherfs);
+
+app.post('/api/v1/uploadlabsafety',  nodebulkapicontroller.uploadlabsafety);
+app.post('/api/v1/uploadlabequipments',  nodebulkapicontroller.uploadlabequipments);
+app.post('/api/v1/uploadprogrambudget',  nodebulkapicontroller.uploadprogrambudget);
+app.post('/api/v1/uploadinternet',  nodebulkapicontroller.uploadinternet);
+app.post('/api/v1/uploademfaculty',  nodebulkapicontroller.uploademfaculty);
+app.post('/api/v1/uploadstudentpubs',  nodebulkapicontroller.uploadstudentpubs);
+app.post('/api/v1/uploaddeppublications',  nodebulkapicontroller.uploaddeppublications);
+app.post('/api/v1/uploadfacyear',  nodebulkapicontroller.uploadfacyear);
+app.post('/api/v1/uploadstudmaster',  nodebulkapicontroller.uploadstudmaster);
+app.post('/api/v1/uploadseedm',  nodebulkapicontroller.uploadseedm);
+app.post('/api/v1/uploadplacement',  nodebulkapicontroller.uploadplacement);
+
+app.post('/api/v1/uploadstudmasternew',  nodebulkapicontroller.uploadstudmasternew);
+app.post('/api/v1/uploadstartup',  nodebulkapicontroller.uploadstartup);
+
+app.post('/api/v1/uploadacadperf',  nodebulkapicontroller.uploadacadperf);
+
+app.post('/api/v1/uploadpayslips',  nodebulkapicontroller.uploadpayslips);
+app.post('/api/v1/uploadpayslipdetails',  nodebulkapicontroller.uploadpayslipdetails);
+
+app.post('/api/v1/uploadopencourse',  nodebulkapicontroller.uploadopencourse);
+app.post('/api/v1/uploadopenmodules',  nodebulkapicontroller.uploadopenmodules);
+
+app.post('/api/v1/uploadrapplication',  nodebulkapicontroller.uploadrapplication);
+app.post('/api/v1/uploadrtrust',  nodebulkapicontroller.uploadrtrust);
+
+app.post('/api/v1/uploadrinstitute',  nodebulkapicontroller.uploadrinstitute);
+
+app.post('/api/v1/uploadrnotherc',  nodebulkapicontroller.uploadrnotherc);
+app.post('/api/v1/uploadrnclassroom',  nodebulkapicontroller.uploadrnclassroom);
+app.post('/api/v1/uploadrnlabs',  nodebulkapicontroller.uploadrnlabs);
+app.post('/api/v1/uploadrnlibrarian',  nodebulkapicontroller.uploadrnlibrarian);
+app.post('/api/v1/uploadrnvehicle',  nodebulkapicontroller.uploadrnvehicle);
+app.post('/api/v1/uploadrnadministrative',  nodebulkapicontroller.uploadrnadministrative);
+app.post('/api/v1/uploadrnaffhospital',  nodebulkapicontroller.uploadrnaffhospital);
+app.post('/api/v1/uploadrndocuments',  nodebulkapicontroller.uploadrndocuments);
+app.post('/api/v1/uploadrnonteaching',  nodebulkapicontroller.uploadrnonteaching);
+
+app.post('/api/v1/uploadrnphospitals',  nodebulkapicontroller.uploadrnphospitals);
+app.post('/api/v1/uploadrnbuilding',  nodebulkapicontroller.uploadrnbuilding);
+
+app.post('/api/v1/uploadnqualification',  nodebulkapicontroller.uploadnqualification);
+app.post('/api/v1/uploadnexperience',  nodebulkapicontroller.uploadnexperience);
+app.post('/api/v1/uploadnmytasks',  nodebulkapicontroller.uploadnmytasks);
+app.post('/api/v1/uploadsalarydetails',  nodebulkapicontroller.uploadsalarydetails);
+app.post('/api/v1/uploadempapprec',  nodebulkapicontroller.uploadempapprec);
+
+
+app.post('/api/v1/uploadnlibusage',  nodebulkapicontroller.uploadnlibusage);
+
+
+app.post('/api/v1/uploadexplearning',  nodebulkapicontroller.uploadexplearning);
+app.post('/api/v1/uploadnufacultydata',  nodebulkapicontroller.uploadnufacultydata);
+app.post('/api/v1/uploadphdface',  nodebulkapicontroller.uploadphdface);
+app.post('/api/v1/uploadteacherdata',  nodebulkapicontroller.uploadteacherdata);
+app.post('/api/v1/uploadresult',  nodebulkapicontroller.uploadresult);
+app.post('/api/v1/uploadnugrievance',  nodebulkapicontroller.uploadnugrievance);
+app.post('/api/v1/uploadpasspercent',  nodebulkapicontroller.uploadpasspercent);
+app.post('/api/v1/uploadteacherfellow',  nodebulkapicontroller.uploadteacherfellow);
+app.post('/api/v1/uploadpatents',  nodebulkapicontroller.uploadpatents);
+app.post('/api/v1/uploadconsultancy',  nodebulkapicontroller.uploadconsultancy);
+app.post('/api/v1/uploadmou',  nodebulkapicontroller.uploadmou);
+app.post('/api/v1/uploadnuefacilities',  nodebulkapicontroller.uploadnuefacilities);
+app.post('/api/v1/uploadnustudcompratio',  nodebulkapicontroller.uploadnustudcompratio);
+app.post('/api/v1/uploadhigherexam',  nodebulkapicontroller.uploadhigherexam);
+app.post('/api/v1/uploadawards',  nodebulkapicontroller.uploadawards);
+
+app.post('/api/v1/uploadnluteacherdata',  nodebulkapicontroller.uploadnluteacherdata);
+app.post('/api/v1/uploadnlufacilities',  nodebulkapicontroller.uploadnlufacilities);
+app.post('/api/v1/uploadnlurecognitions',  nodebulkapicontroller.uploadnlurecognitions);
+app.post('/api/v1/uploadnlubills',  nodebulkapicontroller.uploadnlubills);
+app.post('/api/v1/uploadnluincentives',  nodebulkapicontroller.uploadnluincentives);
+app.post('/api/v1/uploadnluphdtheisis',  nodebulkapicontroller.uploadnluphdtheisis);
+app.post('/api/v1/uploadnlucitation',  nodebulkapicontroller.uploadnlucitation);
+app.post('/api/v1/uploadnlulegaldatabases',  nodebulkapicontroller.uploadnlulegaldatabases);
+app.post('/api/v1/uploadnlbar',  nodebulkapicontroller.uploadnlbar);
+
+app.post('/api/v1/uploadainst',  nodebulkapicontroller.uploadainst);
+
+
+app.post('/api/v1/uploadpauidetailsa',  nodebulkapicontroller.uploadpauidetailsa);
+app.post('/api/v1/uploadpauidetailsb',  nodebulkapicontroller.uploadpauidetailsb);
+app.post('/api/v1/uploadpauidetailsc',  nodebulkapicontroller.uploadpauidetailsc);
+app.post('/api/v1/uploadpautrust',  nodebulkapicontroller.uploadpautrust);
+app.post('/api/v1/uploadpauprincipala',  nodebulkapicontroller.uploadpauprincipala);
+app.post('/api/v1/uploadpauprincipalb',  nodebulkapicontroller.uploadpauprincipalb);
+app.post('/api/v1/uploadpaugovcouncila',  nodebulkapicontroller.uploadpaugovcouncila);
+app.post('/api/v1/uploadpaugovcouncilb',  nodebulkapicontroller.uploadpaugovcouncilb);
+app.post('/api/v1/uploadpauboarda',  nodebulkapicontroller.uploadpauboarda);
+app.post('/api/v1/uploadpauboardb',  nodebulkapicontroller.uploadpauboardb);
+app.post('/api/v1/uploadpauragcomt',  nodebulkapicontroller.uploadpauragcomt);
+app.post('/api/v1/uploadpauragsquad',  nodebulkapicontroller.uploadpauragsquad);
+app.post('/api/v1/uploadpauwelfarecomt',  nodebulkapicontroller.uploadpauwelfarecomt);
+app.post('/api/v1/uploadpauredressal',  nodebulkapicontroller.uploadpauredressal);
+app.post('/api/v1/uploadpaubankacnts',  nodebulkapicontroller.uploadpaubankacnts);
+app.post('/api/v1/uploadpaudeposit',  nodebulkapicontroller.uploadpaudeposit);
+app.post('/api/v1/uploadpauendowment',  nodebulkapicontroller.uploadpauendowment);
+app.post('/api/v1/uploadpaulanddetailsa',  nodebulkapicontroller.uploadpaulanddetailsa);
+app.post('/api/v1/uploadpaulanddetailsb',  nodebulkapicontroller.uploadpaulanddetailsb);
+app.post('/api/v1/uploadpaucourse',  nodebulkapicontroller.uploadpaucourse);
+app.post('/api/v1/uploadpaucrsedetails',  nodebulkapicontroller.uploadpaucrsedetails);
+app.post('/api/v1/uploadpauaddcrse',  nodebulkapicontroller.uploadpauaddcrse);
+app.post('/api/v1/uploadpaustuddetails',  nodebulkapicontroller.uploadpaustuddetails);
+app.post('/api/v1/uploadpaufaculty',  nodebulkapicontroller.uploadpaufaculty);
+app.post('/api/v1/uploadpaufdetailsa',  nodebulkapicontroller.uploadpaufdetailsa);
+app.post('/api/v1/uploadpaufdetailsb',  nodebulkapicontroller.uploadpaufdetailsb);
+app.post('/api/v1/uploadpaufeduqualif',  nodebulkapicontroller.uploadpaufeduqualif);
+app.post('/api/v1/uploadpaufaddqualif',  nodebulkapicontroller.uploadpaufaddqualif);
+app.post('/api/v1/uploadpaufacdexp',  nodebulkapicontroller.uploadpaufacdexp);
+app.post('/api/v1/uploadpaufindexp',  nodebulkapicontroller.uploadpaufindexp);
+app.post('/api/v1/uploadpaufcoeexp',  nodebulkapicontroller.uploadpaufcoeexp);
+app.post('/api/v1/uploadpauconfacshe',  nodebulkapicontroller.uploadpauconfacshe);
+app.post('/api/v1/uploadpauconfaccourse',  nodebulkapicontroller.uploadpauconfaccourse);
+app.post('/api/v1/uploadpauconfacmemtech',  nodebulkapicontroller.uploadpauconfacmemtech);
+app.post('/api/v1/uploadpaunontstaff',  nodebulkapicontroller.uploadpaunontstaff);
+app.post('/api/v1/uploadpauspacereq',  nodebulkapicontroller.uploadpauspacereq);
+app.post('/api/v1/uploadpauequip',  nodebulkapicontroller.uploadpauequip);
+app.post('/api/v1/uploadpauequiplist',  nodebulkapicontroller.uploadpauequiplist);
+app.post('/api/v1/uploadpauccomfarea',  nodebulkapicontroller.uploadpauccomfarea);
+app.post('/api/v1/uploadpautermlanwan',  nodebulkapicontroller.uploadpautermlanwan);
+app.post('/api/v1/uploadpaunoofterm',  nodebulkapicontroller.uploadpaunoofterm);
+app.post('/api/v1/uploadpaunooftermlan',  nodebulkapicontroller.uploadpaunooftermlan);
+app.post('/api/v1/uploadpaunoofprinters',  nodebulkapicontroller.uploadpaunoofprinters);
+app.post('/api/v1/uploadpausoftware',  nodebulkapicontroller.uploadpausoftware);
+app.post('/api/v1/uploadpaunetwork',  nodebulkapicontroller.uploadpaunetwork);
+app.post('/api/v1/uploadpaulibarea',  nodebulkapicontroller.uploadpaulibarea);
+app.post('/api/v1/uploadpaulibbooks',  nodebulkapicontroller.uploadpaulibbooks);
+app.post('/api/v1/uploadpaulibjournal',  nodebulkapicontroller.uploadpaulibjournal);
+app.post('/api/v1/uploadpauavailclroom',  nodebulkapicontroller.uploadpauavailclroom);
+app.post('/api/v1/uploadpausumofclroom',  nodebulkapicontroller.uploadpausumofclroom);
+app.post('/api/v1/uploadpaunoofdrawhall',  nodebulkapicontroller.uploadpaunoofdrawhall);
+app.post('/api/v1/uploadpauadminarea',  nodebulkapicontroller.uploadpauadminarea);
+app.post('/api/v1/uploadpauamen',  nodebulkapicontroller.uploadpauamen);
+app.post('/api/v1/uploadpaubhostel',  nodebulkapicontroller.uploadpaubhostel);
+app.post('/api/v1/uploadpaughostel',  nodebulkapicontroller.uploadpaughostel);
+app.post('/api/v1/uploadpauotherbuildarea',  nodebulkapicontroller.uploadpauotherbuildarea);
+app.post('/api/v1/uploadpauphyedu',  nodebulkapicontroller.uploadpauphyedu);
+app.post('/api/v1/uploadpautpc',  nodebulkapicontroller.uploadpautpc);
+app.post('/api/v1/uploadpaufacilityavail',  nodebulkapicontroller.uploadpaufacilityavail);
+app.post('/api/v1/uploadpaualumni',  nodebulkapicontroller.uploadpaualumni);
+app.post('/api/v1/uploadpautpc',  nodebulkapicontroller.uploadpautpc);
+app.post('/api/v1/uploadpauhealth',  nodebulkapicontroller.uploadpauhealth);
+app.post('/api/v1/uploadpauothamen',  nodebulkapicontroller.uploadpauothamen);
+app.post('/api/v1/uploadpauregrec',  nodebulkapicontroller.uploadpauregrec);
+app.post('/api/v1/uploadpaucertificates',  nodebulkapicontroller.uploadpaucertificates);
+app.post('/api/v1/uploadpauprocfeea',  nodebulkapicontroller.uploadpauprocfeea);
+app.post('/api/v1/uploadpauprocfeeb',  nodebulkapicontroller.uploadpauprocfeeb);
+app.post('/api/v1/uploadpauprocfeec',  nodebulkapicontroller.uploadpauprocfeec);
+app.post('/api/v1/uploadpauprcplendrsmnt',  nodebulkapicontroller.uploadpauprcplendrsmnt);
+app.post('/api/v1/uploadpaumngdeclaration',  nodebulkapicontroller.uploadpaumngdeclaration);
+
+
+app.post('/api/v1/uploadpnirf',  nodebulkapicontroller.uploadpnirf);
+app.post('/api/v1/uploadpadmnew',  nodebulkapicontroller.uploadpadmnew);
+app.post('/api/v1/uploadpnbanew',  nodebulkapicontroller.uploadpnbanew);
+app.post('/api/v1/uploadpaunfcoeexp',  nodebulkapicontroller.uploadpaunfcoeexp);
+app.post('/api/v1/uploadpaunprincipala',  nodebulkapicontroller.uploadpaunprincipala);
+app.post('/api/v1/uploadpaunfeduqualif',  nodebulkapicontroller.uploadpaunfeduqualif);
+app.post('/api/v1/uploadpaunhealth',  nodebulkapicontroller.uploadpaunhealth);
+app.post('/api/v1/uploadpaunnoofdrawhall',  nodebulkapicontroller.uploadpaunnoofdrawhall);
+app.post('/api/v1/uploadpaunstuddetails',  nodebulkapicontroller.uploadpaunstuddetails);
+
+app.post('/api/v1/uploadpaunnprincipal',  nodebulkapicontroller.uploadpaunnprincipal);
+app.post('/api/v1/uploadpaungovcouncil',  nodebulkapicontroller.uploadpaungovcouncil);
+app.post('/api/v1/uploadpaunboard',  nodebulkapicontroller.uploadpaunboard);
+app.post('/api/v1/uploadpaunprocfee',  nodebulkapicontroller.uploadpaunprocfee);
+app.post('/api/v1/uploadpauntermlanwan',  nodebulkapicontroller.uploadpauntermlanwan);
+app.post('/api/v1/uploadpaunidetails',  nodebulkapicontroller.uploadpaunidetails);
+app.post('/api/v1/uploadpaunfacultydetails',  nodebulkapicontroller.uploadpaunfacultydetails);
+app.post('/api/v1/uploadpaunfaddqualif',  nodebulkapicontroller.uploadpaunfaddqualif);
+app.post('/api/v1/uploadpaunfacdexp',  nodebulkapicontroller.uploadpaunfacdexp);
+app.post('/api/v1/uploadpaunfindexp',  nodebulkapicontroller.uploadpaunfindexp);
+app.post('/api/v1/uploadpaunnfeduqualif',  nodebulkapicontroller.uploadpaunnfeduqualif);
+app.post('/api/v1/uploadpaunnfcoeexp',  nodebulkapicontroller.uploadpaunnfcoeexp);
+app.post('/api/v1/uploadpaunadminarea',  nodebulkapicontroller.uploadpaunadminarea);
+app.post('/api/v1/uploadpaunamen',  nodebulkapicontroller.uploadpaunamen);
+app.post('/api/v1/uploadpaunotherbuildarea',  nodebulkapicontroller.uploadpaunotherbuildarea);
+
+
+app.post('/api/v1/uploadpaunlibbooks',  nodebulkapicontroller.uploadpaunlibbooks);
+app.post('/api/v1/uploadpaunewidetails',  nodebulkapicontroller.uploadpaunewidetails);
+app.post('/api/v1/uploadpaunewprincipal',  nodebulkapicontroller.uploadpaunewprincipal);
+app.post('/api/v1/uploadpauclassblock',  nodebulkapicontroller.uploadpauclassblock);
+app.post('/api/v1/uploadpauclassnew',  nodebulkapicontroller.uploadpauclassnew);
+app.post('/api/v1/uploadpaunlibjournal',  nodebulkapicontroller.uploadpaunlibjournal);
+
+app.post('/api/v1/uploadpaunewfacultydetails',  nodebulkapicontroller.uploadpaunewfacultydetails);
+app.post('/api/v1/uploadpaunewfaddqualif',  nodebulkapicontroller.uploadpaunewfaddqualif);
+app.post('/api/v1/uploadpaunewfacdexp',  nodebulkapicontroller.uploadpaunewfacdexp);
+app.post('/api/v1/uploadpaunewfindexp',  nodebulkapicontroller.uploadpaunewfindexp);
+app.post('/api/v1/uploadpaunewfeduqualif',  nodebulkapicontroller.uploadpaunewfeduqualif);
+app.post('/api/v1/uploadpaunewlanddetails',  nodebulkapicontroller.uploadpaunewlanddetails);
+
+app.post('/api/v1/uploadpauinstdetails',  nodebulkapicontroller.uploadpauinstdetails);
+app.post('/api/v1/uploadpauinstcourse',  nodebulkapicontroller.uploadpauinstcourse);
+app.post('/api/v1/uploadpaunequip',  nodebulkapicontroller.uploadpaunequip);
+app.post('/api/v1/uploadpaunewfcoeexp',  nodebulkapicontroller.uploadpaunewfcoeexp);
+
+app.post('/api/v1/uploadainsmaster',  nodebulkapicontroller.uploadainsmaster);
+
+app.post('/api/v1/uploadnuexplearning',  nodebulkapicontroller.uploadnuexplearning);
+app.post('/api/v1/uploadnucodeofethics',  nodebulkapicontroller.uploadnucodeofethics);
+app.post('/api/v1/uploadnlufocus',  nodebulkapicontroller.uploadnlufocus);
+app.post('/api/v1/uploadnluadmission',  nodebulkapicontroller.uploadnluadmission);
+app.post('/api/v1/uploadnauscholarship',  nodebulkapicontroller.uploadnauscholarship);
+
+
+app.post('/api/v1/uploadppuclgdetails',  nodebulkapicontroller.uploadppuclgdetails);
+app.post('/api/v1/uploadppuheaddetails',  nodebulkapicontroller.uploadppuheaddetails);
+app.post('/api/v1/uploadppulegalrep',  nodebulkapicontroller.uploadppulegalrep);
+app.post('/api/v1/uploadpputrustdetails',  nodebulkapicontroller.uploadpputrustdetails);
+app.post('/api/v1/uploadppupermission',  nodebulkapicontroller.uploadppupermission);
+app.post('/api/v1/uploadppumanagingbody',  nodebulkapicontroller.uploadppumanagingbody);
+app.post('/api/v1/uploadppuwlfcomt',  nodebulkapicontroller.uploadppuwlfcomt);
+app.post('/api/v1/uploadpputrustfin',  nodebulkapicontroller.uploadpputrustfin);
+app.post('/api/v1/uploadppufdrdetails',  nodebulkapicontroller.uploadppufdrdetails);
+app.post('/api/v1/uploadppuimmvprop',  nodebulkapicontroller.uploadppuimmvprop);
+app.post('/api/v1/uploadppufinance',  nodebulkapicontroller.uploadppufinance);
+app.post('/api/v1/uploadppuland',  nodebulkapicontroller.uploadppuland);
+app.post('/api/v1/uploadppubuilding',  nodebulkapicontroller.uploadppubuilding);
+app.post('/api/v1/uploadppuhostel',  nodebulkapicontroller.uploadppuhostel);
+app.post('/api/v1/uploadppurooms',  nodebulkapicontroller.uploadppurooms);
+app.post('/api/v1/uploadppuphyedu',  nodebulkapicontroller.uploadppuphyedu);
+app.post('/api/v1/uploadppustaff',  nodebulkapicontroller.uploadppustaff);
+app.post('/api/v1/uploadppucollege',  nodebulkapicontroller.uploadppucollege);
+app.post('/api/v1/uploadpputrust',  nodebulkapicontroller.uploadpputrust);
+app.post('/api/v1/uploadppuaddprog',  nodebulkapicontroller.uploadppuaddprog);
+app.post('/api/v1/uploadppuvarintake',  nodebulkapicontroller.uploadppuvarintake);
+app.post('/api/v1/uploadppuexistprog',  nodebulkapicontroller.uploadppuexistprog);
+app.post('/api/v1/uploadppucourses',  nodebulkapicontroller.uploadppucourses);
+app.post('/api/v1/uploadppucoursrep',  nodebulkapicontroller.uploadppucoursrep);
+app.post('/api/v1/uploadppuprincipal',  nodebulkapicontroller.uploadppuprincipal);
+app.post('/api/v1/uploadppufaculty',  nodebulkapicontroller.uploadppufaculty);
+app.post('/api/v1/uploadppustafstudratio',  nodebulkapicontroller.uploadppustafstudratio);
+app.post('/api/v1/uploadppulabequip',  nodebulkapicontroller.uploadppulabequip);
+app.post('/api/v1/uploadppulabequipprocure',  nodebulkapicontroller.uploadppulabequipprocure);
+app.post('/api/v1/uploadppulecturerooms',  nodebulkapicontroller.uploadppulecturerooms);
+app.post('/api/v1/uploadppuavailclsroom',  nodebulkapicontroller.uploadppuavailclsroom);
+app.post('/api/v1/uploadppunetwork',  nodebulkapicontroller.uploadppunetwork);
+app.post('/api/v1/uploadppucompfaci',  nodebulkapicontroller.uploadppucompfaci);
+app.post('/api/v1/uploadppucompsoftware',  nodebulkapicontroller.uploadppucompsoftware);
+app.post('/api/v1/uploadppucompaddinfo',  nodebulkapicontroller.uploadppucompaddinfo);
+app.post('/api/v1/uploadppucompaddsoft',  nodebulkapicontroller.uploadppucompaddsoft);
+app.post('/api/v1/uploadppulibrary',  nodebulkapicontroller.uploadppulibrary);
+app.post('/api/v1/uploadppulibstaff',  nodebulkapicontroller.uploadppulibstaff);
+app.post('/api/v1/uploadppulibbooks',  nodebulkapicontroller.uploadppulibbooks);
+app.post('/api/v1/uploadppulibindjrnl',  nodebulkapicontroller.uploadppulibindjrnl);
+app.post('/api/v1/uploadppulibforgjrnl',  nodebulkapicontroller.uploadppulibforgjrnl);
+app.post('/api/v1/uploadppulibautomation',  nodebulkapicontroller.uploadppulibautomation);
+app.post('/api/v1/uploadppulibprocure',  nodebulkapicontroller.uploadppulibprocure);
+app.post('/api/v1/uploadppulibexp',  nodebulkapicontroller.uploadppulibexp);
+app.post('/api/v1/uploadppustudfaci',  nodebulkapicontroller.uploadppustudfaci);
+app.post('/api/v1/uploadppuotherfaci',  nodebulkapicontroller.uploadppuotherfaci);
+app.post('/api/v1/uploadppumedservice',  nodebulkapicontroller.uploadppumedservice);
+app.post('/api/v1/uploadppuaudvidequip',  nodebulkapicontroller.uploadppuaudvidequip);
+app.post('/api/v1/uploadppuclubs',  nodebulkapicontroller.uploadppuclubs);
+app.post('/api/v1/uploadpputechstaff',  nodebulkapicontroller.uploadpputechstaff);
+app.post('/api/v1/uploadppuminststaff',  nodebulkapicontroller.uploadppuminststaff);
+app.post('/api/v1/uploadppuaddinfo',  nodebulkapicontroller.uploadppuaddinfo);
+app.post('/api/v1/uploadppudeclaration',  nodebulkapicontroller.uploadppudeclaration);
+app.post('/api/v1/uploadppucertificates',  nodebulkapicontroller.uploadppucertificates);
+app.post('/api/v1/uploadppuaddinfoprog',  nodebulkapicontroller.uploadppuaddinfoprog);
+app.post('/api/v1/uploadppuaddinfonoc',  nodebulkapicontroller.uploadppuaddinfonoc);
+app.post('/api/v1/uploadppuaddinfopermission',  nodebulkapicontroller.uploadppuaddinfopermission);
+app.post('/api/v1/uploadppuaddinfobos',  nodebulkapicontroller.uploadppuaddinfobos);
+app.post('/api/v1/uploadppuaddinfosyllabi',  nodebulkapicontroller.uploadppuaddinfosyllabi);
+app.post('/api/v1/uploadppuaddinfofac',  nodebulkapicontroller.uploadppuaddinfofac);
+app.post('/api/v1/uploadppuaddinfostaffdetails',  nodebulkapicontroller.uploadppuaddinfostaffdetails);
+app.post('/api/v1/uploadppuaddfacdetails',  nodebulkapicontroller.uploadppuaddfacdetails);
+app.post('/api/v1/uploadppufacworkload',  nodebulkapicontroller.uploadppufacworkload);
+
+app.post('/api/v1/uploadhostel',  nodebulkapicontroller.uploadhostel);
+
+app.post('/api/v1/uploadpaunfacnew',  nodebulkapicontroller.uploadpaunfacnew);
+app.post('/api/v1/uploadpauprncplphd',  nodebulkapicontroller.uploadpauprncplphd);
+app.post('/api/v1/uploadpauprncplpub',  nodebulkapicontroller.uploadpauprncplpub);
+
+app.post('/api/v1/uploadainscom',  nodebulkapicontroller.uploadainscom);
+app.post('/api/v1/uploadafaccadre',  nodebulkapicontroller.uploadafaccadre);
+app.post('/api/v1/uploadaequipments',  nodebulkapicontroller.uploadaequipments);
+//app.post('/api/v1/uploadawards',  nodebulkapicontroller.uploadawards);
+
+app.post('/api/v1/uploadawardsnew',  nodebulkapicontroller.uploadawardsnew);
+
+app.post('/api/v1/uploadanlibjournals',  nodebulkapicontroller.uploadanlibjournals);
+
+
+app.post('/api/v1/uploadvacstudents',  nodebulkapicontroller.uploadvacstudents);
+
+app.post('/api/v1/uploadninvoicenew',  nodebulkapicontroller.uploadninvoicenew);
+app.post('/api/v1/uploadninvoiceitems',  nodebulkapicontroller.uploadninvoiceitems);
+
+app.post('/api/v1/uploadninvoicen',  nodebulkapicontroller.uploadninvoicen);
+app.post('/api/v1/uploadninvoicefinal',  nodebulkapicontroller.uploadninvoicefinal);
+
+
+app.post('/api/v1/uploadninvoicefnew',  nodebulkapicontroller.uploadninvoicefnew);
+app.post('/api/v1/uploadnorgdetails',  nodebulkapicontroller.uploadnorgdetails);
+
+app.post('/api/v1/uploadnstatus',  nodebulkapicontroller.uploadnstatus);
+app.post('/api/v1/uploadnprojects',  nodebulkapicontroller.uploadnprojects);
+app.post('/api/v1/uploadnprojectsnew',  nodebulkapicontroller.uploadnprojectsnew);
+
+app.post('/api/v1/uploadinnovationnew',  nodebulkapicontroller.uploadinnovationnew);
+app.post('/api/v1/uploadbooknew',  nodebulkapicontroller.uploadbooknew);
+app.post('/api/v1/uploadexpenditurenew',  nodebulkapicontroller.uploadexpenditurenew);
+app.post('/api/v1/uploadqualitynew',  nodebulkapicontroller.uploadqualitynew);
+app.post('/api/v1/uploadlquality',  nodebulkapicontroller.uploadlquality);
+app.post('/api/v1/uploaduquality',  nodebulkapicontroller.uploaduquality);
+app.post('/api/v1/uploadstudschspnew',  nodebulkapicontroller.uploadstudschspnew);
+app.post('/api/v1/uploadustudschsp',  nodebulkapicontroller.uploadustudschsp);
+
+app.post('/api/v1/uploadstudmasterall',  nodebulkapicontroller.uploadstudmasterall);
+
+app.post('/api/v1/uploadamprograms',  nodebulkapicontroller.uploadamprograms);
+app.post('/api/v1/uploadamclassroom',  nodebulkapicontroller.uploadamclassroom);
+app.post('/api/v1/uploadamequipments',  nodebulkapicontroller.uploadamequipments);
+app.post('/api/v1/uploadamlibrary',  nodebulkapicontroller.uploadamlibrary);
+app.post('/api/v1/uploadamlibdetails',  nodebulkapicontroller.uploadamlibdetails);
+app.post('/api/v1/uploadamfaculties',  nodebulkapicontroller.uploadamfaculties);
+app.post('/api/v1/uploadamadminstaff',  nodebulkapicontroller.uploadamadminstaff);
+app.post('/api/v1/uploadaminfsuff',  nodebulkapicontroller.uploadaminfsuff);
+app.post('/api/v1/uploadamimprovements',  nodebulkapicontroller.uploadamimprovements);
+app.post('/api/v1/uploadamrecommendation',  nodebulkapicontroller.uploadamrecommendation);
+app.post('/api/v1/uploadamchemicals',  nodebulkapicontroller.uploadamchemicals);
+app.post('/api/v1/uploadamprogfaculties',  nodebulkapicontroller.uploadamprogfaculties);
+
+app.post('/api/v1/uploadstudmentor',  nodebulkapicontroller.uploadstudmentor);
+app.post('/api/v1/uploadlphdfac',  nodebulkapicontroller.uploadlphdfac);
+
+app.post('/api/v1/uploadalumniusers',  nodebulkapicontroller.uploadalumniusers);
+app.post('/api/v1/uploadalumniwork',  nodebulkapicontroller.uploadalumniwork);
+app.post('/api/v1/uploadalumnihighered',  nodebulkapicontroller.uploadalumnihighered);
+app.post('/api/v1/uploadalumnicontribute',  nodebulkapicontroller.uploadalumnicontribute);
+app.post('/api/v1/uploadalumnijobs',  nodebulkapicontroller.uploadalumnijobs);
+app.post('/api/v1/uploadalumnievents',  nodebulkapicontroller.uploadalumnievents);
+
+app.post('/api/v1/uploadpfiles',  nodebulkapicontroller.uploadpfiles);
+app.post('/api/v1/uploadpdeliverables',  nodebulkapicontroller.uploadpdeliverables);
+
+app.post('/api/v1/uploadsssstud',  nodebulkapicontroller.uploadsssstud);
+
+app.post('/api/v1/uploadadmusers',  nodebulkapicontroller.uploadadmusers);
+app.post('/api/v1/uploadadmedu',  nodebulkapicontroller.uploadadmedu);
+app.post('/api/v1/uploadadmwork',  nodebulkapicontroller.uploadadmwork);
+app.post('/api/v1/uploadadmprograms',  nodebulkapicontroller.uploadadmprograms);
+app.post('/api/v1/uploadadmintern',  nodebulkapicontroller.uploadadmintern);
+app.post('/api/v1/uploadadmextra',  nodebulkapicontroller.uploadadmextra);
+app.post('/api/v1/uploadadmlanguages',  nodebulkapicontroller.uploadadmlanguages);
+app.post('/api/v1/uploadadmfacilities',  nodebulkapicontroller.uploadadmfacilities);
+app.post('/api/v1/uploadadmmarks',  nodebulkapicontroller.uploadadmmarks);
+
+app.post('/api/v1/uploadassignment',  nodebulkapicontroller.uploadassignment);
+app.post('/api/v1/uploadcoursefiles',  nodebulkapicontroller.uploadcoursefiles);
+
+app.post('/api/v1/uploadaffassign',  nodebulkapicontroller.uploadaffassign);
+
+app.post('/api/v1/uploadamcpdetails3',  nodebulkapicontroller.uploadamcpdetails3);
+app.post('/api/v1/uploadamcpobservations',  nodebulkapicontroller.uploadamcpobservations);
+app.post('/api/v1/uploadammember1',  nodebulkapicontroller.uploadammember1);
+app.post('/api/v1/uploadammbr2comp',  nodebulkapicontroller.uploadammbr2comp);
+app.post('/api/v1/uploadammbr2det',  nodebulkapicontroller.uploadammbr2det);
+
+app.post('/api/v1/uploadmkustud',  nodebulkapicontroller.uploadmkustud);
+app.post('/api/v1/uploadmkumarks',  nodebulkapicontroller.uploadmkumarks);
+
+app.post('/api/v1/uploadanmstudnew',  nodebulkapicontroller.uploadanmstudnew);
+
+app.post('/api/v1/uploadamastudnew',  nodebulkapicontroller.uploadamastudnew);
+
+app.post('/api/v1/uploadaffcolprog',  nodebulkapicontroller.uploadaffcolprog);
+app.post('/api/v1/uploadaffproglist',  nodebulkapicontroller.uploadaffproglist);
+app.post('/api/v1/uploadInstitutions',  nodebulkapicontroller.uploadInstitutions);
+
+app.post('/api/v1/uploadrmsucoldeta',  nodebulkapicontroller.uploadrmsucoldeta);
+app.post('/api/v1/uploadrmsunirf',  nodebulkapicontroller.uploadrmsunirf);
+app.post('/api/v1/uploadrsmuaddeta',  nodebulkapicontroller.uploadrsmuaddeta);
+app.post('/api/v1/uploadrsmucoldetaex',  nodebulkapicontroller.uploadrsmucoldetaex);
+app.post('/api/v1/uploadrsmuprincdeta',  nodebulkapicontroller.uploadrsmuprincdeta);
+app.post('/api/v1/uploadrsmugovcouncil',  nodebulkapicontroller.uploadrsmugovcouncil);
+app.post('/api/v1/uploadrsmuragcomt',  nodebulkapicontroller.uploadrsmuragcomt);
+app.post('/api/v1/uploadrsmuragsquad',  nodebulkapicontroller.uploadrsmuragsquad);
+app.post('/api/v1/uploadrsmubankacnts',  nodebulkapicontroller.uploadrsmubankacnts);
+app.post('/api/v1/uploadrsmudeposit',  nodebulkapicontroller.uploadrsmudeposit);
+app.post('/api/v1/uploadrsmuendowment',  nodebulkapicontroller.uploadrsmuendowment);
+app.post('/api/v1/uploadrsmubuildeta',  nodebulkapicontroller.uploadrsmubuildeta);
+app.post('/api/v1/uploadrsmufeduqualif',  nodebulkapicontroller.uploadrsmufeduqualif);
+app.post('/api/v1/uploadrsmufacnew',  nodebulkapicontroller.uploadrsmufacnew);
+app.post('/api/v1/uploadrsmuontstaff',  nodebulkapicontroller.uploadrsmuontstaff);
+app.post('/api/v1/uploadrmsucourse',  nodebulkapicontroller.uploadrmsucourse);
+app.post('/api/v1/uploadrsunontstaff',  nodebulkapicontroller.uploadrsunontstaff);
+
+app.post('/api/v1/uploadrsmuaddetacng',  nodebulkapicontroller.uploadrsmuaddetacng);
+app.post('/api/v1/uploadrmsutrustdatacng',  nodebulkapicontroller.uploadrmsutrustdatacng);
+app.post('/api/v1/uploadrsmufacnewcng',  nodebulkapicontroller.uploadrsmufacnewcng);
+app.post('/api/v1/uploadrsmuendowmentcng',  nodebulkapicontroller.uploadrsmuendowmentcng);
+app.post('/api/v1/uploadrsmulanddetacng',  nodebulkapicontroller.uploadrsmulanddetacng);
+
+app.post('/api/v1/uploaduser',  nodebulkapicontroller.uploaduser);
+
+app.post('/api/v1/uploadrsmuadmup',  nodebulkapicontroller.uploadrsmuadmup);
+app.post('/api/v1/uploadrsmucoldetaup',  nodebulkapicontroller.uploadrsmucoldetaup);
+app.post('/api/v1/uploadrsmutrustup',  nodebulkapicontroller.uploadrsmutrustup);
+app.post('/api/v1/uploadrsmuprinup',  nodebulkapicontroller.uploadrsmuprinup);
+app.post('/api/v1/uploadrsmuendowup',  nodebulkapicontroller.uploadrsmuendowup);
+app.post('/api/v1/uploadrsmuadcourup',  nodebulkapicontroller.uploadrsmuadcourup);
+app.post('/api/v1/uploadrsmufacnewup',  nodebulkapicontroller.uploadrsmufacnewup);
+app.post('/api/v1/uploadrsmufacqualifup',  nodebulkapicontroller.uploadrsmufacqualifup);
+app.post('/api/v1/uploadrsmunontechup',  nodebulkapicontroller.uploadrsmunontechup);
+
+
+// app.post('/api/v1/uploadsssstud',  nodebulkapicontroller.uploadsssstud);
+
+app.post('/api/v1/uploadnlibtable1',  nodebulkapicontroller.uploadnlibtable1);
+app.post('/api/v1/uploadnlibtable2',  nodebulkapicontroller.uploadnlibtable2);
+app.post('/api/v1/uploadnofficefacility',  nodebulkapicontroller.uploadnofficefacility);
+
+app.post('/api/v1/uploadmsusancseatn',  nodebulkapicontroller.uploadmsusancseatn);
+
+app.post('/api/v1/uploadmsuallfacnew',  nodebulkapicontroller.uploadmsuallfacnew);
+
+app.post('/api/v1/uploadawsconfig',  nodebulkapicontroller.uploadawsconfig);
+
+app.post('/api/v1/uploadbook',  nodebulkapicontroller.uploadbook);
+
+app.post('/api/v1/uploadfeedback',  nodebulkapicontroller.uploadfeedback);
+app.post('/api/v1/uploadcocal',  nodebulkapicontroller.uploadcocal);
+
+app.post('/api/v1/uploadpayimages',  nodebulkapicontroller.uploadpayimages);
+app.post('/api/v1/uploadalumnipay',  nodebulkapicontroller.uploadalumnipay);
+
+app.post('/api/v1/uploadamfacalln',  nodebulkapicontroller.uploadamfacalln);
+
+app.post('/api/v1/uploadevguests',  nodebulkapicontroller.uploadevguests);
+
+app.post('/api/v1/uploadgenderaudit',  nodebulkapicontroller.uploadgenderaudit);
+
+app.post('/api/v1/uploadsalarypaid',  nodebulkapicontroller.uploadsalarypaid);
+app.post('/api/v1/uploademptravel',  nodebulkapicontroller.uploademptravel);
+
+
+const aiemailcontroller=require('./controllers/aiemailcontroller');
+
+app.get('/api/v1/createfeedbackreports',  aiemailcontroller.createfeedbackreports);
+
+const aiemailcontroller1=require('./controllers/aiemailcontroller1');
+
+app.get('/api/v1/createfeedbackreports1',  aiemailcontroller1.createfeedbackreports1);
+
+
+const aiemailcontroller2=require('./controllers/aiemailcontroller2');
+
+app.get('/api/v1/createfeedbackreports2',  aiemailcontroller2.createfeedbackreports2);
+app.get('/api/v1/createsamplefeedback',  aiemailcontroller2.createsamplefeedback);
+app.get('/api/v1/createphddeclare',  aiemailcontroller2.createphddeclare);
+
+
+const aivaccontroller=require('./controllers/aivaccontroller');
+
+app.get('/api/v1/createvacall',  aivaccontroller.createvacall);
+app.get('/api/v1/sendvacmail',  aivaccontroller.sendvacmail);
+
+const awssescontroller=require('./controllers/awssescontroller');
+
+app.get('/api/v2/sendawsemail',  awssescontroller.sendawsemail);
+app.get('/api/v2/sendwelcome',  awssescontroller.sendwelcome);
+app.get('/api/v2/sendsesemail',  awssescontroller.sendsesemail);
+app.get('/api/v2/sendpassword',  awssescontroller.sendpassword);
+
+
+const aiopenaicontroller=require('./controllers/aiopenaicontroller');
+
+app.get('/api/v1/getresponse2',  aiopenaicontroller.getresponse2);
+app.get('/api/v1/getresponse3',  aiopenaicontroller.getresponse3);
+
+
+const aimdebcontroller=require('./controllers/aimdebcontrolle');
+
+app.post("/api/v2/createexam", aimdebcontroller.createexam);
+app.get("/api/v2/exams/byyear", aimdebcontroller.getexambyyear);
+app.post("/api/v2/examapplication/create", aimdebcontroller.createexamapplication);
+app.get("/api/v2/examapplications/pending", aimdebcontroller.getpendingexamapplications);
+app.get("/api/v2/examapplications/approved", aimdebcontroller.getapprovedexamapplications);
+app.get("/api/v2/examapplications/rejected", aimdebcontroller.getrejectedexamapplications);
+app.put("/api/v2/examapplication/update/:id", aimdebcontroller.updateexamapplicationstatus);
+app.get("/api/v2/exams/filters", aimdebcontroller.getExamFilters);
+app.get("/api/v2/examapplications/filter", aimdebcontroller.getFilteredApplications);
+app.put("/api/v2/examapplications/:applicationId/subject/:subjectname/enabled", aimdebcontroller.updateSubjectEnabledStatus);
+app.post("/api/v2/admitcard/create", aimdebcontroller.createadmitcardtemplate);
+app.get("/api/v2/admitcard/templates", aimdebcontroller.getadmitcardtemplates);
+app.get("/api/v2/admitcard/template/:id", aimdebcontroller.getadmitcardtemplatebyid);
+app.post("/api/v2/admitcard/release", aimdebcontroller.releaseadmitCards);
+app.get("/api/v2/admitcard/:regno", aimdebcontroller.getadmitcardbyregno);
+
+app.get("/api/v2/users/programs", aimdebcontroller.getProgramsByYear);
+app.get("/api/v2/users/semesters", aimdebcontroller.getSemestersByProgram);
+app.get("/api/v2/users/filter", aimdebcontroller.filterUsers);
+// app.post("/api/v2/user/add", aimdebcontroller.addUser);
+app.get("/api/v2/users/byregno/:regno", aimdebcontroller.fetchuserbyregno)
+
+app.get('/api/v2/getappbyyearcat',  aimdebcontroller.getappbyyearcat);
+app.get('/api/v2/getadmappcount',  aimdebcontroller.getadmappcount);
+app.get('/api/v2/getappbyyear',  aimdebcontroller.getappbyyear);
+
+app.post('/api/v2/createApplicationForm',  aimdebcontroller.createApplicationForm);
+app.get('/api/v2/getApplicationForm',  aimdebcontroller.getApplicationForm);
+
+const applicationreviewctlr=require('./controllers/applicationreviewctlr');
+
+app.get("/api/v2/checkregno", applicationreviewctlr.checkregno);
+
+// api
+app.post("/api/v2/createapplication", applicationreviewctlr.createapplication);
+app.get("/api/v2/getallapplicationbycolid", applicationreviewctlr.getallapplicationbycolid);
+app.post("/api/v2/updateapplicationstatus", applicationreviewctlr.updateapplicationstatus);
+app.get("/api/v2/getapplicationbyid", applicationreviewctlr.getapplicationbyid);
+
+// ✅ Ledger Student
+app.post("/api/v2/createledgerstud", applicationreviewctlr.createledgerstud);
+
+// ✅ User endpoints
+app.post("/api/v2/createuser", applicationreviewctlr.createuser);
+
+
+// ✅ Fees endpoints
+//app.post("/api/v2/createfees", applicationreviewctlr.createfees);
+app.get("/api/v2/filterfees", applicationreviewctlr.filterfees);
+
+const hostelmodulectlr=require('./controllers/hostelmodulectlr');
+const hostelreportctlr = require("./controllers/hostelreportctlr.js");
+const parentdetailsctlrds = require("./controllers/parentdetailsctlrds.js");
+const gatewaypassctlrds = require("./controllers/gatewaypassctlrds.js");
+const buildingstaffctlrds = require("./controllers/buildingstaffctlrds.js");
+const messpollsctlrds = require("./controllers/messpollsctlrds.js");
+const messapplicationctlrds = require("./controllers/messapplicationctlrds.js");
+
+app.get("/api/v2/checkbedallocation", hostelmodulectlr.checkallocatedbedtouser);
+app.post("/api/v2/createhostelapp", hostelmodulectlr.createhostelapplication);
+app.post("/api/v2/updatehostelapp", hostelmodulectlr.updatehostelapplication);
+
+// 🔧 Building
+app.post("/api/v2/createhostelbulding", hostelmodulectlr.createBuilding);
+app.get("/api/v2/gethostelbuldings", hostelmodulectlr.getBuildings);
+app.post("/api/v2/updatehostelbulding", hostelmodulectlr.updateBuilding);
+app.get("/api/v2/deletehostelbulding/:id", hostelmodulectlr.deleteBuilding);
+
+// 🔧 Room
+app.post("/api/v2/createroom", hostelmodulectlr.createRoom);
+app.get("/api/v2/getrooms", hostelmodulectlr.getRooms);
+app.post("/api/v2/updateroom", hostelmodulectlr.updateRoom);
+app.get("/api/v2/deleteroom/:id", hostelmodulectlr.deleteRoom);
+app.get("/api/v2/searchrooms", hostelmodulectlr.searchRooms);
+
+// 🔧 Bed Allocation
+app.post("/api/v2/allocatebed", hostelmodulectlr.allocateBed);
+app.post("/api/v2/updatebed", hostelmodulectlr.updateBed);
+app.get("/api/v2/deletebed/:id", hostelmodulectlr.deleteBed);
+app.get("/api/v2/getbedallocations", hostelmodulectlr.getAllBedAllocations);
+app.get("/api/v2/checkbedallocation", hostelmodulectlr.checkallocatedbedtouser);
+
+// 📊 Hostel Report
+app.get("/api/v2/hostel/summary", hostelreportctlr.getHostelSummary);
+app.get("/api/v2/hostel/buildings", hostelreportctlr.getBuildingReport);
+
+
+// 👨‍👩‍👧 Parent Details Management - NEW
+app.post("/api/v2/addparentdetailsds", parentdetailsctlrds.addparentdetailsds);
+app.get("/api/v2/getparentdetailsds", parentdetailsctlrds.getparentdetailsds);
+app.get("/api/v2/getparentbyregno", parentdetailsctlrds.getparentbyregno);
+app.post("/api/v2/updateparentdetailsds", parentdetailsctlrds.updateparentdetailsds);
+app.get("/api/v2/deleteparentdetailsds/:id", parentdetailsctlrds.deleteparentdetailsds);
+app.get("/api/v2/searchstudentsds", parentdetailsctlrds.searchstudentsds);
+
+// 🎫 Gateway Pass Management - NEW
+app.post("/api/v2/creategatewaypassds", gatewaypassctlrds.creategatewaypassds);
+app.get("/api/v2/getgatewaypassds", gatewaypassctlrds.getgatewaypassds);
+app.get("/api/v2/getallgatewaypassds", gatewaypassctlrds.getallgatewaypassds);
+app.get("/api/v2/getgatewaypassbytoken/:token", gatewaypassctlrds.getgatewaypassbytoken);
+app.post("/api/v2/parentapprovalds", gatewaypassctlrds.parentapprovalds);
+app.post("/api/v2/wardenapprovalds", gatewaypassctlrds.wardenapprovalds);
+
+// 🏢 Building Staff Configuration - NEW
+app.post("/api/v2/addbuildingstaffds", buildingstaffctlrds.addbuildingstaffds);
+app.get("/api/v2/getbuildingstaffds", buildingstaffctlrds.getbuildingstaffds);
+app.get("/api/v2/getbuildingstaffbyname", buildingstaffctlrds.getbuildingstaffbyname);
+app.post("/api/v2/updatebuildingstaffds", buildingstaffctlrds.updatebuildingstaffds);
+app.get("/api/v2/deletebuildingstaffds/:id", buildingstaffctlrds.deletebuildingstaffds);
+app.post("/api/v2/addbulkmessfeeds", buildingstaffctlrds.addbulkmessfeeds);
+
+// 🍽️ Meal Polls Management - NEW
+app.post("/api/v2/createmealpollsds", messpollsctlrds.createmealpollsds);
+app.get("/api/v2/getmealpollsds", messpollsctlrds.getmealpollsds);
+app.get("/api/v2/getactivepollsforstudent", messpollsctlrds.getactivepollsforstudent);
+app.post("/api/v2/votemealpollsds", messpollsctlrds.votemealpollsds);
+app.post("/api/v2/closemealpollsds", messpollsctlrds.closemealpollsds);
+app.post("/api/v2/updatemealpollsds", messpollsctlrds.updatemealpollsds);
+app.get("/api/v2/deletemealpollsds/:id", messpollsctlrds.deletemealpollsds);
+
+// 📝 Mess Application Management - NEW
+app.post("/api/v2/createmessapplicationds", messapplicationctlrds.createmessapplicationds);
+app.get("/api/v2/getmessapplicationds", messapplicationctlrds.getmessapplicationds);
+app.get("/api/v2/getallmessapplicationds", messapplicationctlrds.getallmessapplicationds);
+app.post("/api/v2/updatemessapplicationds", messapplicationctlrds.updatemessapplicationds);
+app.get("/api/v2/deletemessapplicationds/:id", messapplicationctlrds.deletemessapplicationds);
+
+const librarymodelctlr=require('./controllers/librarymodelctlr');
+
+app.post("/api/v2/createlibrary", librarymodelctlr.createlibrary);
+app.get("/api/v2/getlibrary/:id", librarymodelctlr.getlibrary);
+app.get("/api/v2/getalllibrary/:colid", librarymodelctlr.getalllibrary);
+app.post("/api/v2/updatelibrary", librarymodelctlr.updatelibrary);
+app.get("/api/v2/deletelibrary/:id", librarymodelctlr.deletelibrary);
+app.post("/api/v2/createbook", librarymodelctlr.createBook);
+app.get("/api/v2/getbooks", librarymodelctlr.getbooksbylibraryid);
+app.get("/api/v2/searchbooks", librarymodelctlr.searchBooks);
+app.get("/api/v2/getbook/:id", librarymodelctlr.getBookById);
+app.post("/api/v2/updatebook/:id", librarymodelctlr.updateBook);
+app.get("/api/v2/deletebook/:id", librarymodelctlr.deleteBook);
+app.post("/api/v2/issuebook/create", librarymodelctlr.createIssuedBook);
+app.get("/api/v2/issuebook/get", librarymodelctlr.getAllIssuedBooks);
+app.get("/api/v2/issuebook/:id", librarymodelctlr.getIssuedBookById);
+app.post("/api/v2/issuedbook/update", librarymodelctlr.updateIssuedBook);
+app.get("/api/v2/issuedbook/delete/:id", librarymodelctlr.deleteIssuedBook);
+app.get("/api/v2/searchstudent", librarymodelctlr.searchStudentByRegno);
+app.post("/api/v2/adduser", librarymodelctlr.addUser);
+app.get("/api/v2/issuebook/search", librarymodelctlr.searchIssuedBooks);
+app.get("/api/v2/report/summary", librarymodelctlr.getSummary);
+app.get("/api/v2/report/category-counts", librarymodelctlr.getCategoryCounts);
+app.get("/api/v2/report/language-counts", librarymodelctlr.getLanguageCounts);
+app.get("/api/v2/report/monthly-added", librarymodelctlr.getMonthlyAdded);
+app.get("/api/v2/report/issued-daily", librarymodelctlr.getIssuedDaily);
+app.get("/api/v2/report/issued-monthly", librarymodelctlr.getIssuedMonthly);
+app.get("/api/v2/report/status-breakdown", librarymodelctlr.getStatusBreakdown);
+app.get("/api/v2/report/top-books", librarymodelctlr.getTopBooks);
+app.get("/api/v2/report/library-wise", librarymodelctlr.getLibraryWise);
+// app.post("/api/v2/login", librarymodelctlr.login);
+
+// app.post("/api/v2/createledgerstud", librarymodelctlr.createledgerstud);
+
+
+const formmodulectlr=require('./controllers/formmodulectlr');
+
+app.get("/api/v2/getallforms", formmodulectlr.getallforms);
+app.get("/api/v2/getsingleform", formmodulectlr.getsingleform);
+app.post("/api/v2/createform", formmodulectlr.createform);
+app.post("/api/v2/updateform", formmodulectlr.updateform);
+app.get("/api/v2/deleteform", formmodulectlr.deleteform);
+app.get("/api/v2/getresponses", formmodulectlr.getresponses);
+app.post("/api/v2/createresponse", formmodulectlr.createresponse);
+app.post("/api/v2/updateresponse", formmodulectlr.updateresponse);
+app.get("/api/v2/deleteresponse", formmodulectlr.deleteresponse);
+
+// const leavemodulectlr=require('./controllers/leavemodulectlr');
+
+// app.post("/api/v2/createleavetype", leavemodulectlr.createleavetype);
+// app.get("/api/v2/getleavetypes", leavemodulectlr.getleavetypes);
+// app.post("/api/v2/createleavebalance", leavemodulectlr.createleavebalance);
+// app.get("/api/v2/getleavebalances", leavemodulectlr.getleavebalances);
+// app.post("/api/v2/assignapprover", leavemodulectlr.assignapprover);
+// app.get("/api/v2/getapprovers", leavemodulectlr.getapprovers);
+// app.get("/api/v2/getallapprovers", leavemodulectlr.getallapprovers)
+// app.post("/api/v2/createleave", leavemodulectlr.createleave);
+// app.get("/api/v2/getleaves", leavemodulectlr.getleaves);
+// app.post("/api/v2/approverejectleave", leavemodulectlr.approverejectleave);
+
+// app.post("/api/v2/createleavetype", leavemodulectlr.createleavetype);
+// app.get("/api/v2/getleavetypes", leavemodulectlr.getleavetypes);
+// app.post("/api/v2/createleavebalance", leavemodulectlr.createleavebalance);
+// app.get("/api/v2/getleavebalances", leavemodulectlr.getleavebalances);
+// app.post("/api/v2/assignapprover", leavemodulectlr.assignapprover);
+// app.get("/api/v2/getapprovers", leavemodulectlr.getapprovers);
+// app.get("/api/v2/getallapprovers", leavemodulectlr.getallapprovers)
+// app.post("/api/v2/createleave", leavemodulectlr.createleave);
+// app.get("/api/v2/getleaves", leavemodulectlr.getleaves);
+// app.post("/api/v2/approverejectleave", leavemodulectlr.approverejectleave);
+
+const taskmodulectlr=require('./controllers/taskmodulectlr');
+
+app.post("/api/v2/createtask", taskmodulectlr.createtask);
+app.post("/api/v2/changetaskstatus", taskmodulectlr.changetaskstatus)
+app.post("/api/v2/updatetask", taskmodulectlr.updatetask);
+app.get("/api/v2/deletetask", taskmodulectlr.deletetask);
+app.get("/api/v2/searchuserbyemailorname", taskmodulectlr.searchuserbyemailorname)
+app.get("/api/v2/getcreatortasks", taskmodulectlr.getcreatortasks);
+app.get("/api/v2/getassigneetasks", taskmodulectlr.getassigneetasks);
+app.get("/api/v2/getfollowertasks", taskmodulectlr.getfollowertasks);
+app.get("/api/v2/searchtasks", taskmodulectlr.searchtasks);
+app.post("/api/v2/createtaskcomment", taskmodulectlr.createtaskcomment);
+app.get("/api/v2/gettaskcommentsbytaskid", taskmodulectlr.gettaskcommentsbytaskid);
+app.get("/api/v2/gettasktimesheetbyid", taskmodulectlr.gettasktimesheetbyid);
+app.post("/api/v2/approvetask", taskmodulectlr.approvetask);
+
+// app.post("/api/v2/createtask", taskmodulectlr.createtask);
+// app.post("/api/v2/changetaskstatus", taskmodulectlr.changetaskstatus)
+// app.post("/api/v2/updatetask", taskmodulectlr.updatetask);
+// app.get("/api/v2/deletetask", taskmodulectlr.deletetask);
+// app.get("/api/v2/searchuserbyemailorname", taskmodulectlr.searchuserbyemailorname)
+// app.get("/api/v2/getcreatortasks", taskmodulectlr.getcreatortasks);
+// app.get("/api/v2/getassigneetasks", taskmodulectlr.getassigneetasks);
+// app.get("/api/v2/getfollowertasks", taskmodulectlr.getfollowertasks);
+// app.get("/api/v2/searchtasks", taskmodulectlr.searchtasks);
+// app.post("/api/v2/createtaskcomment", taskmodulectlr.createtaskcomment);
+// app.get("/api/v2/gettaskcommentsbytaskid", taskmodulectlr.gettaskcommentsbytaskid);
+// app.get("/api/v2/gettasktimesheetbyid", taskmodulectlr.gettasktimesheetbyid);
+// app.post("/api/v2/approvetask", taskmodulectlr.approvetask);
+
+// app.post("/api/v2/createtaskcomment", taskmodulectlr.createtaskcomment);
+// app.get("/api/v2/gettaskcommentsbytaskid", taskmodulectlr.gettaskcommentsbytaskid);
+
+
+
+// app.post("/api/v2/createtask", taskmodulectlr.createtask);
+// app.post("/api/v2/changetaskstatus", taskmodulectlr.changetaskstatus)
+// app.post("/api/v2/updatetask", taskmodulectlr.updatetask);
+// app.get("/api/v2/deletetask", taskmodulectlr.deletetask);
+// app.get("/api/v2/searchuserbyemailorname", taskmodulectlr.searchuserbyemailorname)
+// app.get("/api/v2/searchtasks", taskmodulectlr.searchTasks);
+
+const transportmodulectlr = require("./controllers/transportmodulectlr.js");
+
+app.post("/api/v2/createbus", transportmodulectlr.createbus);
+app.get("/api/v2/getallbuses", transportmodulectlr.getallbuses);
+app.get("/api/v2/getbusbyid", transportmodulectlr.getbusbyid);
+app.post("/api/v2/updatebus", transportmodulectlr.updatebus);
+app.get("/api/v2/deletebus", transportmodulectlr.deletebus);
+app.get("/api/v2/searchbybusnumber", transportmodulectlr.searchbybusnumber);
+
+// route api
+app.post("/api/v2/createroute", transportmodulectlr.createroute);
+app.get("/api/v2/searchbyroutecode", transportmodulectlr.searchbyroutecode);
+app.get("/api/v2/getallroutes", transportmodulectlr.getallroutes);
+app.get("/api/v2/getroutebyid", transportmodulectlr.getroutebyid);
+app.post("/api/v2/updateroute", transportmodulectlr.updateroute);
+app.get("/api/v2/deleteroute", transportmodulectlr.deleteroute);
+
+// allocation seat
+app.post("/api/v2/createallocation", transportmodulectlr.createAllocation);
+app.get("/api/v2/getallocationsbybusid", transportmodulectlr.getallocationsbybusid);
+app.get("/api/v2/checkseatallocation", transportmodulectlr.checkseatallocation);
+app.get("/api/v2/deleteallocation", transportmodulectlr.deleteAllocation);
+
+const studentprofilectlrds = require("./controllers/studentprofilectlrds");
+
+// app.get("/api/v2/getapplicationformds", studentprofilectlrds.getapplicationform);
+// app.get("/api/v2/getbusseatallocation", studentprofilectlrds.getbusseatallocation);
+// app.get("/api/v2/geteventregistration", studentprofilectlrds.geteventregistration);
+// app.get("/api/v2/getexammarks", studentprofilectlrds.getexammarks);
+// app.get("/api/v2/gethostelbedallocation", studentprofilectlrds.gethostelbedallocation);
+// app.get("/api/v2/getuserds", studentprofilectlrds.getuser);
+
+app.get("/api/v2/getapplicationformds", studentprofilectlrds.getapplicationform);
+app.get("/api/v2/getbusseatallocation", studentprofilectlrds.getbusseatallocation);
+app.get("/api/v2/geteventregistration", studentprofilectlrds.geteventregistration);
+app.get("/api/v2/getexammarks", studentprofilectlrds.getexammarks);
+app.get("/api/v2/gethostelbedallocation", studentprofilectlrds.gethostelbedallocation);
+app.get("/api/v2/getuserds", studentprofilectlrds.getuser);
+app.get("/api/v2/getrubricds", studentprofilectlrds.getrubricds);
+
+const facultydashboarddsctlr = require("./controllers/facultydashboarddsctlr");
+
+// Faculty Profile Route
+app.get("/api/v2/getfacultyprofilds", facultydashboarddsctlr.getfacultyprofilds);
+
+// Task Analytics Route (with aggregation)
+app.get("/api/v2/getfacultytaskanalyticsds", facultydashboarddsctlr.getfacultytaskanalyticsds);
+
+// Seminar Analytics Route (count + details)
+app.get("/api/v2/getfacultyseminaranalyticsds", facultydashboarddsctlr.getfacultyseminaranalyticsds);
+
+// Project Analytics Route (count + details)
+app.get("/api/v2/getfacultyprojectanalyticsds", facultydashboarddsctlr.getfacultyprojectanalyticsds);
+
+// Class Analytics Route (count + details)
+app.get("/api/v2/getfacultyclassanalyticsds", facultydashboarddsctlr.getfacultyclassanalyticsds);
+
+
+
+const classattendancectlr = require("./controllers/classattendancectlr");
+
+// Class Routes
+app.get("/api/v2/getallclasses", classattendancectlr.getallclasses);
+app.get("/api/v2/getclassesbydate", classattendancectlr.getclassesbydate);
+
+app.post("/api/v2/createclassds", classattendancectlr.createclass);
+app.post("/api/v2/updateclass", classattendancectlr.updateclass);
+app.get("/api/v2/deleteclassds", classattendancectlr.deleteclass);
+app.get("/api/v2/getsingleclass", classattendancectlr.getsingleclass);
+
+// Enrollment Routes
+app.get("/api/v2/getstudentsbyclass", classattendancectlr.getenrolledstudentsbyclass);
+app.post("/api/v2/createenrollment", classattendancectlr.createenrollment);
+
+// Attendance Routes
+app.post("/api/v2/markclassattendance", classattendancectlr.markclassattendance);
+app.get("/api/v2/getattendancebyclass", classattendancectlr.getattendancebyclass);
+
+
+const rubricmodulectlr = require("./controllers/rubricmodulectlr");
+
+app.post("/api/v2/createrubrics", rubricmodulectlr.createrubrics);
+app.get("/api/v2/getallrubrics", rubricmodulectlr.getallrubrics);
+app.post("/api/v2/updaterubrics", rubricmodulectlr.updaterubrics);
+app.get("/api/v2/deleterubrics", rubricmodulectlr.deleterubrics);
+app.get("/api/v2/getsinglerubrics", rubricmodulectlr.getsinglerubrics);
+app.post("/api/v2/createexammarks", rubricmodulectlr.createexammarks);
+app.post("/api/v2/createrubricds1", rubricmodulectlr.createrubricds1);
+app.get("/api/v2/calculaterubricresult", rubricmodulectlr.calculaterubricresult);
+app.get("/api/v2/filterrubricdata", rubricmodulectlr.filterrubricdata);
+app.get("/api/v2/calculatebulkrubricresults", rubricmodulectlr.calculatebulkrubricresults);
+
+const jobapplicationformctlr = require("./controllers/jobapplicationformctlr");
+app.post("/api/v2/createinternaljob", jobapplicationformctlr.createinternaljob);
+app.get("/api/v2/getinternaljobs", jobapplicationformctlr.getinternaljobs);
+app.get("/api/v2/getinternaljobbyid", jobapplicationformctlr.getinternaljobbyid);
+app.post("/api/v2/updateinternaljob", jobapplicationformctlr.updateinternaljob);
+app.get("/api/v2/deleteinternaljob", jobapplicationformctlr.deleteinternaljob);
+
+
+app.post("/api/v2/createapplicationweb", jobapplicationformctlr.createapplication);
+app.get("/api/v2/getapplicationsgrouped", jobapplicationformctlr.getapplicationsgrouped);
+app.post("/api/v2/updatestatus", jobapplicationformctlr.updatestatus);
+app.get("/api/v2/getapplicationbyid", jobapplicationformctlr.getapplicationbyid);
+
+
+
+
+
+app.get("/api/v2/searchstudentbyregno", transportmodulectlr.searchstudentbyregno);
+
+
+const placementctlr = require("./controllers/placementctlr");
+
+// JOB CRUD
+app.post("/api/v2/createjob", placementctlr.createjob);
+app.get("/api/v2/getjobs", placementctlr.getjobs);
+app.get("/api/v2/getjobbyid", placementctlr.getjobbyid);
+app.post("/api/v2/updatejob", placementctlr.updatejob);
+app.get("/api/v2/deletejob", placementctlr.deletejob);
+
+// JOB APPLICATIONS
+app.post("/api/v2/apply", placementctlr.apply);
+app.get("/api/v2/getapplications", placementctlr.getapplications);
+app.post("/api/v2/updatejobappstatus", placementctlr.updatejobappstatus);
+
+// STUDENT CV
+app.post("/api/v2/createcv", placementctlr.createcv);
+app.post("/api/v2/updatecv", placementctlr.updatecv);
+app.get("/api/v2/getcv", placementctlr.getcv);
+app.get("/api/v2/getcvbyid", placementctlr.getcvbyid);
+app.get("/api/v2/getcvsbycolid", placementctlr.getcvsbycolid);
+app.get("/api/v2/searchcv", placementctlr.searchcv);
+
+const eventmodulectlr = require("./controllers/eventmodulectlr");
+
+app.post("/api/v2/createevent", eventmodulectlr.createevent);
+app.get("/api/v2/geteventsuser",eventmodulectlr.geteventsuser);
+app.get("/api/v2/getevents",eventmodulectlr.getevents);
+app.get("/api/v2/getsingleevent", eventmodulectlr.getsingleevent);
+app.post("/api/v2/eventregister", eventmodulectlr.eventregister);
+app.post("/api/v2/eventlogin", eventmodulectlr.eventlogin);
+app.get("/api/v2/getspeakers", eventmodulectlr.getspeakers);
+app.post("/api/v2/approvespeaker", eventmodulectlr.approvespeaker);
+app.get("/api/v2/getapprovedspeakers", eventmodulectlr.getapprovedspeakers)
+app.get("/api/v2/getdocs", eventmodulectlr.getDocs);
+app.post("/api/v2/addDoc", eventmodulectlr.addDoc);
+
+
+
+
+const report2ctlr=require('./controllers/report2ctlr');
+
+app.get('/api/v2/projectsperyear', report2ctlr.projectsperyear);
+app.get('/api/v2/projectspermonth', report2ctlr.projectspermonth);
+app.get("/api/v2/projectsperdept", report2ctlr.projectsperdept);
+app.get("/api/v2/projectfundist", report2ctlr.projectfundist);
+app.get("/api/v2/projectspertype", report2ctlr.projectspertype);
+app.get('/api/v2/placementperyear', report2ctlr.placementperyear);
+app.get('/api/v2/placementsbyprogram', report2ctlr.placementsbyprogram);
+app.get('/api/v2/placementbysector', report2ctlr.placementbysector);
+app.get('/api/v2/topemployers', report2ctlr.topemployers);
+app.get('/api/v2/salarydistribution', report2ctlr.salarydistribution);
+app.get("/api/v2/geteventreport", report2ctlr.geteventreport);
+
+
+const classbreakoutroomdsctlr = require("./controllers/classbreakoutroomdsctlr");
+
+// breakout room routes
+app.get("/api/v2/getallbreakoutrooms", classbreakoutroomdsctlr.getbreakoutrooms);
+app.get("/api/v2/getstudentbreakoutroom", classbreakoutroomdsctlr.getstudentbreakoutroom);
+app.post("/api/v2/createbreakoutroom", classbreakoutroomdsctlr.createbreakoutroom);
+app.post("/api/v2/updatebreakoutroom", classbreakoutroomdsctlr.updatebreakoutroom);
+app.get("/api/v2/deletebreakoutroom", classbreakoutroomdsctlr.deletebreakoutroom);
+app.get("/api/v2/getstudentassignedroom", classbreakoutroomdsctlr.getstudentassignedroom);
+app.get("/api/v2/getenrolledstudents", classbreakoutroomdsctlr.getenrolledstudents);
+app.post("/api/v2/assignstudenttoroom", classbreakoutroomdsctlr.assignstudenttoroom);
+app.get("/api/v2/removestudentfromroom", classbreakoutroomdsctlr.removestudentfromroom)
+app.post("/api/v2/addlinktoroom", classbreakoutroomdsctlr.addlinktoroom);
+
+
+
+const rubricmodulectlr1 = require("./controllers/rubricmodulectlr1");
+
+app.post("/api/v2/createrubrics1", rubricmodulectlr1.createrubrics1);
+app.get("/api/v2/getallrubrics1", rubricmodulectlr1.getallrubrics1);
+app.post("/api/v2/updaterubrics1", rubricmodulectlr1.updaterubrics1);
+app.get("/api/v2/deleterubrics1", rubricmodulectlr1.deleterubrics1);
+app.get("/api/v2/getsinglerubrics1", rubricmodulectlr1.getsinglerubrics1);
+app.post("/api/v2/createexammarks", rubricmodulectlr1.createexammarks);
+app.get("/api/v2/calculaterubricresult1", rubricmodulectlr1.calculaterubricresult1);
+app.get("/api/v2/filterrubricdata1", rubricmodulectlr1.filterrubricdata1);
+app.get("/api/v2/calculatebulkrubricresults1", rubricmodulectlr1.calculatebulkrubricresults1);
+
+const feedbackinternalctlr1 = require("./controllers/feedbackinternalctlr1");
+
+// Internal Feedback System Routes
+app.get("/api/v2/getallfeedbacksinternalds1", feedbackinternalctlr1.getallfeedbacksinternalds1);
+app.get("/api/v2/getsinglefeedbackinternalds1", feedbackinternalctlr1.getsinglefeedbackinternalds1);
+app.post("/api/v2/createfeedbackinternalds1", feedbackinternalctlr1.createfeedbackinternalds1);
+app.post("/api/v2/updatefeedbackinternalds1", feedbackinternalctlr1.updatefeedbackinternalds1);
+app.get("/api/v2/deletefeedbackinternalds1", feedbackinternalctlr1.deletefeedbackinternalds1);
+app.get("/api/v2/getfeedbackinternalresponsesds1", feedbackinternalctlr1.getfeedbackinternalresponsesds1);
+app.post("/api/v2/createfeedbackinternalresponseds1", feedbackinternalctlr1.createfeedbackinternalresponseds1);
+app.get("/api/v2/getfeedbackinternalanalyticsds1", feedbackinternalctlr1.getfeedbackinternalanalyticsds1);
+// Add these new routes
+app.get("/api/v2/getcorepositoryds1", feedbackinternalctlr1.getcorepositoryds1);
+app.get("/api/v2/getporepositoryds1", feedbackinternalctlr1.getporepositoryds1);
+
+// app.get("/api/v2/getallfeedbacksinternalds1", feedbackinternalctlr1.getallfeedbacksinternalds1);
+// app.get("/api/v2/getsinglefeedbackinternalds1", feedbackinternalctlr1.getsinglefeedbackinternalds1);
+// app.post("/api/v2/createfeedbackinternalds1", feedbackinternalctlr1.createfeedbackinternalds1);
+// app.post("/api/v2/updatefeedbackinternalds1", feedbackinternalctlr1.updatefeedbackinternalds1);
+// app.get("/api/v2/deletefeedbackinternalds1", feedbackinternalctlr1.deletefeedbackinternalds1);
+// app.get("/api/v2/getfeedbackinternalresponsesds1", feedbackinternalctlr1.getfeedbackinternalresponsesds1);
+// app.post("/api/v2/createfeedbackinternalresponseds1", feedbackinternalctlr1.createfeedbackinternalresponseds1);
+// app.get("/api/v2/getfeedbackinternalanalyticsds1", feedbackinternalctlr1.getfeedbackinternalanalyticsds1);
+// // Add these new routes
+// app.get("/api/v2/getcorepositoryds1", feedbackinternalctlr1.getcorepositoryds1);
+// app.get("/api/v2/getporepositoryds1", feedbackinternalctlr1.getporepositoryds1);
+
+const feedbackinternalctlr = require("./controllers/feedbackinternalctlr");
+
+app.get("/api/v2/getallfeedbacksinternalds", feedbackinternalctlr.getallfeedbacksinternalds);
+app.get("/api/v2/getsinglefeedbackinternalds", feedbackinternalctlr.getsinglefeedbackinternalds);
+app.post("/api/v2/createfeedbackinternalds", feedbackinternalctlr.createfeedbackinternalds);
+app.post("/api/v2/updatefeedbackinternalds", feedbackinternalctlr.updatefeedbackinternalds);
+app.get("/api/v2/deletefeedbackinternalds", feedbackinternalctlr.deletefeedbackinternalds);
+app.get("/api/v2/getfeedbackinternalresponsesds", feedbackinternalctlr.getfeedbackinternalresponsesds);
+app.post("/api/v2/createfeedbackinternalresponseds", feedbackinternalctlr.createfeedbackinternalresponseds);
+app.get("/api/v2/getfeedbackinternalanalyticsds", feedbackinternalctlr.getfeedbackinternalanalyticsds)
+
+
+
+const feedbackctlr = require("./controllers/feedbackctlr");
+
+app.get("/api/v2/getallfeedbacksds", feedbackctlr.getallfeedbacksds);
+app.get("/api/v2/getsinglefeedbackds", feedbackctlr.getsinglefeedbackds);
+app.post("/api/v2/createfeedbackds", feedbackctlr.createfeedbackds);
+app.post("/api/v2/updatefeedbackds", feedbackctlr.updatefeedbackds);
+app.get("/api/v2/deletefeedbackds", feedbackctlr.deletefeedbackds);
+app.get("/api/v2/getfeedbackresponsesds", feedbackctlr.getfeedbackresponsesds);
+app.post("/api/v2/createfeedbackresponseds", feedbackctlr.createfeedbackresponseds);
+app.get("/api/v2/getfeedbackanalyticsds", feedbackctlr.getfeedbackanalyticsds);
+
+const discussionboarddsctlr1 = require("./controllers/discussionboarddsctlr1");
+
+
+app.post("/api/v2/creatediscussiontopic1ds", discussionboarddsctlr1.creatediscussiontopic1ds);
+app.get("/api/v2/getdiscussiontopics1ds", discussionboarddsctlr1.getdiscussiontopics1ds);
+app.post("/api/v2/updatediscussiontopic1ds", discussionboarddsctlr1.updatediscussiontopic1ds);
+app.get("/api/v2/deletediscussiontopic1ds", discussionboarddsctlr1.deletediscussiontopic1ds);
+app.get("/api/v2/searchdiscussiontopics1ds", discussionboarddsctlr1.searchdiscussiontopics1ds);
+
+// ==================== DISCUSSION POSTS 1DS ROUTES ====================
+app.post("/api/v2/creatediscussionpost1ds", discussionboarddsctlr1.creatediscussionpost1ds);
+app.get("/api/v2/getdiscussionposts1ds", discussionboarddsctlr1.getdiscussionposts1ds);
+app.post("/api/v2/updatediscussionpost1ds", discussionboarddsctlr1.updatediscussionpost1ds);
+app.get("/api/v2/deletediscussionpost1ds", discussionboarddsctlr1.deletediscussionpost1ds);
+
+// Category management routes
+app.post("/api/v2/createtopiccategory1ds", discussionboarddsctlr1.createtopiccategory1ds);
+app.get("/api/v2/gettopiccategories1ds", discussionboarddsctlr1.gettopiccategories1ds);
+app.post("/api/v2/updatetopiccategory1ds", discussionboarddsctlr1.updatetopiccategory1ds);
+app.get("/api/v2/deletetopiccategory1ds", discussionboarddsctlr1.deletetopiccategory1ds);
+app.get("/api/v2/searchtopiccategories1ds", discussionboarddsctlr1.searchtopiccategories1ds);
+
+const discussionboarddsctlr = require("./controllers/discussionboarddsctlr");
+
+// ==================== DISCUSSION TOPICS ROUTES ====================
+app.post("/api/v2/creatediscussiontopicds", discussionboarddsctlr.creatediscussiontopicds);
+app.get("/api/v2/getdiscussiontopicsds", discussionboarddsctlr.getdiscussiontopicsds);
+app.post("/api/v2/updatediscussiontopicds", discussionboarddsctlr.updatediscussiontopicds);
+app.get("/api/v2/deletediscussiontopicds", discussionboarddsctlr.deletediscussiontopicds);
+
+// ==================== DISCUSSION POSTS ROUTES ====================
+app.post("/api/v2/creatediscussionpostds", discussionboarddsctlr.creatediscussionpostds);
+app.get("/api/v2/getdiscussionpostsds", discussionboarddsctlr.getdiscussionpostsds);
+app.post("/api/v2/updatediscussionpostds", discussionboarddsctlr.updatediscussionpostds);
+app.get("/api/v2/deletediscussionpostds", discussionboarddsctlr.deletediscussionpostds);
+
+
+const salarycontlr =require('./controllers/salarycontlr');
+
+// IP Address Management
+app.post("/api/v2/addipj", salarycontlr.addipj);
+app.get("/api/v2/getallipsj", salarycontlr.getallipsj);
+app.get("/api/v2/getipbyemailj", salarycontlr.getipbyemailj);//*
+app.post("/api/v2/updatestatusj", salarycontlr.updateipj);
+app.delete("/api/v2/deleteipj", salarycontlr.deleteipj);
+
+// Check-in/Check-out(Attendance)
+app.post("/api/v2/checkinj", salarycontlr.checkinj);
+app.post("/api/v2/checkoutj", salarycontlr.checkoutj);
+app.get("/api/v2/getallattendancesj", salarycontlr.getallattendancesj);
+app.get("/api/v2/getattendancebyemailj", salarycontlr.getattendancebyemailj);
+app.get("/api/v2/getattendancestatusj", salarycontlr.getattendancestatusj);
+
+//----salary---------------------//
+app.post("/api/v2/addsalaryj", salarycontlr.addsalaryj);
+app.get("/api/v2/getsalariesj", salarycontlr.getsalariesj);
+app.get("/api/v2/getsalarybyemailj", salarycontlr.getsalarybyemailj);
+app.put("/api/v2/updatesalaryj", salarycontlr.updatesalaryj);
+app.delete("/api/v2/deletesalaryj", salarycontlr.deletesalaryj);
+app.post("/api/v2/calculatesalaryandslipj", salarycontlr.calculatesalaryandslipj);
+// -----------------deduction---------//
+app.post("/api/v2/adddeductionj",salarycontlr.adddeductionj);
+app.get("/api/v2/getalldeductionsj",salarycontlr.getalldeductionsj);
+app.get("/api/v2/getdeductionbyemailj",salarycontlr.getdeductionbyemailj);
+app.put("/api/v2/updatedeductionj",salarycontlr.updatedeductionj);
+app.delete("/api/v2/deletedeductionj",salarycontlr.deletedeductionj);
+
+app.get("/api/v2/getipj",salarycontlr.getipj);
+
+const lawdsctlr = require("./controllers/lawdsctlr.js");
+
+// User Authentication Endpoints
+app.post("/api/v2/registeruser", lawdsctlr.registeruser);
+app.post("/api/v2/loginuser", lawdsctlr.loginuser);
+app.get("/api/v2/getuserprofile", lawdsctlr.getuserprofile);
+app.post("/api/v2/updateuserprofile", lawdsctlr.updateuserprofile);
+app.post("/api/v2/changepassword", lawdsctlr.changepassword);
+
+// Case Management Endpoints
+app.post("/api/v2/createcase", lawdsctlr.createcase);
+app.get("/api/v2/getallcases", lawdsctlr.getallcases);
+app.get("/api/v2/getcasebyid", lawdsctlr.getcasebyid);
+app.post("/api/v2/updatecase", lawdsctlr.updatecase);
+app.get("/api/v2/deletecase", lawdsctlr.deletecase);
+
+// Dashboard Endpoint
+app.get("/api/v2/getdashboardstats", lawdsctlr.getdashboardstats);
+
+
+// // User Authentication Endpoints
+// app.post("/api/v2/registeruser", lawdsctlr.registeruser);
+// app.post("/api/v2/loginuser", lawdsctlr.loginuser);
+// app.get("/api/v2/getuserprofile", lawdsctlr.getuserprofile);
+// app.put("/api/v2/updateuserprofile", lawdsctlr.updateuserprofile);
+// app.put("/api/v2/changepassword", lawdsctlr.changepassword);
+
+// // Case Management Endpoints
+// app.post("/api/v2/createcase", lawdsctlr.createcase);
+// app.get("/api/v2/getallcases", lawdsctlr.getallcases);
+// app.get("/api/v2/getcasebyid/:id", lawdsctlr.getcasebyid);
+// app.put("/api/v2/updatecase/:id", lawdsctlr.updatecase);
+// app.delete("/api/v2/deletecase/:id", lawdsctlr.deletecase);
+
+// // Dashboard Endpoint
+// app.get("/api/v2/getdashboardstats", lawdsctlr.getdashboardstats);
+
+const generatecodedsctlr = require("./controllers/generatecodedsctlr");
+app.post("/api/v2/generateinstitutecode", generatecodedsctlr.generateinstitutecode);
+
+const accountdsctlr = require("./controllers/accountdsctlr.js");
+const trialbalancedsctlr = require("./controllers/trialbalancedsctlr.js");
+
+// AccountGroup routes
+app.post("/api/v2/dscreateaccountgroup", accountdsctlr.dscreateaccountgroup);
+app.get("/api/v2/dsgetaccountgroup", accountdsctlr.dsgetaccountgroup); // ?colid=123
+app.post("/api/v2/dsupdateaccountgroup", accountdsctlr.dsupdateaccountgroup); // ?id=xxx&colid=123
+app.get("/api/v2/dsdeleteaccountgroup", accountdsctlr.dsdeleteaccountgroup); // ?id=xxx&colid=123
+
+// Accountds routes
+app.post("/api/v2/dscreateaccountds", accountdsctlr.dscreateaccountds);
+app.get("/api/v2/dsgetaccountds", accountdsctlr.dsgetaccountds); // ?colid=123&accountgroup=xxx
+app.post("/api/v2/dsupdateaccountds", accountdsctlr.dsupdateaccountds); // ?id=xxx&colid=123
+app.get("/api/v2/dsdeleteaccountds", accountdsctlr.dsdeleteaccountds); // ?id=xxx&colid=123
+
+// Mjournal2 routes (NEW - Updated for mjournal2 model)
+app.post("/api/v2/dscreatemjournal2", accountdsctlr.dscreatemjournal2);
+app.get("/api/v2/dsgetmjournal2", accountdsctlr.dsgetmjournal2); // ?colid=123&year=xxx&account=xxx&accgroup=xxx
+app.post("/api/v2/dsupdatemjournal2", accountdsctlr.dsupdatemjournal2); // ?id=xxx&colid=123
+app.get("/api/v2/dsdeletemjournal2", accountdsctlr.dsdeletemjournal2); // ?id=xxx&colid=123
+
+// Mtrialbalance2 routes (NEW - For trial balance model)
+app.post("/api/v2/dscreatemtrialbalance2", accountdsctlr.dscreatemtrialbalance2);
+app.get("/api/v2/dsgetmtrialbalance2", accountdsctlr.dsgetmtrialbalance2); // ?colid=123&year=xxx&account=xxx&accgroup=xxx
+app.post("/api/v2/dsupdatemtrialbalance2", accountdsctlr.dsupdatemtrialbalance2); // ?id=xxx&colid=123
+app.get("/api/v2/dsdeletemtrialbalance2", accountdsctlr.dsdeletemtrialbalance2); // ?id=xxx&colid=123
+
+// Report route (Updated for mjournal2)
+app.post("/api/v2/dsmjournal2report", accountdsctlr.dsmjournal2report);
+
+// Helper routes for dropdowns
+app.get("/api/v2/dsgetaccountsbycolid", accountdsctlr.dsgetaccountsbycolid); // ?colid=123
+app.get("/api/v2/dsgetyearsbycolid", accountdsctlr.dsgetyearsbycolid); // ?colid=123
+app.get("/api/v2/dsgetaccountsmeta", accountdsctlr.dsgetaccountsmeta); // ?colid=123
+
+// Additional helper routes
+app.get("/api/v2/dsgetaccountsbygroup", accountdsctlr.dsgetaccountsbygroup); // ?colid=123&accountgroup=Assets
+app.get("/api/v2/dsgetaccountgroupswithtypes", accountdsctlr.dsgetaccountgroupswithtypes); 
+
+// Trial balance
+app.get("/api/v2/dsgeneratetrialbalance", trialbalancedsctlr.dsgeneratetrialbalance); // ?colid=123&year=2025-26
+app.get("/api/v2/dsgettrialbalance", trialbalancedsctlr.dsgettrialbalance); // ?colid=123&year=2025-26
+
+// Balance Sheet
+// Add this route to your app.js
+app.get("/api/v2/dsgeneratebalancesheet", trialbalancedsctlr.dsgeneratebalancesheet); // ?colid=123&year=2025-26
+
+// const accountdsctlr = require("./controllers/accountdsctlr");
+
+// // AccountGroup routes
+// app.post("/api/v2/dscreateaccountgroup", accountdsctlr.dscreateaccountgroup);
+// app.get("/api/v2/dsgetaccountgroup", accountdsctlr.dsgetaccountgroup); // ?colid=123
+// app.post("/api/v2/dsupdateaccountgroup", accountdsctlr.dsupdateaccountgroup); // ?id=xxx&colid=123
+// app.get("/api/v2/dsdeleteaccountgroup", accountdsctlr.dsdeleteaccountgroup); // ?id=xxx&colid=123
+
+// // Accountds routes
+// app.post("/api/v2/dscreateaccountds", accountdsctlr.dscreateaccountds);
+// app.get("/api/v2/dsgetaccountds", accountdsctlr.dsgetaccountds); // ?colid=123&accountgroup=xxx
+// app.post("/api/v2/dsupdateaccountds", accountdsctlr.dsupdateaccountds); // ?id=xxx&colid=123
+// app.get("/api/v2/dsdeleteaccountds", accountdsctlr.dsdeleteaccountds); // ?id=xxx&colid=123
+
+// // Mjournal1 routes (formerly accountfinds)
+// app.post("/api/v2/dscreatemjournal1", accountdsctlr.dscreatemjournal1);
+// app.get("/api/v2/dsgetmjournal1", accountdsctlr.dsgetmjournal1); // ?colid=123&year=xxx&account=xxx&accgroup=xxx
+// app.post("/api/v2/dsupdatemjournal1", accountdsctlr.dsupdatemjournal1); // ?id=xxx&colid=123
+// app.get("/api/v2/dsdeletemjournal1", accountdsctlr.dsdeletemjournal1); // ?id=xxx&colid=123
+
+// // Report route
+// app.post("/api/v2/dsmjournal1report", accountdsctlr.dsmjournal1report);
+
+// // Helper routes for dropdowns
+// app.get("/api/v2/dsgetaccountsbycolid", accountdsctlr.dsgetaccountsbycolid); // ?colid=123
+// app.get("/api/v2/dsgetyearsbycolid", accountdsctlr.dsgetyearsbycolid); // ?colid=123
+// app.get("/api/v2/dsgetaccountsmeta", accountdsctlr.dsgetaccountsmeta); // ?colid=123
+// // Add these new helper routes
+// app.get("/api/v2/dsgetaccountsbygroup", accountdsctlr.dsgetaccountsbygroup); // ?colid=123&accountgroup=Assets
+// app.get("/api/v2/dsgetaccountgroupswithtypes", accountdsctlr.dsgetaccountgroupswithtypes); // ?colid=123
+
+const salaryattendancedsctlr = require('./controllers/salaryattendancedsctlr');
+
+
+// Updated IP Management Routes
+// app.get("/api/v2/user/ip", salaryattendancedsctlr.getuserip);
+app.get("/api/v2/getuserip", salaryattendancedsctlr.getuserip);
+// app.get("/api/v2/allowed-ips", salaryattendancedsctlr.getallowedipsds);
+app.get("/api/v2/getallowedipsds", salaryattendancedsctlr.getallowedipsds);
+// app.post("/api/v2/allowed-ips", salaryattendancedsctlr.createallowedipsds);
+app.post("/api/v2/createallowedipsds", salaryattendancedsctlr.createallowedipsds);
+// app.post("/api/v2/updateallowed-ips", salaryattendancedsctlr.updateallowedipsds); // NEW
+app.post("/api/v2/updateallowedipsds", salaryattendancedsctlr.updateallowedipsds); // NEW
+// app.get("/api/v2/deleteallowedips", salaryattendancedsctlr.removeallowedipsds); // Updated
+app.get("/api/v2/removeallowedipsds", salaryattendancedsctlr.removeallowedipsds); // Updated
+// app.get("/api/v2/allowed-ips/check", salaryattendancedsctlr.checkipallowedds);
+app.get("/api/v2/checkipallowedds", salaryattendancedsctlr.checkipallowedds);
+// app.get("/api/v2/allowed-ips/employee", salaryattendancedsctlr.getemployeeipsds); // NEW
+app.get("/api/v2/getemployeeipsds", salaryattendancedsctlr.getemployeeipsds); // NEW
+
+
+// Employee Management Routes
+app.get("/api/v2/employees", salaryattendancedsctlr.getallemployeesds);
+app.get("/api/v2/employees/search", salaryattendancedsctlr.searchsalaryemployeesds);
+
+// Attendance Management Routes
+// app.post("/api/v2/attendance/checkin", salaryattendancedsctlr.checkinds);
+app.post("/api/v2/checkinds", salaryattendancedsctlr.checkinds);
+// app.post("/api/v2/attendance/checkout", salaryattendancedsctlr.checkoutds);
+app.post("/api/v2/checkoutds", salaryattendancedsctlr.checkoutds);
+// app.get("/api/v2/attendance/today", salaryattendancedsctlr.gettodayattendanceds);
+app.get("/api/v2/gettodayattendanceds", salaryattendancedsctlr.gettodayattendanceds);
+// app.get("/api/v2/attendance/records", salaryattendancedsctlr.getattendancerecordsds);
+app.get("/api/v2/getattendancerecordsds", salaryattendancedsctlr.getattendancerecordsds);
+// app.get("/api/v2/attendance/stats", salaryattendancedsctlr.getattendancestatsds);
+app.get("/api/v2/getattendancestatsds", salaryattendancedsctlr.getattendancestatsds);
+// app.post("/api/v2/attendance/mark-absent", salaryattendancedsctlr.markabsentds);
+app.post("/api/v2/markabsentds", salaryattendancedsctlr.markabsentds);
+// app.get("/api/v2/attendance/summary", salaryattendancedsctlr.getattendancesummaryds);
+app.get("/api/v2/getattendancesummaryds", salaryattendancedsctlr.getattendancesummaryds);
+
+// Salary Management Routes
+app.get("/api/v2/salary/settings", salaryattendancedsctlr.getsalarysettingsds);
+app.post("/api/v2/createsalarysettingsds", salaryattendancedsctlr.createsalarysettingsds);
+app.post("/api/v2/calculatesalaryds", salaryattendancedsctlr.calculatesalaryds);
+app.post("/api/v2/createsalaryslipds", salaryattendancedsctlr.createsalaryslipds);
+app.get("/api/v2/getsalaryslipsds", salaryattendancedsctlr.getsalaryslipsds);
+app.get("/api/v2/getallsalaryslipsds", salaryattendancedsctlr.getallsalaryslipsds);
+app.get("/api/v2/getsalaryslipds", salaryattendancedsctlr.getsalaryslipds);
+app.get("/api/v2/getsalaryemployeesds", salaryattendancedsctlr.getsalaryemployeesds);
+app.post("/api/v2/updatesalarysettingsds", salaryattendancedsctlr.updatesalarysettingsds);
+app.post("/api/v2/deletesalarysettingsds", salaryattendancedsctlr.deletesalarysettingsds);
+app.get("/api/v2/salary/settings/id", salaryattendancedsctlr.getsalarysettingbyidds);
+
+// Attendance Settings Routes
+app.get("/api/v2/getattendancesettingsds", salaryattendancedsctlr.getattendancesettingsds);
+app.post("/api/v2/createattendancesettingsds", salaryattendancedsctlr.createattendancesettingsds);
+
+// Salary management routes with new structure
+app.post("/api/v2/createsalarysettingds", salaryattendancedsctlr.createsalarysettingds);
+app.get("/api/v2/getsalarysettingds", salaryattendancedsctlr.getsalarysettingds);
+app.post("/api/v2/updatesalarysettingds", salaryattendancedsctlr.updatesalarysettingds);
+
+// New route for salary calculation preview
+app.post("/api/v2/getSalaryCalculation", salaryattendancedsctlr.getSalaryCalculation);
+
+// Salary slip routes
+app.post("/api/v2/generateSalarySlip", salaryattendancedsctlr.generateSalarySlip);
+app.get("/api/v2/getsalaryslips", salaryattendancedsctlr.getsalaryslips);
+app.get("/api/v2/deletesalarysettingds", salaryattendancedsctlr.deletesalarysettingds);
+
+const leavemoduledsctlr1 = require("./controllers/leavemoduledsctlr1");
+
+app.post("/api/v2/createleavetype1", leavemoduledsctlr1.createleavetype1);
+app.get("/api/v2/getleavetypes1", leavemoduledsctlr1.getleavetypes1);
+app.post("/api/v2/createleavebalance1", leavemoduledsctlr1.createleavebalance1);
+app.get("/api/v2/getleavebalances1", leavemoduledsctlr1.getleavebalances1);
+app.post("/api/v2/assignapprover1", leavemoduledsctlr1.assignapprover1);
+app.get("/api/v2/getapprovers1", leavemoduledsctlr1.getapprovers1);
+app.get("/api/v2/getallapprovers1", leavemoduledsctlr1.getallapprovers1);
+app.post("/api/v2/createleave1", leavemoduledsctlr1.createleave1);
+app.get("/api/v2/getleaves1", leavemoduledsctlr1.getleaves1);
+app.post("/api/v2/approverejectleave1", leavemoduledsctlr1.approverejectleave1);
+app.get("/api/v2/searchuserbyemailorname1", leavemoduledsctlr1.searchuserbyemailorname1);
+
+// ADD THIS MISSING ROUTE
+app.get("/api/v2/getpendingleaves1", leavemoduledsctlr1.getpendingleaves1);
+
+// UPDATED ROUTES - Using query parameters instead of URL parameters
+app.post("/api/v2/updateleavetype", leavemoduledsctlr1.updateleavetype);
+app.get("/api/v2/deleteleavetype", leavemoduledsctlr1.deleteleavetype);
+
+app.post("/api/v2/updateleavebalance", leavemoduledsctlr1.updateleavebalance);
+app.get("/api/v2/deleteleavebalance", leavemoduledsctlr1.deleteleavebalance);
+
+app.post("/api/v2/updateapprover", leavemoduledsctlr1.updateapprover);
+app.get("/api/v2/deleteapprover", leavemoduledsctlr1.deleteapprover);
+
+
+const aigeminiontroller=require('./controllers/aigeminiontroller');
+
+app.get('/api/v2/testgemini',  aigeminiontroller.testgemini);
+app.get('/api/v2/testgemini1',  aigeminiontroller.testgemini1);
+app.get('/api/v2/testgemini2',  aigeminiontroller.testgemini2);
+app.get('/api/v2/geminimodules',  aigeminiontroller.geminimodules);
+app.get('/api/v2/geminimodules1',  aigeminiontroller.geminimodules1);
+app.get('/api/v2/testgemini3',  aigeminiontroller.testgemini3);
+
+const subjectgroupdsctlr = require("./controllers/subjectgroupdsctlr.js");
+const subgroupreportctlr = require("./controllers/subgroupreportctlr.js");
+
+
+// Faculty config
+app.post("/api/v2/addSubjects", subjectgroupdsctlr.addSubjects);
+app.get("/api/v2/listSubjects", subjectgroupdsctlr.listSubjects);
+app.get("/api/v2/getSubjectsByGroup", subjectgroupdsctlr.getSubjectsByGroup);
+app.post("/api/v2/removeConfiguredSubject", subjectgroupdsctlr.removeConfiguredSubject);
+
+// Student flows
+app.get("/api/v2/availableForStudent", subjectgroupdsctlr.availableForStudent);
+app.post("/api/v2/applySubjects", subjectgroupdsctlr.applySubjects);
+app.get("/api/v2/myApplications", subjectgroupdsctlr.myApplications);
+
+// Faculty approvals
+app.get("/api/v2/searchApplications", subjectgroupdsctlr.searchApplications);
+app.post("/api/v2/updateApplicationStatus", subjectgroupdsctlr.updateApplicationStatus);
+app.post("/api/v2/bulkDecision", subjectgroupdsctlr.bulkDecision);
+
+// Add these two new routes to your app.js:
+app.post("/api/v2/setSubjectLimits", subjectgroupdsctlr.setSubjectLimits);
+app.get("/api/v2/getSubjectLimits", subjectgroupdsctlr.getSubjectLimits);
+
+app.get("/api/v2/listAllSubjectLimits", subjectgroupdsctlr.listAllSubjectLimits);
+app.post("/api/v2/deleteSubjectLimit", subjectgroupdsctlr.deleteSubjectLimit);
+
+// Reports
+app.get("/api/v2/getFilterOptions", subgroupreportctlr.getFilterOptions);
+app.get("/api/v2/generateReport", subgroupreportctlr.generateReport);
+app.get("/api/v2/getSummaryReport", subgroupreportctlr.getSummaryReport);
+app.get("/api/v2/exportReport", subgroupreportctlr.exportReport);
+
+const ds1userctlr = require("./controllers/ds1userctlr");
+const ds1profileeditconfigctlr = require("./controllers/ds1profileeditconfigctlr");
+const ds1profileeditlogctlr = require("./controllers/ds1profileeditlogctlr");
+const ds1datareportctlr = require("./controllers/ds1datareportctlr");
+
+
+app.get("/api/v2/ds1getcounsellors", ds1userctlr.ds1getcounsellors);
+
+// ==========================================
+// USER MANAGEMENT ROUTES (ADMIN) - ds1 prefix
+// ==========================================
+app.post("/api/v2/ds1createuser", ds1userctlr.ds1createuser);
+app.post("/api/v2/ds1bulkcreateuser", ds1userctlr.ds1bulkcreateuser);
+app.get("/api/v2/ds1getalluser", ds1userctlr.ds1getalluser);
+app.get("/api/v2/ds1getuserbyid", ds1userctlr.ds1getuserbyid);
+app.post("/api/v2/ds1updateuser", ds1userctlr.ds1updateuser);
+app.get("/api/v2/ds1deleteuser", ds1userctlr.ds1deleteuser);
+app.get("/api/v2/ds1bulkdeleteuser", ds1userctlr.ds1bulkdeleteuser);
+app.get("/api/v2/ds1getuserstats", ds1userctlr.ds1getuserstats);
+app.get("/api/v2/ds1getfilteroptions", ds1userctlr.ds1getfilteroptions);
+
+// ==========================================
+// STUDENT PROFILE ROUTES - ds1 prefix
+// ==========================================
+app.get("/api/v2/ds1getstudentprofile", ds1userctlr.ds1getstudentprofile);
+app.post("/api/v2/ds1updatestudentprofile", ds1userctlr.ds1updatestudentprofile);
+
+// ==========================================
+// PROFILE EDIT CONFIGURATION ROUTES
+// ==========================================
+app.get("/api/v2/ds1getprofileeditconfig", ds1profileeditconfigctlr.ds1getprofileeditconfig);
+app.post("/api/v2/ds1updateprofileeditconfig", ds1profileeditconfigctlr.ds1updateprofileeditconfig);
+app.get("/api/v2/ds1checkeditstatus", ds1profileeditconfigctlr.ds1checkeditstatus);
+app.get("/api/v2/ds1getfieldpermissions", ds1profileeditconfigctlr.ds1getfieldpermissions);
+app.get("/api/v2/ds1deleteprofileeditconfig", ds1profileeditconfigctlr.ds1deleteprofileeditconfig);
+
+// ==========================================
+// PROFILE EDIT LOG ROUTES
+// ==========================================
+app.post("/api/v2/ds1createeditlog", ds1profileeditlogctlr.ds1createeditlog);
+app.get("/api/v2/ds1getalleditlogs", ds1profileeditlogctlr.ds1getalleditlogs);
+app.get("/api/v2/ds1getstudenteditlogs", ds1profileeditlogctlr.ds1getstudenteditlogs);
+app.get("/api/v2/ds1geteditlogstats", ds1profileeditlogctlr.ds1geteditlogstats);
+app.get("/api/v2/ds1geteditlogbyid", ds1profileeditlogctlr.ds1geteditlogbyid);
+app.get("/api/v2/ds1deleteeditlogs", ds1profileeditlogctlr.ds1deleteeditlogs);
+
+// ==========================================
+// DATA QUALITY REPORT ROUTES
+// ==========================================
+app.get("/api/v2/ds1getmissingfieldsreport", ds1datareportctlr.ds1getmissingfieldsreport);
+app.get("/api/v2/ds1getstudentswithoutphotos", ds1datareportctlr.ds1getstudentswithoutphotos);
+app.post("/api/v2/ds1bulkupdatephotosfromurl", ds1datareportctlr.ds1bulkupdatephotosfromurl);
+
+
+
+// // ==========================================
+// // USER MANAGEMENT ROUTES (ADMIN) - ds1 prefix
+// // ==========================================
+// app.post("/api/v2/ds1createuser", ds1userctlr.ds1createuser);
+// app.post("/api/v2/ds1bulkcreateuser", ds1userctlr.ds1bulkcreateuser);
+// app.get("/api/v2/ds1getalluser", ds1userctlr.ds1getalluser);
+// app.get("/api/v2/ds1getuserbyid", ds1userctlr.ds1getuserbyid);
+// app.post("/api/v2/ds1updateuser", ds1userctlr.ds1updateuser);
+// app.get("/api/v2/ds1deleteuser", ds1userctlr.ds1deleteuser);
+// app.get("/api/v2/ds1bulkdeleteuser", ds1userctlr.ds1bulkdeleteuser);
+// app.get("/api/v2/ds1getuserstats", ds1userctlr.ds1getuserstats);
+// app.get("/api/v2/ds1getfilteroptions", ds1userctlr.ds1getfilteroptions);
+
+// // ==========================================
+// // STUDENT PROFILE ROUTES - ds1 prefix
+// // ==========================================
+// app.get("/api/v2/ds1getstudentprofile", ds1userctlr.ds1getstudentprofile);
+// app.post("/api/v2/ds1updatestudentprofile", ds1userctlr.ds1updatestudentprofile);
+
+//app.use(express.static("pdfs"));
+app.use("/pdfs", express.static(path.join(__dirname, 'pdfs')));
+
+const allocationRoutes = require("./routes/allocationRoutes");
+app.use("/api2", allocationRoutes);
+
+const allocationRoutes1 = require("./routes/allocationRoutes1");
+app.use("/api21", allocationRoutes1);
+
+const allocationRoutes2 = require("./routes/allocationRoutes2");
+app.use("/api22", allocationRoutes2);
+
+const allocationRoutes3 = require("./routes/allocationRoutes3");
+app.use("/api23", allocationRoutes3);
+
+const allocationRoutes4 = require("./routes/allocationRoutes4");
+app.use("/api24", allocationRoutes4);
+
+const allocationRoutes5 = require("./routes/allocationRoutes5");
+app.use("/api25", allocationRoutes5);
+
+const aiseatcontroller=require('./controllers/aiseatcontroller');
+
+app.post('/api/v2/allocate',  aiseatcontroller.allocate);
+app.get('/api/v2/getallocations',  aiseatcontroller.getallocations);
+
+const vendordsctlr = require("./controllers/vendordsctlr");
+const productdsctlr = require("./controllers/productdsctlr");
+const vendorproductdsctlr = require("./controllers/vendorproductdsctlr");
+const productrequestdsctlr = require("./controllers/productrequestdsctlr");
+const purchasedsctlr = require("./controllers/purchasedsctlr");
+const paymentdsctlr = require("./controllers/paymentdsctlr");
+const returnproductdsctlr = require("./controllers/returnproductdsctlr");
+const purchasesearchdsctlr = require("./controllers/purchasesearchdsctlr");
+
+// // Vendor Routes
+// app.post("/api/v2/addvendords", vendordsctlr.addvendords);
+// app.get("/api/v2/getallvendords", vendordsctlr.getallvendords);
+// app.get("/api/v2/getvendordsbyid/:id", vendordsctlr.getvendordsbyid);
+// app.put("/api/v2/updatevendords/:id", vendordsctlr.updatevendords);
+// app.delete("/api/v2/deletevendords/:id", vendordsctlr.deletevendords);
+// app.post("/api/v2/bulkaddvendords", vendordsctlr.bulkaddvendords);
+
+// // Product Routes
+// app.post("/api/v2/addproductds", productdsctlr.addproductds);
+// app.get("/api/v2/getallproductds", productdsctlr.getallproductds);
+// app.get("/api/v2/getproductdsbyid/:id", productdsctlr.getproductdsbyid);
+// app.put("/api/v2/updateproductds/:id", productdsctlr.updateproductds);
+// app.delete("/api/v2/deleteproductds/:id", productdsctlr.deleteproductds);
+// app.post("/api/v2/bulkaddproductds", productdsctlr.bulkaddproductds);
+
+// // Vendor Product Routes
+// app.post("/api/v2/addvendorproductds", vendorproductdsctlr.addvendorproductds);
+// app.get("/api/v2/getallvendorproductds", vendorproductdsctlr.getallvendorproductds);
+// app.get("/api/v2/getvendorproductdsbyid/:id", vendorproductdsctlr.getvendorproductdsbyid);
+// app.get("/api/v2/getvendorproductdsbyvendor", vendorproductdsctlr.getvendorproductdsbyvendor);
+// app.put("/api/v2/updatevendorproductds/:id", vendorproductdsctlr.updatevendorproductds);
+// app.delete("/api/v2/deletevendorproductds/:id", vendorproductdsctlr.deletevendorproductds);
+// app.post("/api/v2/bulkaddvendorproductds", vendorproductdsctlr.bulkaddvendorproductds);
+
+// // Product Request Routes
+// app.post("/api/v2/addproductrequestds", productrequestdsctlr.addproductrequestds);
+// app.get("/api/v2/getallproductrequestds", productrequestdsctlr.getallproductrequestds);
+// app.get("/api/v2/getproductrequestdsbyuser", productrequestdsctlr.getproductrequestdsbyuser);
+// app.put("/api/v2/updateproductrequestdsstatus/:id", productrequestdsctlr.updateproductrequestdsstatus);
+// app.delete("/api/v2/deleteproductrequestds/:id", productrequestdsctlr.deleteproductrequestds);
+
+// // Purchase Routes
+// app.post("/api/v2/addpurchaseds", purchasedsctlr.addpurchaseds);
+// app.get("/api/v2/getallpurchaseds", purchasedsctlr.getallpurchaseds);
+// app.get("/api/v2/getpurchasedsbyid/:id", purchasedsctlr.getpurchasedsbyid);
+// app.get("/api/v2/getpurchasedsbyvendor", purchasedsctlr.getpurchasedsbyvendor);
+// app.get("/api/v2/getpurchasedsbystatus", purchasedsctlr.getpurchasedsbystatus);
+// app.put("/api/v2/updatepurchaseds/:id", purchasedsctlr.updatepurchaseds);
+// app.delete("/api/v2/deletepurchaseds/:id", purchasedsctlr.deletepurchaseds);
+
+// // Payment Routes
+// app.post("/api/v2/addpaymentds", paymentdsctlr.addpaymentds);
+// app.get("/api/v2/getallpaymentds", paymentdsctlr.getallpaymentds);
+// app.get("/api/v2/getpaymentdsbypurchase", paymentdsctlr.getpaymentdsbypurchase);
+// app.get("/api/v2/getpaymentdsbyvendor", paymentdsctlr.getpaymentdsbyvendor);
+// app.put("/api/v2/updatepaymentds/:id", paymentdsctlr.updatepaymentds);
+// app.delete("/api/v2/deletepaymentds/:id", paymentdsctlr.deletepaymentds);
+
+
+// Vendor Routes
+app.post("/api/v2/addvendords", vendordsctlr.addvendords);
+app.get("/api/v2/getallvendords", vendordsctlr.getallvendords);
+app.get("/api/v2/getvendordsbyid", vendordsctlr.getvendordsbyid);
+app.post("/api/v2/updatevendords", vendordsctlr.updatevendords);
+app.get("/api/v2/deletevendords", vendordsctlr.deletevendords);
+app.post("/api/v2/bulkaddvendords", vendordsctlr.bulkaddvendords);
+
+// Product Routes
+app.post("/api/v2/addproductds", productdsctlr.addproductds);
+app.get("/api/v2/getallproductds", productdsctlr.getallproductds);
+app.get("/api/v2/getproductdsbyid", productdsctlr.getproductdsbyid);
+app.post("/api/v2/updateproductds", productdsctlr.updateproductds);
+app.get("/api/v2/deleteproductds", productdsctlr.deleteproductds);
+app.post("/api/v2/bulkaddproductds", productdsctlr.bulkaddproductds);
+
+// Vendor Product Routes
+app.post("/api/v2/addvendorproductds", vendorproductdsctlr.addvendorproductds);
+app.get("/api/v2/getallvendorproductds", vendorproductdsctlr.getallvendorproductds);
+app.get("/api/v2/getvendorproductdsbyid", vendorproductdsctlr.getvendorproductdsbyid);
+app.get("/api/v2/getvendorproductdsbyvendor", vendorproductdsctlr.getvendorproductdsbyvendor);
+app.post("/api/v2/updatevendorproductds", vendorproductdsctlr.updatevendorproductds);
+app.get("/api/v2/deletevendorproductds", vendorproductdsctlr.deletevendorproductds);
+app.post("/api/v2/bulkaddvendorproductds", vendorproductdsctlr.bulkaddvendorproductds);
+
+// Product Request Routes
+app.post("/api/v2/addproductrequestds", productrequestdsctlr.addproductrequestds);
+app.get("/api/v2/getallproductrequestds", productrequestdsctlr.getallproductrequestds);
+app.get("/api/v2/getproductrequestdsbyuser", productrequestdsctlr.getproductrequestdsbyuser);
+app.post("/api/v2/updateproductrequestdsstatus", productrequestdsctlr.updateproductrequestdsstatus);
+app.get("/api/v2/deleteproductrequestds", productrequestdsctlr.deleteproductrequestds);
+
+// Purchase Routes
+app.post("/api/v2/addpurchaseds", purchasedsctlr.addpurchaseds);
+app.get("/api/v2/getallpurchaseds", purchasedsctlr.getallpurchaseds);
+app.get("/api/v2/getpurchasedsbyid", purchasedsctlr.getpurchasedsbyid);
+app.get("/api/v2/getpurchasedsbyvendor", purchasedsctlr.getpurchasedsbyvendor);
+app.get("/api/v2/getpurchasedsbystatus", purchasedsctlr.getpurchasedsbystatus);
+app.post("/api/v2/updatepurchaseds", purchasedsctlr.updatepurchaseds);
+app.get("/api/v2/deletepurchaseds", purchasedsctlr.deletepurchaseds);
+// Payment Routes
+app.post("/api/v2/addpaymentds", paymentdsctlr.addpaymentds);
+app.get("/api/v2/getallpaymentds", paymentdsctlr.getallpaymentds);
+app.get("/api/v2/getpaymentdsbypurchase", paymentdsctlr.getpaymentdsbypurchase);
+app.get("/api/v2/getpaymentdsbyvendor", paymentdsctlr.getpaymentdsbyvendor);
+app.post("/api/v2/updatepaymentds", paymentdsctlr.updatepaymentds);
+app.get("/api/v2/deletepaymentds", paymentdsctlr.deletepaymentds);
+
+
+
+app.get("/api/v2/searchpurchasedsbyproductname", purchasesearchdsctlr.searchpurchasedsbyproductname);
+
+// Add these routes after the payment routes
+app.post("/api/v2/addreturnds", returnproductdsctlr.addreturnds);
+app.get("/api/v2/getallreturnds", returnproductdsctlr.getallreturnds);
+app.get("/api/v2/getreturndsbyStatus", returnproductdsctlr.getreturndsbyStatus);
+app.post("/api/v2/updatereturndsStatus", returnproductdsctlr.updatereturndsStatus);
+app.get("/api/v2/deletereturnds", returnproductdsctlr.deletereturnds);
+
+const transactionrefdsctlr = require('./controllers/transactionrefdsctlr.js');
+
+app.get('/api/v2/dstransactionrefds', transactionrefdsctlr.dstransactionrefds);
+
+// Get journal entries by account group
+app.get('/api/v2/dsjournalsbygroupds', transactionrefdsctlr.dsjournalsbygroupds);
+
+// For account group dropdown, if not already present
+app.get('/api/v2/dsgetaccountgroupsds', transactionrefdsctlr.dsgetaccountgroupsds);
+
+
+
+const scholarshipdsctlr = require("./controllers/scholarshipdsctlr");
+const scholarshipapplicationdsctlr = require("./controllers/scholarshipapplicationdsctlr");
+
+// ---- Scholarship Endpoints ----
+app.post("/api/v2/createscholarshipds", scholarshipdsctlr.createscholarshipds);
+app.get("/api/v2/filterscholarshipds", scholarshipdsctlr.filterscholarshipds);
+app.post("/api/v2/editscholarshipds", scholarshipdsctlr.editscholarshipds);
+app.get("/api/v2/deletescholarshipds", scholarshipdsctlr.deletescholarshipds);
+app.get("/api/v2/getallscholarshipds", scholarshipdsctlr.getallscholarshipds);
+
+// ---- Scholarship Application Endpoints ----
+app.post("/api/v2/createscholarshipapplicationds", scholarshipapplicationdsctlr.createscholarshipapplicationds);
+app.get("/api/v2/getscholarshipapplicationds", scholarshipapplicationdsctlr.getscholarshipapplicationds);
+app.post("/api/v2/updatescholarshipapplicationds", scholarshipapplicationdsctlr.updatescholarshipapplicationds);
+
+const allocRoutes = require('./routes/alloc');
+app.use('/api/alloc', allocRoutes);
+
+const allocRoutes1 = require('./routes/alloc1');
+app.use('/api/alloc1', allocRoutes1);
+
+const patientRoutes = require('./routes/patientds');
+const opdRoutes = require('./routes/opdds');
+const labRoutes = require('./routes/labds');
+const pharmacyRoutes = require('./routes/pharmacyds');
+const doctorRoutes = require('./routes/doctords');
+const billingRoutes = require('./routes/billingds');
+const opdAppointmentRoutes = require('./routes/opdappointmentds');
+const prescriptionRoutes = require('./routes/prescriptionds');
+
+
+// Use Routes
+app.use('/api/patientds', patientRoutes);
+app.use('/api/opdds', opdRoutes);
+app.use('/api/labds', labRoutes);
+app.use('/api/pharmacyds', pharmacyRoutes);
+app.use('/api/doctords', doctorRoutes);
+app.use('/api/billingds', billingRoutes);
+app.use('/api/opdappointmentds', opdAppointmentRoutes);
+app.use('/api/prescriptionds', prescriptionRoutes);
+
+const exammarks1ds = require("./controllers/exammarks1ds.js");
+const exammarks2ds = require("./controllers/exammarks2ds.js");
+const tabulationctlr = require("./controllers/tabulationctlr.js");
+
+
+// Exam Marks Structure
+app.post("/api/v2/createexammarks1ds", exammarks1ds.createexammarks1ds);
+app.get("/api/v2/listexammarks1ds", exammarks1ds.listexammarks1ds);
+app.post("/api/v2/editexammarks1ds", exammarks1ds.editexammarks1ds);
+app.get("/api/v2/deleteexammarks1ds", exammarks1ds.deleteexammarks1ds);
+
+// Exam Marks Entry (Student)
+app.post("/api/v2/createexammarks2ds", exammarks2ds.createexammarks2ds);
+app.get("/api/v2/listexammarks2ds", exammarks2ds.listexammarks2ds);
+app.post("/api/v2/editexammarks2ds", exammarks2ds.editexammarks2ds);
+app.get("/api/v2/deleteexammarks2ds", exammarks2ds.deleteexammarks2ds);
+app.get("/api/v2/getstudentds", exammarks2ds.getstudentds);
+
+// ===== TABULATION REGISTER ROUTES =====
+app.get("/api/v2/getstudentinfofortabulation", tabulationctlr.getStudentInfoForTabulation);
+app.get("/api/v2/getcurrentsemmarks", tabulationctlr.getCurrentSemesterMarks);
+app.get("/api/v2/getallsemestersummary", tabulationctlr.getAllSemesterSummary);
+app.get("/api/v2/getavailabledata", tabulationctlr.getAvailableData);
+
+app.get("/api/v2/getBulkTabulationData", tabulationctlr.getBulkTabulationData);
+
+app.get("/api/v2/gettranscript", tabulationctlr.getTranscript);
+
+const studentledgerdsctlr = require("./controllers/studentledgerdsctlr");
+const collegerepotdsctlr = require("./controllers/collegerepotdsctlr");
+
+
+app.get("/api/v2/studentledgerreportds", studentledgerdsctlr.studentLedgerReportds);
+app.get("/api/v2/collegerepledgerreportds", collegerepotdsctlr.collegeStudentLedgerReportds);
+
+const ledgerstuddsctlr = require("./controllers/ledgerstuddsctlr");
+// Ledger routes
+app.post("/api/v2/addledgerds", ledgerstuddsctlr.addledgerds);
+app.get("/api/v2/getledgersds", ledgerstuddsctlr.getledgersds);
+app.post("/api/v2/markaspaidds", ledgerstuddsctlr.markaspaidds);
+app.get("/api/v2/searchstudentsds1", ledgerstuddsctlr.searchstudentsds);
+app.get("/api/v2/getfilteroptionsds", ledgerstuddsctlr.getfilteroptionsds);
+app.get("/api/v2/getledgerbystudentds", ledgerstuddsctlr.getledgerbystudentds);
+
+const ledgerinstallmentdsctlr = require("./controllers/ledgerinstallmentdsctlr.js");
+app.get("/api/v2/getallledgerentriesds", ledgerinstallmentdsctlr.getallledgerentriesds);
+app.post("/api/v2/createinstallmentsfromentriesds", ledgerinstallmentdsctlr.createinstallmentsfromentriesds);
+app.get("/api/v2/getdistinctsemestersds", ledgerinstallmentdsctlr.getdistinctsemestersds);
+
+const facregistrationdscontroller = require("./controllers/facregistrationdscontroller.js");
+
+const facbankdscontroller = require("./controllers/facbankdscontroller.js");
+
+
+// Faculty Registration routes
+app.post("/api/v2/createfacregistrationds", facregistrationdscontroller.createfacregistrationds);
+
+app.get("/api/v2/getfacregistrationdsbycolid", facregistrationdscontroller.getfacregistrationdsbycolid);
+
+app.get("/api/v2/getfacregistrationds", facregistrationdscontroller.getfacregistrationds);
+
+app.post("/api/v2/updatefacregistrationdsstatus", facregistrationdscontroller.updatefacregistrationdsstatus);
+
+app.post("/api/v2/approvefacregistrationds", facregistrationdscontroller.approvefacregistrationds);
+
+app.post("/api/v2/rejectfacregistrationds", facregistrationdscontroller.rejectfacregistrationds);
+
+app.post("/api/v2/holdfacregistrationds", facregistrationdscontroller.holdfacregistrationds);
+
+app.get("/api/v2/deletefacregistrationds", facregistrationdscontroller.deletefacregistrationds);
+
+app.get("/api/v2/getfacregistrationdsbystatus", facregistrationdscontroller.getfacregistrationdsbystatus);
+
+// Faculty Bank Details routes
+app.get("/api/v2/getfacbankdsbycolid", facbankdscontroller.getfacbankdsbycolid);
+
+const grievancedsctlr = require('./controllers/grievancedsctlr');
+const grievancecategorydsctlr = require('./controllers/grievancecategorydsctlr');
+//const grievancedsctlr1 = require('./controllers/grievancedsctlr1');
+
+// Grievance Routes
+app.post('/api/v2/addgrievanceds', grievancedsctlr.addgrievanceds);
+app.get('/api/v2/getallgrievanceds', grievancedsctlr.getallgrievanceds);
+app.post('/api/v2/updategrievancestatusds', grievancedsctlr.updategrievancestatusds);
+app.get('/api/v2/getassignedgrievanceds', grievancedsctlr.getassignedgrievanceds);
+app.post('/api/v2/updategrievanceprogressds', grievancedsctlr.updategrievanceprogressds);
+
+app.get('/api/v2/getgrievancesbyuserds', grievancedsctlr.getgrievancesbyuserds);
+
+
+
+// Grievance Category Routes
+app.post('/api/v2/addgrievancecategoryds', grievancecategorydsctlr.addgrievancecategoryds);
+app.get('/api/v2/getallgrievancecategoryds', grievancecategorydsctlr.getallgrievancecategoryds);
+app.get('/api/v2/deletegrievancecategoryds', grievancecategorydsctlr.deletegrievancecategoryds);
+
+const grievancedsctlr1 = require('./controllers/grievancedsctlr1');
+const grievancecategorydsctlr1 = require('./controllers/grievancecategorydsctlr1');
+const gptapikeydsctlr1 = require('./controllers/gptapikeydsctlr');
+
+
+// Grievance Routes
+app.post('/api/v2/addgrievanceds1', grievancedsctlr1.addgrievanceds1);
+app.get('/api/v2/getallgrievanceds1', grievancedsctlr1.getallgrievanceds1);
+app.post('/api/v2/updategrievancestatusds1', grievancedsctlr1.updategrievancestatusds1);
+app.get('/api/v2/getassignedgrievanceds1', grievancedsctlr1.getassignedgrievanceds1);
+app.post('/api/v2/updategrievanceprogressds1', grievancedsctlr1.updategrievanceprogressds1);
+
+app.get('/api/v2/getgrievancesbyuserds1', grievancedsctlr1.getgrievancesbyuserds1);
+
+// Grievance Category Routes
+app.post('/api/v2/addgrievancecategoryds1', grievancecategorydsctlr1.addgrievancecategoryds1);
+app.get('/api/v2/getallgrievancecategoryds1', grievancecategorydsctlr1.getallgrievancecategoryds1);
+app.get('/api/v2/deletegrievancecategoryds1', grievancecategorydsctlr1.deletegrievancecategoryds1);
+
+// API Key Routes
+app.get('/api/v2/getapikeydsbycoldids', gptapikeydsctlr1.getapikeydsbycoldids);
+app.post('/api/v2/addorupdateapikeyds', gptapikeydsctlr1.addorupdateapikeyds);
+app.get('/api/v2/getactiveapikeyds', gptapikeydsctlr1.getactiveapikeyds);
+
+const questionbankdsctlr = require('./controllers/questionbankdsctlr');
+const questionsectiondsctlr = require('./controllers/questionsectiondsctlr');
+const questionsdsctlr = require('./controllers/questionsdsctlr');
+const editquestionlogdsctlr = require('./controllers/editquestionlogdsctlr');
+
+
+// Question Bank Routes
+app.post('/api/v2/createquestionbankds', questionbankdsctlr.createquestionbankds);
+app.get('/api/v2/getquestionbankdsbycolid', questionbankdsctlr.getquestionbankdsbycolid);
+app.get('/api/v2/getquestionbankdsbycode', questionbankdsctlr.getquestionbankdsbycode);
+app.post('/api/v2/updatequestionbankds', questionbankdsctlr.updatequestionbankds);
+app.post('/api/v2/deletequestionbankds', questionbankdsctlr.deletequestionbankds);
+app.post('/api/v2/finalizequestionbankds', questionbankdsctlr.finalizequestionbankds);
+
+// Section Routes
+app.post('/api/v2/createsectionds', questionsectiondsctlr.createsectionds);
+app.get('/api/v2/getsectiondsbyqbcode', questionsectiondsctlr.getsectiondsbyqbcode);
+app.post('/api/v2/updatesectionds', questionsectiondsctlr.updatesectionds);
+app.post('/api/v2/deletesectionds', questionsectiondsctlr.deletesectionds);
+
+// Questions Routes
+app.post('/api/v2/createquestionds', questionsdsctlr.createquestionds);
+app.get('/api/v2/getcontextforai', questionsdsctlr.getcontextforai); // NEW - for frontend AI generation
+app.post('/api/v2/bulkcreatequestionsds', questionsdsctlr.bulkcreatequestionsds);
+app.get('/api/v2/getquestionsbyqbcode', questionsdsctlr.getquestionsbyqbcode);
+app.get('/api/v2/getquestionsbysectionid', questionsdsctlr.getquestionsbysectionid);
+app.post('/api/v2/updatequestionds', questionsdsctlr.updatequestionds);
+app.get('/api/v2/deletequestionds', questionsdsctlr.deletequestionds);
+
+// Logs Route
+app.get('/api/v2/getlogsbyqbcode', editquestionlogdsctlr.getlogsbyqbcode);
+
+const categoryassigneedsctlr1 = require('./controllers/categoryassigneedsctlr1');
+
+
+// Category Assignee Routes
+app.post('/api/v2/addorupdatecategoryassigneeds1', categoryassigneedsctlr1.addorupdatecategoryassigneeds1);
+app.get('/api/v2/getallcategoryassigneeds1', categoryassigneedsctlr1.getallcategoryassigneeds1);
+app.get('/api/v2/getassigneesbycategoryds1', categoryassigneedsctlr1.getassigneesbycategoryds1);
+app.get('/api/v2/deletecategoryassigneeds1', categoryassigneedsctlr1.deletecategoryassigneeds1);
+
+const categoryassigneedsctlr = require('./controllers/categoryassigneedsctlr');
+
+// Category Assignee Routes
+app.post('/api/v2/addorupdatecategoryassigneeds', categoryassigneedsctlr.addorupdatecategoryassigneeds);
+app.get('/api/v2/getallcategoryassigneeds', categoryassigneedsctlr.getallcategoryassigneeds);
+app.get('/api/v2/getassigneesbycategoryds', categoryassigneedsctlr.getassigneesbycategoryds);
+app.get('/api/v2/deletecategoryassigneeds', categoryassigneedsctlr.deletecategoryassigneeds);
+
+const studalloc1reportds = require("./controllers/studalloc1reportds");
+
+app.get("/api/v2/coursefacultyassignedds", studalloc1reportds.getcoursefacultyassignedds);
+app.get("/api/v2/facultycoursesummaryds", studalloc1reportds.getfacultycoursesummaryds);
+app.get("/api/v2/facultyoverallsummaryds", studalloc1reportds.getfacultyoverallsummaryds);
+app.get("/api/v2/coursecompletionstatusds", studalloc1reportds.getcoursecompletionstatusds);
+app.get("/api/v2/facultycoursestudentdetailsds", studalloc1reportds.getfacultycoursestudentdetailsds);
+app.get("/api/v2/dashboardsummaryds", studalloc1reportds.getdashboardsummaryds);
+
+const examinerconfigctlrds = require('./controllers/examinerconfigctlrds');
+const reevaluationctlrds = require('./controllers/reevaluationctlrds');
+
+// Examiner Config Routes
+app.post('/api/v2/examinerconfig/createds', examinerconfigctlrds.createexaminerconfigds);
+app.get('/api/v2/examinerconfig/listds', examinerconfigctlrds.listexaminerconfigds);
+app.post('/api/v2/examinerconfig/editds', examinerconfigctlrds.editexaminerconfigds);
+app.get('/api/v2/examinerconfig/deleteds', examinerconfigctlrds.deleteexaminerconfigds);
+
+// Reevaluation Routes
+app.get('/api/v2/reevaluation/failed-papersds', reevaluationctlrds.getFailedPapersds);
+app.post('/api/v2/reevaluation/applyds', reevaluationctlrds.applyReevaluationds);
+app.get('/api/v2/reevaluation/listds', reevaluationctlrds.listReevaluationsds);
+app.get('/api/v2/reevaluation/examiner-papersds', reevaluationctlrds.getReevaluationForExaminerds);
+app.post('/api/v2/reevaluation/submit-marksds', reevaluationctlrds.submitExaminerMarksds);
+
+const aidynamiccontroller1=require('./controllers/aidynamiccontroller1');
+app.post('/api/v2/bulkupdatetblds', aidynamiccontroller1.bulkupdatetblds);
+app.post('/api/v2/bulkdeletetblds', aidynamiccontroller1.bulkdeletetblds);
+app.post('/api/v2/bulkuploadtblds', aidynamiccontroller1.bulkuploadtblds);
+
+
+const aidynamiccontroller=require('./controllers/aidynamiccontroller');
+
+app.post('/api/v2/getdynamicresult',  aidynamiccontroller.getdynamicresult);
+
+const reevaluationctlrds2 = require('./controllers/reevaluationctlrds2.js');
+
+// Student Routes
+app.post('/api/v2/reevaluationnew/applyreevaluationds1', reevaluationctlrds2.applyreevaluationds1);
+app.get('/api/v2/reevaluationnew/getallpapersforstudentds1', reevaluationctlrds2.getallpapersforstudentds1);
+app.get('/api/v2/reevaluationnew/getmyapplicationsds1', reevaluationctlrds2.getmyapplicationsds1);
+app.get('/api/v2/reevaluationnew/getfilteroptionsforstudentds1', reevaluationctlrds2.getfilteroptionsforstudentds1);
+
+// Admin Routes
+app.get('/api/v2/reevaluationnew/getapplicationsforadminds1', reevaluationctlrds2.getapplicationsforadminds1);
+app.get('/api/v2/reevaluationnew/getapplicationswithfiltersds1', reevaluationctlrds2.getapplicationswithfiltersds1);
+app.get('/api/v2/reevaluationnew/getfilteroptionsforadminds1', reevaluationctlrds2.getfilteroptionsforadminds1);
+app.post('/api/v2/reevaluationnew/bulkallocateexaminerds1', reevaluationctlrds2.bulkallocateexaminerds1);
+app.get('/api/v2/reevaluationnew/getapplicationsforexaminer3ds1', reevaluationctlrds2.getapplicationsforexaminer3ds1);
+
+// Examiner Routes
+app.get('/api/v2/reevaluationnew/getexaminerassignedapplicationsds1', reevaluationctlrds2.getexaminerassignedapplicationsds1);
+app.post('/api/v2/reevaluationnew/submitexaminermarksds1', reevaluationctlrds2.submitexaminermarksds1);
+
+
+const aireportcontroller=require('./controllers/aireportcontroller');
+
+app.get('/api/v2/getwreport1',  aireportcontroller.getwreport1);
+
+const classattendanceds2 = require("./controllers/classattendanceds2.js");
+
+app.get("/api/v2/getabsentstudents", classattendanceds2.getabsentstudentsds);
+app.get("/api/v2/getstudentattendance", classattendanceds2.getstudentattendanceds);
+app.get("/api/v2/getrequestedattendance", classattendanceds2.getrequestedattendanceds);
+app.post("/api/v2/updateattendancerequest", classattendanceds2.updateattendancerequestds);
+app.post("/api/v2/marksupplementaryattendance", classattendanceds2.marksupplementaryattendanceds);
+
+const answersheetevaluationctlrds = require('./controllers/answersheetevaluationctlrds');
+
+// Answer Sheet Evaluation Routes
+app.get("/api/v2/getunevaluatedanswersheetsds", answersheetevaluationctlrds.getunevaluatedanswersheetsds);
+app.get("/api/v2/getquestionbanksforevaluationds", answersheetevaluationctlrds.getquestionbanksforevaluationds);
+app.get("/api/v2/getquestionsfrombankds", answersheetevaluationctlrds.getquestionsfrombankds);
+app.post("/api/v2/submitquestionwisemarksds", answersheetevaluationctlrds.submitquestionwisemarksds);
+app.get("/api/v2/getquestionwisemarksforreevaluationds", answersheetevaluationctlrds.getquestionwisemarksforreevaluationds);
+app.post("/api/v2/updatequestionwisemarksforreevaluationds", answersheetevaluationctlrds.updatequestionwisemarksforreevaluationds);
+app.get("/api/v2/getstudentadditionalinfods", answersheetevaluationctlrds.getstudentadditionalinfods);
+
+// Import controllers
+const categoryctlrds = require('./controllers/categoryctlrds.js');
+const crmh1ctlrds = require('./controllers/crmh1ctlrds.js');
+const leadactivityctlrds = require('./controllers/leadactivityctlrds.js');
+const programmasterctlrds = require('./controllers/programmasterctlrds.js');
+const dripcampaignctlrds = require('./controllers/dripcampaignctlrds.js');
+const communicationlogctlrds = require('./controllers/communicationlogctlrds.js');
+const landingpagectlrds = require('./controllers/landingpagectlrds.js');
+const webhookctlrds = require('./controllers/webhookctlrds.js');
+const apikeyctlrds1 = require('./controllers/apikeyctlrds1.js');
+const settingsctlrds = require('./controllers/settingsctlrds.js');
+
+
+
+// ==================== USER ROUTES ====================
+app.get('/api/v2/searchusersds', crmh1ctlrds.searchusersds);
+
+// ==================== CATEGORY ROUTES ====================
+app.post('/api/v2/createcategoryds', categoryctlrds.createcategoryds);
+app.get('/api/v2/getallcategoriesds', categoryctlrds.getallcategoriesds);
+app.get('/api/v2/getcategorybyidds/:id', categoryctlrds.getcategorybyidds);
+app.post('/api/v2/updatecategoryds', categoryctlrds.updatecategoryds); // Uses req.query.id
+app.get('/api/v2/deletecategoryds/:id', categoryctlrds.deletecategoryds);
+app.post('/api/v2/addcounsellortocategoryds', categoryctlrds.addcounsellortocategoryds); // Uses req.query.id
+app.post('/api/v2/removecounsellorfromcategoryds/:id', categoryctlrds.removecounsellorfromcategoryds); // Changed to POST
+app.get('/api/v2/getactivecategorieswithcounsellorsds', categoryctlrds.getactivecategorieswithcounsellorsds);
+
+// ==================== LEAD MANAGEMENT ROUTES ====================
+app.post('/api/v2/createleadds', crmh1ctlrds.createleadds);
+app.get('/api/v2/getallleadsds', crmh1ctlrds.getallleadsds);
+app.get('/api/v2/getleadbyidds/:id', crmh1ctlrds.getleadbyidds);
+app.post('/api/v2/updateleadds', crmh1ctlrds.updateleadds); // Uses req.query.id
+app.post('/api/v2/updatepipelinestage', crmh1ctlrds.updatepipelinestage); // Uses req.query.id
+app.post('/api/v2/reassignleadds', crmh1ctlrds.reassignleadds); // Uses req.query.id
+app.post('/api/v2/bulkassignleadsds', crmh1ctlrds.bulkassignleadsds);
+app.get('/api/v2/gethotleadsds', crmh1ctlrds.gethotleadsds);
+app.get('/api/v2/gettodayfollowupsds', crmh1ctlrds.gettodayfollowupsds);
+app.get('/api/v2/getoverduefollowupsds', crmh1ctlrds.getoverduefollowupsds);
+app.get('/api/v2/getleadanalyticsds', crmh1ctlrds.getleadanalyticsds);
+
+app.get('/api/v2/deleteleadds/:id', crmh1ctlrds.deleteleadds);
+
+
+// ==================== ACTIVITY ROUTES ====================
+app.post('/api/v2/createactivityds', leadactivityctlrds.createactivityds);
+app.get('/api/v2/getleadactivitiesds/:lead_id', leadactivityctlrds.getleadactivitiesds);
+app.get('/api/v2/getcounselloractivitiesds', leadactivityctlrds.getcounselloractivitiesds);
+app.post('/api/v2/updateactivityds', leadactivityctlrds.updateactivityds); // Uses req.query.id
+app.get('/api/v2/deleteactivityds/:id', leadactivityctlrds.deleteactivityds);
+app.post('/api/v2/logcallactivityds', leadactivityctlrds.logcallactivityds);
+app.post('/api/v2/logmeetingactivityds', leadactivityctlrds.logmeetingactivityds);
+
+// ==================== PROGRAM MASTER ROUTES ====================
+app.post('/api/v2/createprogrammasterds', programmasterctlrds.createprogrammasterds);
+app.get('/api/v2/getallprogramsds', programmasterctlrds.getallprogramsds);
+app.get('/api/v2/getprogrambyidds/:id', programmasterctlrds.getprogrambyidds);
+app.get('/api/v2/getprogramsbycategoryds/:category', programmasterctlrds.getprogramsbycategoryds);
+app.post('/api/v2/updateprogrammasterds', programmasterctlrds.updateprogrammasterds); // Uses req.query.id
+app.get('/api/v2/deleteprogrammasterds/:id', programmasterctlrds.deleteprogrammasterds);
+
+// ==================== DRIP CAMPAIGN ROUTES ====================
+app.post('/api/v2/createdripcampaignds', dripcampaignctlrds.createdripcampaignds);
+app.get('/api/v2/getallcampaignsds', dripcampaignctlrds.getallcampaignsds);
+app.get('/api/v2/getcampaignbyidds/:id', dripcampaignctlrds.getcampaignbyidds);
+app.post('/api/v2/updatedripcampaignds', dripcampaignctlrds.updatedripcampaignds); // Uses req.query.id
+app.get('/api/v2/deletedripcampaignds/:id', dripcampaignctlrds.deletedripcampaignds);
+app.post('/api/v2/enrollleadincampaignds', dripcampaignctlrds.enrollleadincampaignds);
+app.get('/api/v2/getleadsincampaignds/:campaign_id', dripcampaignctlrds.getleadsincampaignds);
+app.get('/api/v2/processdripcampaignds', dripcampaignctlrds.processdripcampaignds);
+
+// ==================== COMMUNICATION ROUTES ====================
+app.post('/api/v2/sendemailds', communicationlogctlrds.sendemailds);
+app.post('/api/v2/sendsmsds', communicationlogctlrds.sendsmsds);
+app.post('/api/v2/sendwhatsappds', communicationlogctlrds.sendwhatsappds);
+app.get('/api/v2/getcommunicationlogsds/:lead_id', communicationlogctlrds.getcommunicationlogsds);
+app.get('/api/v2/getallcommunicationsds', communicationlogctlrds.getallcommunicationsds);
+
+// ==================== LANDING PAGE ROUTES ====================
+app.post('/api/v2/createlandingpageds', landingpagectlrds.createlandingpageds);
+app.get('/api/v2/getalllandingpagesds', landingpagectlrds.getalllandingpagesds);
+app.get('/api/v2/getlandingpagebyslugds/:slug', landingpagectlrds.getlandingpagebyslugds);
+app.get('/api/v2/getlandingpagebyidds/:id', landingpagectlrds.getlandingpagebyidds);
+app.post('/api/v2/updatelandingpageds', landingpagectlrds.updatelandingpageds);
+app.get('/api/v2/deletelandingpageds/:id', landingpagectlrds.deletelandingpageds);
+app.post('/api/v2/addqrcodeds', landingpagectlrds.addqrcodeds);
+app.delete('/api/v2/deleteqrcodeds', landingpagectlrds.deleteqrcodeds);
+// REMOVED: app.get('/api/v2/getlandingpageanalyticsds/:id', landingpagectlrds.getlandingpageanalyticsds);
+
+
+// ==================== WEBHOOK ROUTES (Protected by API Key) ====================
+app.post('/api/v2/webhookleadcaptureds', webhookctlrds.validateapikey, webhookctlrds.webhookleadcaptureds);
+app.post('/api/v2/calltrackingwebhookds', webhookctlrds.validateapikey, webhookctlrds.calltrackingwebhookds);
+app.post('/api/v2/googleadswebhookds', webhookctlrds.validateapikey, webhookctlrds.googleadswebhookds);
+app.post('/api/v2/facebookleadwebhookds', webhookctlrds.validateapikey, webhookctlrds.facebookleadwebhookds);
+
+// ==================== SOURCE ROUTES ====================
+const sourcectlrds = require('./controllers/sourcectlrds.js');
+app.post('/api/v2/createsourceds', sourcectlrds.createsourceds);
+app.get('/api/v2/getallsourcesds', sourcectlrds.getallsourcesds);
+app.post('/api/v2/updatesourceds', sourcectlrds.updatesourceds);
+app.get('/api/v2/deletesourceds/:id', sourcectlrds.deletesourceds);
+
+// ==================== SETTINGS ROUTES ====================
+app.get('/api/v2/getsettingsds', settingsctlrds.getsettingsds);
+app.post('/api/v2/updatesettingsds', settingsctlrds.updatesettingsds);
+
+// ==================== API KEY MANAGEMENT ROUTES ====================
+app.post('/api/v2/createapikeyds1', apikeyctlrds1.createapikeyds1);
+app.get('/api/v2/getallapikeysds1', apikeyctlrds1.getallapikeysds1);
+app.get('/api/v2/getapikeybyidds1/:id', apikeyctlrds1.getapikeybyidds1);
+app.post('/api/v2/updateapikeyds1', apikeyctlrds1.updateapikeyds1); // Uses req.query.id
+app.get('/api/v2/deleteapikeyds1/:id', apikeyctlrds1.deleteapikeyds1);
+app.post('/api/v2/regenerateapikeyds1', apikeyctlrds1.regenerateapikeyds1); // Uses req.query.id
+app.post('/api/v2/revokeapikeyds1', apikeyctlrds1.revokeapikeyds1); // Uses req.query.id
+app.get('/api/v2/getapikeyusagestatistics/:id', apikeyctlrds1.getapikeyusagestatistics);
+
+// API routes
+
+const apidsController = require('./controllers/apidscontroller');
+
+// API Configuration Routes
+app.get('/api/v2/createapids', apidsController.createapids);
+app.get('/api/v2/getapidsbyuser', apidsController.getapidsbyuser);
+app.get('/api/v2/searchapis', apidsController.searchapis);
+app.get('/api/v2/getapiconfig', apidsController.getapiconfig);
+app.get('/api/v2/updateapids', apidsController.updateapids);
+app.get('/api/v2/deleteapids', apidsController.deleteapids);
+app.get('/api/v2/duplicateapi', apidsController.duplicateapi);
+app.get('/api/v2/getallapis', apidsController.getallapis);
+
+const dataapictlr = require('./controllers/dataapids');
+
+// Data API Configuration Routes
+app.get('/api/v2/createdataapi', dataapictlr.createdataapi);
+app.get('/api/v2/getdataapis', dataapictlr.getdataapis);
+app.get('/api/v2/searchdataapis', dataapictlr.searchdataapis);
+app.get('/api/v2/getdataapibyid', dataapictlr.getdataapibyid);
+app.get('/api/v2/updatedataapi', dataapictlr.updatedataapi);
+app.get('/api/v2/deletedataapi', dataapictlr.deletedataapi);
+app.get('/api/v2/duplicatedataapi', dataapictlr.duplicatedataapi);
+
+const alumnidsctlr = require("./controllers/alumnidsctlr");
+const alumnieventsdsctlr = require("./controllers/alumnieventsdsctlr");
+const alumnijobsdsctlr = require("./controllers/alumnijobsdsctlr");
+const alumnimaterialsdsctlr = require("./controllers/alumnimaterialsdsctlr");
+const alumnidonationsdsctlr = require("./controllers/alumnidonationsdsctlr");
+const alumnidocumentsdsctlr = require("./controllers/alumnidocumentsdsctlr");
+const alumniapplicationctlr = require("./controllers/alumniapplicationctlr");
+
+// ========================================
+// 1. ALUMNI MANAGEMENT - /api/v2/alumnids
+// ========================================
+app.post("/api/v2/alumnids/create", alumnidsctlr.createalumnids);
+app.post("/api/v2/alumnids/login", alumnidsctlr.loginalumnids);
+app.post("/api/v2/alumnids/list", alumnidsctlr.getalumnids); // POST for consistency
+app.post("/api/v2/alumnids/profile", alumnidsctlr.getalumniprofilds);
+app.post("/api/v2/alumnids/updateprofile", alumnidsctlr.updatealumniprofilds);
+app.get("/api/v2/alumnids/search", alumnidsctlr.searchalumnids);
+app.get("/api/v2/alumnids/delete", alumnidsctlr.deletealumnids);
+app.post("/api/v2/alumnids/bulkcreate", alumnidsctlr.bulkcreatealumnids);
+
+// ========================================
+// 2. EVENT MANAGEMENT - /api/v2/alumnieventsds
+// ========================================
+app.post("/api/v2/alumnieventsds/create", alumnieventsdsctlr.createalumnieventsds);
+app.get("/api/v2/alumnieventsds/list", alumnieventsdsctlr.getallalumnieventsds); // GET with query params
+app.post("/api/v2/alumnieventsds/upcoming", alumnieventsdsctlr.getupcomingeventsds);
+app.post("/api/v2/alumnieventsds/past", alumnieventsdsctlr.getpasteventds);
+app.get("/api/v2/alumnieventsds/single", alumnieventsdsctlr.getsingleeventds);
+app.post("/api/v2/alumnieventsds/update", alumnieventsdsctlr.updatealumnieventsds);
+app.get("/api/v2/alumnieventsds/delete", alumnieventsdsctlr.deletealumnieventsds);
+app.post("/api/v2/alumnieventsds/register", alumnieventsdsctlr.registerforeventds);
+app.get("/api/v2/alumnieventsds/registrations", alumnieventsdsctlr.geteventregistrationsds);
+app.post("/api/v2/alumnieventsds/myregistrations", alumnieventsdsctlr.getmyeventregistrationsds);
+app.post("/api/v2/alumnieventsds/attendance", alumnieventsdsctlr.markattendanceds);
+
+// ========================================
+// 3. JOBS MANAGEMENT - /api/v2/alumnijobsds
+// ========================================
+app.post("/api/v2/alumnijobsds/create", alumnijobsdsctlr.createalumnijobsds);
+app.post("/api/v2/alumnijobsds/list", alumnijobsdsctlr.getallalumnijobsds);
+app.post("/api/v2/alumnijobsds/myjobs", alumnijobsdsctlr.getmyjobsds);
+app.get("/api/v2/alumnijobsds/filter", alumnijobsdsctlr.filteralumnijobsds);
+app.get("/api/v2/alumnijobsds/single", alumnijobsdsctlr.getsinglejobds);
+app.post("/api/v2/alumnijobsds/update", alumnijobsdsctlr.updatealumnijobsds);
+app.post("/api/v2/alumnijobsds/close", alumnijobsdsctlr.closealumnijobsds);
+app.get("/api/v2/alumnijobsds/delete", alumnijobsdsctlr.deletealumnijobsds);
+app.post("/api/v2/alumnijobsds/stats", alumnijobsdsctlr.getjobstatsds);
+
+// ========================================
+// 4. MATERIALS MANAGEMENT - /api/v2/alumnimaterialsds
+// ========================================
+app.post("/api/v2/alumnimaterialsds/upload", alumnimaterialsdsctlr.uploadalumnimaterialsds);
+app.post("/api/v2/alumnimaterialsds/list", alumnimaterialsdsctlr.getallalumnimaterialsds);
+app.post("/api/v2/alumnimaterialsds/mymaterials", alumnimaterialsdsctlr.getmymaterialsds);
+app.get("/api/v2/alumnimaterialsds/filter", alumnimaterialsdsctlr.filteralumnimaterialsds);
+app.post("/api/v2/alumnimaterialsds/download", alumnimaterialsdsctlr.downloadmaterialds);
+app.get("/api/v2/alumnimaterialsds/delete", alumnimaterialsdsctlr.deletealumnimaterialsds);
+
+// ========================================
+// 5. DONATIONS MANAGEMENT - /api/v2/alumnidonationsds
+// ========================================
+app.post("/api/v2/alumnidonationsds/create", alumnidonationsdsctlr.createalumnidonationsds);
+app.post("/api/v2/alumnidonationsds/list", alumnidonationsdsctlr.getallalumnidonationsds);
+app.post("/api/v2/alumnidonationsds/mydonations", alumnidonationsdsctlr.getmydonationsds);
+app.post("/api/v2/alumnidonationsds/pending", alumnidonationsdsctlr.getpendingdonationsds);
+app.post("/api/v2/alumnidonationsds/approve", alumnidonationsdsctlr.approvedonationds);
+app.post("/api/v2/alumnidonationsds/reject", alumnidonationsdsctlr.rejectdonationds);
+app.post("/api/v2/alumnidonationsds/updatepayment", alumnidonationsdsctlr.updatepaymentstatusds);
+app.post("/api/v2/alumnidonationsds/updatedelivery", alumnidonationsdsctlr.updatedeliverystatusds);
+app.post("/api/v2/alumnidonationsds/stats", alumnidonationsdsctlr.getdonationstatsds);
+app.get("/api/v2/alumnidonationsds/receipt", alumnidonationsdsctlr.generatereceiptds);
+
+// ========================================
+// 6. DOCUMENTS MANAGEMENT - /api/v2/alumnidocumentsds
+// ========================================
+app.post("/api/v2/alumnidocumentsds/upload", alumnidocumentsdsctlr.uploadalumnidocumentsds);
+app.post("/api/v2/alumnidocumentsds/mydocuments", alumnidocumentsdsctlr.getmydocumentsds);
+app.get("/api/v2/alumnidocumentsds/single", alumnidocumentsdsctlr.getsinglealumnidocds);
+app.get("/api/v2/alumnidocumentsds/delete", alumnidocumentsdsctlr.deletealumnidocumentsds);
+
+// ========================================
+// 7. ALUMNI APPLICATIONS - /api/v2/alumniapplicationds
+// ========================================
+// Public route - no auth required
+app.post("/api/v2/alumniapplicationds/submit", alumniapplicationctlr.submitAlumniApplication);
+// Admin routes
+app.post("/api/v2/alumniapplicationds/list", alumniapplicationctlr.getAllApplications);
+app.post("/api/v2/alumniapplicationds/approve", alumniapplicationctlr.approveApplication);
+app.post("/api/v2/alumniapplicationds/reject", alumniapplicationctlr.rejectApplication);
+
+const aiworkflowcontrollerds = require('./controllers/aiworkflowcontrollerds');
+
+app.post('/api/v2/createworkflowds', aiworkflowcontrollerds.createworkflowds);
+app.get('/api/v2/getworkflowsds', aiworkflowcontrollerds.getworkflowsds);
+app.get('/api/v2/getworkflowds', aiworkflowcontrollerds.getworkflowds);
+app.post('/api/v2/updateworkflowds', aiworkflowcontrollerds.updateworkflowds);
+app.get('/api/v2/deleteworkflowds', aiworkflowcontrollerds.deleteworkflowds);
+
+// AI WORKFLOW BOT ROUTES
+const aiworkflowcontrollerds1 = require('./controllers/aiworkflowcontrollerds1');
+
+app.post('/api/v2/createworkflowds1', aiworkflowcontrollerds1.createworkflowds1);
+app.get('/api/v2/getworkflowsds1', aiworkflowcontrollerds1.getworkflowsds1);
+app.get('/api/v2/getworkflowds1', aiworkflowcontrollerds1.getworkflowds1);
+app.post('/api/v2/updateworkflowds1', aiworkflowcontrollerds1.updateworkflowds1);
+app.get('/api/v2/deleteworkflowds1', aiworkflowcontrollerds1.deleteworkflowds1);
+app.get('/api/v2/deleteworkflowds1', aiworkflowcontrollerds1.deleteworkflowds1);
+
+const marksheetdatactlrds = require('./controllers/marksheetdatactlrds');
+
+// Add routes
+app.post("/api/v2/createmarksheetdatads", marksheetdatactlrds.createmarksheetdatads);
+app.get("/api/v2/listmarksheetdatads", marksheetdatactlrds.listmarksheetdatads);
+app.post("/api/v2/editmarksheetdatads", marksheetdatactlrds.editmarksheetdatads);
+app.get("/api/v2/deletemarksheetdatads", marksheetdatactlrds.deletemarksheetdatads);
+app.get("/api/v2/getmarksheetforpdfds", marksheetdatactlrds.getmarksheetforpdfds);
+app.get("/api/v2/getbulkmarksheetforpdfds", marksheetdatactlrds.getbulkmarksheetforpdfds);
+
+// Import Controllers
+const authctlr = require("./controllers/authcontrollermeritds.js");
+const programmeController = require("./controllers/programmecontrollermeritds.js");
+const subjectController = require("./controllers/subjectcontrollermeritds.js");
+const studentController = require("./controllers/studentcontrollermeritds.js");
+const sessionController = require("./controllers/sessioncontrollermeritds.js");
+const allocationController = require("./controllers/allocationcontrollermeritds.js");
+const reportController = require("./controllers/reportcontrollermeritds.js");
+
+
+// Programme Routes (5 endpoints)
+app.post("/api/v2/programme/createds", programmeController.createds);
+app.get("/api/v2/programme/getallds", programmeController.getAllds);
+app.post("/api/v2/programme/getoneds", programmeController.getOneds);
+app.post("/api/v2/programme/updateds", programmeController.updateds);
+app.get("/api/v2/programme/deleteds", programmeController.deleteOneds);
+
+// Subject Routes (7 endpoints)
+app.post("/api/v2/subject/createds", subjectController.createds);
+app.get("/api/v2/subject/getallds", subjectController.getAllds);
+app.post("/api/v2/subject/getoneds", subjectController.getOneds);
+app.post("/api/v2/subject/updateds", subjectController.updateds);
+app.get("/api/v2/subject/deleteds", subjectController.deleteOneds);
+app.post("/api/v2/subject/getbyprogrammeds", subjectController.getByProgrammeds);
+app.post("/api/v2/subject/resetseatsds", subjectController.resetSeatsds);
+
+// Student Routes (10 endpoints)
+app.post("/api/v2/student/createds", studentController.createds);
+app.post("/api/v2/student/bulkcreateds", studentController.bulkCreateds);
+app.get("/api/v2/student/getallds", studentController.getAllds);
+app.post("/api/v2/student/getoneds", studentController.getOneds);
+app.post("/api/v2/student/updateds", studentController.updateds);
+app.get("/api/v2/student/deleteds", studentController.deleteOneds);
+app.post("/api/v2/student/getbyprogrammeds", studentController.getByProgrammeds);
+app.post("/api/v2/student/getmeritlistds", studentController.getMeritListds);
+app.get("/api/v2/student/countds", studentController.getCountds);
+app.post("/api/v2/student/checkduplicateds", studentController.checkDuplicateds);
+
+// Session Routes (6 endpoints)
+app.post("/api/v2/session/createds", sessionController.createds);
+app.get("/api/v2/session/getallds", sessionController.getAllds);
+app.post("/api/v2/session/getoneds", sessionController.getOneds);
+app.post("/api/v2/session/updateds", sessionController.updateds);
+app.get("/api/v2/session/deleteds", sessionController.deleteOneds);
+app.post("/api/v2/session/validatestartds", sessionController.validateStartds);
+
+// Allocation Routes (11 endpoints)
+app.post("/api/v2/allocation/startsingleds", allocationController.startSingleds);
+app.post("/api/v2/allocation/runroundds", allocationController.runRoundds);
+app.post("/api/v2/allocation/getbysessionds", allocationController.getBySessionds);
+app.post("/api/v2/allocation/getbystudentds", allocationController.getByStudentds);
+app.post("/api/v2/allocation/getbysubjectds", allocationController.getBySubjectds);
+app.post("/api/v2/allocation/getstatsds", allocationController.getStatsds);
+app.get("/api/v2/allocation/resetds", allocationController.resetds);
+app.post("/api/v2/allocation/previewds", allocationController.previewds);
+app.post("/api/v2/allocation/validatepreferencesds", allocationController.validatePreferencesds);
+app.post("/api/v2/allocation/getnotallocatedds", allocationController.getNotAllocatedds);
+app.post("/api/v2/allocation/getauditlogds", allocationController.getAuditLogds);
+
+// Report Routes (5 endpoints)
+app.post("/api/v2/report/meritlistds", reportController.meritListds);
+app.post("/api/v2/report/allocationresultsds", reportController.allocationResultsds);
+app.post("/api/v2/report/subjectwiseds", reportController.subjectWiseds);
+app.post("/api/v2/report/demandanalysisds", reportController.demandAnalysisds);
+app.post("/api/v2/report/notchosensubjectsds", reportController.notChosenSubjectsds);
+
+const studentmaslistdsctlr = require("./controllers/studentmaslistdsctlr.js");
+
+// Get student master list by colid
+app.get("/api/v2/studentMasterListds", studentmaslistdsctlr.studentMasterListds);
+
+// Search students
+app.get("/api/v2/searchStudentsds", studentmaslistdsctlr.searchStudentsds);
+
+// Get students by filter
+app.get("/api/v2/getStudentsByFilterds", studentmaslistdsctlr.getStudentsByFilterds);
+
+// Get student by ID
+app.get("/api/v2/getStudentByIdds", studentmaslistdsctlr.getStudentByIdds);
+
+// Get student statistics
+app.get("/api/v2/getStudentStatsds", studentmaslistdsctlr.getStudentStatsds);
+
+// Create new student
+app.post("/api/v2/createStudentds", studentmaslistdsctlr.createStudentds);
+
+// Bulk semester update
+app.post("/api/v2/bulkSemesterUpdateds", studentmaslistdsctlr.bulkSemesterUpdateds);
+
+// Update student by id
+app.post("/api/v2/updateStudentds", studentmaslistdsctlr.updateStudentds);
+
+// Update student password
+app.post("/api/v2/updateStudentPasswordds", studentmaslistdsctlr.updateStudentPasswordds);
+
+// Delete student by id
+app.get("/api/v2/deleteStudentds", studentmaslistdsctlr.deleteStudentds);
+
+
+const aimatcontroller=require('./controllers/aimatcontroller');
+
+app.get('/api/v2/getcstudents',  aimatcontroller.getcstudents);
+app.get('/api/v2/getcsubjects',  aimatcontroller.getcsubjects);
+app.post('/api/v2/postcmarks',  aimatcontroller.postcmarks);
+
+app.get('/api/v2/getconvdatescountbyfac',  aimatcontroller.getconvdatescountbyfac);
+app.get('/api/v2/getconvdatessecondbyfac',  aimatcontroller.getconvdatessecondbyfac);
+app.get('/api/v2/getconvdatescount',  aimatcontroller.getconvdatescount);
+app.get('/api/v2/getconvdatessecond',  aimatcontroller.getconvdatessecond);
+app.get('/api/v2/getconvdocscountbyfac',  aimatcontroller.getconvdocscountbyfac);
+app.get('/api/v2/getconvdocssecondbyfac',  aimatcontroller.getconvdocssecondbyfac);
+app.get('/api/v2/getconvdocscount',  aimatcontroller.getconvdocscount);
+app.get('/api/v2/getconvdocssecond',  aimatcontroller.getconvdocssecond);
+app.get('/api/v2/getconvfeescountbyfac',  aimatcontroller.getconvfeescountbyfac);
+app.get('/api/v2/getconvfeessecondbyfac',  aimatcontroller.getconvfeessecondbyfac);
+app.get('/api/v2/getconvfeescount',  aimatcontroller.getconvfeescount);
+app.get('/api/v2/getconvfeessecond',  aimatcontroller.getconvfeessecond);
+app.get('/api/v2/getconvghcountbyfac',  aimatcontroller.getconvghcountbyfac);
+app.get('/api/v2/getconvghsecondbyfac',  aimatcontroller.getconvghsecondbyfac);
+app.get('/api/v2/getconvghcount',  aimatcontroller.getconvghcount);
+app.get('/api/v2/getconvghsecond',  aimatcontroller.getconvghsecond);
+app.get('/api/v2/getconvtransportcountbyfac',  aimatcontroller.getconvtransportcountbyfac);
+app.get('/api/v2/getconvtransportsecondbyfac',  aimatcontroller.getconvtransportsecondbyfac);
+app.get('/api/v2/getconvtransportcount',  aimatcontroller.getconvtransportcount);
+app.get('/api/v2/getconvtransportsecond',  aimatcontroller.getconvtransportsecond);
+app.get('/api/v2/getconvguestscountbyfac',  aimatcontroller.getconvguestscountbyfac);
+app.get('/api/v2/getconvguestssecondbyfac',  aimatcontroller.getconvguestssecondbyfac);
+app.get('/api/v2/getconvguestscount',  aimatcontroller.getconvguestscount);
+app.get('/api/v2/getconvguestssecond',  aimatcontroller.getconvguestssecond);
+app.get('/api/v2/getconvattendeescountbyfac',  aimatcontroller.getconvattendeescountbyfac);
+app.get('/api/v2/getconvattendeessecondbyfac',  aimatcontroller.getconvattendeessecondbyfac);
+app.get('/api/v2/getconvattendeescount',  aimatcontroller.getconvattendeescount);
+app.get('/api/v2/getconvattendeessecond',  aimatcontroller.getconvattendeessecond);
+
+
+app.get('/api/v2/getconvdatesbyfac',  aimatcontroller.getconvdatesbyfac);
+app.get('/api/v2/updateconvdatesbyfac',  aimatcontroller.updateconvdatesbyfac);
+app.get('/api/v2/updateconvdatescomments',  aimatcontroller.updateconvdatescomments);
+app.get('/api/v2/convdatesdocs',  aimatcontroller.convdatesdocs);
+app.get('/api/v2/deleteconvdatesbyfac',  aimatcontroller.deleteconvdatesbyfac);
+app.get('/api/v2/createconvdatesbyfac',  aimatcontroller.createconvdatesbyfac);
+app.get('/api/v2/getconvdocsbyfac',  aimatcontroller.getconvdocsbyfac);
+app.get('/api/v2/updateconvdocsbyfac',  aimatcontroller.updateconvdocsbyfac);
+app.get('/api/v2/updateconvdocscomments',  aimatcontroller.updateconvdocscomments);
+app.get('/api/v2/convdocsdocs',  aimatcontroller.convdocsdocs);
+app.get('/api/v2/deleteconvdocsbyfac',  aimatcontroller.deleteconvdocsbyfac);
+app.get('/api/v2/createconvdocsbyfac',  aimatcontroller.createconvdocsbyfac);
+app.get('/api/v2/getconvfeesbyfac',  aimatcontroller.getconvfeesbyfac);
+app.get('/api/v2/updateconvfeesbyfac',  aimatcontroller.updateconvfeesbyfac);
+app.get('/api/v2/updateconvfeescomments',  aimatcontroller.updateconvfeescomments);
+app.get('/api/v2/convfeesdocs',  aimatcontroller.convfeesdocs);
+app.get('/api/v2/deleteconvfeesbyfac',  aimatcontroller.deleteconvfeesbyfac);
+app.get('/api/v2/createconvfeesbyfac',  aimatcontroller.createconvfeesbyfac);
+app.get('/api/v2/getconvghbyfac',  aimatcontroller.getconvghbyfac);
+app.get('/api/v2/updateconvghbyfac',  aimatcontroller.updateconvghbyfac);
+app.get('/api/v2/updateconvghcomments',  aimatcontroller.updateconvghcomments);
+app.get('/api/v2/convghdocs',  aimatcontroller.convghdocs);
+app.get('/api/v2/deleteconvghbyfac',  aimatcontroller.deleteconvghbyfac);
+app.get('/api/v2/createconvghbyfac',  aimatcontroller.createconvghbyfac);
+app.get('/api/v2/getconvtransportbyfac',  aimatcontroller.getconvtransportbyfac);
+app.get('/api/v2/updateconvtransportbyfac',  aimatcontroller.updateconvtransportbyfac);
+app.get('/api/v2/updateconvtransportcomments',  aimatcontroller.updateconvtransportcomments);
+app.get('/api/v2/convtransportdocs',  aimatcontroller.convtransportdocs);
+app.get('/api/v2/deleteconvtransportbyfac',  aimatcontroller.deleteconvtransportbyfac);
+app.get('/api/v2/createconvtransportbyfac',  aimatcontroller.createconvtransportbyfac);
+app.get('/api/v2/getconvguestsbyfac',  aimatcontroller.getconvguestsbyfac);
+app.get('/api/v2/updateconvguestsbyfac',  aimatcontroller.updateconvguestsbyfac);
+app.get('/api/v2/updateconvguestscomments',  aimatcontroller.updateconvguestscomments);
+app.get('/api/v2/convguestsdocs',  aimatcontroller.convguestsdocs);
+app.get('/api/v2/deleteconvguestsbyfac',  aimatcontroller.deleteconvguestsbyfac);
+app.get('/api/v2/createconvguestsbyfac',  aimatcontroller.createconvguestsbyfac);
+app.get('/api/v2/getconvattendeesbyfac',  aimatcontroller.getconvattendeesbyfac);
+app.get('/api/v2/updateconvattendeesbyfac',  aimatcontroller.updateconvattendeesbyfac);
+app.get('/api/v2/updateconvattendeescomments',  aimatcontroller.updateconvattendeescomments);
+app.get('/api/v2/convattendeesdocs',  aimatcontroller.convattendeesdocs);
+app.get('/api/v2/deleteconvattendeesbyfac',  aimatcontroller.deleteconvattendeesbyfac);
+app.get('/api/v2/createconvattendeesbyfac',  aimatcontroller.createconvattendeesbyfac);
+
+
+app.get('/api/v2/gettblerrorlogcountbyfac',  aimatcontroller.gettblerrorlogcountbyfac);
+app.get('/api/v2/gettblerrorlogsecondbyfac',  aimatcontroller.gettblerrorlogsecondbyfac);
+app.get('/api/v2/gettblerrorlogcount',  aimatcontroller.gettblerrorlogcount);
+app.get('/api/v2/gettblerrorlogsecond',  aimatcontroller.gettblerrorlogsecond);
+
+
+app.get('/api/v2/gettblerrorlogbyfac',  aimatcontroller.gettblerrorlogbyfac);
+app.get('/api/v2/updatetblerrorlogbyfac',  aimatcontroller.updatetblerrorlogbyfac);
+app.get('/api/v2/updatetblerrorlogcomments',  aimatcontroller.updatetblerrorlogcomments);
+app.get('/api/v2/tblerrorlogdocs',  aimatcontroller.tblerrorlogdocs);
+app.get('/api/v2/deletetblerrorlogbyfac',  aimatcontroller.deletetblerrorlogbyfac);
+app.get('/api/v2/createtblerrorlogbyfac',  aimatcontroller.createtblerrorlogbyfac);
+
+
+app.get('/api/v2/gettblemitterbyfac',  aimatcontroller.gettblemitterbyfac);
+app.get('/api/v2/updatetblemitterbyfac',  aimatcontroller.updatetblemitterbyfac);
+app.get('/api/v2/updatetblemittercomments',  aimatcontroller.updatetblemittercomments);
+app.get('/api/v2/tblemitterdocs',  aimatcontroller.tblemitterdocs);
+app.get('/api/v2/deletetblemitterbyfac',  aimatcontroller.deletetblemitterbyfac);
+app.get('/api/v2/createtblemitterbyfac',  aimatcontroller.createtblemitterbyfac);
+
+app.get('/api/v2/gettblemittercountbyfac',  aimatcontroller.gettblemittercountbyfac);
+app.get('/api/v2/gettblemittersecondbyfac',  aimatcontroller.gettblemittersecondbyfac);
+app.get('/api/v2/gettblemittercount',  aimatcontroller.gettblemittercount);
+app.get('/api/v2/gettblemittersecond',  aimatcontroller.gettblemittersecond);
+
+
+
+
+app.get('/api/v2/getwfaculty',  aimatcontroller.getwfaculty);
+app.get('/api/v2/getwsemester',  aimatcontroller.getwsemester);
+app.get('/api/v2/getwprograms',  aimatcontroller.getwprograms);
+app.get('/api/v2/gettblapibyfac',  aimatcontroller.gettblapibyfac);
+app.get('/api/v2/updatetblapibyfac',  aimatcontroller.updatetblapibyfac);
+app.get('/api/v2/updatetblapicomments',  aimatcontroller.updatetblapicomments);
+app.get('/api/v2/tblapidocs',  aimatcontroller.tblapidocs);
+app.get('/api/v2/deletetblapibyfac',  aimatcontroller.deletetblapibyfac);
+app.get('/api/v2/createtblapibyfac',  aimatcontroller.createtblapibyfac);
+
+
+app.get('/api/v2/gettbcolumns',  aimatcontroller.gettbcolumns);
+
+app.get('/api/v2/gettbcolumnsallbyfac',  aimatcontroller.gettbcolumnsallbyfac);
+app.get('/api/v2/updatetbcolumnsallbyfac',  aimatcontroller.updatetbcolumnsallbyfac);
+app.get('/api/v2/updatetbcolumnsallcomments',  aimatcontroller.updatetbcolumnsallcomments);
+app.get('/api/v2/tbcolumnsalldocs',  aimatcontroller.tbcolumnsalldocs);
+app.get('/api/v2/deletetbcolumnsallbyfac',  aimatcontroller.deletetbcolumnsallbyfac);
+app.get('/api/v2/createtbcolumnsallbyfac',  aimatcontroller.createtbcolumnsallbyfac);
+
+
+app.get('/api/v2/gettblsearch',  aimatcontroller.gettblsearch);
+app.get('/api/v2/gettblfieldsearch',  aimatcontroller.gettblfieldsearch);
+
+app.get('/api/v2/gettallbyfac',  aimatcontroller.gettallbyfac);
+app.get('/api/v2/updatetallbyfac',  aimatcontroller.updatetallbyfac);
+app.get('/api/v2/updatetallcomments',  aimatcontroller.updatetallcomments);
+app.get('/api/v2/talldocs',  aimatcontroller.talldocs);
+app.get('/api/v2/deletetallbyfac',  aimatcontroller.deletetallbyfac);
+app.get('/api/v2/createtallbyfac',  aimatcontroller.createtallbyfac);
+app.get('/api/v2/gettfieldsbyfac',  aimatcontroller.gettfieldsbyfac);
+app.get('/api/v2/updatetfieldsbyfac',  aimatcontroller.updatetfieldsbyfac);
+app.get('/api/v2/updatetfieldscomments',  aimatcontroller.updatetfieldscomments);
+app.get('/api/v2/tfieldsdocs',  aimatcontroller.tfieldsdocs);
+app.get('/api/v2/deletetfieldsbyfac',  aimatcontroller.deletetfieldsbyfac);
+app.get('/api/v2/createtfieldsbyfac',  aimatcontroller.createtfieldsbyfac);
+
+
+app.get('/api/v2/getstudalloc1byfac1',  aimatcontroller.getstudalloc1byfac1);
+
+app.get('/api/v2/getallocsemester',  aimatcontroller.getallocsemester);
+app.get('/api/v2/getallocprograms',  aimatcontroller.getallocprograms);
+app.get('/api/v2/getexamalloc',  aimatcontroller.getexamalloc);
+
+app.get('/api/v2/getcrmh1byfac',  aimatcontroller.getcrmh1byfac);
+app.get('/api/v2/updatecrmh1byfac',  aimatcontroller.updatecrmh1byfac);
+app.get('/api/v2/updatecrmh1comments',  aimatcontroller.updatecrmh1comments);
+app.get('/api/v2/crmh1docs',  aimatcontroller.crmh1docs);
+app.get('/api/v2/deletecrmh1byfac',  aimatcontroller.deletecrmh1byfac);
+app.get('/api/v2/createcrmh1byfac',  aimatcontroller.createcrmh1byfac);
+
+
+app.get('/api/v2/studalloc1studlist',  aimatcontroller.studalloc1studlist);
+
+app.get('/api/v2/studalloc1examiner',  aimatcontroller.studalloc1examiner);
+app.get('/api/v2/updatestudalloc1exam',  aimatcontroller.updatestudalloc1exam);
+
+app.get('/api/v2/getpcounselnewbyfac',  aimatcontroller.getpcounselnewbyfac);
+app.get('/api/v2/updatepcounselnewbyfac',  aimatcontroller.updatepcounselnewbyfac);
+app.get('/api/v2/updatepcounselnewcomments',  aimatcontroller.updatepcounselnewcomments);
+app.get('/api/v2/pcounselnewdocs',  aimatcontroller.pcounselnewdocs);
+app.get('/api/v2/deletepcounselnewbyfac',  aimatcontroller.deletepcounselnewbyfac);
+app.get('/api/v2/createpcounselnewbyfac',  aimatcontroller.createpcounselnewbyfac);
+app.get('/api/v2/getpcounselcbyfac',  aimatcontroller.getpcounselcbyfac);
+app.get('/api/v2/updatepcounselcbyfac',  aimatcontroller.updatepcounselcbyfac);
+app.get('/api/v2/updatepcounselccomments',  aimatcontroller.updatepcounselccomments);
+app.get('/api/v2/pcounselcdocs',  aimatcontroller.pcounselcdocs);
+app.get('/api/v2/deletepcounselcbyfac',  aimatcontroller.deletepcounselcbyfac);
+app.get('/api/v2/createpcounselcbyfac',  aimatcontroller.createpcounselcbyfac);
+app.get('/api/v2/getpmealplanbyfac',  aimatcontroller.getpmealplanbyfac);
+app.get('/api/v2/updatepmealplanbyfac',  aimatcontroller.updatepmealplanbyfac);
+app.get('/api/v2/updatepmealplancomments',  aimatcontroller.updatepmealplancomments);
+app.get('/api/v2/pmealplandocs',  aimatcontroller.pmealplandocs);
+app.get('/api/v2/deletepmealplanbyfac',  aimatcontroller.deletepmealplanbyfac);
+app.get('/api/v2/createpmealplanbyfac',  aimatcontroller.createpmealplanbyfac);
+app.get('/api/v2/getpfoodbyfac',  aimatcontroller.getpfoodbyfac);
+app.get('/api/v2/updatepfoodbyfac',  aimatcontroller.updatepfoodbyfac);
+app.get('/api/v2/updatepfoodcomments',  aimatcontroller.updatepfoodcomments);
+app.get('/api/v2/pfooddocs',  aimatcontroller.pfooddocs);
+app.get('/api/v2/deletepfoodbyfac',  aimatcontroller.deletepfoodbyfac);
+app.get('/api/v2/createpfoodbyfac',  aimatcontroller.createpfoodbyfac);
+
+
+app.get('/api/v2/getwbinbyfac',  aimatcontroller.getwbinbyfac);
+app.get('/api/v2/updatewbinbyfac',  aimatcontroller.updatewbinbyfac);
+app.get('/api/v2/updatewbincomments',  aimatcontroller.updatewbincomments);
+app.get('/api/v2/wbindocs',  aimatcontroller.wbindocs);
+app.get('/api/v2/deletewbinbyfac',  aimatcontroller.deletewbinbyfac);
+app.get('/api/v2/createwbinbyfac',  aimatcontroller.createwbinbyfac);
+app.get('/api/v2/getwcolschedule1byfac',  aimatcontroller.getwcolschedule1byfac);
+app.get('/api/v2/updatewcolschedule1byfac',  aimatcontroller.updatewcolschedule1byfac);
+app.get('/api/v2/updatewcolschedule1comments',  aimatcontroller.updatewcolschedule1comments);
+app.get('/api/v2/wcolschedule1docs',  aimatcontroller.wcolschedule1docs);
+app.get('/api/v2/deletewcolschedule1byfac',  aimatcontroller.deletewcolschedule1byfac);
+app.get('/api/v2/createwcolschedule1byfac',  aimatcontroller.createwcolschedule1byfac);
+app.get('/api/v2/getwdisposal1byfac',  aimatcontroller.getwdisposal1byfac);
+app.get('/api/v2/updatewdisposal1byfac',  aimatcontroller.updatewdisposal1byfac);
+app.get('/api/v2/updatewdisposal1comments',  aimatcontroller.updatewdisposal1comments);
+app.get('/api/v2/wdisposal1docs',  aimatcontroller.wdisposal1docs);
+app.get('/api/v2/deletewdisposal1byfac',  aimatcontroller.deletewdisposal1byfac);
+app.get('/api/v2/createwdisposal1byfac',  aimatcontroller.createwdisposal1byfac);
+app.get('/api/v2/getwspill1byfac',  aimatcontroller.getwspill1byfac);
+app.get('/api/v2/updatewspill1byfac',  aimatcontroller.updatewspill1byfac);
+app.get('/api/v2/updatewspill1comments',  aimatcontroller.updatewspill1comments);
+app.get('/api/v2/wspill1docs',  aimatcontroller.wspill1docs);
+app.get('/api/v2/deletewspill1byfac',  aimatcontroller.deletewspill1byfac);
+app.get('/api/v2/createwspill1byfac',  aimatcontroller.createwspill1byfac);
+
+
+app.get('/api/v2/getwcollectionbyfac',  aimatcontroller.getwcollectionbyfac);
+app.get('/api/v2/updatewcollectionbyfac',  aimatcontroller.updatewcollectionbyfac);
+app.get('/api/v2/updatewcollectioncomments',  aimatcontroller.updatewcollectioncomments);
+app.get('/api/v2/wcollectiondocs',  aimatcontroller.wcollectiondocs);
+app.get('/api/v2/deletewcollectionbyfac',  aimatcontroller.deletewcollectionbyfac);
+app.get('/api/v2/createwcollectionbyfac',  aimatcontroller.createwcollectionbyfac);
+app.get('/api/v2/getwcolschedulebyfac',  aimatcontroller.getwcolschedulebyfac);
+app.get('/api/v2/updatewcolschedulebyfac',  aimatcontroller.updatewcolschedulebyfac);
+app.get('/api/v2/updatewcolschedulecomments',  aimatcontroller.updatewcolschedulecomments);
+app.get('/api/v2/wcolscheduledocs',  aimatcontroller.wcolscheduledocs);
+app.get('/api/v2/deletewcolschedulebyfac',  aimatcontroller.deletewcolschedulebyfac);
+app.get('/api/v2/createwcolschedulebyfac',  aimatcontroller.createwcolschedulebyfac);
+app.get('/api/v2/getwdisposalbyfac',  aimatcontroller.getwdisposalbyfac);
+app.get('/api/v2/updatewdisposalbyfac',  aimatcontroller.updatewdisposalbyfac);
+app.get('/api/v2/updatewdisposalcomments',  aimatcontroller.updatewdisposalcomments);
+app.get('/api/v2/wdisposaldocs',  aimatcontroller.wdisposaldocs);
+app.get('/api/v2/deletewdisposalbyfac',  aimatcontroller.deletewdisposalbyfac);
+app.get('/api/v2/createwdisposalbyfac',  aimatcontroller.createwdisposalbyfac);
+app.get('/api/v2/getwspillbyfac',  aimatcontroller.getwspillbyfac);
+app.get('/api/v2/updatewspillbyfac',  aimatcontroller.updatewspillbyfac);
+app.get('/api/v2/updatewspillcomments',  aimatcontroller.updatewspillcomments);
+app.get('/api/v2/wspilldocs',  aimatcontroller.wspilldocs);
+app.get('/api/v2/deletewspillbyfac',  aimatcontroller.deletewspillbyfac);
+app.get('/api/v2/createwspillbyfac',  aimatcontroller.createwspillbyfac);
+
+
+app.get('/api/v2/getpconsentbyfac',  aimatcontroller.getpconsentbyfac);
+app.get('/api/v2/updatepconsentbyfac',  aimatcontroller.updatepconsentbyfac);
+app.get('/api/v2/updatepconsentcomments',  aimatcontroller.updatepconsentcomments);
+app.get('/api/v2/pconsentdocs',  aimatcontroller.pconsentdocs);
+app.get('/api/v2/deletepconsentbyfac',  aimatcontroller.deletepconsentbyfac);
+app.get('/api/v2/createpconsentbyfac',  aimatcontroller.createpconsentbyfac);
+app.get('/api/v2/getptreatmentbyfac',  aimatcontroller.getptreatmentbyfac);
+app.get('/api/v2/updateptreatmentbyfac',  aimatcontroller.updateptreatmentbyfac);
+app.get('/api/v2/updateptreatmentcomments',  aimatcontroller.updateptreatmentcomments);
+app.get('/api/v2/ptreatmentdocs',  aimatcontroller.ptreatmentdocs);
+app.get('/api/v2/deleteptreatmentbyfac',  aimatcontroller.deleteptreatmentbyfac);
+app.get('/api/v2/createptreatmentbyfac',  aimatcontroller.createptreatmentbyfac);
+app.get('/api/v2/getplabbyfac',  aimatcontroller.getplabbyfac);
+app.get('/api/v2/updateplabbyfac',  aimatcontroller.updateplabbyfac);
+app.get('/api/v2/updateplabcomments',  aimatcontroller.updateplabcomments);
+app.get('/api/v2/plabdocs',  aimatcontroller.plabdocs);
+app.get('/api/v2/deleteplabbyfac',  aimatcontroller.deleteplabbyfac);
+app.get('/api/v2/createplabbyfac',  aimatcontroller.createplabbyfac);
+app.get('/api/v2/getpimagingbyfac',  aimatcontroller.getpimagingbyfac);
+app.get('/api/v2/updatepimagingbyfac',  aimatcontroller.updatepimagingbyfac);
+app.get('/api/v2/updatepimagingcomments',  aimatcontroller.updatepimagingcomments);
+app.get('/api/v2/pimagingdocs',  aimatcontroller.pimagingdocs);
+app.get('/api/v2/deletepimagingbyfac',  aimatcontroller.deletepimagingbyfac);
+app.get('/api/v2/createpimagingbyfac',  aimatcontroller.createpimagingbyfac);
+app.get('/api/v2/getpdischargebyfac',  aimatcontroller.getpdischargebyfac);
+app.get('/api/v2/updatepdischargebyfac',  aimatcontroller.updatepdischargebyfac);
+app.get('/api/v2/updatepdischargecomments',  aimatcontroller.updatepdischargecomments);
+app.get('/api/v2/pdischargedocs',  aimatcontroller.pdischargedocs);
+app.get('/api/v2/deletepdischargebyfac',  aimatcontroller.deletepdischargebyfac);
+app.get('/api/v2/createpdischargebyfac',  aimatcontroller.createpdischargebyfac);
+
+
+app.get('/api/v2/getpillnessbyfac',  aimatcontroller.getpillnessbyfac);
+app.get('/api/v2/updatepillnessbyfac',  aimatcontroller.updatepillnessbyfac);
+app.get('/api/v2/updatepillnesscomments',  aimatcontroller.updatepillnesscomments);
+app.get('/api/v2/pillnessdocs',  aimatcontroller.pillnessdocs);
+app.get('/api/v2/deletepillnessbyfac',  aimatcontroller.deletepillnessbyfac);
+app.get('/api/v2/createpillnessbyfac',  aimatcontroller.createpillnessbyfac);
+app.get('/api/v2/getpsurgerybyfac',  aimatcontroller.getpsurgerybyfac);
+app.get('/api/v2/updatepsurgerybyfac',  aimatcontroller.updatepsurgerybyfac);
+app.get('/api/v2/updatepsurgerycomments',  aimatcontroller.updatepsurgerycomments);
+app.get('/api/v2/psurgerydocs',  aimatcontroller.psurgerydocs);
+app.get('/api/v2/deletepsurgerybyfac',  aimatcontroller.deletepsurgerybyfac);
+app.get('/api/v2/createpsurgerybyfac',  aimatcontroller.createpsurgerybyfac);
+app.get('/api/v2/getpfamilybyfac',  aimatcontroller.getpfamilybyfac);
+app.get('/api/v2/updatepfamilybyfac',  aimatcontroller.updatepfamilybyfac);
+app.get('/api/v2/updatepfamilycomments',  aimatcontroller.updatepfamilycomments);
+app.get('/api/v2/pfamilydocs',  aimatcontroller.pfamilydocs);
+app.get('/api/v2/deletepfamilybyfac',  aimatcontroller.deletepfamilybyfac);
+app.get('/api/v2/createpfamilybyfac',  aimatcontroller.createpfamilybyfac);
+app.get('/api/v2/getpallergiesbyfac',  aimatcontroller.getpallergiesbyfac);
+app.get('/api/v2/updatepallergiesbyfac',  aimatcontroller.updatepallergiesbyfac);
+app.get('/api/v2/updatepallergiescomments',  aimatcontroller.updatepallergiescomments);
+app.get('/api/v2/pallergiesdocs',  aimatcontroller.pallergiesdocs);
+app.get('/api/v2/deletepallergiesbyfac',  aimatcontroller.deletepallergiesbyfac);
+app.get('/api/v2/createpallergiesbyfac',  aimatcontroller.createpallergiesbyfac);
+
+
+app.get('/api/v2/getPatientbyfac',  aimatcontroller.getPatientbyfac);
+app.get('/api/v2/updatePatientbyfac',  aimatcontroller.updatePatientbyfac);
+app.get('/api/v2/updatePatientcomments',  aimatcontroller.updatePatientcomments);
+app.get('/api/v2/Patientdocs',  aimatcontroller.Patientdocs);
+app.get('/api/v2/deletePatientbyfac',  aimatcontroller.deletePatientbyfac);
+app.get('/api/v2/createPatientbyfac',  aimatcontroller.createPatientbyfac);
+app.get('/api/v2/geticubyfac',  aimatcontroller.geticubyfac);
+app.get('/api/v2/updateicubyfac',  aimatcontroller.updateicubyfac);
+app.get('/api/v2/updateicucomments',  aimatcontroller.updateicucomments);
+app.get('/api/v2/icudocs',  aimatcontroller.icudocs);
+app.get('/api/v2/deleteicubyfac',  aimatcontroller.deleteicubyfac);
+app.get('/api/v2/createicubyfac',  aimatcontroller.createicubyfac);
+app.get('/api/v2/getmicubyfac',  aimatcontroller.getmicubyfac);
+app.get('/api/v2/updatemicubyfac',  aimatcontroller.updatemicubyfac);
+app.get('/api/v2/updatemicucomments',  aimatcontroller.updatemicucomments);
+app.get('/api/v2/micudocs',  aimatcontroller.micudocs);
+app.get('/api/v2/deletemicubyfac',  aimatcontroller.deletemicubyfac);
+app.get('/api/v2/createmicubyfac',  aimatcontroller.createmicubyfac);
+app.get('/api/v2/getnicubyfac',  aimatcontroller.getnicubyfac);
+app.get('/api/v2/updatenicubyfac',  aimatcontroller.updatenicubyfac);
+app.get('/api/v2/updatenicucomments',  aimatcontroller.updatenicucomments);
+app.get('/api/v2/nicudocs',  aimatcontroller.nicudocs);
+app.get('/api/v2/deletenicubyfac',  aimatcontroller.deletenicubyfac);
+app.get('/api/v2/createnicubyfac',  aimatcontroller.createnicubyfac);
+app.get('/api/v2/gethdubyfac',  aimatcontroller.gethdubyfac);
+app.get('/api/v2/updatehdubyfac',  aimatcontroller.updatehdubyfac);
+app.get('/api/v2/updatehducomments',  aimatcontroller.updatehducomments);
+app.get('/api/v2/hdudocs',  aimatcontroller.hdudocs);
+app.get('/api/v2/deletehdubyfac',  aimatcontroller.deletehdubyfac);
+app.get('/api/v2/createhdubyfac',  aimatcontroller.createhdubyfac);
+app.get('/api/v2/getwardbyfac',  aimatcontroller.getwardbyfac);
+app.get('/api/v2/updatewardbyfac',  aimatcontroller.updatewardbyfac);
+app.get('/api/v2/updatewardcomments',  aimatcontroller.updatewardcomments);
+app.get('/api/v2/warddocs',  aimatcontroller.warddocs);
+app.get('/api/v2/deletewardbyfac',  aimatcontroller.deletewardbyfac);
+app.get('/api/v2/createwardbyfac',  aimatcontroller.createwardbyfac);
+app.get('/api/v2/getemergencybyfac',  aimatcontroller.getemergencybyfac);
+app.get('/api/v2/updateemergencybyfac',  aimatcontroller.updateemergencybyfac);
+app.get('/api/v2/updateemergencycomments',  aimatcontroller.updateemergencycomments);
+app.get('/api/v2/emergencydocs',  aimatcontroller.emergencydocs);
+app.get('/api/v2/deleteemergencybyfac',  aimatcontroller.deleteemergencybyfac);
+app.get('/api/v2/createemergencybyfac',  aimatcontroller.createemergencybyfac);
+app.get('/api/v2/getnemergencybyfac',  aimatcontroller.getnemergencybyfac);
+app.get('/api/v2/updatenemergencybyfac',  aimatcontroller.updatenemergencybyfac);
+app.get('/api/v2/updatenemergencycomments',  aimatcontroller.updatenemergencycomments);
+app.get('/api/v2/nemergencydocs',  aimatcontroller.nemergencydocs);
+app.get('/api/v2/deletenemergencybyfac',  aimatcontroller.deletenemergencybyfac);
+app.get('/api/v2/createnemergencybyfac',  aimatcontroller.createnemergencybyfac);
+app.get('/api/v2/getpadmissionbyfac',  aimatcontroller.getpadmissionbyfac);
+app.get('/api/v2/updatepadmissionbyfac',  aimatcontroller.updatepadmissionbyfac);
+app.get('/api/v2/updatepadmissioncomments',  aimatcontroller.updatepadmissioncomments);
+app.get('/api/v2/padmissiondocs',  aimatcontroller.padmissiondocs);
+app.get('/api/v2/deletepadmissionbyfac',  aimatcontroller.deletepadmissionbyfac);
+app.get('/api/v2/createpadmissionbyfac',  aimatcontroller.createpadmissionbyfac);
+app.get('/api/v2/geticubedbyfac',  aimatcontroller.geticubedbyfac);
+app.get('/api/v2/updateicubedbyfac',  aimatcontroller.updateicubedbyfac);
+app.get('/api/v2/updateicubedcomments',  aimatcontroller.updateicubedcomments);
+app.get('/api/v2/icubeddocs',  aimatcontroller.icubeddocs);
+app.get('/api/v2/deleteicubedbyfac',  aimatcontroller.deleteicubedbyfac);
+app.get('/api/v2/createicubedbyfac',  aimatcontroller.createicubedbyfac);
+app.get('/api/v2/getmicubedbyfac',  aimatcontroller.getmicubedbyfac);
+app.get('/api/v2/updatemicubedbyfac',  aimatcontroller.updatemicubedbyfac);
+app.get('/api/v2/updatemicubedcomments',  aimatcontroller.updatemicubedcomments);
+app.get('/api/v2/micubeddocs',  aimatcontroller.micubeddocs);
+app.get('/api/v2/deletemicubedbyfac',  aimatcontroller.deletemicubedbyfac);
+app.get('/api/v2/createmicubedbyfac',  aimatcontroller.createmicubedbyfac);
+app.get('/api/v2/getnicubedbyfac',  aimatcontroller.getnicubedbyfac);
+app.get('/api/v2/updatenicubedbyfac',  aimatcontroller.updatenicubedbyfac);
+app.get('/api/v2/updatenicubedcomments',  aimatcontroller.updatenicubedcomments);
+app.get('/api/v2/nicubeddocs',  aimatcontroller.nicubeddocs);
+app.get('/api/v2/deletenicubedbyfac',  aimatcontroller.deletenicubedbyfac);
+app.get('/api/v2/createnicubedbyfac',  aimatcontroller.createnicubedbyfac);
+app.get('/api/v2/gethdubedbyfac',  aimatcontroller.gethdubedbyfac);
+app.get('/api/v2/updatehdubedbyfac',  aimatcontroller.updatehdubedbyfac);
+app.get('/api/v2/updatehdubedcomments',  aimatcontroller.updatehdubedcomments);
+app.get('/api/v2/hdubeddocs',  aimatcontroller.hdubeddocs);
+app.get('/api/v2/deletehdubedbyfac',  aimatcontroller.deletehdubedbyfac);
+app.get('/api/v2/createhdubedbyfac',  aimatcontroller.createhdubedbyfac);
+app.get('/api/v2/getwardbedbyfac',  aimatcontroller.getwardbedbyfac);
+app.get('/api/v2/updatewardbedbyfac',  aimatcontroller.updatewardbedbyfac);
+app.get('/api/v2/updatewardbedcomments',  aimatcontroller.updatewardbedcomments);
+app.get('/api/v2/wardbeddocs',  aimatcontroller.wardbeddocs);
+app.get('/api/v2/deletewardbedbyfac',  aimatcontroller.deletewardbedbyfac);
+app.get('/api/v2/createwardbedbyfac',  aimatcontroller.createwardbedbyfac);
+app.get('/api/v2/geterbedbyfac',  aimatcontroller.geterbedbyfac);
+app.get('/api/v2/updateerbedbyfac',  aimatcontroller.updateerbedbyfac);
+app.get('/api/v2/updateerbedcomments',  aimatcontroller.updateerbedcomments);
+app.get('/api/v2/erbeddocs',  aimatcontroller.erbeddocs);
+app.get('/api/v2/deleteerbedbyfac',  aimatcontroller.deleteerbedbyfac);
+app.get('/api/v2/createerbedbyfac',  aimatcontroller.createerbedbyfac);
+app.get('/api/v2/getnerbedbyfac',  aimatcontroller.getnerbedbyfac);
+app.get('/api/v2/updatenerbedbyfac',  aimatcontroller.updatenerbedbyfac);
+app.get('/api/v2/updatenerbedcomments',  aimatcontroller.updatenerbedcomments);
+app.get('/api/v2/nerbeddocs',  aimatcontroller.nerbeddocs);
+app.get('/api/v2/deletenerbedbyfac',  aimatcontroller.deletenerbedbyfac);
+app.get('/api/v2/createnerbedbyfac',  aimatcontroller.createnerbedbyfac);
+app.get('/api/v2/getpadmhistorybyfac',  aimatcontroller.getpadmhistorybyfac);
+app.get('/api/v2/updatepadmhistorybyfac',  aimatcontroller.updatepadmhistorybyfac);
+app.get('/api/v2/updatepadmhistorycomments',  aimatcontroller.updatepadmhistorycomments);
+app.get('/api/v2/padmhistorydocs',  aimatcontroller.padmhistorydocs);
+app.get('/api/v2/deletepadmhistorybyfac',  aimatcontroller.deletepadmhistorybyfac);
+app.get('/api/v2/createpadmhistorybyfac',  aimatcontroller.createpadmhistorybyfac);
+app.get('/api/v2/getpbillingbyfac',  aimatcontroller.getpbillingbyfac);
+app.get('/api/v2/updatepbillingbyfac',  aimatcontroller.updatepbillingbyfac);
+app.get('/api/v2/updatepbillingcomments',  aimatcontroller.updatepbillingcomments);
+app.get('/api/v2/pbillingdocs',  aimatcontroller.pbillingdocs);
+app.get('/api/v2/deletepbillingbyfac',  aimatcontroller.deletepbillingbyfac);
+app.get('/api/v2/createpbillingbyfac',  aimatcontroller.createpbillingbyfac);
+
+
+app.get('/api/v2/getstudalloc1byfac',  aimatcontroller.getstudalloc1byfac);
+app.get('/api/v2/getstudalloc1bypse',  aimatcontroller.getstudalloc1bypse);
+app.get('/api/v2/updatestudalloc1byfac',  aimatcontroller.updatestudalloc1byfac);
+app.get('/api/v2/updatestudalloc1comments',  aimatcontroller.updatestudalloc1comments);
+app.get('/api/v2/studalloc1docs',  aimatcontroller.studalloc1docs);
+app.get('/api/v2/deletestudalloc1byfac',  aimatcontroller.deletestudalloc1byfac);
+app.get('/api/v2/createstudalloc1byfac',  aimatcontroller.createstudalloc1byfac);
+
+
+app.get('/api/v2/getattbystud',  aimatcontroller.getattbystud);
+app.get('/api/v2/getattbystudsem',  aimatcontroller.getattbystudsem);
+
+app.get('/api/v2/populatetradingaccount',  aimatcontroller.populatetradingaccount);
+
+app.get('/api/v2/getmtradingaccountbyfac',  aimatcontroller.getmtradingaccountbyfac);
+app.get('/api/v2/updatemtradingaccountbyfac',  aimatcontroller.updatemtradingaccountbyfac);
+app.get('/api/v2/updatemtradingaccountcomments',  aimatcontroller.updatemtradingaccountcomments);
+app.get('/api/v2/mtradingaccountdocs',  aimatcontroller.mtradingaccountdocs);
+app.get('/api/v2/deletemtradingaccountbyfac',  aimatcontroller.deletemtradingaccountbyfac);
+app.get('/api/v2/createmtradingaccountbyfac',  aimatcontroller.createmtradingaccountbyfac);
+app.get('/api/v2/getmplaccountbyfac',  aimatcontroller.getmplaccountbyfac);
+app.get('/api/v2/updatemplaccountbyfac',  aimatcontroller.updatemplaccountbyfac);
+app.get('/api/v2/updatemplaccountcomments',  aimatcontroller.updatemplaccountcomments);
+app.get('/api/v2/mplaccountdocs',  aimatcontroller.mplaccountdocs);
+app.get('/api/v2/deletemplaccountbyfac',  aimatcontroller.deletemplaccountbyfac);
+app.get('/api/v2/createmplaccountbyfac',  aimatcontroller.createmplaccountbyfac);
+app.get('/api/v2/getmbalancesheetbyfac',  aimatcontroller.getmbalancesheetbyfac);
+app.get('/api/v2/updatembalancesheetbyfac',  aimatcontroller.updatembalancesheetbyfac);
+app.get('/api/v2/updatembalancesheetcomments',  aimatcontroller.updatembalancesheetcomments);
+app.get('/api/v2/mbalancesheetdocs',  aimatcontroller.mbalancesheetdocs);
+app.get('/api/v2/deletembalancesheetbyfac',  aimatcontroller.deletembalancesheetbyfac);
+app.get('/api/v2/creatembalancesheetbyfac',  aimatcontroller.creatembalancesheetbyfac);
+
+
+app.get('/api/v2/getmtradingaccountcountbyfac',  aimatcontroller.getmtradingaccountcountbyfac);
+app.get('/api/v2/getmtradingaccountsecondbyfac',  aimatcontroller.getmtradingaccountsecondbyfac);
+app.get('/api/v2/getmtradingaccountcount',  aimatcontroller.getmtradingaccountcount);
+app.get('/api/v2/getmtradingaccountsecond',  aimatcontroller.getmtradingaccountsecond);
+app.get('/api/v2/getmplaccountcountbyfac',  aimatcontroller.getmplaccountcountbyfac);
+app.get('/api/v2/getmplaccountsecondbyfac',  aimatcontroller.getmplaccountsecondbyfac);
+app.get('/api/v2/getmplaccountcount',  aimatcontroller.getmplaccountcount);
+app.get('/api/v2/getmplaccountsecond',  aimatcontroller.getmplaccountsecond);
+app.get('/api/v2/getmbalancesheetcountbyfac',  aimatcontroller.getmbalancesheetcountbyfac);
+app.get('/api/v2/getmbalancesheetsecondbyfac',  aimatcontroller.getmbalancesheetsecondbyfac);
+app.get('/api/v2/getmbalancesheetcount',  aimatcontroller.getmbalancesheetcount);
+app.get('/api/v2/getmbalancesheetsecond',  aimatcontroller.getmbalancesheetsecond);
+
+
+app.get('/api/v2/getmjournal2byfac',  aimatcontroller.getmjournal2byfac);
+app.get('/api/v2/updatemjournal2byfac',  aimatcontroller.updatemjournal2byfac);
+app.get('/api/v2/updatemjournal2comments',  aimatcontroller.updatemjournal2comments);
+app.get('/api/v2/mjournal2docs',  aimatcontroller.mjournal2docs);
+app.get('/api/v2/deletemjournal2byfac',  aimatcontroller.deletemjournal2byfac);
+app.get('/api/v2/createmjournal2byfac',  aimatcontroller.createmjournal2byfac);
+app.get('/api/v2/getmtrialbalance2byfac',  aimatcontroller.getmtrialbalance2byfac);
+app.get('/api/v2/updatemtrialbalance2byfac',  aimatcontroller.updatemtrialbalance2byfac);
+app.get('/api/v2/updatemtrialbalance2comments',  aimatcontroller.updatemtrialbalance2comments);
+app.get('/api/v2/mtrialbalance2docs',  aimatcontroller.mtrialbalance2docs);
+app.get('/api/v2/deletemtrialbalance2byfac',  aimatcontroller.deletemtrialbalance2byfac);
+app.get('/api/v2/createmtrialbalance2byfac',  aimatcontroller.createmtrialbalance2byfac);
+
+app.get('/api/v2/getmtrialbalance2countbyfac',  aimatcontroller.getmtrialbalance2countbyfac);
+app.get('/api/v2/getmtrialbalance2secondbyfac',  aimatcontroller.getmtrialbalance2secondbyfac);
+app.get('/api/v2/getmtrialbalance2count',  aimatcontroller.getmtrialbalance2count);
+app.get('/api/v2/getmtrialbalance2second',  aimatcontroller.getmtrialbalance2second);
+app.get('/api/v2/getmjournal2countbyfac',  aimatcontroller.getmjournal2countbyfac);
+app.get('/api/v2/getmjournal2secondbyfac',  aimatcontroller.getmjournal2secondbyfac);
+app.get('/api/v2/getmjournal2count',  aimatcontroller.getmjournal2count);
+app.get('/api/v2/getmjournal2second',  aimatcontroller.getmjournal2second);
+
+
+app.get('/api/v2/populatetrialb',  aimatcontroller.populatetrialb);
+
+app.get('/api/v2/getmjournal1byfac',  aimatcontroller.getmjournal1byfac);
+app.get('/api/v2/updatemjournal1byfac',  aimatcontroller.updatemjournal1byfac);
+app.get('/api/v2/updatemjournal1comments',  aimatcontroller.updatemjournal1comments);
+app.get('/api/v2/mjournal1docs',  aimatcontroller.mjournal1docs);
+app.get('/api/v2/deletemjournal1byfac',  aimatcontroller.deletemjournal1byfac);
+app.get('/api/v2/createmjournal1byfac',  aimatcontroller.createmjournal1byfac);
+app.get('/api/v2/getmtrialbalance1byfac',  aimatcontroller.getmtrialbalance1byfac);
+app.get('/api/v2/updatemtrialbalance1byfac',  aimatcontroller.updatemtrialbalance1byfac);
+app.get('/api/v2/updatemtrialbalance1comments',  aimatcontroller.updatemtrialbalance1comments);
+app.get('/api/v2/mtrialbalance1docs',  aimatcontroller.mtrialbalance1docs);
+app.get('/api/v2/deletemtrialbalance1byfac',  aimatcontroller.deletemtrialbalance1byfac);
+app.get('/api/v2/createmtrialbalance1byfac',  aimatcontroller.createmtrialbalance1byfac);
+
+
+app.get('/api/v2/getmjournal1countbyfac',  aimatcontroller.getmjournal1countbyfac);
+app.get('/api/v2/getmjournal1secondbyfac',  aimatcontroller.getmjournal1secondbyfac);
+app.get('/api/v2/getmjournal1count',  aimatcontroller.getmjournal1count);
+app.get('/api/v2/getmjournal1second',  aimatcontroller.getmjournal1second);
+app.get('/api/v2/getmtrialbalance1countbyfac',  aimatcontroller.getmtrialbalance1countbyfac);
+app.get('/api/v2/getmtrialbalance1secondbyfac',  aimatcontroller.getmtrialbalance1secondbyfac);
+app.get('/api/v2/getmtrialbalance1count',  aimatcontroller.getmtrialbalance1count);
+app.get('/api/v2/getmtrialbalance1second',  aimatcontroller.getmtrialbalance1second);
+
+
+app.get('/api/v2/getfeesbycatyrp',  aimatcontroller.getfeesbycatyrp);
+app.get('/api/v2/logindetails',  aimatcontroller.logindetails);
+app.get('/api/v2/mfeescolbydate',  aimatcontroller.mfeescolbydate);
+app.get('/api/v2/mfeescolbydateagr',  aimatcontroller.mfeescolbydateagr);
+
+
+app.get('/api/v2/getmacadcalbyfac',  aimatcontroller.getmacadcalbyfac);
+app.get('/api/v2/updatemacadcalbyfac',  aimatcontroller.updatemacadcalbyfac);
+app.get('/api/v2/updatemacadcalcomments',  aimatcontroller.updatemacadcalcomments);
+app.get('/api/v2/macadcaldocs',  aimatcontroller.macadcaldocs);
+app.get('/api/v2/deletemacadcalbyfac',  aimatcontroller.deletemacadcalbyfac);
+app.get('/api/v2/createmacadcalbyfac',  aimatcontroller.createmacadcalbyfac);
+app.get('/api/v2/getmfeescolbyfac',  aimatcontroller.getmfeescolbyfac);
+app.get('/api/v2/updatemfeescolbyfac',  aimatcontroller.updatemfeescolbyfac);
+app.get('/api/v2/updatemfeescolcomments',  aimatcontroller.updatemfeescolcomments);
+app.get('/api/v2/mfeescoldocs',  aimatcontroller.mfeescoldocs);
+app.get('/api/v2/deletemfeescolbyfac',  aimatcontroller.deletemfeescolbyfac);
+app.get('/api/v2/createmfeescolbyfac',  aimatcontroller.createmfeescolbyfac);
+
+
+app.get('/api/v2/getserbplanbyfac',  aimatcontroller.getserbplanbyfac);
+app.get('/api/v2/updateserbplanbyfac',  aimatcontroller.updateserbplanbyfac);
+app.get('/api/v2/updateserbplancomments',  aimatcontroller.updateserbplancomments);
+app.get('/api/v2/serbplandocs',  aimatcontroller.serbplandocs);
+app.get('/api/v2/deleteserbplanbyfac',  aimatcontroller.deleteserbplanbyfac);
+app.get('/api/v2/createserbplanbyfac',  aimatcontroller.createserbplanbyfac);
+
+
+app.get('/api/v2/getlessonplannewbyfac',  aimatcontroller.getlessonplannewbyfac);
+app.get('/api/v2/updatelessonplannewbyfac',  aimatcontroller.updatelessonplannewbyfac);
+app.get('/api/v2/updatelessonplannewcomments',  aimatcontroller.updatelessonplannewcomments);
+app.get('/api/v2/lessonplannewdocs',  aimatcontroller.lessonplannewdocs);
+app.get('/api/v2/deletelessonplannewbyfac',  aimatcontroller.deletelessonplannewbyfac);
+app.get('/api/v2/createlessonplannewbyfac',  aimatcontroller.createlessonplannewbyfac);
+
+
+app.get('/api/v2/createnewfaculty1',  aimatcontroller.createnewfaculty1);
+app.get('/api/v2/getallfaculties1',  aimatcontroller.getallfaculties1);
+app.get('/api/v2/updatefaculty1',  aimatcontroller.updatefaculty1);
+
+app.get('/api/v2/jobapplicationbystatusyr',  aimatcontroller.jobapplicationbystatusyr);
+
+app.get('/api/v2/getplacestatus',  aimatcontroller.getplacestatus);
+app.get('/api/v2/getsectorsummary',  aimatcontroller.getsectorsummary);
+
+app.get('/api/v2/getjobdscountbyfac',  aimatcontroller.getjobdscountbyfac);
+app.get('/api/v2/getjobdssecondbyfac',  aimatcontroller.getjobdssecondbyfac);
+app.get('/api/v2/getjobdscount',  aimatcontroller.getjobdscount);
+app.get('/api/v2/getjobdssecond',  aimatcontroller.getjobdssecond);
+app.get('/api/v2/getjobapplicationdscountbyfac',  aimatcontroller.getjobapplicationdscountbyfac);
+app.get('/api/v2/getjobapplicationdssecondbyfac',  aimatcontroller.getjobapplicationdssecondbyfac);
+app.get('/api/v2/getjobapplicationdscount',  aimatcontroller.getjobapplicationdscount);
+app.get('/api/v2/getjobapplicationdssecond',  aimatcontroller.getjobapplicationdssecond);
+
+
+app.get('/api/v2/getjobdsbyfac',  aimatcontroller.getjobdsbyfac);
+app.get('/api/v2/updatejobdsbyfac',  aimatcontroller.updatejobdsbyfac);
+app.get('/api/v2/updatejobdscomments',  aimatcontroller.updatejobdscomments);
+app.get('/api/v2/jobdsdocs',  aimatcontroller.jobdsdocs);
+app.get('/api/v2/deletejobdsbyfac',  aimatcontroller.deletejobdsbyfac);
+app.get('/api/v2/createjobdsbyfac',  aimatcontroller.createjobdsbyfac);
+app.get('/api/v2/getjobapplicationdsbyfac',  aimatcontroller.getjobapplicationdsbyfac);
+app.get('/api/v2/updatejobapplicationdsbyfac',  aimatcontroller.updatejobapplicationdsbyfac);
+app.get('/api/v2/updatejobapplicationdscomments',  aimatcontroller.updatejobapplicationdscomments);
+app.get('/api/v2/jobapplicationdsdocs',  aimatcontroller.jobapplicationdsdocs);
+app.get('/api/v2/deletejobapplicationdsbyfac',  aimatcontroller.deletejobapplicationdsbyfac);
+app.get('/api/v2/createjobapplicationdsbyfac',  aimatcontroller.createjobapplicationdsbyfac);
+
+
+app.get('/api/v2/createnewcompany',  aimatcontroller.createnewcompany);
+app.get('/api/v2/getallcompanies',  aimatcontroller.getallcompanies);
+app.get('/api/v2/updatecompany',  aimatcontroller.updatecompany);
+app.get('/api/v2/deletecompany',  aimatcontroller.deletecompany);
+
+app.get('/api/v2/getmexambyyrprogsem',  aimatcontroller.getmexambyyrprogsem);
+app.get('/api/v2/getmexamsemester',  aimatcontroller.getmexamsemester);
+app.get('/api/v2/getmexamprograms',  aimatcontroller.getmexamprograms);
+app.get('/api/v2/getmexamdcode',  aimatcontroller.getmexamdcode);
+
+app.get('/api/v2/getexammarksallbyfac',  aimatcontroller.getexammarksallbyfac);
+app.get('/api/v2/updateexammarksallbyfac',  aimatcontroller.updateexammarksallbyfac);
+app.get('/api/v2/updateexammarksallcomments',  aimatcontroller.updateexammarksallcomments);
+app.get('/api/v2/exammarksalldocs',  aimatcontroller.exammarksalldocs);
+app.get('/api/v2/deleteexammarksallbyfac',  aimatcontroller.deleteexammarksallbyfac);
+app.get('/api/v2/createexammarksallbyfac',  aimatcontroller.createexammarksallbyfac);
+
+app.get('/api/v2/getexammarksallcountbyfac',  aimatcontroller.getexammarksallcountbyfac);
+app.get('/api/v2/getexammarksallsecondbyfac',  aimatcontroller.getexammarksallsecondbyfac);
+app.get('/api/v2/getexammarksallcount',  aimatcontroller.getexammarksallcount);
+app.get('/api/v2/getexammarksallsecond',  aimatcontroller.getexammarksallsecond);
+
+
+app.get('/api/v2/getworkloadn1faculty',  aimatcontroller.getworkloadn1faculty);
+
+app.get('/api/v2/getmiscorescom',  aimatcontroller.getmiscorescom);
+
+app.get('/api/v2/getfsr',  aimatcontroller.getfsr);
+app.get('/api/v2/getsalarymedian',  aimatcontroller.getsalarymedian);
+app.get('/api/v2/getphotolink',  aimatcontroller.getphotolink);
+
+app.get('/api/v2/getadmitprogs',  aimatcontroller.getadmitprogs);
+app.get('/api/v2/approveadmitregnoc',  aimatcontroller.approveadmitregnoc);
+app.get('/api/v2/approveadmitregno',  aimatcontroller.approveadmitregno);
+app.get('/api/v2/approveadmitall',  aimatcontroller.approveadmitall);
+app.get('/api/v2/getexamadmitbyyrprogsem',  aimatcontroller.getexamadmitbyyrprogsem);
+
+app.get('/api/v2/createnewfaculty',  aimatcontroller.createnewfaculty);
+app.get('/api/v2/getallfaculties',  aimatcontroller.getallfaculties);
+app.get('/api/v2/updatefaculty',  aimatcontroller.updatefaculty);
+app.get('/api/v2/deletefaculty',  aimatcontroller.deletefaculty);
+
+app.get('/api/v2/getexamadmitstudbyfac',  aimatcontroller.getexamadmitstudbyfac);
+app.get('/api/v2/getledgerstudstudbyfac',  aimatcontroller.getledgerstudstudbyfac);
+
+
+app.get('/api/v2/getexamadmitbyfac',  aimatcontroller.getexamadmitbyfac);
+app.get('/api/v2/updateexamadmitbyfac',  aimatcontroller.updateexamadmitbyfac);
+app.get('/api/v2/updateexamadmitcomments',  aimatcontroller.updateexamadmitcomments);
+app.get('/api/v2/examadmitdocs',  aimatcontroller.examadmitdocs);
+app.get('/api/v2/deleteexamadmitbyfac',  aimatcontroller.deleteexamadmitbyfac);
+app.get('/api/v2/createexamadmitbyfac',  aimatcontroller.createexamadmitbyfac);
+app.get('/api/v2/getfeesbyfac',  aimatcontroller.getfeesbyfac);
+app.get('/api/v2/updatefeesbyfac',  aimatcontroller.updatefeesbyfac);
+app.get('/api/v2/updatefeescomments',  aimatcontroller.updatefeescomments);
+app.get('/api/v2/feesdocs',  aimatcontroller.feesdocs);
+app.get('/api/v2/deletefeesbyfac',  aimatcontroller.deletefeesbyfac);
+app.get('/api/v2/createfeesbyfac',  aimatcontroller.createfeesbyfac);
+app.get('/api/v2/getledgerstudbyfac',  aimatcontroller.getledgerstudbyfac);
+app.get('/api/v2/updateledgerstudbyfac',  aimatcontroller.updateledgerstudbyfac);
+app.get('/api/v2/updateledgerstudcomments',  aimatcontroller.updateledgerstudcomments);
+app.get('/api/v2/ledgerstuddocs',  aimatcontroller.ledgerstuddocs);
+app.get('/api/v2/deleteledgerstudbyfac',  aimatcontroller.deleteledgerstudbyfac);
+app.get('/api/v2/createledgerstudbyfac',  aimatcontroller.createledgerstudbyfac);
+
+
+app.get('/api/v2/getexamsemester',  aimatcontroller.getexamsemester);
+app.get('/api/v2/getexambyyrprogsem',  aimatcontroller.getexambyyrprogsem);
+app.get('/api/v2/getexamdcode',  aimatcontroller.getexamdcode);
+app.get('/api/v2/getexamprograms',  aimatcontroller.getexamprograms);
+app.get('/api/v2/getfacwcalcountbyfac',  aimatcontroller.getfacwcalcountbyfac);
+app.get('/api/v2/getfacwcalsecondbyfac',  aimatcontroller.getfacwcalsecondbyfac);
+app.get('/api/v2/getfacwcalcount',  aimatcontroller.getfacwcalcount);
+app.get('/api/v2/getfacwcalsecond',  aimatcontroller.getfacwcalsecond);
+
+
+
+app.get('/api/v2/getfacwcalbyfac',  aimatcontroller.getfacwcalbyfac);
+app.get('/api/v2/updatefacwcalbyfac',  aimatcontroller.updatefacwcalbyfac);
+app.get('/api/v2/updatefacwcalcomments',  aimatcontroller.updatefacwcalcomments);
+app.get('/api/v2/facwcaldocs',  aimatcontroller.facwcaldocs);
+app.get('/api/v2/deletefacwcalbyfac',  aimatcontroller.deletefacwcalbyfac);
+app.get('/api/v2/createfacwcalbyfac',  aimatcontroller.createfacwcalbyfac);
+
+app.get('/api/v2/updateworkload',  aimatcontroller.updateworkload);
+app.get('/api/v2/populatetimetable',  aimatcontroller.populatetimetable);
+
+app.get('/api/v2/gettimeslotsn1countbyfac',  aimatcontroller.gettimeslotsn1countbyfac);
+app.get('/api/v2/gettimeslotsn1secondbyfac',  aimatcontroller.gettimeslotsn1secondbyfac);
+app.get('/api/v2/gettimeslotsn1count',  aimatcontroller.gettimeslotsn1count);
+app.get('/api/v2/gettimeslotsn1second',  aimatcontroller.gettimeslotsn1second);
+app.get('/api/v2/getworkloadn1countbyfac',  aimatcontroller.getworkloadn1countbyfac);
+app.get('/api/v2/getworkloadn1secondbyfac',  aimatcontroller.getworkloadn1secondbyfac);
+app.get('/api/v2/getworkloadn1count',  aimatcontroller.getworkloadn1count);
+app.get('/api/v2/getworkloadn1second',  aimatcontroller.getworkloadn1second);
+
+
+app.get('/api/v2/gettimeslotsn1byfac',  aimatcontroller.gettimeslotsn1byfac);
+app.get('/api/v2/updatetimeslotsn1byfac',  aimatcontroller.updatetimeslotsn1byfac);
+app.get('/api/v2/updatetimeslotsn1comments',  aimatcontroller.updatetimeslotsn1comments);
+app.get('/api/v2/timeslotsn1docs',  aimatcontroller.timeslotsn1docs);
+app.get('/api/v2/deletetimeslotsn1byfac',  aimatcontroller.deletetimeslotsn1byfac);
+app.get('/api/v2/createtimeslotsn1byfac',  aimatcontroller.createtimeslotsn1byfac);
+app.get('/api/v2/getworkloadn1byfac',  aimatcontroller.getworkloadn1byfac);
+app.get('/api/v2/updateworkloadn1byfac',  aimatcontroller.updateworkloadn1byfac);
+app.get('/api/v2/updateworkloadn1comments',  aimatcontroller.updateworkloadn1comments);
+app.get('/api/v2/workloadn1docs',  aimatcontroller.workloadn1docs);
+app.get('/api/v2/deleteworkloadn1byfac',  aimatcontroller.deleteworkloadn1byfac);
+app.get('/api/v2/createworkloadn1byfac',  aimatcontroller.createworkloadn1byfac);
+
+
+
+
+app.get('/api/v2/useractivate',  aimatcontroller.useractivate);
+app.get('/api/v2/updateinterntype',  aimatcontroller.updateinterntype);
+app.get('/api/v2/updateexamtype',  aimatcontroller.updateexamtype);
+
+app.get('/api/v2/getmtestseenrol1byreg',  aimatcontroller.getmtestseenrol1byreg);
+app.get('/api/v2/getmiseenrol1byreg',  aimatcontroller.getmiseenrol1byreg);
+
+app.get('/api/v2/getnallaccrallgroup',  aimatcontroller.getnallaccrallgroup);
+
+app.get('/api/v2/getngroupcountbyfac',  aimatcontroller.getngroupcountbyfac);
+app.get('/api/v2/getngroupsecondbyfac',  aimatcontroller.getngroupsecondbyfac);
+app.get('/api/v2/getngroupcount',  aimatcontroller.getngroupcount);
+app.get('/api/v2/getngroupsecond',  aimatcontroller.getngroupsecond);
+app.get('/api/v2/getngrouppagescountbyfac',  aimatcontroller.getngrouppagescountbyfac);
+app.get('/api/v2/getngrouppagessecondbyfac',  aimatcontroller.getngrouppagessecondbyfac);
+app.get('/api/v2/getngrouppagescount',  aimatcontroller.getngrouppagescount);
+app.get('/api/v2/getngrouppagessecond',  aimatcontroller.getngrouppagessecond);
+app.get('/api/v2/getngroupaccrcountbyfac',  aimatcontroller.getngroupaccrcountbyfac);
+app.get('/api/v2/getngroupaccrsecondbyfac',  aimatcontroller.getngroupaccrsecondbyfac);
+app.get('/api/v2/getngroupaccrcount',  aimatcontroller.getngroupaccrcount);
+app.get('/api/v2/getngroupaccrsecond',  aimatcontroller.getngroupaccrsecond);
+
+
+app.get('/api/v2/getngroupbyfac',  aimatcontroller.getngroupbyfac);
+app.get('/api/v2/updatengroupbyfac',  aimatcontroller.updatengroupbyfac);
+app.get('/api/v2/updatengroupcomments',  aimatcontroller.updatengroupcomments);
+app.get('/api/v2/ngroupdocs',  aimatcontroller.ngroupdocs);
+app.get('/api/v2/deletengroupbyfac',  aimatcontroller.deletengroupbyfac);
+app.get('/api/v2/createngroupbyfac',  aimatcontroller.createngroupbyfac);
+app.get('/api/v2/getngrouppagesbyfac',  aimatcontroller.getngrouppagesbyfac);
+app.get('/api/v2/updatengrouppagesbyfac',  aimatcontroller.updatengrouppagesbyfac);
+app.get('/api/v2/updatengrouppagescomments',  aimatcontroller.updatengrouppagescomments);
+app.get('/api/v2/ngrouppagesdocs',  aimatcontroller.ngrouppagesdocs);
+app.get('/api/v2/deletengrouppagesbyfac',  aimatcontroller.deletengrouppagesbyfac);
+app.get('/api/v2/createngrouppagesbyfac',  aimatcontroller.createngrouppagesbyfac);
+app.get('/api/v2/getngroupaccrbyfac',  aimatcontroller.getngroupaccrbyfac);
+app.get('/api/v2/updatengroupaccrbyfac',  aimatcontroller.updatengroupaccrbyfac);
+app.get('/api/v2/updatengroupaccrcomments',  aimatcontroller.updatengroupaccrcomments);
+app.get('/api/v2/ngroupaccrdocs',  aimatcontroller.ngroupaccrdocs);
+app.get('/api/v2/deletengroupaccrbyfac',  aimatcontroller.deletengroupaccrbyfac);
+app.get('/api/v2/createngroupaccrbyfac',  aimatcontroller.createngroupaccrbyfac);
+
+
+app.get('/api/v2/getattyearcountbyfac',  aimatcontroller.getattyearcountbyfac);
+app.get('/api/v2/getattyearsecondbyfac',  aimatcontroller.getattyearsecondbyfac);
+app.get('/api/v2/getattyearcount',  aimatcontroller.getattyearcount);
+app.get('/api/v2/getattyearsecond',  aimatcontroller.getattyearsecond);
+
+
+app.get('/api/v2/getattyearbyfac',  aimatcontroller.getattyearbyfac);
+app.get('/api/v2/updateattyearbyfac',  aimatcontroller.updateattyearbyfac);
+app.get('/api/v2/updateattyearcomments',  aimatcontroller.updateattyearcomments);
+app.get('/api/v2/attyeardocs',  aimatcontroller.attyeardocs);
+app.get('/api/v2/deleteattyearbyfac',  aimatcontroller.deleteattyearbyfac);
+app.get('/api/v2/createattyearbyfac',  aimatcontroller.createattyearbyfac);
+
+
+app.get('/api/v2/getattmarksnew',  aimatcontroller.getattmarksnew);
+
+app.get('/api/v2/getnn76countbyfac',  aimatcontroller.getnn76countbyfac);
+app.get('/api/v2/getnn76secondbyfac',  aimatcontroller.getnn76secondbyfac);
+app.get('/api/v2/getnn76count',  aimatcontroller.getnn76count);
+app.get('/api/v2/getnn76second',  aimatcontroller.getnn76second);
+app.get('/api/v2/getnn781countbyfac',  aimatcontroller.getnn781countbyfac);
+app.get('/api/v2/getnn781secondbyfac',  aimatcontroller.getnn781secondbyfac);
+app.get('/api/v2/getnn781count',  aimatcontroller.getnn781count);
+app.get('/api/v2/getnn781second',  aimatcontroller.getnn781second);
+app.get('/api/v2/getnn82countbyfac',  aimatcontroller.getnn82countbyfac);
+app.get('/api/v2/getnn82secondbyfac',  aimatcontroller.getnn82secondbyfac);
+app.get('/api/v2/getnn82count',  aimatcontroller.getnn82count);
+app.get('/api/v2/getnn82second',  aimatcontroller.getnn82second);
+app.get('/api/v2/getnn83countbyfac',  aimatcontroller.getnn83countbyfac);
+app.get('/api/v2/getnn83secondbyfac',  aimatcontroller.getnn83secondbyfac);
+app.get('/api/v2/getnn83count',  aimatcontroller.getnn83count);
+app.get('/api/v2/getnn83second',  aimatcontroller.getnn83second);
+app.get('/api/v2/getnn84countbyfac',  aimatcontroller.getnn84countbyfac);
+app.get('/api/v2/getnn84secondbyfac',  aimatcontroller.getnn84secondbyfac);
+app.get('/api/v2/getnn84count',  aimatcontroller.getnn84count);
+app.get('/api/v2/getnn84second',  aimatcontroller.getnn84second);
+app.get('/api/v2/getnn86countbyfac',  aimatcontroller.getnn86countbyfac);
+app.get('/api/v2/getnn86secondbyfac',  aimatcontroller.getnn86secondbyfac);
+app.get('/api/v2/getnn86count',  aimatcontroller.getnn86count);
+app.get('/api/v2/getnn86second',  aimatcontroller.getnn86second);
+app.get('/api/v2/getnn87countbyfac',  aimatcontroller.getnn87countbyfac);
+app.get('/api/v2/getnn87secondbyfac',  aimatcontroller.getnn87secondbyfac);
+app.get('/api/v2/getnn87count',  aimatcontroller.getnn87count);
+app.get('/api/v2/getnn87second',  aimatcontroller.getnn87second);
+app.get('/api/v2/getnn96countbyfac',  aimatcontroller.getnn96countbyfac);
+app.get('/api/v2/getnn96secondbyfac',  aimatcontroller.getnn96secondbyfac);
+app.get('/api/v2/getnn96count',  aimatcontroller.getnn96count);
+app.get('/api/v2/getnn96second',  aimatcontroller.getnn96second);
+app.get('/api/v2/getnn97countbyfac',  aimatcontroller.getnn97countbyfac);
+app.get('/api/v2/getnn97secondbyfac',  aimatcontroller.getnn97secondbyfac);
+app.get('/api/v2/getnn97count',  aimatcontroller.getnn97count);
+app.get('/api/v2/getnn97second',  aimatcontroller.getnn97second);
+app.get('/api/v2/getnn98countbyfac',  aimatcontroller.getnn98countbyfac);
+app.get('/api/v2/getnn98secondbyfac',  aimatcontroller.getnn98secondbyfac);
+app.get('/api/v2/getnn98count',  aimatcontroller.getnn98count);
+app.get('/api/v2/getnn98second',  aimatcontroller.getnn98second);
+
+
+app.get('/api/v2/getnn76byfac',  aimatcontroller.getnn76byfac);
+app.get('/api/v2/updatenn76byfac',  aimatcontroller.updatenn76byfac);
+app.get('/api/v2/updatenn76comments',  aimatcontroller.updatenn76comments);
+app.get('/api/v2/nn76docs',  aimatcontroller.nn76docs);
+app.get('/api/v2/deletenn76byfac',  aimatcontroller.deletenn76byfac);
+app.get('/api/v2/createnn76byfac',  aimatcontroller.createnn76byfac);
+app.get('/api/v2/getnn781byfac',  aimatcontroller.getnn781byfac);
+app.get('/api/v2/updatenn781byfac',  aimatcontroller.updatenn781byfac);
+app.get('/api/v2/updatenn781comments',  aimatcontroller.updatenn781comments);
+app.get('/api/v2/nn781docs',  aimatcontroller.nn781docs);
+app.get('/api/v2/deletenn781byfac',  aimatcontroller.deletenn781byfac);
+app.get('/api/v2/createnn781byfac',  aimatcontroller.createnn781byfac);
+app.get('/api/v2/getnn82byfac',  aimatcontroller.getnn82byfac);
+app.get('/api/v2/updatenn82byfac',  aimatcontroller.updatenn82byfac);
+app.get('/api/v2/updatenn82comments',  aimatcontroller.updatenn82comments);
+app.get('/api/v2/nn82docs',  aimatcontroller.nn82docs);
+app.get('/api/v2/deletenn82byfac',  aimatcontroller.deletenn82byfac);
+app.get('/api/v2/createnn82byfac',  aimatcontroller.createnn82byfac);
+app.get('/api/v2/getnn83byfac',  aimatcontroller.getnn83byfac);
+app.get('/api/v2/updatenn83byfac',  aimatcontroller.updatenn83byfac);
+app.get('/api/v2/updatenn83comments',  aimatcontroller.updatenn83comments);
+app.get('/api/v2/nn83docs',  aimatcontroller.nn83docs);
+app.get('/api/v2/deletenn83byfac',  aimatcontroller.deletenn83byfac);
+app.get('/api/v2/createnn83byfac',  aimatcontroller.createnn83byfac);
+app.get('/api/v2/getnn84byfac',  aimatcontroller.getnn84byfac);
+app.get('/api/v2/updatenn84byfac',  aimatcontroller.updatenn84byfac);
+app.get('/api/v2/updatenn84comments',  aimatcontroller.updatenn84comments);
+app.get('/api/v2/nn84docs',  aimatcontroller.nn84docs);
+app.get('/api/v2/deletenn84byfac',  aimatcontroller.deletenn84byfac);
+app.get('/api/v2/createnn84byfac',  aimatcontroller.createnn84byfac);
+app.get('/api/v2/getnn86byfac',  aimatcontroller.getnn86byfac);
+app.get('/api/v2/updatenn86byfac',  aimatcontroller.updatenn86byfac);
+app.get('/api/v2/updatenn86comments',  aimatcontroller.updatenn86comments);
+app.get('/api/v2/nn86docs',  aimatcontroller.nn86docs);
+app.get('/api/v2/deletenn86byfac',  aimatcontroller.deletenn86byfac);
+app.get('/api/v2/createnn86byfac',  aimatcontroller.createnn86byfac);
+app.get('/api/v2/getnn87byfac',  aimatcontroller.getnn87byfac);
+app.get('/api/v2/updatenn87byfac',  aimatcontroller.updatenn87byfac);
+app.get('/api/v2/updatenn87comments',  aimatcontroller.updatenn87comments);
+app.get('/api/v2/nn87docs',  aimatcontroller.nn87docs);
+app.get('/api/v2/deletenn87byfac',  aimatcontroller.deletenn87byfac);
+app.get('/api/v2/createnn87byfac',  aimatcontroller.createnn87byfac);
+app.get('/api/v2/getnn96byfac',  aimatcontroller.getnn96byfac);
+app.get('/api/v2/updatenn96byfac',  aimatcontroller.updatenn96byfac);
+app.get('/api/v2/updatenn96comments',  aimatcontroller.updatenn96comments);
+app.get('/api/v2/nn96docs',  aimatcontroller.nn96docs);
+app.get('/api/v2/deletenn96byfac',  aimatcontroller.deletenn96byfac);
+app.get('/api/v2/createnn96byfac',  aimatcontroller.createnn96byfac);
+app.get('/api/v2/getnn97byfac',  aimatcontroller.getnn97byfac);
+app.get('/api/v2/updatenn97byfac',  aimatcontroller.updatenn97byfac);
+app.get('/api/v2/updatenn97comments',  aimatcontroller.updatenn97comments);
+app.get('/api/v2/nn97docs',  aimatcontroller.nn97docs);
+app.get('/api/v2/deletenn97byfac',  aimatcontroller.deletenn97byfac);
+app.get('/api/v2/createnn97byfac',  aimatcontroller.createnn97byfac);
+app.get('/api/v2/getnn98byfac',  aimatcontroller.getnn98byfac);
+app.get('/api/v2/updatenn98byfac',  aimatcontroller.updatenn98byfac);
+app.get('/api/v2/updatenn98comments',  aimatcontroller.updatenn98comments);
+app.get('/api/v2/nn98docs',  aimatcontroller.nn98docs);
+app.get('/api/v2/deletenn98byfac',  aimatcontroller.deletenn98byfac);
+app.get('/api/v2/createnn98byfac',  aimatcontroller.createnn98byfac);
+
+
+app.get('/api/v2/getnn61countbyfac',  aimatcontroller.getnn61countbyfac);
+app.get('/api/v2/getnn61secondbyfac',  aimatcontroller.getnn61secondbyfac);
+app.get('/api/v2/getnn61count',  aimatcontroller.getnn61count);
+app.get('/api/v2/getnn61second',  aimatcontroller.getnn61second);
+app.get('/api/v2/getnn62countbyfac',  aimatcontroller.getnn62countbyfac);
+app.get('/api/v2/getnn62secondbyfac',  aimatcontroller.getnn62secondbyfac);
+app.get('/api/v2/getnn62count',  aimatcontroller.getnn62count);
+app.get('/api/v2/getnn62second',  aimatcontroller.getnn62second);
+app.get('/api/v2/getnn6clubscountbyfac',  aimatcontroller.getnn6clubscountbyfac);
+app.get('/api/v2/getnn6clubssecondbyfac',  aimatcontroller.getnn6clubssecondbyfac);
+app.get('/api/v2/getnn6clubscount',  aimatcontroller.getnn6clubscount);
+app.get('/api/v2/getnn6clubssecond',  aimatcontroller.getnn6clubssecond);
+
+
+app.get('/api/v2/getnn61byfac',  aimatcontroller.getnn61byfac);
+app.get('/api/v2/updatenn61byfac',  aimatcontroller.updatenn61byfac);
+app.get('/api/v2/updatenn61comments',  aimatcontroller.updatenn61comments);
+app.get('/api/v2/nn61docs',  aimatcontroller.nn61docs);
+app.get('/api/v2/deletenn61byfac',  aimatcontroller.deletenn61byfac);
+app.get('/api/v2/createnn61byfac',  aimatcontroller.createnn61byfac);
+app.get('/api/v2/getnn62byfac',  aimatcontroller.getnn62byfac);
+app.get('/api/v2/updatenn62byfac',  aimatcontroller.updatenn62byfac);
+app.get('/api/v2/updatenn62comments',  aimatcontroller.updatenn62comments);
+app.get('/api/v2/nn62docs',  aimatcontroller.nn62docs);
+app.get('/api/v2/deletenn62byfac',  aimatcontroller.deletenn62byfac);
+app.get('/api/v2/createnn62byfac',  aimatcontroller.createnn62byfac);
+app.get('/api/v2/getnn6clubsbyfac',  aimatcontroller.getnn6clubsbyfac);
+app.get('/api/v2/updatenn6clubsbyfac',  aimatcontroller.updatenn6clubsbyfac);
+app.get('/api/v2/updatenn6clubscomments',  aimatcontroller.updatenn6clubscomments);
+app.get('/api/v2/nn6clubsdocs',  aimatcontroller.nn6clubsdocs);
+app.get('/api/v2/deletenn6clubsbyfac',  aimatcontroller.deletenn6clubsbyfac);
+app.get('/api/v2/createnn6clubsbyfac',  aimatcontroller.createnn6clubsbyfac);
+
+
+app.get('/api/v2/getnallaccransbyfac1',  aimatcontroller.getnallaccransbyfac1);
+app.get('/api/v2/getnallaccransbyall',  aimatcontroller.getnallaccransbyall);
+
+app.get('/api/v2/getnallaccranscountbyfac',  aimatcontroller.getnallaccranscountbyfac);
+app.get('/api/v2/getnallaccranssecondbyfac',  aimatcontroller.getnallaccranssecondbyfac);
+app.get('/api/v2/getnallaccranscount',  aimatcontroller.getnallaccranscount);
+app.get('/api/v2/getnallaccranssecond',  aimatcontroller.getnallaccranssecond);
+
+
+app.get('/api/v2/getnallaccransbyfac',  aimatcontroller.getnallaccransbyfac);
+app.get('/api/v2/updatenallaccransbyfac',  aimatcontroller.updatenallaccransbyfac);
+app.get('/api/v2/updatenallaccranscomments',  aimatcontroller.updatenallaccranscomments);
+app.get('/api/v2/nallaccransdocs',  aimatcontroller.nallaccransdocs);
+app.get('/api/v2/deletenallaccransbyfac',  aimatcontroller.deletenallaccransbyfac);
+app.get('/api/v2/createnallaccransbyfac',  aimatcontroller.createnallaccransbyfac);
+
+
+app.get('/api/v2/getnallaccrall',  aimatcontroller.getnallaccrall);
+
+app.get('/api/v2/getnallaccrcountbyfac',  aimatcontroller.getnallaccrcountbyfac);
+app.get('/api/v2/getnallaccrsecondbyfac',  aimatcontroller.getnallaccrsecondbyfac);
+app.get('/api/v2/getnallaccrcount',  aimatcontroller.getnallaccrcount);
+app.get('/api/v2/getnallaccrsecond',  aimatcontroller.getnallaccrsecond);
+
+
+app.get('/api/v2/getnallaccrbyfac',  aimatcontroller.getnallaccrbyfac);
+app.get('/api/v2/updatenallaccrbyfac',  aimatcontroller.updatenallaccrbyfac);
+app.get('/api/v2/updatenallaccrcomments',  aimatcontroller.updatenallaccrcomments);
+app.get('/api/v2/nallaccrdocs',  aimatcontroller.nallaccrdocs);
+app.get('/api/v2/deletenallaccrbyfac',  aimatcontroller.deletenallaccrbyfac);
+app.get('/api/v2/createnallaccrbyfac',  aimatcontroller.createnallaccrbyfac);
+
+
+app.get('/api/v2/getnn51countbyfac',  aimatcontroller.getnn51countbyfac);
+app.get('/api/v2/getnn51secondbyfac',  aimatcontroller.getnn51secondbyfac);
+app.get('/api/v2/getnn51count',  aimatcontroller.getnn51count);
+app.get('/api/v2/getnn51second',  aimatcontroller.getnn51second);
+app.get('/api/v2/getnn52countbyfac',  aimatcontroller.getnn52countbyfac);
+app.get('/api/v2/getnn52secondbyfac',  aimatcontroller.getnn52secondbyfac);
+app.get('/api/v2/getnn52count',  aimatcontroller.getnn52count);
+app.get('/api/v2/getnn52second',  aimatcontroller.getnn52second);
+app.get('/api/v2/getnn53examdayscountbyfac',  aimatcontroller.getnn53examdayscountbyfac);
+app.get('/api/v2/getnn53examdayssecondbyfac',  aimatcontroller.getnn53examdayssecondbyfac);
+app.get('/api/v2/getnn53examdayscount',  aimatcontroller.getnn53examdayscount);
+app.get('/api/v2/getnn53examdayssecond',  aimatcontroller.getnn53examdayssecond);
+app.get('/api/v2/getnn53passpcountbyfac',  aimatcontroller.getnn53passpcountbyfac);
+app.get('/api/v2/getnn53passpsecondbyfac',  aimatcontroller.getnn53passpsecondbyfac);
+app.get('/api/v2/getnn53passpcount',  aimatcontroller.getnn53passpcount);
+app.get('/api/v2/getnn53passpsecond',  aimatcontroller.getnn53passpsecond);
+app.get('/api/v2/getnn53obecountbyfac',  aimatcontroller.getnn53obecountbyfac);
+app.get('/api/v2/getnn53obesecondbyfac',  aimatcontroller.getnn53obesecondbyfac);
+app.get('/api/v2/getnn53obecount',  aimatcontroller.getnn53obecount);
+app.get('/api/v2/getnn53obesecond',  aimatcontroller.getnn53obesecond);
+app.get('/api/v2/getnn54countbyfac',  aimatcontroller.getnn54countbyfac);
+app.get('/api/v2/getnn54secondbyfac',  aimatcontroller.getnn54secondbyfac);
+app.get('/api/v2/getnn54count',  aimatcontroller.getnn54count);
+app.get('/api/v2/getnn54second',  aimatcontroller.getnn54second);
+app.get('/api/v2/getnn55countbyfac',  aimatcontroller.getnn55countbyfac);
+app.get('/api/v2/getnn55secondbyfac',  aimatcontroller.getnn55secondbyfac);
+app.get('/api/v2/getnn55count',  aimatcontroller.getnn55count);
+app.get('/api/v2/getnn55second',  aimatcontroller.getnn55second);
+app.get('/api/v2/getnn56countbyfac',  aimatcontroller.getnn56countbyfac);
+app.get('/api/v2/getnn56secondbyfac',  aimatcontroller.getnn56secondbyfac);
+app.get('/api/v2/getnn56count',  aimatcontroller.getnn56count);
+app.get('/api/v2/getnn56second',  aimatcontroller.getnn56second);
+
+
+app.get('/api/v2/getnn51byfac',  aimatcontroller.getnn51byfac);
+app.get('/api/v2/updatenn51byfac',  aimatcontroller.updatenn51byfac);
+app.get('/api/v2/updatenn51comments',  aimatcontroller.updatenn51comments);
+app.get('/api/v2/nn51docs',  aimatcontroller.nn51docs);
+app.get('/api/v2/deletenn51byfac',  aimatcontroller.deletenn51byfac);
+app.get('/api/v2/createnn51byfac',  aimatcontroller.createnn51byfac);
+app.get('/api/v2/getnn52byfac',  aimatcontroller.getnn52byfac);
+app.get('/api/v2/updatenn52byfac',  aimatcontroller.updatenn52byfac);
+app.get('/api/v2/updatenn52comments',  aimatcontroller.updatenn52comments);
+app.get('/api/v2/nn52docs',  aimatcontroller.nn52docs);
+app.get('/api/v2/deletenn52byfac',  aimatcontroller.deletenn52byfac);
+app.get('/api/v2/createnn52byfac',  aimatcontroller.createnn52byfac);
+app.get('/api/v2/getnn53examdaysbyfac',  aimatcontroller.getnn53examdaysbyfac);
+app.get('/api/v2/updatenn53examdaysbyfac',  aimatcontroller.updatenn53examdaysbyfac);
+app.get('/api/v2/updatenn53examdayscomments',  aimatcontroller.updatenn53examdayscomments);
+app.get('/api/v2/nn53examdaysdocs',  aimatcontroller.nn53examdaysdocs);
+app.get('/api/v2/deletenn53examdaysbyfac',  aimatcontroller.deletenn53examdaysbyfac);
+app.get('/api/v2/createnn53examdaysbyfac',  aimatcontroller.createnn53examdaysbyfac);
+app.get('/api/v2/getnn53passpbyfac',  aimatcontroller.getnn53passpbyfac);
+app.get('/api/v2/updatenn53passpbyfac',  aimatcontroller.updatenn53passpbyfac);
+app.get('/api/v2/updatenn53passpcomments',  aimatcontroller.updatenn53passpcomments);
+app.get('/api/v2/nn53passpdocs',  aimatcontroller.nn53passpdocs);
+app.get('/api/v2/deletenn53passpbyfac',  aimatcontroller.deletenn53passpbyfac);
+app.get('/api/v2/createnn53passpbyfac',  aimatcontroller.createnn53passpbyfac);
+app.get('/api/v2/getnn53obebyfac',  aimatcontroller.getnn53obebyfac);
+app.get('/api/v2/updatenn53obebyfac',  aimatcontroller.updatenn53obebyfac);
+app.get('/api/v2/updatenn53obecomments',  aimatcontroller.updatenn53obecomments);
+app.get('/api/v2/nn53obedocs',  aimatcontroller.nn53obedocs);
+app.get('/api/v2/deletenn53obebyfac',  aimatcontroller.deletenn53obebyfac);
+app.get('/api/v2/createnn53obebyfac',  aimatcontroller.createnn53obebyfac);
+app.get('/api/v2/getnn54byfac',  aimatcontroller.getnn54byfac);
+app.get('/api/v2/updatenn54byfac',  aimatcontroller.updatenn54byfac);
+app.get('/api/v2/updatenn54comments',  aimatcontroller.updatenn54comments);
+app.get('/api/v2/nn54docs',  aimatcontroller.nn54docs);
+app.get('/api/v2/deletenn54byfac',  aimatcontroller.deletenn54byfac);
+app.get('/api/v2/createnn54byfac',  aimatcontroller.createnn54byfac);
+app.get('/api/v2/getnn55byfac',  aimatcontroller.getnn55byfac);
+app.get('/api/v2/updatenn55byfac',  aimatcontroller.updatenn55byfac);
+app.get('/api/v2/updatenn55comments',  aimatcontroller.updatenn55comments);
+app.get('/api/v2/nn55docs',  aimatcontroller.nn55docs);
+app.get('/api/v2/deletenn55byfac',  aimatcontroller.deletenn55byfac);
+app.get('/api/v2/createnn55byfac',  aimatcontroller.createnn55byfac);
+app.get('/api/v2/getnn56byfac',  aimatcontroller.getnn56byfac);
+app.get('/api/v2/updatenn56byfac',  aimatcontroller.updatenn56byfac);
+app.get('/api/v2/updatenn56comments',  aimatcontroller.updatenn56comments);
+app.get('/api/v2/nn56docs',  aimatcontroller.nn56docs);
+app.get('/api/v2/deletenn56byfac',  aimatcontroller.deletenn56byfac);
+app.get('/api/v2/createnn56byfac',  aimatcontroller.createnn56byfac);
+
+
+app.get('/api/v2/getnn33acountbyfac',  aimatcontroller.getnn33acountbyfac);
+app.get('/api/v2/getnn33asecondbyfac',  aimatcontroller.getnn33asecondbyfac);
+app.get('/api/v2/getnn33acount',  aimatcontroller.getnn33acount);
+app.get('/api/v2/getnn33asecond',  aimatcontroller.getnn33asecond);
+app.get('/api/v2/getnn33bcountbyfac',  aimatcontroller.getnn33bcountbyfac);
+app.get('/api/v2/getnn33bsecondbyfac',  aimatcontroller.getnn33bsecondbyfac);
+app.get('/api/v2/getnn33bcount',  aimatcontroller.getnn33bcount);
+app.get('/api/v2/getnn33bsecond',  aimatcontroller.getnn33bsecond);
+app.get('/api/v2/getnn35countbyfac',  aimatcontroller.getnn35countbyfac);
+app.get('/api/v2/getnn35secondbyfac',  aimatcontroller.getnn35secondbyfac);
+app.get('/api/v2/getnn35count',  aimatcontroller.getnn35count);
+app.get('/api/v2/getnn35second',  aimatcontroller.getnn35second);
+app.get('/api/v2/getnn36countbyfac',  aimatcontroller.getnn36countbyfac);
+app.get('/api/v2/getnn36secondbyfac',  aimatcontroller.getnn36secondbyfac);
+app.get('/api/v2/getnn36count',  aimatcontroller.getnn36count);
+app.get('/api/v2/getnn36second',  aimatcontroller.getnn36second);
+app.get('/api/v2/getnn46countbyfac',  aimatcontroller.getnn46countbyfac);
+app.get('/api/v2/getnn46secondbyfac',  aimatcontroller.getnn46secondbyfac);
+app.get('/api/v2/getnn46count',  aimatcontroller.getnn46count);
+app.get('/api/v2/getnn46second',  aimatcontroller.getnn46second);
+
+
+app.get('/api/v2/getnn33abyfac',  aimatcontroller.getnn33abyfac);
+app.get('/api/v2/updatenn33abyfac',  aimatcontroller.updatenn33abyfac);
+app.get('/api/v2/updatenn33acomments',  aimatcontroller.updatenn33acomments);
+app.get('/api/v2/nn33adocs',  aimatcontroller.nn33adocs);
+app.get('/api/v2/deletenn33abyfac',  aimatcontroller.deletenn33abyfac);
+app.get('/api/v2/createnn33abyfac',  aimatcontroller.createnn33abyfac);
+app.get('/api/v2/getnn33bbyfac',  aimatcontroller.getnn33bbyfac);
+app.get('/api/v2/updatenn33bbyfac',  aimatcontroller.updatenn33bbyfac);
+app.get('/api/v2/updatenn33bcomments',  aimatcontroller.updatenn33bcomments);
+app.get('/api/v2/nn33bdocs',  aimatcontroller.nn33bdocs);
+app.get('/api/v2/deletenn33bbyfac',  aimatcontroller.deletenn33bbyfac);
+app.get('/api/v2/createnn33bbyfac',  aimatcontroller.createnn33bbyfac);
+app.get('/api/v2/getnn35byfac',  aimatcontroller.getnn35byfac);
+app.get('/api/v2/updatenn35byfac',  aimatcontroller.updatenn35byfac);
+app.get('/api/v2/updatenn35comments',  aimatcontroller.updatenn35comments);
+app.get('/api/v2/nn35docs',  aimatcontroller.nn35docs);
+app.get('/api/v2/deletenn35byfac',  aimatcontroller.deletenn35byfac);
+app.get('/api/v2/createnn35byfac',  aimatcontroller.createnn35byfac);
+app.get('/api/v2/getnn36byfac',  aimatcontroller.getnn36byfac);
+app.get('/api/v2/updatenn36byfac',  aimatcontroller.updatenn36byfac);
+app.get('/api/v2/updatenn36comments',  aimatcontroller.updatenn36comments);
+app.get('/api/v2/nn36docs',  aimatcontroller.nn36docs);
+app.get('/api/v2/deletenn36byfac',  aimatcontroller.deletenn36byfac);
+app.get('/api/v2/createnn36byfac',  aimatcontroller.createnn36byfac);
+app.get('/api/v2/getnn46byfac',  aimatcontroller.getnn46byfac);
+app.get('/api/v2/updatenn46byfac',  aimatcontroller.updatenn46byfac);
+app.get('/api/v2/updatenn46comments',  aimatcontroller.updatenn46comments);
+app.get('/api/v2/nn46docs',  aimatcontroller.nn46docs);
+app.get('/api/v2/deletenn46byfac',  aimatcontroller.deletenn46byfac);
+app.get('/api/v2/createnn46byfac',  aimatcontroller.createnn46byfac);
+
+
+app.get('/api/v2/getnn211acountbyfac',  aimatcontroller.getnn211acountbyfac);
+app.get('/api/v2/getnn211asecondbyfac',  aimatcontroller.getnn211asecondbyfac);
+app.get('/api/v2/getnn211acount',  aimatcontroller.getnn211acount);
+app.get('/api/v2/getnn211asecond',  aimatcontroller.getnn211asecond);
+app.get('/api/v2/getnn211bcountbyfac',  aimatcontroller.getnn211bcountbyfac);
+app.get('/api/v2/getnn211bsecondbyfac',  aimatcontroller.getnn211bsecondbyfac);
+app.get('/api/v2/getnn211bcount',  aimatcontroller.getnn211bcount);
+app.get('/api/v2/getnn211bsecond',  aimatcontroller.getnn211bsecond);
+app.get('/api/v2/getnn22countbyfac',  aimatcontroller.getnn22countbyfac);
+app.get('/api/v2/getnn22secondbyfac',  aimatcontroller.getnn22secondbyfac);
+app.get('/api/v2/getnn22count',  aimatcontroller.getnn22count);
+app.get('/api/v2/getnn22second',  aimatcontroller.getnn22second);
+app.get('/api/v2/getnn23countbyfac',  aimatcontroller.getnn23countbyfac);
+app.get('/api/v2/getnn23secondbyfac',  aimatcontroller.getnn23secondbyfac);
+app.get('/api/v2/getnn23count',  aimatcontroller.getnn23count);
+app.get('/api/v2/getnn23second',  aimatcontroller.getnn23second);
+app.get('/api/v2/getnn244countbyfac',  aimatcontroller.getnn244countbyfac);
+app.get('/api/v2/getnn244secondbyfac',  aimatcontroller.getnn244secondbyfac);
+app.get('/api/v2/getnn244count',  aimatcontroller.getnn244count);
+app.get('/api/v2/getnn244second',  aimatcontroller.getnn244second);
+app.get('/api/v2/getnn25countbyfac',  aimatcontroller.getnn25countbyfac);
+app.get('/api/v2/getnn25secondbyfac',  aimatcontroller.getnn25secondbyfac);
+app.get('/api/v2/getnn25count',  aimatcontroller.getnn25count);
+app.get('/api/v2/getnn25second',  aimatcontroller.getnn25second);
+app.get('/api/v2/getnn26countbyfac',  aimatcontroller.getnn26countbyfac);
+app.get('/api/v2/getnn26secondbyfac',  aimatcontroller.getnn26secondbyfac);
+app.get('/api/v2/getnn26count',  aimatcontroller.getnn26count);
+app.get('/api/v2/getnn26second',  aimatcontroller.getnn26second);
+app.get('/api/v2/getnn31countbyfac',  aimatcontroller.getnn31countbyfac);
+app.get('/api/v2/getnn31secondbyfac',  aimatcontroller.getnn31secondbyfac);
+app.get('/api/v2/getnn31count',  aimatcontroller.getnn31count);
+app.get('/api/v2/getnn31second',  aimatcontroller.getnn31second);
+app.get('/api/v2/getnn32countbyfac',  aimatcontroller.getnn32countbyfac);
+app.get('/api/v2/getnn32secondbyfac',  aimatcontroller.getnn32secondbyfac);
+app.get('/api/v2/getnn32count',  aimatcontroller.getnn32count);
+app.get('/api/v2/getnn32second',  aimatcontroller.getnn32second);
+
+
+app.get('/api/v2/getnn211abyfac',  aimatcontroller.getnn211abyfac);
+app.get('/api/v2/updatenn211abyfac',  aimatcontroller.updatenn211abyfac);
+app.get('/api/v2/updatenn211acomments',  aimatcontroller.updatenn211acomments);
+app.get('/api/v2/nn211adocs',  aimatcontroller.nn211adocs);
+app.get('/api/v2/deletenn211abyfac',  aimatcontroller.deletenn211abyfac);
+app.get('/api/v2/createnn211abyfac',  aimatcontroller.createnn211abyfac);
+app.get('/api/v2/getnn211bbyfac',  aimatcontroller.getnn211bbyfac);
+app.get('/api/v2/updatenn211bbyfac',  aimatcontroller.updatenn211bbyfac);
+app.get('/api/v2/updatenn211bcomments',  aimatcontroller.updatenn211bcomments);
+app.get('/api/v2/nn211bdocs',  aimatcontroller.nn211bdocs);
+app.get('/api/v2/deletenn211bbyfac',  aimatcontroller.deletenn211bbyfac);
+app.get('/api/v2/createnn211bbyfac',  aimatcontroller.createnn211bbyfac);
+app.get('/api/v2/getnn22byfac',  aimatcontroller.getnn22byfac);
+app.get('/api/v2/updatenn22byfac',  aimatcontroller.updatenn22byfac);
+app.get('/api/v2/updatenn22comments',  aimatcontroller.updatenn22comments);
+app.get('/api/v2/nn22docs',  aimatcontroller.nn22docs);
+app.get('/api/v2/deletenn22byfac',  aimatcontroller.deletenn22byfac);
+app.get('/api/v2/createnn22byfac',  aimatcontroller.createnn22byfac);
+app.get('/api/v2/getnn23byfac',  aimatcontroller.getnn23byfac);
+app.get('/api/v2/updatenn23byfac',  aimatcontroller.updatenn23byfac);
+app.get('/api/v2/updatenn23comments',  aimatcontroller.updatenn23comments);
+app.get('/api/v2/nn23docs',  aimatcontroller.nn23docs);
+app.get('/api/v2/deletenn23byfac',  aimatcontroller.deletenn23byfac);
+app.get('/api/v2/createnn23byfac',  aimatcontroller.createnn23byfac);
+app.get('/api/v2/getnn244byfac',  aimatcontroller.getnn244byfac);
+app.get('/api/v2/updatenn244byfac',  aimatcontroller.updatenn244byfac);
+app.get('/api/v2/updatenn244comments',  aimatcontroller.updatenn244comments);
+app.get('/api/v2/nn244docs',  aimatcontroller.nn244docs);
+app.get('/api/v2/deletenn244byfac',  aimatcontroller.deletenn244byfac);
+app.get('/api/v2/createnn244byfac',  aimatcontroller.createnn244byfac);
+app.get('/api/v2/getnn25byfac',  aimatcontroller.getnn25byfac);
+app.get('/api/v2/updatenn25byfac',  aimatcontroller.updatenn25byfac);
+app.get('/api/v2/updatenn25comments',  aimatcontroller.updatenn25comments);
+app.get('/api/v2/nn25docs',  aimatcontroller.nn25docs);
+app.get('/api/v2/deletenn25byfac',  aimatcontroller.deletenn25byfac);
+app.get('/api/v2/createnn25byfac',  aimatcontroller.createnn25byfac);
+app.get('/api/v2/getnn26byfac',  aimatcontroller.getnn26byfac);
+app.get('/api/v2/updatenn26byfac',  aimatcontroller.updatenn26byfac);
+app.get('/api/v2/updatenn26comments',  aimatcontroller.updatenn26comments);
+app.get('/api/v2/nn26docs',  aimatcontroller.nn26docs);
+app.get('/api/v2/deletenn26byfac',  aimatcontroller.deletenn26byfac);
+app.get('/api/v2/createnn26byfac',  aimatcontroller.createnn26byfac);
+app.get('/api/v2/getnn31byfac',  aimatcontroller.getnn31byfac);
+app.get('/api/v2/updatenn31byfac',  aimatcontroller.updatenn31byfac);
+app.get('/api/v2/updatenn31comments',  aimatcontroller.updatenn31comments);
+app.get('/api/v2/nn31docs',  aimatcontroller.nn31docs);
+app.get('/api/v2/deletenn31byfac',  aimatcontroller.deletenn31byfac);
+app.get('/api/v2/createnn31byfac',  aimatcontroller.createnn31byfac);
+app.get('/api/v2/getnn32byfac',  aimatcontroller.getnn32byfac);
+app.get('/api/v2/updatenn32byfac',  aimatcontroller.updatenn32byfac);
+app.get('/api/v2/updatenn32comments',  aimatcontroller.updatenn32comments);
+app.get('/api/v2/nn32docs',  aimatcontroller.nn32docs);
+app.get('/api/v2/deletenn32byfac',  aimatcontroller.deletenn32byfac);
+app.get('/api/v2/createnn32byfac',  aimatcontroller.createnn32byfac);
+
+
+app.get('/api/v2/getnn11countbyfac',  aimatcontroller.getnn11countbyfac);
+app.get('/api/v2/getnn11secondbyfac',  aimatcontroller.getnn11secondbyfac);
+app.get('/api/v2/getnn11count',  aimatcontroller.getnn11count);
+app.get('/api/v2/getnn11second',  aimatcontroller.getnn11second);
+app.get('/api/v2/getnn12countbyfac',  aimatcontroller.getnn12countbyfac);
+app.get('/api/v2/getnn12secondbyfac',  aimatcontroller.getnn12secondbyfac);
+app.get('/api/v2/getnn12count',  aimatcontroller.getnn12count);
+app.get('/api/v2/getnn12second',  aimatcontroller.getnn12second);
+app.get('/api/v2/getnn14countbyfac',  aimatcontroller.getnn14countbyfac);
+app.get('/api/v2/getnn14secondbyfac',  aimatcontroller.getnn14secondbyfac);
+app.get('/api/v2/getnn14count',  aimatcontroller.getnn14count);
+app.get('/api/v2/getnn14second',  aimatcontroller.getnn14second);
+app.get('/api/v2/getnn15countbyfac',  aimatcontroller.getnn15countbyfac);
+app.get('/api/v2/getnn15secondbyfac',  aimatcontroller.getnn15secondbyfac);
+app.get('/api/v2/getnn15count',  aimatcontroller.getnn15count);
+app.get('/api/v2/getnn15second',  aimatcontroller.getnn15second);
+app.get('/api/v2/getnn16countbyfac',  aimatcontroller.getnn16countbyfac);
+app.get('/api/v2/getnn16secondbyfac',  aimatcontroller.getnn16secondbyfac);
+app.get('/api/v2/getnn16count',  aimatcontroller.getnn16count);
+app.get('/api/v2/getnn16second',  aimatcontroller.getnn16second);
+app.get('/api/v2/getnn17countbyfac',  aimatcontroller.getnn17countbyfac);
+app.get('/api/v2/getnn17secondbyfac',  aimatcontroller.getnn17secondbyfac);
+app.get('/api/v2/getnn17count',  aimatcontroller.getnn17count);
+app.get('/api/v2/getnn17second',  aimatcontroller.getnn17second);
+
+
+app.get('/api/v2/getnn11byfac',  aimatcontroller.getnn11byfac);
+app.get('/api/v2/updatenn11byfac',  aimatcontroller.updatenn11byfac);
+app.get('/api/v2/updatenn11comments',  aimatcontroller.updatenn11comments);
+app.get('/api/v2/nn11docs',  aimatcontroller.nn11docs);
+app.get('/api/v2/deletenn11byfac',  aimatcontroller.deletenn11byfac);
+app.get('/api/v2/createnn11byfac',  aimatcontroller.createnn11byfac);
+app.get('/api/v2/getnn12byfac',  aimatcontroller.getnn12byfac);
+app.get('/api/v2/updatenn12byfac',  aimatcontroller.updatenn12byfac);
+app.get('/api/v2/updatenn12comments',  aimatcontroller.updatenn12comments);
+app.get('/api/v2/nn12docs',  aimatcontroller.nn12docs);
+app.get('/api/v2/deletenn12byfac',  aimatcontroller.deletenn12byfac);
+app.get('/api/v2/createnn12byfac',  aimatcontroller.createnn12byfac);
+app.get('/api/v2/getnn14byfac',  aimatcontroller.getnn14byfac);
+app.get('/api/v2/updatenn14byfac',  aimatcontroller.updatenn14byfac);
+app.get('/api/v2/updatenn14comments',  aimatcontroller.updatenn14comments);
+app.get('/api/v2/nn14docs',  aimatcontroller.nn14docs);
+app.get('/api/v2/deletenn14byfac',  aimatcontroller.deletenn14byfac);
+app.get('/api/v2/createnn14byfac',  aimatcontroller.createnn14byfac);
+app.get('/api/v2/getnn15byfac',  aimatcontroller.getnn15byfac);
+app.get('/api/v2/updatenn15byfac',  aimatcontroller.updatenn15byfac);
+app.get('/api/v2/updatenn15comments',  aimatcontroller.updatenn15comments);
+app.get('/api/v2/nn15docs',  aimatcontroller.nn15docs);
+app.get('/api/v2/deletenn15byfac',  aimatcontroller.deletenn15byfac);
+app.get('/api/v2/createnn15byfac',  aimatcontroller.createnn15byfac);
+app.get('/api/v2/getnn16byfac',  aimatcontroller.getnn16byfac);
+app.get('/api/v2/updatenn16byfac',  aimatcontroller.updatenn16byfac);
+app.get('/api/v2/updatenn16comments',  aimatcontroller.updatenn16comments);
+app.get('/api/v2/nn16docs',  aimatcontroller.nn16docs);
+app.get('/api/v2/deletenn16byfac',  aimatcontroller.deletenn16byfac);
+app.get('/api/v2/createnn16byfac',  aimatcontroller.createnn16byfac);
+app.get('/api/v2/getnn17byfac',  aimatcontroller.getnn17byfac);
+app.get('/api/v2/updatenn17byfac',  aimatcontroller.updatenn17byfac);
+app.get('/api/v2/updatenn17comments',  aimatcontroller.updatenn17comments);
+app.get('/api/v2/nn17docs',  aimatcontroller.nn17docs);
+app.get('/api/v2/deletenn17byfac',  aimatcontroller.deletenn17byfac);
+app.get('/api/v2/createnn17byfac',  aimatcontroller.createnn17byfac);
+
+
+app.get('/api/v2/createuserbyrole1',  aimatcontroller.createuserbyrole1);
+
+app.get('/api/v2/getscholdistinct',  aimatcontroller.getscholdistinct);
+app.get('/api/v2/getscholcountyear',  aimatcontroller.getscholcountyear);
+app.get('/api/v2/getbtrialbcountyear',  aimatcontroller.getbtrialbcountyear);
+
+app.get('/api/v2/getbtrialbcountbyfac',  aimatcontroller.getbtrialbcountbyfac);
+app.get('/api/v2/getbtrialbsecondbyfac',  aimatcontroller.getbtrialbsecondbyfac);
+app.get('/api/v2/getbtrialbcount',  aimatcontroller.getbtrialbcount);
+app.get('/api/v2/getbtrialbsecond',  aimatcontroller.getbtrialbsecond);
+app.get('/api/v2/getbfacyearcountbyfac',  aimatcontroller.getbfacyearcountbyfac);
+app.get('/api/v2/getbfacyearsecondbyfac',  aimatcontroller.getbfacyearsecondbyfac);
+app.get('/api/v2/getbfacyearcount',  aimatcontroller.getbfacyearcount);
+app.get('/api/v2/getbfacyearsecond',  aimatcontroller.getbfacyearsecond);
+app.get('/api/v2/getstudlistcountbyfac',  aimatcontroller.getstudlistcountbyfac);
+app.get('/api/v2/getstudlistsecondbyfac',  aimatcontroller.getstudlistsecondbyfac);
+app.get('/api/v2/getstudlistcount',  aimatcontroller.getstudlistcount);
+app.get('/api/v2/getstudlistsecond',  aimatcontroller.getstudlistsecond);
+
+
+app.get('/api/v2/getbtrialbbyfac',  aimatcontroller.getbtrialbbyfac);
+app.get('/api/v2/updatebtrialbbyfac',  aimatcontroller.updatebtrialbbyfac);
+app.get('/api/v2/updatebtrialbcomments',  aimatcontroller.updatebtrialbcomments);
+app.get('/api/v2/btrialbdocs',  aimatcontroller.btrialbdocs);
+app.get('/api/v2/deletebtrialbbyfac',  aimatcontroller.deletebtrialbbyfac);
+app.get('/api/v2/createbtrialbbyfac',  aimatcontroller.createbtrialbbyfac);
+app.get('/api/v2/getbfacyearbyfac',  aimatcontroller.getbfacyearbyfac);
+app.get('/api/v2/updatebfacyearbyfac',  aimatcontroller.updatebfacyearbyfac);
+app.get('/api/v2/updatebfacyearcomments',  aimatcontroller.updatebfacyearcomments);
+app.get('/api/v2/bfacyeardocs',  aimatcontroller.bfacyeardocs);
+app.get('/api/v2/deletebfacyearbyfac',  aimatcontroller.deletebfacyearbyfac);
+app.get('/api/v2/createbfacyearbyfac',  aimatcontroller.createbfacyearbyfac);
+app.get('/api/v2/getstudlistbyfac',  aimatcontroller.getstudlistbyfac);
+app.get('/api/v2/updatestudlistbyfac',  aimatcontroller.updatestudlistbyfac);
+app.get('/api/v2/updatestudlistcomments',  aimatcontroller.updatestudlistcomments);
+app.get('/api/v2/studlistdocs',  aimatcontroller.studlistdocs);
+app.get('/api/v2/deletestudlistbyfac',  aimatcontroller.deletestudlistbyfac);
+app.get('/api/v2/createstudlistbyfac',  aimatcontroller.createstudlistbyfac);
+
+
+app.get('/api/v2/getbmoucount',  aimatcontroller.getbmoucount);
+
+app.get('/api/v2/getbmoubyfac',  aimatcontroller.getbmoubyfac);
+app.get('/api/v2/updatebmoubyfac',  aimatcontroller.updatebmoubyfac);
+app.get('/api/v2/updatebmoucomments',  aimatcontroller.updatebmoucomments);
+app.get('/api/v2/bmoudocs',  aimatcontroller.bmoudocs);
+app.get('/api/v2/deletebmoubyfac',  aimatcontroller.deletebmoubyfac);
+app.get('/api/v2/createbmoubyfac',  aimatcontroller.createbmoubyfac);
+
+app.get('/api/v2/getbmoucountbyfac',  aimatcontroller.getbmoucountbyfac);
+app.get('/api/v2/getbmousecondbyfac',  aimatcontroller.getbmousecondbyfac);
+app.get('/api/v2/getbmoucount',  aimatcontroller.getbmoucount);
+app.get('/api/v2/getbmousecond',  aimatcontroller.getbmousecond);
+
+
+app.get('/api/v2/getinternupcoming',  aimatcontroller.getinternupcoming);
+app.get('/api/v2/getuserbyprogramcode',  aimatcontroller.getuserbyprogramcode);
+app.get('/api/v2/getminewmsearchhei1',  aimatcontroller.getminewmsearchhei1);
+app.get('/api/v2/getinternlevel',  aimatcontroller.getinternlevel);
+
+app.get('/api/v2/getminewmsearchhei',  aimatcontroller.getminewmsearchhei);
+app.get('/api/v2/getminewmsearchsch',  aimatcontroller.getminewmsearchsch);
+
+app.get('/api/v2/createinternsession1',  aimatcontroller.createinternsession1);
+
+app.get('/api/v2/getmiqnewrandom',  aimatcontroller.getmiqnewrandom);
+app.get('/api/v2/getmisessionsbyid',  aimatcontroller.getmisessionsbyid);
+app.get('/api/v2/getminewmbyid',  aimatcontroller.getminewmbyid);
+app.get('/api/v2/getmiseenrol1type',  aimatcontroller.getmiseenrol1type);
+
+app.get('/api/v2/getuserbyinst',  aimatcontroller.getuserbyinst);
+
+app.get('/api/v2/getmiseenrol1type',  aimatcontroller.getmiseenrol1type);
+app.get('/api/v2/createmiseenrol1u',  aimatcontroller.createmiseenrol1u);
+app.get('/api/v2/getmisessionsf',  aimatcontroller.getmisessionsf);
+
+app.get('/api/v2/getmpcodesearch',  aimatcontroller.getmpcodesearch);
+
+app.get('/api/v2/getminewmsearch',  aimatcontroller.getminewmsearch);
+app.get('/api/v2/getmiscoresummary',  aimatcontroller.getmiscoresummary);
+
+app.get('/api/v2/getminewmbyfac',  aimatcontroller.getminewmbyfac);
+app.get('/api/v2/updateminewmbyfac',  aimatcontroller.updateminewmbyfac);
+app.get('/api/v2/updateminewmcomments',  aimatcontroller.updateminewmcomments);
+app.get('/api/v2/minewmdocs',  aimatcontroller.minewmdocs);
+app.get('/api/v2/deleteminewmbyfac',  aimatcontroller.deleteminewmbyfac);
+app.get('/api/v2/createminewmbyfac',  aimatcontroller.createminewmbyfac);
+app.get('/api/v2/getmisessionsbyfac',  aimatcontroller.getmisessionsbyfac);
+app.get('/api/v2/updatemisessionsbyfac',  aimatcontroller.updatemisessionsbyfac);
+app.get('/api/v2/updatemisessionscomments',  aimatcontroller.updatemisessionscomments);
+app.get('/api/v2/misessionsdocs',  aimatcontroller.misessionsdocs);
+app.get('/api/v2/deletemisessionsbyfac',  aimatcontroller.deletemisessionsbyfac);
+app.get('/api/v2/createmisessionsbyfac',  aimatcontroller.createmisessionsbyfac);
+app.get('/api/v2/getmiseenrol1byfac',  aimatcontroller.getmiseenrol1byfac);
+app.get('/api/v2/updatemiseenrol1byfac',  aimatcontroller.updatemiseenrol1byfac);
+app.get('/api/v2/updatemiseenrol1comments',  aimatcontroller.updatemiseenrol1comments);
+app.get('/api/v2/miseenrol1docs',  aimatcontroller.miseenrol1docs);
+app.get('/api/v2/deletemiseenrol1byfac',  aimatcontroller.deletemiseenrol1byfac);
+app.get('/api/v2/createmiseenrol1byfac',  aimatcontroller.createmiseenrol1byfac);
+app.get('/api/v2/getmisections1byfac',  aimatcontroller.getmisections1byfac);
+app.get('/api/v2/updatemisections1byfac',  aimatcontroller.updatemisections1byfac);
+app.get('/api/v2/updatemisections1comments',  aimatcontroller.updatemisections1comments);
+app.get('/api/v2/misections1docs',  aimatcontroller.misections1docs);
+app.get('/api/v2/deletemisections1byfac',  aimatcontroller.deletemisections1byfac);
+app.get('/api/v2/createmisections1byfac',  aimatcontroller.createmisections1byfac);
+app.get('/api/v2/getmiqnewbyfac',  aimatcontroller.getmiqnewbyfac);
+app.get('/api/v2/updatemiqnewbyfac',  aimatcontroller.updatemiqnewbyfac);
+app.get('/api/v2/updatemiqnewcomments',  aimatcontroller.updatemiqnewcomments);
+app.get('/api/v2/miqnewdocs',  aimatcontroller.miqnewdocs);
+app.get('/api/v2/deletemiqnewbyfac',  aimatcontroller.deletemiqnewbyfac);
+app.get('/api/v2/createmiqnewbyfac',  aimatcontroller.createmiqnewbyfac);
+app.get('/api/v2/getmiscoresbyfac',  aimatcontroller.getmiscoresbyfac);
+app.get('/api/v2/updatemiscoresbyfac',  aimatcontroller.updatemiscoresbyfac);
+app.get('/api/v2/updatemiscorescomments',  aimatcontroller.updatemiscorescomments);
+app.get('/api/v2/miscoresdocs',  aimatcontroller.miscoresdocs);
+app.get('/api/v2/deletemiscoresbyfac',  aimatcontroller.deletemiscoresbyfac);
+app.get('/api/v2/createmiscoresbyfac',  aimatcontroller.createmiscoresbyfac);
+
+app.get('/api/v2/getminewmcountbyfac',  aimatcontroller.getminewmcountbyfac);
+app.get('/api/v2/getminewmsecondbyfac',  aimatcontroller.getminewmsecondbyfac);
+app.get('/api/v2/getminewmcount',  aimatcontroller.getminewmcount);
+app.get('/api/v2/getminewmsecond',  aimatcontroller.getminewmsecond);
+app.get('/api/v2/getmisessionscountbyfac',  aimatcontroller.getmisessionscountbyfac);
+app.get('/api/v2/getmisessionssecondbyfac',  aimatcontroller.getmisessionssecondbyfac);
+app.get('/api/v2/getmisessionscount',  aimatcontroller.getmisessionscount);
+app.get('/api/v2/getmisessionssecond',  aimatcontroller.getmisessionssecond);
+app.get('/api/v2/getmiqnewcountbyfac',  aimatcontroller.getmiqnewcountbyfac);
+app.get('/api/v2/getmiqnewsecondbyfac',  aimatcontroller.getmiqnewsecondbyfac);
+app.get('/api/v2/getmiqnewcount',  aimatcontroller.getmiqnewcount);
+app.get('/api/v2/getmiqnewsecond',  aimatcontroller.getmiqnewsecond);
+app.get('/api/v2/getmiseenrol1countbyfac',  aimatcontroller.getmiseenrol1countbyfac);
+app.get('/api/v2/getmiseenrol1secondbyfac',  aimatcontroller.getmiseenrol1secondbyfac);
+app.get('/api/v2/getmiseenrol1count',  aimatcontroller.getmiseenrol1count);
+app.get('/api/v2/getmiseenrol1second',  aimatcontroller.getmiseenrol1second);
+app.get('/api/v2/getmisections1countbyfac',  aimatcontroller.getmisections1countbyfac);
+app.get('/api/v2/getmisections1secondbyfac',  aimatcontroller.getmisections1secondbyfac);
+app.get('/api/v2/getmisections1count',  aimatcontroller.getmisections1count);
+app.get('/api/v2/getmisections1second',  aimatcontroller.getmisections1second);
+
+
+
+app.get('/api/v2/updateexamreg',  aimatcontroller.updateexamreg);
+
+app.get('/api/v2/changecategory1',  aimatcontroller.changecategory1);
+app.get('/api/v2/changenodeposition',  aimatcontroller.changenodeposition);
+app.get('/api/v2/getmindmapnodesbymapid',  aimatcontroller.getmindmapnodesbymapid);
+app.get('/api/v2/getmindmapedgesbymapid',  aimatcontroller.getmindmapedgesbymapid);
+
+app.get('/api/v2/getmindmaplistbyfac',  aimatcontroller.getmindmaplistbyfac);
+app.get('/api/v2/updatemindmaplistbyfac',  aimatcontroller.updatemindmaplistbyfac);
+app.get('/api/v2/updatemindmaplistcomments',  aimatcontroller.updatemindmaplistcomments);
+app.get('/api/v2/mindmaplistdocs',  aimatcontroller.mindmaplistdocs);
+app.get('/api/v2/deletemindmaplistbyfac',  aimatcontroller.deletemindmaplistbyfac);
+app.get('/api/v2/createmindmaplistbyfac',  aimatcontroller.createmindmaplistbyfac);
+app.get('/api/v2/getmindmapnodesbyfac',  aimatcontroller.getmindmapnodesbyfac);
+app.get('/api/v2/updatemindmapnodesbyfac',  aimatcontroller.updatemindmapnodesbyfac);
+app.get('/api/v2/updatemindmapnodescomments',  aimatcontroller.updatemindmapnodescomments);
+app.get('/api/v2/mindmapnodesdocs',  aimatcontroller.mindmapnodesdocs);
+app.get('/api/v2/deletemindmapnodesbyfac',  aimatcontroller.deletemindmapnodesbyfac);
+app.get('/api/v2/createmindmapnodesbyfac',  aimatcontroller.createmindmapnodesbyfac);
+app.get('/api/v2/getmindmapedgesbyfac',  aimatcontroller.getmindmapedgesbyfac);
+app.get('/api/v2/updatemindmapedgesbyfac',  aimatcontroller.updatemindmapedgesbyfac);
+app.get('/api/v2/updatemindmapedgescomments',  aimatcontroller.updatemindmapedgescomments);
+app.get('/api/v2/mindmapedgesdocs',  aimatcontroller.mindmapedgesdocs);
+app.get('/api/v2/deletemindmapedgesbyfac',  aimatcontroller.deletemindmapedgesbyfac);
+app.get('/api/v2/createmindmapedgesbyfac',  aimatcontroller.createmindmapedgesbyfac);
+
+app.get('/api/v2/getmindmaplistcountbyfac',  aimatcontroller.getmindmaplistcountbyfac);
+app.get('/api/v2/getmindmaplistsecondbyfac',  aimatcontroller.getmindmaplistsecondbyfac);
+app.get('/api/v2/getmindmaplistcount',  aimatcontroller.getmindmaplistcount);
+app.get('/api/v2/getmindmaplistsecond',  aimatcontroller.getmindmaplistsecond);
+app.get('/api/v2/getmindmapnodescountbyfac',  aimatcontroller.getmindmapnodescountbyfac);
+app.get('/api/v2/getmindmapnodessecondbyfac',  aimatcontroller.getmindmapnodessecondbyfac);
+app.get('/api/v2/getmindmapnodescount',  aimatcontroller.getmindmapnodescount);
+app.get('/api/v2/getmindmapnodessecond',  aimatcontroller.getmindmapnodessecond);
+app.get('/api/v2/getmindmapedgescountbyfac',  aimatcontroller.getmindmapedgescountbyfac);
+app.get('/api/v2/getmindmapedgessecondbyfac',  aimatcontroller.getmindmapedgessecondbyfac);
+app.get('/api/v2/getmindmapedgescount',  aimatcontroller.getmindmapedgescount);
+app.get('/api/v2/getmindmapedgessecond',  aimatcontroller.getmindmapedgessecond);
+
+
+app.get('/api/v2/updatesubscription',  aimatcontroller.updatesubscription);
+
+app.get('/api/v2/getmtestscoresummaryall',  aimatcontroller.getmtestscoresummaryall);
+
+app.get('/api/v2/updatelastloginall',  aimatcontroller.updatelastloginall);
+app.get('/api/v2/updatelastlogin',  aimatcontroller.updatelastlogin);
+
+app.get('/api/v2/deletestudents',  aimatcontroller.deletestudents);
+
+app.get('/api/v2/updatesessionreg',  aimatcontroller.updatesessionreg);
+app.get('/api/v2/updateuserrole',  aimatcontroller.updateuserrole);
+
+app.get('/api/v2/createautosession1',  aimatcontroller.createautosession1);
+app.get('/api/v2/createautosession',  aimatcontroller.createautosession);
+
+app.get('/api/v2/getonlinepaybyfac',  aimatcontroller.getonlinepaybyfac);
+app.get('/api/v2/updateonlinepaybyfac',  aimatcontroller.updateonlinepaybyfac);
+app.get('/api/v2/updateonlinepaycomments',  aimatcontroller.updateonlinepaycomments);
+app.get('/api/v2/onlinepaydocs',  aimatcontroller.onlinepaydocs);
+app.get('/api/v2/deleteonlinepaybyfac',  aimatcontroller.deleteonlinepaybyfac);
+app.get('/api/v2/createonlinepaybyfac',  aimatcontroller.createonlinepaybyfac);
+
+app.get('/api/v2/getonlinepaycountbyfac',  aimatcontroller.getonlinepaycountbyfac);
+app.get('/api/v2/getonlinepaysecondbyfac',  aimatcontroller.getonlinepaysecondbyfac);
+app.get('/api/v2/getonlinepaycount',  aimatcontroller.getonlinepaycount);
+app.get('/api/v2/getonlinepaysecond',  aimatcontroller.getonlinepaysecond);
+
+
+app.get('/api/v2/getmguidessearchmode',  aimatcontroller.getmguidessearchmode);
+app.get('/api/v2/getmguidesdsubcat2',  aimatcontroller.getmguidesdsubcat2);
+app.get('/api/v2/getmguidessearchmod',  aimatcontroller.getmguidessearchmod);
+app.get('/api/v2/getmguidesdsub',  aimatcontroller.getmguidesdsub);
+app.get('/api/v2/getmguidesbycat1sub',  aimatcontroller.getmguidesbycat1sub);
+app.get('/api/v2/getmguidessearchcat2',  aimatcontroller.getmguidessearchcat2);
+app.get('/api/v2/getmguidessearch',  aimatcontroller.getmguidessearch);
+app.get('/api/v2/getmguidesdcat1',  aimatcontroller.getmguidesdcat1);
+
+app.get('/api/v2/getmguidescountbyfac',  aimatcontroller.getmguidescountbyfac);
+app.get('/api/v2/getmguidessecondbyfac',  aimatcontroller.getmguidessecondbyfac);
+app.get('/api/v2/getmguidescount',  aimatcontroller.getmguidescount);
+app.get('/api/v2/getmguidessecond',  aimatcontroller.getmguidessecond);
+app.get('/api/v2/getmctalentregcountbyfac',  aimatcontroller.getmctalentregcountbyfac);
+app.get('/api/v2/getmctalentregsecondbyfac',  aimatcontroller.getmctalentregsecondbyfac);
+app.get('/api/v2/getmctalentregcount',  aimatcontroller.getmctalentregcount);
+app.get('/api/v2/getmctalentregsecond',  aimatcontroller.getmctalentregsecond);
+app.get('/api/v2/getmtestqnewcscountbyfac',  aimatcontroller.getmtestqnewcscountbyfac);
+app.get('/api/v2/getmtestqnewcssecondbyfac',  aimatcontroller.getmtestqnewcssecondbyfac);
+app.get('/api/v2/getmtestqnewcscount',  aimatcontroller.getmtestqnewcscount);
+app.get('/api/v2/getmtestqnewcssecond',  aimatcontroller.getmtestqnewcssecond);
+
+
+app.get('/api/v2/getmguidesbyfac',  aimatcontroller.getmguidesbyfac);
+app.get('/api/v2/updatemguidesbyfac',  aimatcontroller.updatemguidesbyfac);
+app.get('/api/v2/updatemguidescomments',  aimatcontroller.updatemguidescomments);
+app.get('/api/v2/mguidesdocs',  aimatcontroller.mguidesdocs);
+app.get('/api/v2/deletemguidesbyfac',  aimatcontroller.deletemguidesbyfac);
+app.get('/api/v2/createmguidesbyfac',  aimatcontroller.createmguidesbyfac);
+app.get('/api/v2/getmctalentregbyfac',  aimatcontroller.getmctalentregbyfac);
+app.get('/api/v2/updatemctalentregbyfac',  aimatcontroller.updatemctalentregbyfac);
+app.get('/api/v2/updatemctalentregcomments',  aimatcontroller.updatemctalentregcomments);
+app.get('/api/v2/mctalentregdocs',  aimatcontroller.mctalentregdocs);
+app.get('/api/v2/deletemctalentregbyfac',  aimatcontroller.deletemctalentregbyfac);
+app.get('/api/v2/createmctalentregbyfac',  aimatcontroller.createmctalentregbyfac);
+app.get('/api/v2/getmtestqnewcsbyfac',  aimatcontroller.getmtestqnewcsbyfac);
+app.get('/api/v2/updatemtestqnewcsbyfac',  aimatcontroller.updatemtestqnewcsbyfac);
+app.get('/api/v2/updatemtestqnewcscomments',  aimatcontroller.updatemtestqnewcscomments);
+app.get('/api/v2/mtestqnewcsdocs',  aimatcontroller.mtestqnewcsdocs);
+app.get('/api/v2/deletemtestqnewcsbyfac',  aimatcontroller.deletemtestqnewcsbyfac);
+app.get('/api/v2/createmtestqnewcsbyfac',  aimatcontroller.createmtestqnewcsbyfac);
+
+
+app.get('/api/v2/createmtestseenrol1u',  aimatcontroller.createmtestseenrol1u);
+
+app.get('/api/v2/getmtestsessionsf',  aimatcontroller.getmtestsessionsf);
+app.get('/api/v2/getmtestnewmsearch',  aimatcontroller.getmtestnewmsearch);
+app.get('/api/v2/createstudentsapp',  aimatcontroller.createstudentsapp);
+
+app.get('/api/v2/getmtestscoresnew1byfac',  aimatcontroller.getmtestscoresnew1byfac);
+app.get('/api/v2/updatemtestscoresnew1byfac',  aimatcontroller.updatemtestscoresnew1byfac);
+app.get('/api/v2/updatemtestscoresnew1comments',  aimatcontroller.updatemtestscoresnew1comments);
+app.get('/api/v2/mtestscoresnew1docs',  aimatcontroller.mtestscoresnew1docs);
+app.get('/api/v2/deletemtestscoresnew1byfac',  aimatcontroller.deletemtestscoresnew1byfac);
+app.get('/api/v2/createmtestscoresnew1byfac',  aimatcontroller.createmtestscoresnew1byfac);
+
+
+app.get('/api/v2/getmtestsections1byfac',  aimatcontroller.getmtestsections1byfac);
+app.get('/api/v2/updatemtestsections1byfac',  aimatcontroller.updatemtestsections1byfac);
+app.get('/api/v2/updatemtestsections1comments',  aimatcontroller.updatemtestsections1comments);
+app.get('/api/v2/mtestsections1docs',  aimatcontroller.mtestsections1docs);
+app.get('/api/v2/deletemtestsections1byfac',  aimatcontroller.deletemtestsections1byfac);
+app.get('/api/v2/createmtestsections1byfac',  aimatcontroller.createmtestsections1byfac);
+
+app.get('/api/v2/getmtestsections1countbyfac',  aimatcontroller.getmtestsections1countbyfac);
+app.get('/api/v2/getmtestsections1secondbyfac',  aimatcontroller.getmtestsections1secondbyfac);
+app.get('/api/v2/getmtestsections1count',  aimatcontroller.getmtestsections1count);
+app.get('/api/v2/getmtestsections1second',  aimatcontroller.getmtestsections1second);
+
+
+app.get('/api/v2/getmtestseenrol1byfac',  aimatcontroller.getmtestseenrol1byfac);
+app.get('/api/v2/updatemtestseenrol1byfac',  aimatcontroller.updatemtestseenrol1byfac);
+app.get('/api/v2/updatemtestseenrol1comments',  aimatcontroller.updatemtestseenrol1comments);
+app.get('/api/v2/mtestseenrol1docs',  aimatcontroller.mtestseenrol1docs);
+app.get('/api/v2/deletemtestseenrol1byfac',  aimatcontroller.deletemtestseenrol1byfac);
+app.get('/api/v2/createmtestseenrol1byfac',  aimatcontroller.createmtestseenrol1byfac);
+
+app.get('/api/v2/getmtestseenrol1studbyfac',  aimatcontroller.getmtestseenrol1studbyfac);
+app.get('/api/v2/getmtestseenrol1studtype',  aimatcontroller.getmtestseenrol1studtype);
+app.get('/api/v2/getmtestseenrol1type',  aimatcontroller.getmtestseenrol1type);
+
+app.get('/api/v2/getmtestseenrol1countbyfac',  aimatcontroller.getmtestseenrol1countbyfac);
+app.get('/api/v2/getmtestseenrol1secondbyfac',  aimatcontroller.getmtestseenrol1secondbyfac);
+app.get('/api/v2/getmtestseenrol1count',  aimatcontroller.getmtestseenrol1count);
+app.get('/api/v2/getmtestseenrol1second',  aimatcontroller.getmtestseenrol1second);
+
+
+app.get('/api/v2/getmtestnewmbyfac',  aimatcontroller.getmtestnewmbyfac);
+app.get('/api/v2/getmtestnewmbyid',  aimatcontroller.getmtestnewmbyid);
+app.get('/api/v2/updatemtestnewmbyfac',  aimatcontroller.updatemtestnewmbyfac);
+app.get('/api/v2/updatemtestnewmcomments',  aimatcontroller.updatemtestnewmcomments);
+app.get('/api/v2/mtestnewmdocs',  aimatcontroller.mtestnewmdocs);
+app.get('/api/v2/deletemtestnewmbyfac',  aimatcontroller.deletemtestnewmbyfac);
+app.get('/api/v2/createmtestnewmbyfac',  aimatcontroller.createmtestnewmbyfac);
+app.get('/api/v2/getmtestsessionsbyfac',  aimatcontroller.getmtestsessionsbyfac);
+app.get('/api/v2/getmtestsessionsbyid',  aimatcontroller.getmtestsessionsbyid);
+app.get('/api/v2/updatemtestsessionsbyfac',  aimatcontroller.updatemtestsessionsbyfac);
+app.get('/api/v2/updatemtestsessionscomments',  aimatcontroller.updatemtestsessionscomments);
+app.get('/api/v2/mtestsessionsdocs',  aimatcontroller.mtestsessionsdocs);
+app.get('/api/v2/deletemtestsessionsbyfac',  aimatcontroller.deletemtestsessionsbyfac);
+app.get('/api/v2/createmtestsessionsbyfac',  aimatcontroller.createmtestsessionsbyfac);
+app.get('/api/v2/getmtestseenrolbyfac',  aimatcontroller.getmtestseenrolbyfac);
+app.get('/api/v2/updatemtestseenrolbyfac',  aimatcontroller.updatemtestseenrolbyfac);
+app.get('/api/v2/updatemtestseenrolcomments',  aimatcontroller.updatemtestseenrolcomments);
+app.get('/api/v2/mtestseenroldocs',  aimatcontroller.mtestseenroldocs);
+app.get('/api/v2/deletemtestseenrolbyfac',  aimatcontroller.deletemtestseenrolbyfac);
+app.get('/api/v2/createmtestseenrolbyfac',  aimatcontroller.createmtestseenrolbyfac);
+app.get('/api/v2/getmtestsectionsbyfac',  aimatcontroller.getmtestsectionsbyfac);
+app.get('/api/v2/updatemtestsectionsbyfac',  aimatcontroller.updatemtestsectionsbyfac);
+app.get('/api/v2/updatemtestsectionscomments',  aimatcontroller.updatemtestsectionscomments);
+app.get('/api/v2/mtestsectionsdocs',  aimatcontroller.mtestsectionsdocs);
+app.get('/api/v2/deletemtestsectionsbyfac',  aimatcontroller.deletemtestsectionsbyfac);
+app.get('/api/v2/createmtestsectionsbyfac',  aimatcontroller.createmtestsectionsbyfac);
+app.get('/api/v2/getmtestqnewbyfac',  aimatcontroller.getmtestqnewbyfac);
+app.get('/api/v2/getmtestqnewrandom',  aimatcontroller.getmtestqnewrandom);
+app.get('/api/v2/updatemtestqnewbyfac',  aimatcontroller.updatemtestqnewbyfac);
+app.get('/api/v2/updatemtestqnewcomments',  aimatcontroller.updatemtestqnewcomments);
+app.get('/api/v2/mtestqnewdocs',  aimatcontroller.mtestqnewdocs);
+app.get('/api/v2/deletemtestqnewbyfac',  aimatcontroller.deletemtestqnewbyfac);
+app.get('/api/v2/createmtestqnewbyfac',  aimatcontroller.createmtestqnewbyfac);
+
+
+
+app.get('/api/v2/getmtestnewmcountbyfac',  aimatcontroller.getmtestnewmcountbyfac);
+app.get('/api/v2/getmtestnewmsecondbyfac',  aimatcontroller.getmtestnewmsecondbyfac);
+app.get('/api/v2/getmtestnewmcount',  aimatcontroller.getmtestnewmcount);
+app.get('/api/v2/getmtestnewmsecond',  aimatcontroller.getmtestnewmsecond);
+app.get('/api/v2/getmtestsessionscountbyfac',  aimatcontroller.getmtestsessionscountbyfac);
+app.get('/api/v2/getmtestsessionssecondbyfac',  aimatcontroller.getmtestsessionssecondbyfac);
+app.get('/api/v2/getmtestsessionscount',  aimatcontroller.getmtestsessionscount);
+app.get('/api/v2/getmtestsessionssecond',  aimatcontroller.getmtestsessionssecond);
+app.get('/api/v2/getmtestseenrolcountbyfac',  aimatcontroller.getmtestseenrolcountbyfac);
+app.get('/api/v2/getmtestseenrolsecondbyfac',  aimatcontroller.getmtestseenrolsecondbyfac);
+app.get('/api/v2/getmtestseenrolcount',  aimatcontroller.getmtestseenrolcount);
+app.get('/api/v2/getmtestseenrolsecond',  aimatcontroller.getmtestseenrolsecond);
+app.get('/api/v2/getmtestsectionscountbyfac',  aimatcontroller.getmtestsectionscountbyfac);
+app.get('/api/v2/getmtestsectionssecondbyfac',  aimatcontroller.getmtestsectionssecondbyfac);
+app.get('/api/v2/getmtestsectionscount',  aimatcontroller.getmtestsectionscount);
+app.get('/api/v2/getmtestsectionssecond',  aimatcontroller.getmtestsectionssecond);
+app.get('/api/v2/getmtestqnewcountbyfac',  aimatcontroller.getmtestqnewcountbyfac);
+app.get('/api/v2/getmtestqnewsecondbyfac',  aimatcontroller.getmtestqnewsecondbyfac);
+app.get('/api/v2/getmtestqnewcount',  aimatcontroller.getmtestqnewcount);
+app.get('/api/v2/getmtestqnewsecond',  aimatcontroller.getmtestqnewsecond);
+
+
+app.get('/api/v2/getmassetscountbyfac',  aimatcontroller.getmassetscountbyfac);
+app.get('/api/v2/getmassetssecondbyfac',  aimatcontroller.getmassetssecondbyfac);
+app.get('/api/v2/getmassetscount',  aimatcontroller.getmassetscount);
+app.get('/api/v2/getmassetssecond',  aimatcontroller.getmassetssecond);
+app.get('/api/v2/getmassetassigncountbyfac',  aimatcontroller.getmassetassigncountbyfac);
+app.get('/api/v2/getmassetassignsecondbyfac',  aimatcontroller.getmassetassignsecondbyfac);
+app.get('/api/v2/getmassetassigncount',  aimatcontroller.getmassetassigncount);
+app.get('/api/v2/getmassetassignsecond',  aimatcontroller.getmassetassignsecond);
+app.get('/api/v2/getmvendorscountbyfac',  aimatcontroller.getmvendorscountbyfac);
+app.get('/api/v2/getmvendorssecondbyfac',  aimatcontroller.getmvendorssecondbyfac);
+app.get('/api/v2/getmvendorscount',  aimatcontroller.getmvendorscount);
+app.get('/api/v2/getmvendorssecond',  aimatcontroller.getmvendorssecond);
+app.get('/api/v2/getmvendorbankscountbyfac',  aimatcontroller.getmvendorbankscountbyfac);
+app.get('/api/v2/getmvendorbankssecondbyfac',  aimatcontroller.getmvendorbankssecondbyfac);
+app.get('/api/v2/getmvendorbankscount',  aimatcontroller.getmvendorbankscount);
+app.get('/api/v2/getmvendorbankssecond',  aimatcontroller.getmvendorbankssecond);
+app.get('/api/v2/getmpurchasecountbyfac',  aimatcontroller.getmpurchasecountbyfac);
+app.get('/api/v2/getmpurchasesecondbyfac',  aimatcontroller.getmpurchasesecondbyfac);
+app.get('/api/v2/getmpurchasecount',  aimatcontroller.getmpurchasecount);
+app.get('/api/v2/getmpurchasesecond',  aimatcontroller.getmpurchasesecond);
+app.get('/api/v2/getmpurchaseitemscountbyfac',  aimatcontroller.getmpurchaseitemscountbyfac);
+app.get('/api/v2/getmpurchaseitemssecondbyfac',  aimatcontroller.getmpurchaseitemssecondbyfac);
+app.get('/api/v2/getmpurchaseitemscount',  aimatcontroller.getmpurchaseitemscount);
+app.get('/api/v2/getmpurchaseitemssecond',  aimatcontroller.getmpurchaseitemssecond);
+app.get('/api/v2/getmpopaymentscountbyfac',  aimatcontroller.getmpopaymentscountbyfac);
+app.get('/api/v2/getmpopaymentssecondbyfac',  aimatcontroller.getmpopaymentssecondbyfac);
+app.get('/api/v2/getmpopaymentscount',  aimatcontroller.getmpopaymentscount);
+app.get('/api/v2/getmpopaymentssecond',  aimatcontroller.getmpopaymentssecond);
+
+
+app.get('/api/v2/getmassetsbyfac',  aimatcontroller.getmassetsbyfac);
+app.get('/api/v2/updatemassetsbyfac',  aimatcontroller.updatemassetsbyfac);
+app.get('/api/v2/updatemassetscomments',  aimatcontroller.updatemassetscomments);
+app.get('/api/v2/massetsdocs',  aimatcontroller.massetsdocs);
+app.get('/api/v2/deletemassetsbyfac',  aimatcontroller.deletemassetsbyfac);
+app.get('/api/v2/createmassetsbyfac',  aimatcontroller.createmassetsbyfac);
+app.get('/api/v2/getmassetassignbyfac',  aimatcontroller.getmassetassignbyfac);
+app.get('/api/v2/updatemassetassignbyfac',  aimatcontroller.updatemassetassignbyfac);
+app.get('/api/v2/updatemassetassigncomments',  aimatcontroller.updatemassetassigncomments);
+app.get('/api/v2/massetassigndocs',  aimatcontroller.massetassigndocs);
+app.get('/api/v2/deletemassetassignbyfac',  aimatcontroller.deletemassetassignbyfac);
+app.get('/api/v2/createmassetassignbyfac',  aimatcontroller.createmassetassignbyfac);
+app.get('/api/v2/getmvendorsbyfac',  aimatcontroller.getmvendorsbyfac);
+app.get('/api/v2/updatemvendorsbyfac',  aimatcontroller.updatemvendorsbyfac);
+app.get('/api/v2/updatemvendorscomments',  aimatcontroller.updatemvendorscomments);
+app.get('/api/v2/mvendorsdocs',  aimatcontroller.mvendorsdocs);
+app.get('/api/v2/deletemvendorsbyfac',  aimatcontroller.deletemvendorsbyfac);
+app.get('/api/v2/createmvendorsbyfac',  aimatcontroller.createmvendorsbyfac);
+app.get('/api/v2/getmvendorbanksbyfac',  aimatcontroller.getmvendorbanksbyfac);
+app.get('/api/v2/updatemvendorbanksbyfac',  aimatcontroller.updatemvendorbanksbyfac);
+app.get('/api/v2/updatemvendorbankscomments',  aimatcontroller.updatemvendorbankscomments);
+app.get('/api/v2/mvendorbanksdocs',  aimatcontroller.mvendorbanksdocs);
+app.get('/api/v2/deletemvendorbanksbyfac',  aimatcontroller.deletemvendorbanksbyfac);
+app.get('/api/v2/createmvendorbanksbyfac',  aimatcontroller.createmvendorbanksbyfac);
+app.get('/api/v2/getmpurchasebyfac',  aimatcontroller.getmpurchasebyfac);
+app.get('/api/v2/updatempurchasebyfac',  aimatcontroller.updatempurchasebyfac);
+app.get('/api/v2/updatempurchasecomments',  aimatcontroller.updatempurchasecomments);
+app.get('/api/v2/mpurchasedocs',  aimatcontroller.mpurchasedocs);
+app.get('/api/v2/deletempurchasebyfac',  aimatcontroller.deletempurchasebyfac);
+app.get('/api/v2/creatempurchasebyfac',  aimatcontroller.creatempurchasebyfac);
+app.get('/api/v2/getmpurchaseitemsbyfac',  aimatcontroller.getmpurchaseitemsbyfac);
+app.get('/api/v2/updatempurchaseitemsbyfac',  aimatcontroller.updatempurchaseitemsbyfac);
+app.get('/api/v2/updatempurchaseitemscomments',  aimatcontroller.updatempurchaseitemscomments);
+app.get('/api/v2/mpurchaseitemsdocs',  aimatcontroller.mpurchaseitemsdocs);
+app.get('/api/v2/deletempurchaseitemsbyfac',  aimatcontroller.deletempurchaseitemsbyfac);
+app.get('/api/v2/creatempurchaseitemsbyfac',  aimatcontroller.creatempurchaseitemsbyfac);
+app.get('/api/v2/getmpopaymentsbyfac',  aimatcontroller.getmpopaymentsbyfac);
+app.get('/api/v2/updatempopaymentsbyfac',  aimatcontroller.updatempopaymentsbyfac);
+app.get('/api/v2/updatempopaymentscomments',  aimatcontroller.updatempopaymentscomments);
+app.get('/api/v2/mpopaymentsdocs',  aimatcontroller.mpopaymentsdocs);
+app.get('/api/v2/deletempopaymentsbyfac',  aimatcontroller.deletempopaymentsbyfac);
+app.get('/api/v2/creatempopaymentsbyfac',  aimatcontroller.creatempopaymentsbyfac);
+
+
+app.get('/api/v2/getmplacementbyfac',  aimatcontroller.getmplacementbyfac);
+app.get('/api/v2/updatemplacementbyfac',  aimatcontroller.updatemplacementbyfac);
+app.get('/api/v2/updatemplacementcomments',  aimatcontroller.updatemplacementcomments);
+app.get('/api/v2/mplacementdocs',  aimatcontroller.mplacementdocs);
+app.get('/api/v2/deletemplacementbyfac',  aimatcontroller.deletemplacementbyfac);
+app.get('/api/v2/createmplacementbyfac',  aimatcontroller.createmplacementbyfac);
+
+
+app.get('/api/v2/getmplacementcountbyfac',  aimatcontroller.getmplacementcountbyfac);
+app.get('/api/v2/getmplacementsecondbyfac',  aimatcontroller.getmplacementsecondbyfac);
+app.get('/api/v2/getmplacementcount',  aimatcontroller.getmplacementcount);
+app.get('/api/v2/getmplacementsecond',  aimatcontroller.getmplacementsecond);
+
+
+
+app.get('/api/v2/getlpubreviewscountbyfac',  aimatcontroller.getlpubreviewscountbyfac);
+app.get('/api/v2/getlpubreviewssecondbyfac',  aimatcontroller.getlpubreviewssecondbyfac);
+app.get('/api/v2/getlpubreviewscount',  aimatcontroller.getlpubreviewscount);
+app.get('/api/v2/getlpubreviewssecond',  aimatcontroller.getlpubreviewssecond);
+
+
+app.get('/api/v2/getlpublicationscountbyfac',  aimatcontroller.getlpublicationscountbyfac);
+app.get('/api/v2/getlpublicationssecondbyfac',  aimatcontroller.getlpublicationssecondbyfac);
+app.get('/api/v2/getlpublicationscount',  aimatcontroller.getlpublicationscount);
+app.get('/api/v2/getlpublicationssecond',  aimatcontroller.getlpublicationssecond);
+// app.get('/api/v2/getlpubeditionscountbyfac',  aimatcontroller.getlpubeditionscountbyfac);
+// app.get('/api/v2/getlpubeditionssecondbyfac',  aimatcontroller.getlpubeditionssecondbyfac);
+// app.get('/api/v2/getlpubeditionscount',  aimatcontroller.getlpubeditionscount);
+// app.get('/api/v2/getlpubeditionssecond',  aimatcontroller.getlpubeditionssecond);
+app.get('/api/v2/getlpubarticlescountbyfac',  aimatcontroller.getlpubarticlescountbyfac);
+app.get('/api/v2/getlpubarticlessecondbyfac',  aimatcontroller.getlpubarticlessecondbyfac);
+app.get('/api/v2/getlpubarticlescount',  aimatcontroller.getlpubarticlescount);
+app.get('/api/v2/getlpubarticlessecond',  aimatcontroller.getlpubarticlessecond);
+app.get('/api/v2/getlpubeditionscountbyfac',  aimatcontroller.getlpubeditionscountbyfac);
+app.get('/api/v2/getlpubeditionssecondbyfac',  aimatcontroller.getlpubeditionssecondbyfac);
+app.get('/api/v2/getlpubeditionscount',  aimatcontroller.getlpubeditionscount);
+app.get('/api/v2/getlpubeditionssecond',  aimatcontroller.getlpubeditionssecond);
+
+
+app.get('/api/v2/getlpublicationspublic',  aimatcontroller.getlpublicationspublic);
+app.get('/api/v2/getlpublicationsbyfac',  aimatcontroller.getlpublicationsbyfac);
+app.get('/api/v2/lpublicationsbyprog',  aimatcontroller.lpublicationsbyprog);
+app.get('/api/v2/updatelpublicationsbyfac',  aimatcontroller.updatelpublicationsbyfac);
+app.get('/api/v2/updatelpublicationscomments',  aimatcontroller.updatelpublicationscomments);
+app.get('/api/v2/lpublicationslinks',  aimatcontroller.lpublicationslinks);
+app.get('/api/v2/lpublicationsdocs',  aimatcontroller.lpublicationsdocs);
+app.get('/api/v2/deletelpublicationsbyfac',  aimatcontroller.deletelpublicationsbyfac);
+app.get('/api/v2/createlpublicationsbyfac',  aimatcontroller.createlpublicationsbyfac);
+app.get('/api/v2/getlpubeditionsbyfac',  aimatcontroller.getlpubeditionsbyfac);
+app.get('/api/v2/lpubeditionsbyprog',  aimatcontroller.lpubeditionsbyprog);
+app.get('/api/v2/updatelpubeditionsbyfac',  aimatcontroller.updatelpubeditionsbyfac);
+app.get('/api/v2/updatelpubeditionscomments',  aimatcontroller.updatelpubeditionscomments);
+app.get('/api/v2/lpubeditionslinks',  aimatcontroller.lpubeditionslinks);
+app.get('/api/v2/lpubeditionsdocs',  aimatcontroller.lpubeditionsdocs);
+app.get('/api/v2/deletelpubeditionsbyfac',  aimatcontroller.deletelpubeditionsbyfac);
+app.get('/api/v2/createlpubeditionsbyfac',  aimatcontroller.createlpubeditionsbyfac);
+app.get('/api/v2/getlpubarticlesbyfac',  aimatcontroller.getlpubarticlesbyfac);
+app.get('/api/v2/lpubarticlesbyprog',  aimatcontroller.lpubarticlesbyprog);
+app.get('/api/v2/updatelpubarticlesbyfac',  aimatcontroller.updatelpubarticlesbyfac);
+app.get('/api/v2/updatelpubarticlescomments',  aimatcontroller.updatelpubarticlescomments);
+app.get('/api/v2/lpubarticleslinks',  aimatcontroller.lpubarticleslinks);
+app.get('/api/v2/lpubarticlesdocs',  aimatcontroller.lpubarticlesdocs);
+app.get('/api/v2/deletelpubarticlesbyfac',  aimatcontroller.deletelpubarticlesbyfac);
+app.get('/api/v2/createlpubarticlesbyfac',  aimatcontroller.createlpubarticlesbyfac);
+app.get('/api/v2/getlpubreviewsbyfac',  aimatcontroller.getlpubreviewsbyfac);
+app.get('/api/v2/lpubreviewsbyprog',  aimatcontroller.lpubreviewsbyprog);
+app.get('/api/v2/updatelpubreviewsbyfac',  aimatcontroller.updatelpubreviewsbyfac);
+app.get('/api/v2/updatelpubreviewscomments',  aimatcontroller.updatelpubreviewscomments);
+app.get('/api/v2/lpubreviewslinks',  aimatcontroller.lpubreviewslinks);
+app.get('/api/v2/lpubreviewsdocs',  aimatcontroller.lpubreviewsdocs);
+app.get('/api/v2/deletelpubreviewsbyfac',  aimatcontroller.deletelpubreviewsbyfac);
+app.get('/api/v2/createlpubreviewsbyfac',  aimatcontroller.createlpubreviewsbyfac);
+
+
+
+app.get('/api/v2/updatepasswordbyfac',  aimatcontroller.updatepasswordbyfac);
+app.get('/api/v2/getmvaccountbyfac',  aimatcontroller.getmvaccountbyfac);
+app.get('/api/v2/getmvacsecondbyfac',  aimatcontroller.getmvacsecondbyfac);
+app.get('/api/v2/getmvaccount',  aimatcontroller.getmvaccount);
+app.get('/api/v2/getmvacsecond',  aimatcontroller.getmvacsecond);
+
+
+app.get('/api/v2/getmvacbyfac',  aimatcontroller.getmvacbyfac);
+app.get('/api/v2/mvacbyprog',  aimatcontroller.mvacbyprog);
+app.get('/api/v2/updatemvacbyfac',  aimatcontroller.updatemvacbyfac);
+app.get('/api/v2/updatemvaccomments',  aimatcontroller.updatemvaccomments);
+app.get('/api/v2/mvaclinks',  aimatcontroller.mvaclinks);
+app.get('/api/v2/mvacdocs',  aimatcontroller.mvacdocs);
+app.get('/api/v2/deletemvacbyfac',  aimatcontroller.deletemvacbyfac);
+app.get('/api/v2/createmvacbyfac',  aimatcontroller.createmvacbyfac);
+
+
+app.get('/api/v2/createuserbyfac',  aimatcontroller.createuserbyfac);
+app.get('/api/v2/createquotanewbyfac1',  aimatcontroller.createquotanewbyfac1);
+
+app.get('/api/v2/getlmsvideoscountbyfac',  aimatcontroller.getlmsvideoscountbyfac);
+app.get('/api/v2/getlmsvideossecondbyfac',  aimatcontroller.getlmsvideossecondbyfac);
+app.get('/api/v2/getlmsvideoscount',  aimatcontroller.getlmsvideoscount);
+app.get('/api/v2/getlmsvideossecond',  aimatcontroller.getlmsvideossecond);
+app.get('/api/v2/getlmsvideosccountbyfac',  aimatcontroller.getlmsvideosccountbyfac);
+app.get('/api/v2/getlmsvideoscsecondbyfac',  aimatcontroller.getlmsvideoscsecondbyfac);
+app.get('/api/v2/getlmsvideosccount',  aimatcontroller.getlmsvideosccount);
+app.get('/api/v2/getlmsvideoscsecond',  aimatcontroller.getlmsvideoscsecond);
+
+
+app.get('/api/v2/getlmsvideosbyfac',  aimatcontroller.getlmsvideosbyfac);
+app.get('/api/v2/getlmsvideosbycoursecode',  aimatcontroller.getlmsvideosbycoursecode);
+app.get('/api/v2/lmsvideosbyprog',  aimatcontroller.lmsvideosbyprog);
+app.get('/api/v2/updatelmsvideosbyfac',  aimatcontroller.updatelmsvideosbyfac);
+app.get('/api/v2/updatelmsvideoscomments',  aimatcontroller.updatelmsvideoscomments);
+app.get('/api/v2/lmsvideoslinks',  aimatcontroller.lmsvideoslinks);
+app.get('/api/v2/lmsvideosdocs',  aimatcontroller.lmsvideosdocs);
+app.get('/api/v2/deletelmsvideosbyfac',  aimatcontroller.deletelmsvideosbyfac);
+app.get('/api/v2/createlmsvideosbyfac',  aimatcontroller.createlmsvideosbyfac);
+app.get('/api/v2/getlmsvideoscbyfac',  aimatcontroller.getlmsvideoscbyfac);
+app.get('/api/v2/getlmsvideoscsbyfac',  aimatcontroller.getlmsvideoscsbyfac);
+app.get('/api/v2/lmsvideoscbyprog',  aimatcontroller.lmsvideoscbyprog);
+app.get('/api/v2/updatelmsvideoscbyfac',  aimatcontroller.updatelmsvideoscbyfac);
+app.get('/api/v2/updatelmsvideosccomments',  aimatcontroller.updatelmsvideosccomments);
+app.get('/api/v2/lmsvideosclinks',  aimatcontroller.lmsvideosclinks);
+app.get('/api/v2/lmsvideoscdocs',  aimatcontroller.lmsvideoscdocs);
+app.get('/api/v2/deletelmsvideoscbyfac',  aimatcontroller.deletelmsvideoscbyfac);
+app.get('/api/v2/createlmsvideoscbyfac',  aimatcontroller.createlmsvideoscbyfac);
+
+
+app.get('/api/v2/gettestnewcountbyccode',  aimatcontroller.gettestnewcountbyccode);
+app.get('/api/v2/gettestnewsecondbyccode',  aimatcontroller.gettestnewsecondbyccode);
+
+app.get('/api/v2/gettestscorescountbyfac',  aimatcontroller.gettestscorescountbyfac);
+app.get('/api/v2/gettestscoressecondbyfac',  aimatcontroller.gettestscoressecondbyfac);
+app.get('/api/v2/gettestscorescount',  aimatcontroller.gettestscorescount);
+app.get('/api/v2/gettestscoressecond',  aimatcontroller.gettestscoressecond);
+
+app.get('/api/v2/gettestscorescountbystud',  aimatcontroller.gettestscorescountbystud);
+app.get('/api/v2/gettestscoressecondbystud',  aimatcontroller.gettestscoressecondbystud);
+
+
+app.get('/api/v2/gettestscoresstudbyfac',  aimatcontroller.gettestscoresstudbyfac);
+
+app.get('/api/v2/getmtestscoresummary',  aimatcontroller.getmtestscoresummary);
+
+app.get('/api/v2/gettestscoresummary',  aimatcontroller.gettestscoresummary);
+app.get('/api/v2/gettestscoresbyfac',  aimatcontroller.gettestscoresbyfac);
+app.get('/api/v2/testscoresbyprog',  aimatcontroller.testscoresbyprog);
+app.get('/api/v2/updatetestscoresbyfac',  aimatcontroller.updatetestscoresbyfac);
+app.get('/api/v2/updatetestscorescomments',  aimatcontroller.updatetestscorescomments);
+app.get('/api/v2/testscoreslinks',  aimatcontroller.testscoreslinks);
+app.get('/api/v2/testscoresdocs',  aimatcontroller.testscoresdocs);
+app.get('/api/v2/deletetestscoresbyfac',  aimatcontroller.deletetestscoresbyfac);
+app.get('/api/v2/createtestscoresbyfac',  aimatcontroller.createtestscoresbyfac);
+
+
+app.get('/api/v2/gettestnewcountbyfac',  aimatcontroller.gettestnewcountbyfac);
+app.get('/api/v2/gettestnewsecondbyfac',  aimatcontroller.gettestnewsecondbyfac);
+app.get('/api/v2/gettestnewcount',  aimatcontroller.gettestnewcount);
+app.get('/api/v2/gettestnewsecond',  aimatcontroller.gettestnewsecond);
+app.get('/api/v2/gettestqcountbyfac',  aimatcontroller.gettestqcountbyfac);
+app.get('/api/v2/gettestqsecondbyfac',  aimatcontroller.gettestqsecondbyfac);
+app.get('/api/v2/gettestqcount',  aimatcontroller.gettestqcount);
+app.get('/api/v2/gettestqsecond',  aimatcontroller.gettestqsecond);
+app.get('/api/v2/gettestocountbyfac',  aimatcontroller.gettestocountbyfac);
+app.get('/api/v2/gettestosecondbyfac',  aimatcontroller.gettestosecondbyfac);
+app.get('/api/v2/gettestocount',  aimatcontroller.gettestocount);
+app.get('/api/v2/gettestosecond',  aimatcontroller.gettestosecond);
+
+
+app.get('/api/v2/gettestnewbyfac',  aimatcontroller.gettestnewbyfac);
+app.get('/api/v2/gettestnewbyccode',  aimatcontroller.gettestnewbyccode);
+app.get('/api/v2/testnewbyprog',  aimatcontroller.testnewbyprog);
+app.get('/api/v2/updatetestnewbyfac',  aimatcontroller.updatetestnewbyfac);
+app.get('/api/v2/updatetestnewcomments',  aimatcontroller.updatetestnewcomments);
+app.get('/api/v2/testnewlinks',  aimatcontroller.testnewlinks);
+app.get('/api/v2/testnewdocs',  aimatcontroller.testnewdocs);
+app.get('/api/v2/deletetestnewbyfac',  aimatcontroller.deletetestnewbyfac);
+app.get('/api/v2/createtestnewbyfac',  aimatcontroller.createtestnewbyfac);
+app.get('/api/v2/gettestqbyfac',  aimatcontroller.gettestqbyfac);
+app.get('/api/v2/testqbyprog',  aimatcontroller.testqbyprog);
+app.get('/api/v2/updatetestqbyfac',  aimatcontroller.updatetestqbyfac);
+app.get('/api/v2/updatetestqcomments',  aimatcontroller.updatetestqcomments);
+app.get('/api/v2/testqlinks',  aimatcontroller.testqlinks);
+app.get('/api/v2/testqdocs',  aimatcontroller.testqdocs);
+app.get('/api/v2/deletetestqbyfac',  aimatcontroller.deletetestqbyfac);
+app.get('/api/v2/createtestqbyfac',  aimatcontroller.createtestqbyfac);
+app.get('/api/v2/gettestobyfac',  aimatcontroller.gettestobyfac);
+app.get('/api/v2/testobyprog',  aimatcontroller.testobyprog);
+app.get('/api/v2/updatetestobyfac',  aimatcontroller.updatetestobyfac);
+app.get('/api/v2/updatetestocomments',  aimatcontroller.updatetestocomments);
+app.get('/api/v2/testolinks',  aimatcontroller.testolinks);
+app.get('/api/v2/testodocs',  aimatcontroller.testodocs);
+app.get('/api/v2/deletetestobyfac',  aimatcontroller.deletetestobyfac);
+app.get('/api/v2/createtestobyfac',  aimatcontroller.createtestobyfac);
+
+
+app.get('/api/v2/geteventsnew1countbyfac',  aimatcontroller.geteventsnew1countbyfac);
+app.get('/api/v2/geteventsnew1secondbyfac',  aimatcontroller.geteventsnew1secondbyfac);
+app.get('/api/v2/geteventsnew1count',  aimatcontroller.geteventsnew1count);
+app.get('/api/v2/geteventsnew1second',  aimatcontroller.geteventsnew1second);
+
+
+app.get('/api/v2/geteventsnew1byfac',  aimatcontroller.geteventsnew1byfac);
+app.get('/api/v2/eventsnew1byprog',  aimatcontroller.eventsnew1byprog);
+app.get('/api/v2/updateeventsnew1byfac',  aimatcontroller.updateeventsnew1byfac);
+app.get('/api/v2/updateeventsnew1comments',  aimatcontroller.updateeventsnew1comments);
+app.get('/api/v2/eventsnew1links',  aimatcontroller.eventsnew1links);
+app.get('/api/v2/eventsnew1docs',  aimatcontroller.eventsnew1docs);
+app.get('/api/v2/deleteeventsnew1byfac',  aimatcontroller.deleteeventsnew1byfac);
+app.get('/api/v2/createeventsnew1byfac',  aimatcontroller.createeventsnew1byfac);
+
+
+app.get('/api/v2/getslideshowcountbyfac',  aimatcontroller.getslideshowcountbyfac);
+app.get('/api/v2/getslideshowsecondbyfac',  aimatcontroller.getslideshowsecondbyfac);
+app.get('/api/v2/getslideshowcount',  aimatcontroller.getslideshowcount);
+app.get('/api/v2/getslideshowsecond',  aimatcontroller.getslideshowsecond);
+
+
+app.get('/api/v2/getslideshowbyfac',  aimatcontroller.getslideshowbyfac);
+app.get('/api/v2/getslideshowbymoduleid',  aimatcontroller.getslideshowbymoduleid);
+app.get('/api/v2/slideshowbyprog',  aimatcontroller.slideshowbyprog);
+app.get('/api/v2/updateslideshowbyfac',  aimatcontroller.updateslideshowbyfac);
+app.get('/api/v2/updateslideshowcomments',  aimatcontroller.updateslideshowcomments);
+app.get('/api/v2/slideshowlinks',  aimatcontroller.slideshowlinks);
+app.get('/api/v2/slideshowdocs',  aimatcontroller.slideshowdocs);
+app.get('/api/v2/deleteslideshowbyfac',  aimatcontroller.deleteslideshowbyfac);
+app.get('/api/v2/createslideshowbyfac',  aimatcontroller.createslideshowbyfac);
+
+
+app.get('/api/v2/getscholnewcountbystud',  aimatcontroller.getscholnewcountbystud);
+app.get('/api/v2/getscholnewsecondbystud',  aimatcontroller.getscholnewsecondbystud);
+app.get('/api/v2/getstudawardsnewcountbystud',  aimatcontroller.getstudawardsnewcountbystud);
+app.get('/api/v2/getstudawardsnewsecondbystud',  aimatcontroller.getstudawardsnewsecondbystud);
+
+
+app.get('/api/v2/getscholnewcountbyfac',  aimatcontroller.getscholnewcountbyfac);
+app.get('/api/v2/getscholnewsecondbyfac',  aimatcontroller.getscholnewsecondbyfac);
+app.get('/api/v2/getscholnewcount',  aimatcontroller.getscholnewcount);
+app.get('/api/v2/getscholnewsecond',  aimatcontroller.getscholnewsecond);
+app.get('/api/v2/getstudawardsnewcountbyfac',  aimatcontroller.getstudawardsnewcountbyfac);
+app.get('/api/v2/getstudawardsnewsecondbyfac',  aimatcontroller.getstudawardsnewsecondbyfac);
+app.get('/api/v2/getstudawardsnewcount',  aimatcontroller.getstudawardsnewcount);
+app.get('/api/v2/getstudawardsnewsecond',  aimatcontroller.getstudawardsnewsecond);
+
+
+app.get('/api/v2/getscholnewstudbyfac',  aimatcontroller.getscholnewstudbyfac);
+app.get('/api/v2/getstudawardsnewstudbyfac',  aimatcontroller.getstudawardsnewstudbyfac);
+
+
+app.get('/api/v2/getscholnewbyfac',  aimatcontroller.getscholnewbyfac);
+app.get('/api/v2/scholnewbyprog',  aimatcontroller.scholnewbyprog);
+app.get('/api/v2/updatescholnewbyfac',  aimatcontroller.updatescholnewbyfac);
+app.get('/api/v2/updatescholnewcomments',  aimatcontroller.updatescholnewcomments);
+app.get('/api/v2/scholnewlinks',  aimatcontroller.scholnewlinks);
+app.get('/api/v2/scholnewdocs',  aimatcontroller.scholnewdocs);
+app.get('/api/v2/deletescholnewbyfac',  aimatcontroller.deletescholnewbyfac);
+app.get('/api/v2/createscholnewbyfac',  aimatcontroller.createscholnewbyfac);
+app.get('/api/v2/getstudawardsnewbyfac',  aimatcontroller.getstudawardsnewbyfac);
+app.get('/api/v2/studawardsnewbyprog',  aimatcontroller.studawardsnewbyprog);
+app.get('/api/v2/updatestudawardsnewbyfac',  aimatcontroller.updatestudawardsnewbyfac);
+app.get('/api/v2/updatestudawardsnewcomments',  aimatcontroller.updatestudawardsnewcomments);
+app.get('/api/v2/studawardsnewlinks',  aimatcontroller.studawardsnewlinks);
+app.get('/api/v2/studawardsnewdocs',  aimatcontroller.studawardsnewdocs);
+app.get('/api/v2/deletestudawardsnewbyfac',  aimatcontroller.deletestudawardsnewbyfac);
+app.get('/api/v2/createstudawardsnewbyfac',  aimatcontroller.createstudawardsnewbyfac);
+
+
+app.get('/api/v2/getclassnewbypyss',  aimatcontroller.getclassnewbypyss);
+app.get('/api/v2/getclassnewbyfacdate',  aimatcontroller.getclassnewbyfacdate);
+
+app.get('/api/v2/getattsummarybyccode',  aimatcontroller.getattsummarybyccode);
+app.get('/api/v2/getattbypcodesem',  aimatcontroller.getattbypcodesem);
+
+app.get('/api/v2/getclassnewcountbyfac',  aimatcontroller.getclassnewcountbyfac);
+app.get('/api/v2/getclassnewsecondbyfac',  aimatcontroller.getclassnewsecondbyfac);
+app.get('/api/v2/getclassnewcount',  aimatcontroller.getclassnewcount);
+app.get('/api/v2/getclassnewsecond',  aimatcontroller.getclassnewsecond);
+app.get('/api/v2/getattendancenewcountbyfac',  aimatcontroller.getattendancenewcountbyfac);
+app.get('/api/v2/getattendancenewsecondbyfac',  aimatcontroller.getattendancenewsecondbyfac);
+app.get('/api/v2/getattendancenewcount',  aimatcontroller.getattendancenewcount);
+app.get('/api/v2/getattendancenewsecond',  aimatcontroller.getattendancenewsecond);
+
+
+app.get('/api/v2/getclassnewbyfac',  aimatcontroller.getclassnewbyfac);
+app.get('/api/v2/classnewbyprog',  aimatcontroller.classnewbyprog);
+app.get('/api/v2/updateclassnewbyfac',  aimatcontroller.updateclassnewbyfac);
+app.get('/api/v2/updateclassnewcomments',  aimatcontroller.updateclassnewcomments);
+app.get('/api/v2/classnewlinks',  aimatcontroller.classnewlinks);
+app.get('/api/v2/classnewdocs',  aimatcontroller.classnewdocs);
+app.get('/api/v2/deleteclassnewbyfac',  aimatcontroller.deleteclassnewbyfac);
+app.get('/api/v2/createclassnewbyfac',  aimatcontroller.createclassnewbyfac);
+app.get('/api/v2/getattendancenewbyfac',  aimatcontroller.getattendancenewbyfac);
+app.get('/api/v2/attendancenewbyprog',  aimatcontroller.attendancenewbyprog);
+app.get('/api/v2/updateattendancenewbyfac',  aimatcontroller.updateattendancenewbyfac);
+app.get('/api/v2/updateattendancenewcomments',  aimatcontroller.updateattendancenewcomments);
+app.get('/api/v2/attendancenewlinks',  aimatcontroller.attendancenewlinks);
+app.get('/api/v2/attendancenewdocs',  aimatcontroller.attendancenewdocs);
+app.get('/api/v2/deleteattendancenewbyfac',  aimatcontroller.deleteattendancenewbyfac);
+app.get('/api/v2/createattendancenewbyfac',  aimatcontroller.createattendancenewbyfac);
+
+
+app.get('/api/v2/getquotanewcountbyfac',  aimatcontroller.getquotanewcountbyfac);
+app.get('/api/v2/getquotanewsecondbyfac',  aimatcontroller.getquotanewsecondbyfac);
+app.get('/api/v2/getquotanewcount',  aimatcontroller.getquotanewcount);
+app.get('/api/v2/getquotanewsecond',  aimatcontroller.getquotanewsecond);
+
+
+app.get('/api/v2/getquotanewbyfac',  aimatcontroller.getquotanewbyfac);
+app.get('/api/v2/quotanewbyprog',  aimatcontroller.quotanewbyprog);
+app.get('/api/v2/updatequotanewbyfac',  aimatcontroller.updatequotanewbyfac);
+app.get('/api/v2/updatequotanewcomments',  aimatcontroller.updatequotanewcomments);
+app.get('/api/v2/quotanewlinks',  aimatcontroller.quotanewlinks);
+app.get('/api/v2/quotanewdocs',  aimatcontroller.quotanewdocs);
+app.get('/api/v2/deletequotanewbyfac',  aimatcontroller.deletequotanewbyfac);
+app.get('/api/v2/createquotanewbyfac',  aimatcontroller.createquotanewbyfac);
+
+
+app.get('/api/v2/getmassignsubmitbyfac',  aimatcontroller.getmassignsubmitbyfac);
+app.get('/api/v2/getmassignsubmitbyass',  aimatcontroller.getmassignsubmitbyass);
+app.get('/api/v2/massignsubmitbyprog',  aimatcontroller.massignsubmitbyprog);
+app.get('/api/v2/updatemassignsubmitbyfac',  aimatcontroller.updatemassignsubmitbyfac);
+app.get('/api/v2/updatemassignsubmitcomments',  aimatcontroller.updatemassignsubmitcomments);
+app.get('/api/v2/massignsubmitlinks',  aimatcontroller.massignsubmitlinks);
+app.get('/api/v2/massignsubmitdocs',  aimatcontroller.massignsubmitdocs);
+app.get('/api/v2/deletemassignsubmitbyfac',  aimatcontroller.deletemassignsubmitbyfac);
+app.get('/api/v2/createmassignsubmitbyfac',  aimatcontroller.createmassignsubmitbyfac);
+app.get('/api/v2/getmdiscussionbyfac',  aimatcontroller.getmdiscussionbyfac);
+app.get('/api/v2/getmdiscussionbycode',  aimatcontroller.getmdiscussionbycode);
+app.get('/api/v2/mdiscussionbyprog',  aimatcontroller.mdiscussionbyprog);
+app.get('/api/v2/updatemdiscussionbyfac',  aimatcontroller.updatemdiscussionbyfac);
+app.get('/api/v2/updatemdiscussioncomments',  aimatcontroller.updatemdiscussioncomments);
+app.get('/api/v2/mdiscussionlinks',  aimatcontroller.mdiscussionlinks);
+app.get('/api/v2/mdiscussiondocs',  aimatcontroller.mdiscussiondocs);
+app.get('/api/v2/deletemdiscussionbyfac',  aimatcontroller.deletemdiscussionbyfac);
+app.get('/api/v2/createmdiscussionbyfac',  aimatcontroller.createmdiscussionbyfac);
+
+
+
+app.get('/api/v2/getmassignmentscountbyfac',  aimatcontroller.getmassignmentscountbyfac);
+app.get('/api/v2/getmassignmentssecondbyfac',  aimatcontroller.getmassignmentssecondbyfac);
+app.get('/api/v2/getmassignmentscount',  aimatcontroller.getmassignmentscount);
+app.get('/api/v2/getmassignmentssecond',  aimatcontroller.getmassignmentssecond);
+app.get('/api/v2/getmanouncementscountbyfac',  aimatcontroller.getmanouncementscountbyfac);
+app.get('/api/v2/getmanouncementssecondbyfac',  aimatcontroller.getmanouncementssecondbyfac);
+app.get('/api/v2/getmanouncementscount',  aimatcontroller.getmanouncementscount);
+app.get('/api/v2/getmanouncementssecond',  aimatcontroller.getmanouncementssecond);
+app.get('/api/v2/getmcoursecocountbyfac',  aimatcontroller.getmcoursecocountbyfac);
+app.get('/api/v2/getmcoursecosecondbyfac',  aimatcontroller.getmcoursecosecondbyfac);
+app.get('/api/v2/getmcoursecocount',  aimatcontroller.getmcoursecocount);
+app.get('/api/v2/getmcoursecosecond',  aimatcontroller.getmcoursecosecond);
+app.get('/api/v2/getmcalendarcountbyfac',  aimatcontroller.getmcalendarcountbyfac);
+app.get('/api/v2/getmcalendarsecondbyfac',  aimatcontroller.getmcalendarsecondbyfac);
+app.get('/api/v2/getmcalendarcount',  aimatcontroller.getmcalendarcount);
+app.get('/api/v2/getmcalendarsecond',  aimatcontroller.getmcalendarsecond);
+app.get('/api/v2/getmcoursematerialcountbyfac',  aimatcontroller.getmcoursematerialcountbyfac);
+app.get('/api/v2/getmcoursematerialsecondbyfac',  aimatcontroller.getmcoursematerialsecondbyfac);
+app.get('/api/v2/getmcoursematerialcount',  aimatcontroller.getmcoursematerialcount);
+app.get('/api/v2/getmcoursematerialsecond',  aimatcontroller.getmcoursematerialsecond);
+
+
+app.get('/api/v2/getmassignmentsbyfac',  aimatcontroller.getmassignmentsbyfac);
+app.get('/api/v2/massignmentsbyprog',  aimatcontroller.massignmentsbyprog);
+app.get('/api/v2/updatemassignmentsbyfac',  aimatcontroller.updatemassignmentsbyfac);
+app.get('/api/v2/updatemassignmentscomments',  aimatcontroller.updatemassignmentscomments);
+app.get('/api/v2/massignmentslinks',  aimatcontroller.massignmentslinks);
+app.get('/api/v2/massignmentsdocs',  aimatcontroller.massignmentsdocs);
+app.get('/api/v2/deletemassignmentsbyfac',  aimatcontroller.deletemassignmentsbyfac);
+app.get('/api/v2/createmassignmentsbyfac',  aimatcontroller.createmassignmentsbyfac);
+app.get('/api/v2/getmanouncementsbyfac',  aimatcontroller.getmanouncementsbyfac);
+app.get('/api/v2/manouncementsbyprog',  aimatcontroller.manouncementsbyprog);
+app.get('/api/v2/updatemanouncementsbyfac',  aimatcontroller.updatemanouncementsbyfac);
+app.get('/api/v2/updatemanouncementscomments',  aimatcontroller.updatemanouncementscomments);
+app.get('/api/v2/manouncementslinks',  aimatcontroller.manouncementslinks);
+app.get('/api/v2/manouncementsdocs',  aimatcontroller.manouncementsdocs);
+app.get('/api/v2/deletemanouncementsbyfac',  aimatcontroller.deletemanouncementsbyfac);
+app.get('/api/v2/createmanouncementsbyfac',  aimatcontroller.createmanouncementsbyfac);
+app.get('/api/v2/getmcoursecobyfac',  aimatcontroller.getmcoursecobyfac);
+app.get('/api/v2/mcoursecobyprog',  aimatcontroller.mcoursecobyprog);
+app.get('/api/v2/updatemcoursecobyfac',  aimatcontroller.updatemcoursecobyfac);
+app.get('/api/v2/updatemcoursecocomments',  aimatcontroller.updatemcoursecocomments);
+app.get('/api/v2/mcoursecolinks',  aimatcontroller.mcoursecolinks);
+app.get('/api/v2/mcoursecodocs',  aimatcontroller.mcoursecodocs);
+app.get('/api/v2/deletemcoursecobyfac',  aimatcontroller.deletemcoursecobyfac);
+app.get('/api/v2/createmcoursecobyfac',  aimatcontroller.createmcoursecobyfac);
+app.get('/api/v2/getmcalendarbyfac',  aimatcontroller.getmcalendarbyfac);
+app.get('/api/v2/mcalendarbyprog',  aimatcontroller.mcalendarbyprog);
+app.get('/api/v2/updatemcalendarbyfac',  aimatcontroller.updatemcalendarbyfac);
+app.get('/api/v2/updatemcalendarcomments',  aimatcontroller.updatemcalendarcomments);
+app.get('/api/v2/mcalendarlinks',  aimatcontroller.mcalendarlinks);
+app.get('/api/v2/mcalendardocs',  aimatcontroller.mcalendardocs);
+app.get('/api/v2/deletemcalendarbyfac',  aimatcontroller.deletemcalendarbyfac);
+app.get('/api/v2/createmcalendarbyfac',  aimatcontroller.createmcalendarbyfac);
+app.get('/api/v2/getmcoursematerialbyfac',  aimatcontroller.getmcoursematerialbyfac);
+app.get('/api/v2/mcoursematerialbyprog',  aimatcontroller.mcoursematerialbyprog);
+app.get('/api/v2/updatemcoursematerialbyfac',  aimatcontroller.updatemcoursematerialbyfac);
+app.get('/api/v2/updatemcoursematerialcomments',  aimatcontroller.updatemcoursematerialcomments);
+app.get('/api/v2/mcoursemateriallinks',  aimatcontroller.mcoursemateriallinks);
+app.get('/api/v2/mcoursematerialdocs',  aimatcontroller.mcoursematerialdocs);
+app.get('/api/v2/deletemcoursematerialbyfac',  aimatcontroller.deletemcoursematerialbyfac);
+app.get('/api/v2/createmcoursematerialbyfac',  aimatcontroller.createmcoursematerialbyfac);
+
+
+app.get('/api/v2/getmsyllabusbyfac',  aimatcontroller.getmsyllabusbyfac);
+app.get('/api/v2/getmsyllabusbycoursecode',  aimatcontroller.getmsyllabusbycoursecode);
+app.get('/api/v2/msyllabusbyprog',  aimatcontroller.msyllabusbyprog);
+app.get('/api/v2/updatemsyllabusbyfac',  aimatcontroller.updatemsyllabusbyfac);
+app.get('/api/v2/updatemsyllabuscomments',  aimatcontroller.updatemsyllabuscomments);
+app.get('/api/v2/msyllabuslinks',  aimatcontroller.msyllabuslinks);
+app.get('/api/v2/msyllabusdocs',  aimatcontroller.msyllabusdocs);
+app.get('/api/v2/deletemsyllabusbyfac',  aimatcontroller.deletemsyllabusbyfac);
+app.get('/api/v2/createmsyllabusbyfac',  aimatcontroller.createmsyllabusbyfac);
+
+app.get('/api/v2/getmsyllabuscountbycoursecode',  aimatcontroller.getmsyllabuscountbycoursecode);
+app.get('/api/v2/getmsyllabussecondbycoursecode',  aimatcontroller.getmsyllabussecondbycoursecode);
+
+app.get('/api/v2/getmsyllabuscountbyfac',  aimatcontroller.getmsyllabuscountbyfac);
+app.get('/api/v2/getmsyllabussecondbyfac',  aimatcontroller.getmsyllabussecondbyfac);
+app.get('/api/v2/getmsyllabuscount',  aimatcontroller.getmsyllabuscount);
+app.get('/api/v2/getmsyllabussecond',  aimatcontroller.getmsyllabussecond);
+
+
+
+app.get('/api/v2/getclassenr1countbystud',  aimatcontroller.getclassenr1countbystud);
+app.get('/api/v2/getclassenr1secondbystud',  aimatcontroller.getclassenr1secondbystud);
+
+app.get('/api/v2/getclassenr1studbyfac',  aimatcontroller.getclassenr1studbyfac);
+
+app.get('/api/v2/getclassenr1countbyfac',  aimatcontroller.getclassenr1countbyfac);
+app.get('/api/v2/getclassenr1secondbyfac',  aimatcontroller.getclassenr1secondbyfac);
+app.get('/api/v2/getclassenr1count',  aimatcontroller.getclassenr1count);
+app.get('/api/v2/getclassenr1second',  aimatcontroller.getclassenr1second);
+
+app.get('/api/v2/getclassenr1byfac',  aimatcontroller.getclassenr1byfac);
+app.get('/api/v2/classenr1byprog',  aimatcontroller.classenr1byprog);
+app.get('/api/v2/updateclassenr1byfac',  aimatcontroller.updateclassenr1byfac);
+app.get('/api/v2/updateclassenr1comments',  aimatcontroller.updateclassenr1comments);
+app.get('/api/v2/classenr1links',  aimatcontroller.classenr1links);
+app.get('/api/v2/classenr1docs',  aimatcontroller.classenr1docs);
+app.get('/api/v2/deleteclassenr1byfac',  aimatcontroller.deleteclassenr1byfac);
+app.get('/api/v2/createclassenr1byfac',  aimatcontroller.createclassenr1byfac);
+
+
+
+app.get('/api/v2/getmstudents1countbyfac',  aimatcontroller.getmstudents1countbyfac);
+app.get('/api/v2/getmstudents1secondbyfac',  aimatcontroller.getmstudents1secondbyfac);
+app.get('/api/v2/getmstudents1count',  aimatcontroller.getmstudents1count);
+app.get('/api/v2/getmstudents1second',  aimatcontroller.getmstudents1second);
+
+
+
+app.get('/api/v2/getmstudents1byfac',  aimatcontroller.getmstudents1byfac);
+app.get('/api/v2/mstudents1byprog',  aimatcontroller.mstudents1byprog);
+app.get('/api/v2/updatemstudents1byfac',  aimatcontroller.updatemstudents1byfac);
+app.get('/api/v2/updatemstudents1comments',  aimatcontroller.updatemstudents1comments);
+app.get('/api/v2/mstudents1links',  aimatcontroller.mstudents1links);
+app.get('/api/v2/mstudents1docs',  aimatcontroller.mstudents1docs);
+app.get('/api/v2/deletemstudents1byfac',  aimatcontroller.deletemstudents1byfac);
+app.get('/api/v2/createmstudents1byfac',  aimatcontroller.createmstudents1byfac);
+
+
+app.get('/api/v2/getmcourseslistcountbyfac',  aimatcontroller.getmcourseslistcountbyfac);
+app.get('/api/v2/getmcourseslistsecondbyfac',  aimatcontroller.getmcourseslistsecondbyfac);
+app.get('/api/v2/getmcourseslistcount',  aimatcontroller.getmcourseslistcount);
+app.get('/api/v2/getmcourseslistsecond',  aimatcontroller.getmcourseslistsecond);
+
+
+app.get('/api/v2/getmcourseslistbyfac',  aimatcontroller.getmcourseslistbyfac);
+app.get('/api/v2/mcourseslistbyprog',  aimatcontroller.mcourseslistbyprog);
+app.get('/api/v2/updatemcourseslistbyfac',  aimatcontroller.updatemcourseslistbyfac);
+app.get('/api/v2/updatemcourseslistcomments',  aimatcontroller.updatemcourseslistcomments);
+app.get('/api/v2/mcourseslistlinks',  aimatcontroller.mcourseslistlinks);
+app.get('/api/v2/mcourseslistdocs',  aimatcontroller.mcourseslistdocs);
+app.get('/api/v2/deletemcourseslistbyfac',  aimatcontroller.deletemcourseslistbyfac);
+app.get('/api/v2/createmcourseslistbyfac',  aimatcontroller.createmcourseslistbyfac);
+
+
+app.get('/api/v2/getmcolevelscountbyfac',  aimatcontroller.getmcolevelscountbyfac);
+app.get('/api/v2/getmcolevelssecondbyfac',  aimatcontroller.getmcolevelssecondbyfac);
+app.get('/api/v2/getmcolevelscount',  aimatcontroller.getmcolevelscount);
+app.get('/api/v2/getmcolevelssecond',  aimatcontroller.getmcolevelssecond);
+
+
+app.get('/api/v2/getmcolevelsbyfac',  aimatcontroller.getmcolevelsbyfac);
+app.get('/api/v2/mcolevelsbyprog',  aimatcontroller.mcolevelsbyprog);
+app.get('/api/v2/updatemcolevelsbyfac',  aimatcontroller.updatemcolevelsbyfac);
+app.get('/api/v2/updatemcolevelscomments',  aimatcontroller.updatemcolevelscomments);
+app.get('/api/v2/mcolevelslinks',  aimatcontroller.mcolevelslinks);
+app.get('/api/v2/mcolevelsdocs',  aimatcontroller.mcolevelsdocs);
+app.get('/api/v2/deletemcolevelsbyfac',  aimatcontroller.deletemcolevelsbyfac);
+app.get('/api/v2/createmcolevelsbyfac',  aimatcontroller.createmcolevelsbyfac);
+
+
+app.get('/api/v2/addcoattainmentv',  aimatcontroller.addcoattainmentv);
+
+app.get('/api/v2/getmattcalcbyfac',  aimatcontroller.getmattcalcbyfac);
+app.get('/api/v2/mattcalcbyprog',  aimatcontroller.mattcalcbyprog);
+app.get('/api/v2/updatemattcalcbyfac',  aimatcontroller.updatemattcalcbyfac);
+app.get('/api/v2/updatemattcalccomments',  aimatcontroller.updatemattcalccomments);
+app.get('/api/v2/mattcalclinks',  aimatcontroller.mattcalclinks);
+app.get('/api/v2/mattcalcdocs',  aimatcontroller.mattcalcdocs);
+app.get('/api/v2/deletemattcalcbyfac',  aimatcontroller.deletemattcalcbyfac);
+app.get('/api/v2/createmattcalcbyfac',  aimatcontroller.createmattcalcbyfac);
+
+
+app.get('/api/v2/getmattcalccountbyfac',  aimatcontroller.getmattcalccountbyfac);
+app.get('/api/v2/getmattcalcsecondbyfac',  aimatcontroller.getmattcalcsecondbyfac);
+app.get('/api/v2/getmattcalccount',  aimatcontroller.getmattcalccount);
+app.get('/api/v2/getmattcalcsecond',  aimatcontroller.getmattcalcsecond);
+
+
+app.get('/api/v2/getmfaccoursescountbyfac',  aimatcontroller.getmfaccoursescountbyfac);
+app.get('/api/v2/getmfaccoursessecondbyfac',  aimatcontroller.getmfaccoursessecondbyfac);
+app.get('/api/v2/getmfaccoursescount',  aimatcontroller.getmfaccoursescount);
+app.get('/api/v2/getmfaccoursessecond',  aimatcontroller.getmfaccoursessecond);
+app.get('/api/v2/getmfaccoursesattcountbyfac',  aimatcontroller.getmfaccoursesattcountbyfac);
+app.get('/api/v2/getmfaccoursesattsecondbyfac',  aimatcontroller.getmfaccoursesattsecondbyfac);
+app.get('/api/v2/getmfaccoursesattcount',  aimatcontroller.getmfaccoursesattcount);
+app.get('/api/v2/getmfaccoursesattsecond',  aimatcontroller.getmfaccoursesattsecond);
+
+
+app.get('/api/v2/getmfaccoursesbyfac',  aimatcontroller.getmfaccoursesbyfac);
+app.get('/api/v2/mfaccoursesbyprog',  aimatcontroller.mfaccoursesbyprog);
+app.get('/api/v2/updatemfaccoursesbyfac',  aimatcontroller.updatemfaccoursesbyfac);
+app.get('/api/v2/updatemfaccoursescomments',  aimatcontroller.updatemfaccoursescomments);
+app.get('/api/v2/mfaccourseslinks',  aimatcontroller.mfaccourseslinks);
+app.get('/api/v2/mfaccoursesdocs',  aimatcontroller.mfaccoursesdocs);
+app.get('/api/v2/deletemfaccoursesbyfac',  aimatcontroller.deletemfaccoursesbyfac);
+app.get('/api/v2/createmfaccoursesbyfac',  aimatcontroller.createmfaccoursesbyfac);
+app.get('/api/v2/getmfaccoursesattbyfac',  aimatcontroller.getmfaccoursesattbyfac);
+app.get('/api/v2/getmfaccoursesattbyfac1',  aimatcontroller.getmfaccoursesattbyfac1);
+app.get('/api/v2/mfaccoursesattbyprog',  aimatcontroller.mfaccoursesattbyprog);
+app.get('/api/v2/updatemfaccoursesattbyfac',  aimatcontroller.updatemfaccoursesattbyfac);
+app.get('/api/v2/updatemfaccoursesattcomments',  aimatcontroller.updatemfaccoursesattcomments);
+app.get('/api/v2/mfaccoursesattlinks',  aimatcontroller.mfaccoursesattlinks);
+app.get('/api/v2/mfaccoursesattdocs',  aimatcontroller.mfaccoursesattdocs);
+app.get('/api/v2/deletemfaccoursesattbyfac',  aimatcontroller.deletemfaccoursesattbyfac);
+app.get('/api/v2/createmfaccoursesattbyfac',  aimatcontroller.createmfaccoursesattbyfac);
+
+
+app.get('/api/v2/getmprogramscountbyfac',  aimatcontroller.getmprogramscountbyfac);
+app.get('/api/v2/getmprogramssecondbyfac',  aimatcontroller.getmprogramssecondbyfac);
+app.get('/api/v2/getmprogramscount',  aimatcontroller.getmprogramscount);
+app.get('/api/v2/getmprogramssecond',  aimatcontroller.getmprogramssecond);
+app.get('/api/v2/getmcoursescountbyfac',  aimatcontroller.getmcoursescountbyfac);
+app.get('/api/v2/getmcoursessecondbyfac',  aimatcontroller.getmcoursessecondbyfac);
+app.get('/api/v2/getmcoursescount',  aimatcontroller.getmcoursescount);
+app.get('/api/v2/getmcoursessecond',  aimatcontroller.getmcoursessecond);
+app.get('/api/v2/getmstudentscountbyfac',  aimatcontroller.getmstudentscountbyfac);
+app.get('/api/v2/getmstudentssecondbyfac',  aimatcontroller.getmstudentssecondbyfac);
+app.get('/api/v2/getmstudentscount',  aimatcontroller.getmstudentscount);
+app.get('/api/v2/getmstudentssecond',  aimatcontroller.getmstudentssecond);
+app.get('/api/v2/getexamtimetablecountbyfac',  aimatcontroller.getexamtimetablecountbyfac);
+app.get('/api/v2/getexamtimetablesecondbyfac',  aimatcontroller.getexamtimetablesecondbyfac);
+app.get('/api/v2/getexamtimetablecount',  aimatcontroller.getexamtimetablecount);
+app.get('/api/v2/getexamtimetablesecond',  aimatcontroller.getexamtimetablesecond);
+
+
+app.get('/api/v2/getmprogramsbyfac',  aimatcontroller.getmprogramsbyfac);
+app.get('/api/v2/getmprogramsbyyear',  aimatcontroller.getmprogramsbyyear);
+app.get('/api/v2/mprogramsbyprog',  aimatcontroller.mprogramsbyprog);
+app.get('/api/v2/updatemprogramsbyfac',  aimatcontroller.updatemprogramsbyfac);
+app.get('/api/v2/updatemprogramscomments',  aimatcontroller.updatemprogramscomments);
+app.get('/api/v2/mprogramslinks',  aimatcontroller.mprogramslinks);
+app.get('/api/v2/mprogramsdocs',  aimatcontroller.mprogramsdocs);
+app.get('/api/v2/deletemprogramsbyfac',  aimatcontroller.deletemprogramsbyfac);
+app.get('/api/v2/createmprogramsbyfac',  aimatcontroller.createmprogramsbyfac);
+app.get('/api/v2/getmcoursesbyfac',  aimatcontroller.getmcoursesbyfac);
+app.get('/api/v2/getmcoursesbyyear',  aimatcontroller.getmcoursesbyyear);
+app.get('/api/v2/mcoursesbyprog',  aimatcontroller.mcoursesbyprog);
+app.get('/api/v2/updatemcoursesbyfac',  aimatcontroller.updatemcoursesbyfac);
+app.get('/api/v2/updatemcoursescomments',  aimatcontroller.updatemcoursescomments);
+app.get('/api/v2/mcourseslinks',  aimatcontroller.mcourseslinks);
+app.get('/api/v2/mcoursesdocs',  aimatcontroller.mcoursesdocs);
+app.get('/api/v2/deletemcoursesbyfac',  aimatcontroller.deletemcoursesbyfac);
+app.get('/api/v2/createmcoursesbyfac',  aimatcontroller.createmcoursesbyfac);
+app.get('/api/v2/getmstudentsbyfac',  aimatcontroller.getmstudentsbyfac);
+app.get('/api/v2/mstudentsbyprog',  aimatcontroller.mstudentsbyprog);
+app.get('/api/v2/updatemstudentsbyfac',  aimatcontroller.updatemstudentsbyfac);
+app.get('/api/v2/updatemstudentscomments',  aimatcontroller.updatemstudentscomments);
+app.get('/api/v2/mstudentslinks',  aimatcontroller.mstudentslinks);
+app.get('/api/v2/mstudentsdocs',  aimatcontroller.mstudentsdocs);
+app.get('/api/v2/deletemstudentsbyfac',  aimatcontroller.deletemstudentsbyfac);
+app.get('/api/v2/createmstudentsbyfac',  aimatcontroller.createmstudentsbyfac);
+app.get('/api/v2/getexamtimetablebyfac',  aimatcontroller.getexamtimetablebyfac);
+app.get('/api/v2/examtimetablebyprog',  aimatcontroller.examtimetablebyprog);
+app.get('/api/v2/updateexamtimetablebyfac',  aimatcontroller.updateexamtimetablebyfac);
+app.get('/api/v2/updateexamtimetablecomments',  aimatcontroller.updateexamtimetablecomments);
+app.get('/api/v2/examtimetablelinks',  aimatcontroller.examtimetablelinks);
+app.get('/api/v2/examtimetabledocs',  aimatcontroller.examtimetabledocs);
+app.get('/api/v2/deleteexamtimetablebyfac',  aimatcontroller.deleteexamtimetablebyfac);
+app.get('/api/v2/createexamtimetablebyfac',  aimatcontroller.createexamtimetablebyfac);
+
+
+app.get('/api/v2/getexamschedulecountbyfac',  aimatcontroller.getexamschedulecountbyfac);
+app.get('/api/v2/getexamschedulesecondbyfac',  aimatcontroller.getexamschedulesecondbyfac);
+app.get('/api/v2/getexamschedulecount',  aimatcontroller.getexamschedulecount);
+app.get('/api/v2/getexamschedulesecond',  aimatcontroller.getexamschedulesecond);
+app.get('/api/v2/getexamroomcountbyfac',  aimatcontroller.getexamroomcountbyfac);
+app.get('/api/v2/getexamroomsecondbyfac',  aimatcontroller.getexamroomsecondbyfac);
+app.get('/api/v2/getexamroomcount',  aimatcontroller.getexamroomcount);
+app.get('/api/v2/getexamroomsecond',  aimatcontroller.getexamroomsecond);
+
+
+app.get('/api/v2/getexamschedulebyfac',  aimatcontroller.getexamschedulebyfac);
+app.get('/api/v2/examschedulebyprog',  aimatcontroller.examschedulebyprog);
+app.get('/api/v2/updateexamschedulebyfac',  aimatcontroller.updateexamschedulebyfac);
+app.get('/api/v2/updateexamschedulecomments',  aimatcontroller.updateexamschedulecomments);
+app.get('/api/v2/examschedulelinks',  aimatcontroller.examschedulelinks);
+app.get('/api/v2/examscheduledocs',  aimatcontroller.examscheduledocs);
+app.get('/api/v2/deleteexamschedulebyfac',  aimatcontroller.deleteexamschedulebyfac);
+app.get('/api/v2/createexamschedulebyfac',  aimatcontroller.createexamschedulebyfac);
+app.get('/api/v2/getexamroombyfac',  aimatcontroller.getexamroombyfac);
+app.get('/api/v2/examroombyprog',  aimatcontroller.examroombyprog);
+app.get('/api/v2/updateexamroombyfac',  aimatcontroller.updateexamroombyfac);
+app.get('/api/v2/updateexamroomcomments',  aimatcontroller.updateexamroomcomments);
+app.get('/api/v2/examroomlinks',  aimatcontroller.examroomlinks);
+app.get('/api/v2/examroomdocs',  aimatcontroller.examroomdocs);
+app.get('/api/v2/deleteexamroombyfac',  aimatcontroller.deleteexamroombyfac);
+app.get('/api/v2/createexamroombyfac',  aimatcontroller.createexamroombyfac);
+
+
+app.get('/api/v2/getpublicationsbyfac',  aimatcontroller.getpublicationsbyfac);
+app.get('/api/v2/publicationsbyprog',  aimatcontroller.publicationsbyprog);
+app.get('/api/v2/updatepublicationsbyfac',  aimatcontroller.updatepublicationsbyfac);
+app.get('/api/v2/updatepublicationscomments',  aimatcontroller.updatepublicationscomments);
+app.get('/api/v2/publicationslinks',  aimatcontroller.publicationslinks);
+app.get('/api/v2/publicationsdocs',  aimatcontroller.publicationsdocs);
+app.get('/api/v2/deletepublicationsbyfac',  aimatcontroller.deletepublicationsbyfac);
+app.get('/api/v2/createpublicationsbyfac',  aimatcontroller.createpublicationsbyfac);
+app.get('/api/v2/getpatentsbyfac',  aimatcontroller.getpatentsbyfac);
+app.get('/api/v2/patentsbyprog',  aimatcontroller.patentsbyprog);
+app.get('/api/v2/updatepatentsbyfac',  aimatcontroller.updatepatentsbyfac);
+app.get('/api/v2/updatepatentscomments',  aimatcontroller.updatepatentscomments);
+app.get('/api/v2/patentslinks',  aimatcontroller.patentslinks);
+app.get('/api/v2/patentsdocs',  aimatcontroller.patentsdocs);
+app.get('/api/v2/deletepatentsbyfac',  aimatcontroller.deletepatentsbyfac);
+app.get('/api/v2/createpatentsbyfac',  aimatcontroller.createpatentsbyfac);
+app.get('/api/v2/getteacherfellowbyfac',  aimatcontroller.getteacherfellowbyfac);
+app.get('/api/v2/teacherfellowbyprog',  aimatcontroller.teacherfellowbyprog);
+app.get('/api/v2/updateteacherfellowbyfac',  aimatcontroller.updateteacherfellowbyfac);
+app.get('/api/v2/updateteacherfellowcomments',  aimatcontroller.updateteacherfellowcomments);
+app.get('/api/v2/teacherfellowlinks',  aimatcontroller.teacherfellowlinks);
+app.get('/api/v2/teacherfellowdocs',  aimatcontroller.teacherfellowdocs);
+app.get('/api/v2/deleteteacherfellowbyfac',  aimatcontroller.deleteteacherfellowbyfac);
+app.get('/api/v2/createteacherfellowbyfac',  aimatcontroller.createteacherfellowbyfac);
+app.get('/api/v2/getconsultancybyfac',  aimatcontroller.getconsultancybyfac);
+app.get('/api/v2/consultancybyprog',  aimatcontroller.consultancybyprog);
+app.get('/api/v2/updateconsultancybyfac',  aimatcontroller.updateconsultancybyfac);
+app.get('/api/v2/updateconsultancycomments',  aimatcontroller.updateconsultancycomments);
+app.get('/api/v2/consultancylinks',  aimatcontroller.consultancylinks);
+app.get('/api/v2/consultancydocs',  aimatcontroller.consultancydocs);
+app.get('/api/v2/deleteconsultancybyfac',  aimatcontroller.deleteconsultancybyfac);
+app.get('/api/v2/createconsultancybyfac',  aimatcontroller.createconsultancybyfac);
+app.get('/api/v2/getphdguidebyfac',  aimatcontroller.getphdguidebyfac);
+app.get('/api/v2/phdguidebyprog',  aimatcontroller.phdguidebyprog);
+app.get('/api/v2/updatephdguidebyfac',  aimatcontroller.updatephdguidebyfac);
+app.get('/api/v2/updatephdguidecomments',  aimatcontroller.updatephdguidecomments);
+app.get('/api/v2/phdguidelinks',  aimatcontroller.phdguidelinks);
+app.get('/api/v2/phdguidedocs',  aimatcontroller.phdguidedocs);
+app.get('/api/v2/deletephdguidebyfac',  aimatcontroller.deletephdguidebyfac);
+app.get('/api/v2/createphdguidebyfac',  aimatcontroller.createphdguidebyfac);
+app.get('/api/v2/getseminarbyfac',  aimatcontroller.getseminarbyfac);
+app.get('/api/v2/seminarbyprog',  aimatcontroller.seminarbyprog);
+app.get('/api/v2/updateseminarbyfac',  aimatcontroller.updateseminarbyfac);
+app.get('/api/v2/updateseminarcomments',  aimatcontroller.updateseminarcomments);
+app.get('/api/v2/seminarlinks',  aimatcontroller.seminarlinks);
+app.get('/api/v2/seminardocs',  aimatcontroller.seminardocs);
+app.get('/api/v2/deleteseminarbyfac',  aimatcontroller.deleteseminarbyfac);
+app.get('/api/v2/createseminarbyfac',  aimatcontroller.createseminarbyfac);
+app.get('/api/v2/getbookbyfac',  aimatcontroller.getbookbyfac);
+app.get('/api/v2/bookbyprog',  aimatcontroller.bookbyprog);
+app.get('/api/v2/updatebookbyfac',  aimatcontroller.updatebookbyfac);
+app.get('/api/v2/updatebookcomments',  aimatcontroller.updatebookcomments);
+app.get('/api/v2/booklinks',  aimatcontroller.booklinks);
+app.get('/api/v2/bookdocs',  aimatcontroller.bookdocs);
+app.get('/api/v2/deletebookbyfac',  aimatcontroller.deletebookbyfac);
+app.get('/api/v2/createbookbyfac',  aimatcontroller.createbookbyfac);
+
+
+app.get('/api/v2/getpublicationscountbyfac',  aimatcontroller.getpublicationscountbyfac);
+app.get('/api/v2/getpublicationssecondbyfac',  aimatcontroller.getpublicationssecondbyfac);
+app.get('/api/v2/getpublicationscount',  aimatcontroller.getpublicationscount);
+app.get('/api/v2/getpublicationssecond',  aimatcontroller.getpublicationssecond);
+app.get('/api/v2/getpatentscountbyfac',  aimatcontroller.getpatentscountbyfac);
+app.get('/api/v2/getpatentssecondbyfac',  aimatcontroller.getpatentssecondbyfac);
+app.get('/api/v2/getpatentscount',  aimatcontroller.getpatentscount);
+app.get('/api/v2/getpatentssecond',  aimatcontroller.getpatentssecond);
+app.get('/api/v2/getteacherfellowcountbyfac',  aimatcontroller.getteacherfellowcountbyfac);
+app.get('/api/v2/getteacherfellowsecondbyfac',  aimatcontroller.getteacherfellowsecondbyfac);
+app.get('/api/v2/getteacherfellowcount',  aimatcontroller.getteacherfellowcount);
+app.get('/api/v2/getteacherfellowsecond',  aimatcontroller.getteacherfellowsecond);
+app.get('/api/v2/getconsultancycountbyfac',  aimatcontroller.getconsultancycountbyfac);
+app.get('/api/v2/getconsultancysecondbyfac',  aimatcontroller.getconsultancysecondbyfac);
+app.get('/api/v2/getconsultancycount',  aimatcontroller.getconsultancycount);
+app.get('/api/v2/getconsultancysecond',  aimatcontroller.getconsultancysecond);
+app.get('/api/v2/getphdguidecountbyfac',  aimatcontroller.getphdguidecountbyfac);
+app.get('/api/v2/getphdguidesecondbyfac',  aimatcontroller.getphdguidesecondbyfac);
+app.get('/api/v2/getphdguidecount',  aimatcontroller.getphdguidecount);
+app.get('/api/v2/getphdguidesecond',  aimatcontroller.getphdguidesecond);
+app.get('/api/v2/getseminarcountbyfac',  aimatcontroller.getseminarcountbyfac);
+app.get('/api/v2/getseminarsecondbyfac',  aimatcontroller.getseminarsecondbyfac);
+app.get('/api/v2/getseminarcount',  aimatcontroller.getseminarcount);
+app.get('/api/v2/getseminarsecond',  aimatcontroller.getseminarsecond);
+app.get('/api/v2/getbookcountbyfac',  aimatcontroller.getbookcountbyfac);
+app.get('/api/v2/getbooksecondbyfac',  aimatcontroller.getbooksecondbyfac);
+app.get('/api/v2/getbookcount',  aimatcontroller.getbookcount);
+app.get('/api/v2/getbooksecond',  aimatcontroller.getbooksecond);
+
+
+app.get('/api/v2/getprojectscountbyfac',  aimatcontroller.getprojectscountbyfac);
+app.get('/api/v2/getprojectssecondbyfac',  aimatcontroller.getprojectssecondbyfac);
+app.get('/api/v2/getprojectscount',  aimatcontroller.getprojectscount);
+app.get('/api/v2/getprojectssecond',  aimatcontroller.getprojectssecond);
+
+
+app.get('/api/v2/getprojectsbyfac',  aimatcontroller.getprojectsbyfac);
+app.get('/api/v2/projectsbyprog',  aimatcontroller.projectsbyprog);
+app.get('/api/v2/updateprojectsbyfac',  aimatcontroller.updateprojectsbyfac);
+app.get('/api/v2/updateprojectscomments',  aimatcontroller.updateprojectscomments);
+app.get('/api/v2/projectslinks',  aimatcontroller.projectslinks);
+app.get('/api/v2/projectsdocs',  aimatcontroller.projectsdocs);
+app.get('/api/v2/deleteprojectsbyfac',  aimatcontroller.deleteprojectsbyfac);
+app.get('/api/v2/createprojectsbyfac',  aimatcontroller.createprojectsbyfac);
+
+
+
+
+const aipondicontroller=require('./controllers/aipondicontroller');
+
+app.get('/api/v1/getmadmapplysbyfac',  aipondicontroller.getmadmapplysbyfac);
+app.get('/api/v1/madmapplysbyprog',  aipondicontroller.madmapplysbyprog);
+app.get('/api/v1/updatemadmapplysbyfac',  aipondicontroller.updatemadmapplysbyfac);
+app.get('/api/v1/updatemadmapplyscomments',  aipondicontroller.updatemadmapplyscomments);
+app.get('/api/v1/madmapplyslinks',  aipondicontroller.madmapplyslinks);
+app.get('/api/v1/madmapplysdocs',  aipondicontroller.madmapplysdocs);
+app.get('/api/v1/deletemadmapplysbyfac',  aipondicontroller.deletemadmapplysbyfac);
+app.get('/api/v1/createmadmapplysbyfac',  aipondicontroller.createmadmapplysbyfac);
+app.get('/api/v1/getmadmapplyabyfac',  aipondicontroller.getmadmapplyabyfac);
+app.get('/api/v1/madmapplyabyprog',  aipondicontroller.madmapplyabyprog);
+app.get('/api/v1/updatemadmapplyabyfac',  aipondicontroller.updatemadmapplyabyfac);
+app.get('/api/v1/updatemadmapplyacomments',  aipondicontroller.updatemadmapplyacomments);
+app.get('/api/v1/madmapplyalinks',  aipondicontroller.madmapplyalinks);
+app.get('/api/v1/madmapplyadocs',  aipondicontroller.madmapplyadocs);
+app.get('/api/v1/deletemadmapplyabyfac',  aipondicontroller.deletemadmapplyabyfac);
+app.get('/api/v1/createmadmapplyabyfac',  aipondicontroller.createmadmapplyabyfac);
+
+
+app.get('/api/v1/getadmapplnewbyfac',  aipondicontroller.getadmapplnewbyfac);
+app.get('/api/v1/admapplnewbyprog',  aipondicontroller.admapplnewbyprog);
+app.get('/api/v1/updateadmapplnewbyfac',  aipondicontroller.updateadmapplnewbyfac);
+app.get('/api/v1/updateadmapplnewcomments',  aipondicontroller.updateadmapplnewcomments);
+app.get('/api/v1/admapplnewlinks',  aipondicontroller.admapplnewlinks);
+app.get('/api/v1/admapplnewdocs',  aipondicontroller.admapplnewdocs);
+app.get('/api/v1/deleteadmapplnewbyfac',  aipondicontroller.deleteadmapplnewbyfac);
+app.get('/api/v1/createadmapplnewbyfac',  aipondicontroller.createadmapplnewbyfac);
+
+
+
+app.get('/api/v1/getncas22countbyfac',  aipondicontroller.getncas22countbyfac);
+app.get('/api/v1/getncas22secondbyfac',  aipondicontroller.getncas22secondbyfac);
+app.get('/api/v1/getncas22count',  aipondicontroller.getncas22count);
+app.get('/api/v1/getncas22second',  aipondicontroller.getncas22second);
+app.get('/api/v1/getncas23countbyfac',  aipondicontroller.getncas23countbyfac);
+app.get('/api/v1/getncas23secondbyfac',  aipondicontroller.getncas23secondbyfac);
+app.get('/api/v1/getncas23count',  aipondicontroller.getncas23count);
+app.get('/api/v1/getncas23second',  aipondicontroller.getncas23second);
+app.get('/api/v1/getncas241countbyfac',  aipondicontroller.getncas241countbyfac);
+app.get('/api/v1/getncas241secondbyfac',  aipondicontroller.getncas241secondbyfac);
+app.get('/api/v1/getncas241count',  aipondicontroller.getncas241count);
+app.get('/api/v1/getncas241second',  aipondicontroller.getncas241second);
+app.get('/api/v1/getncas242countbyfac',  aipondicontroller.getncas242countbyfac);
+app.get('/api/v1/getncas242secondbyfac',  aipondicontroller.getncas242secondbyfac);
+app.get('/api/v1/getncas242count',  aipondicontroller.getncas242count);
+app.get('/api/v1/getncas242second',  aipondicontroller.getncas242second);
+app.get('/api/v1/getncas243countbyfac',  aipondicontroller.getncas243countbyfac);
+app.get('/api/v1/getncas243secondbyfac',  aipondicontroller.getncas243secondbyfac);
+app.get('/api/v1/getncas243count',  aipondicontroller.getncas243count);
+app.get('/api/v1/getncas243second',  aipondicontroller.getncas243second);
+app.get('/api/v1/getncas251countbyfac',  aipondicontroller.getncas251countbyfac);
+app.get('/api/v1/getncas251secondbyfac',  aipondicontroller.getncas251secondbyfac);
+app.get('/api/v1/getncas251count',  aipondicontroller.getncas251count);
+app.get('/api/v1/getncas251second',  aipondicontroller.getncas251second);
+app.get('/api/v1/getncas252countbyfac',  aipondicontroller.getncas252countbyfac);
+app.get('/api/v1/getncas252secondbyfac',  aipondicontroller.getncas252secondbyfac);
+app.get('/api/v1/getncas252count',  aipondicontroller.getncas252count);
+app.get('/api/v1/getncas252second',  aipondicontroller.getncas252second);
+app.get('/api/v1/getncas253countbyfac',  aipondicontroller.getncas253countbyfac);
+app.get('/api/v1/getncas253secondbyfac',  aipondicontroller.getncas253secondbyfac);
+app.get('/api/v1/getncas253count',  aipondicontroller.getncas253count);
+app.get('/api/v1/getncas253second',  aipondicontroller.getncas253second);
+app.get('/api/v1/getncas26countbyfac',  aipondicontroller.getncas26countbyfac);
+app.get('/api/v1/getncas26secondbyfac',  aipondicontroller.getncas26secondbyfac);
+app.get('/api/v1/getncas26count',  aipondicontroller.getncas26count);
+app.get('/api/v1/getncas26second',  aipondicontroller.getncas26second);
+
+
+
+
+
+app.get('/api/v1/getncas12countbyfac',  aipondicontroller.getncas12countbyfac);
+app.get('/api/v1/getncas12secondbyfac',  aipondicontroller.getncas12secondbyfac);
+app.get('/api/v1/getncas12count',  aipondicontroller.getncas12count);
+app.get('/api/v1/getncas12second',  aipondicontroller.getncas12second);
+
+
+app.get('/api/v1/getncas11countbyfac',  aipondicontroller.getncas11countbyfac);
+app.get('/api/v1/getncas11secondbyfac',  aipondicontroller.getncas11secondbyfac);
+app.get('/api/v1/getncas11count',  aipondicontroller.getncas11count);
+app.get('/api/v1/getncas11second',  aipondicontroller.getncas11second);
+
+app.get('/api/v1/getncas11byfac',  aipondicontroller.getncas11byfac);
+app.get('/api/v1/ncas11byprog',  aipondicontroller.ncas11byprog);
+app.get('/api/v1/updatencas11byfac',  aipondicontroller.updatencas11byfac);
+app.get('/api/v1/updatencas11comments',  aipondicontroller.updatencas11comments);
+app.get('/api/v1/ncas11links',  aipondicontroller.ncas11links);
+app.get('/api/v1/ncas11docs',  aipondicontroller.ncas11docs);
+app.get('/api/v1/deletencas11byfac',  aipondicontroller.deletencas11byfac);
+app.get('/api/v1/createncas11byfac',  aipondicontroller.createncas11byfac);
+app.get('/api/v1/getncas12byfac',  aipondicontroller.getncas12byfac);
+app.get('/api/v1/ncas12byprog',  aipondicontroller.ncas12byprog);
+app.get('/api/v1/updatencas12byfac',  aipondicontroller.updatencas12byfac);
+app.get('/api/v1/updatencas12comments',  aipondicontroller.updatencas12comments);
+app.get('/api/v1/ncas12links',  aipondicontroller.ncas12links);
+app.get('/api/v1/ncas12docs',  aipondicontroller.ncas12docs);
+app.get('/api/v1/deletencas12byfac',  aipondicontroller.deletencas12byfac);
+app.get('/api/v1/createncas12byfac',  aipondicontroller.createncas12byfac);
+app.get('/api/v1/getncas22byfac',  aipondicontroller.getncas22byfac);
+app.get('/api/v1/ncas22byprog',  aipondicontroller.ncas22byprog);
+app.get('/api/v1/updatencas22byfac',  aipondicontroller.updatencas22byfac);
+app.get('/api/v1/updatencas22comments',  aipondicontroller.updatencas22comments);
+app.get('/api/v1/ncas22links',  aipondicontroller.ncas22links);
+app.get('/api/v1/ncas22docs',  aipondicontroller.ncas22docs);
+app.get('/api/v1/deletencas22byfac',  aipondicontroller.deletencas22byfac);
+app.get('/api/v1/createncas22byfac',  aipondicontroller.createncas22byfac);
+app.get('/api/v1/getncas23byfac',  aipondicontroller.getncas23byfac);
+app.get('/api/v1/ncas23byprog',  aipondicontroller.ncas23byprog);
+app.get('/api/v1/updatencas23byfac',  aipondicontroller.updatencas23byfac);
+app.get('/api/v1/updatencas23comments',  aipondicontroller.updatencas23comments);
+app.get('/api/v1/ncas23links',  aipondicontroller.ncas23links);
+app.get('/api/v1/ncas23docs',  aipondicontroller.ncas23docs);
+app.get('/api/v1/deletencas23byfac',  aipondicontroller.deletencas23byfac);
+app.get('/api/v1/createncas23byfac',  aipondicontroller.createncas23byfac);
+app.get('/api/v1/getncas241byfac',  aipondicontroller.getncas241byfac);
+app.get('/api/v1/ncas241byprog',  aipondicontroller.ncas241byprog);
+app.get('/api/v1/updatencas241byfac',  aipondicontroller.updatencas241byfac);
+app.get('/api/v1/updatencas241comments',  aipondicontroller.updatencas241comments);
+app.get('/api/v1/ncas241links',  aipondicontroller.ncas241links);
+app.get('/api/v1/ncas241docs',  aipondicontroller.ncas241docs);
+app.get('/api/v1/deletencas241byfac',  aipondicontroller.deletencas241byfac);
+app.get('/api/v1/createncas241byfac',  aipondicontroller.createncas241byfac);
+app.get('/api/v1/getncas242byfac',  aipondicontroller.getncas242byfac);
+app.get('/api/v1/ncas242byprog',  aipondicontroller.ncas242byprog);
+app.get('/api/v1/updatencas242byfac',  aipondicontroller.updatencas242byfac);
+app.get('/api/v1/updatencas242comments',  aipondicontroller.updatencas242comments);
+app.get('/api/v1/ncas242links',  aipondicontroller.ncas242links);
+app.get('/api/v1/ncas242docs',  aipondicontroller.ncas242docs);
+app.get('/api/v1/deletencas242byfac',  aipondicontroller.deletencas242byfac);
+app.get('/api/v1/createncas242byfac',  aipondicontroller.createncas242byfac);
+app.get('/api/v1/getncas243byfac',  aipondicontroller.getncas243byfac);
+app.get('/api/v1/ncas243byprog',  aipondicontroller.ncas243byprog);
+app.get('/api/v1/updatencas243byfac',  aipondicontroller.updatencas243byfac);
+app.get('/api/v1/updatencas243comments',  aipondicontroller.updatencas243comments);
+app.get('/api/v1/ncas243links',  aipondicontroller.ncas243links);
+app.get('/api/v1/ncas243docs',  aipondicontroller.ncas243docs);
+app.get('/api/v1/deletencas243byfac',  aipondicontroller.deletencas243byfac);
+app.get('/api/v1/createncas243byfac',  aipondicontroller.createncas243byfac);
+app.get('/api/v1/getncas251byfac',  aipondicontroller.getncas251byfac);
+app.get('/api/v1/ncas251byprog',  aipondicontroller.ncas251byprog);
+app.get('/api/v1/updatencas251byfac',  aipondicontroller.updatencas251byfac);
+app.get('/api/v1/updatencas251comments',  aipondicontroller.updatencas251comments);
+app.get('/api/v1/ncas251links',  aipondicontroller.ncas251links);
+app.get('/api/v1/ncas251docs',  aipondicontroller.ncas251docs);
+app.get('/api/v1/deletencas251byfac',  aipondicontroller.deletencas251byfac);
+app.get('/api/v1/createncas251byfac',  aipondicontroller.createncas251byfac);
+app.get('/api/v1/getncas252byfac',  aipondicontroller.getncas252byfac);
+app.get('/api/v1/ncas252byprog',  aipondicontroller.ncas252byprog);
+app.get('/api/v1/updatencas252byfac',  aipondicontroller.updatencas252byfac);
+app.get('/api/v1/updatencas252comments',  aipondicontroller.updatencas252comments);
+app.get('/api/v1/ncas252links',  aipondicontroller.ncas252links);
+app.get('/api/v1/ncas252docs',  aipondicontroller.ncas252docs);
+app.get('/api/v1/deletencas252byfac',  aipondicontroller.deletencas252byfac);
+app.get('/api/v1/createncas252byfac',  aipondicontroller.createncas252byfac);
+app.get('/api/v1/getncas253byfac',  aipondicontroller.getncas253byfac);
+app.get('/api/v1/ncas253byprog',  aipondicontroller.ncas253byprog);
+app.get('/api/v1/updatencas253byfac',  aipondicontroller.updatencas253byfac);
+app.get('/api/v1/updatencas253comments',  aipondicontroller.updatencas253comments);
+app.get('/api/v1/ncas253links',  aipondicontroller.ncas253links);
+app.get('/api/v1/ncas253docs',  aipondicontroller.ncas253docs);
+app.get('/api/v1/deletencas253byfac',  aipondicontroller.deletencas253byfac);
+app.get('/api/v1/createncas253byfac',  aipondicontroller.createncas253byfac);
+app.get('/api/v1/getncas26byfac',  aipondicontroller.getncas26byfac);
+app.get('/api/v1/ncas26byprog',  aipondicontroller.ncas26byprog);
+app.get('/api/v1/updatencas26byfac',  aipondicontroller.updatencas26byfac);
+app.get('/api/v1/updatencas26comments',  aipondicontroller.updatencas26comments);
+app.get('/api/v1/ncas26links',  aipondicontroller.ncas26links);
+app.get('/api/v1/ncas26docs',  aipondicontroller.ncas26docs);
+app.get('/api/v1/deletencas26byfac',  aipondicontroller.deletencas26byfac);
+app.get('/api/v1/createncas26byfac',  aipondicontroller.createncas26byfac);
+
+
+app.get('/api/v1/getcas11byfac',  aipondicontroller.getcas11byfac);
+app.get('/api/v1/cas11byprog',  aipondicontroller.cas11byprog);
+app.get('/api/v1/updatecas11byfac',  aipondicontroller.updatecas11byfac);
+app.get('/api/v1/updatecas11comments',  aipondicontroller.updatecas11comments);
+app.get('/api/v1/cas11links',  aipondicontroller.cas11links);
+app.get('/api/v1/cas11docs',  aipondicontroller.cas11docs);
+app.get('/api/v1/deletecas11byfac',  aipondicontroller.deletecas11byfac);
+app.get('/api/v1/createcas11byfac',  aipondicontroller.createcas11byfac);
+app.get('/api/v1/getcas12byfac',  aipondicontroller.getcas12byfac);
+app.get('/api/v1/cas12byprog',  aipondicontroller.cas12byprog);
+app.get('/api/v1/updatecas12byfac',  aipondicontroller.updatecas12byfac);
+app.get('/api/v1/updatecas12comments',  aipondicontroller.updatecas12comments);
+app.get('/api/v1/cas12links',  aipondicontroller.cas12links);
+app.get('/api/v1/cas12docs',  aipondicontroller.cas12docs);
+app.get('/api/v1/deletecas12byfac',  aipondicontroller.deletecas12byfac);
+app.get('/api/v1/createcas12byfac',  aipondicontroller.createcas12byfac);
+app.get('/api/v1/getcas22byfac',  aipondicontroller.getcas22byfac);
+app.get('/api/v1/cas22byprog',  aipondicontroller.cas22byprog);
+app.get('/api/v1/updatecas22byfac',  aipondicontroller.updatecas22byfac);
+app.get('/api/v1/updatecas22comments',  aipondicontroller.updatecas22comments);
+app.get('/api/v1/cas22links',  aipondicontroller.cas22links);
+app.get('/api/v1/cas22docs',  aipondicontroller.cas22docs);
+app.get('/api/v1/deletecas22byfac',  aipondicontroller.deletecas22byfac);
+app.get('/api/v1/createcas22byfac',  aipondicontroller.createcas22byfac);
+app.get('/api/v1/getcas23byfac',  aipondicontroller.getcas23byfac);
+app.get('/api/v1/cas23byprog',  aipondicontroller.cas23byprog);
+app.get('/api/v1/updatecas23byfac',  aipondicontroller.updatecas23byfac);
+app.get('/api/v1/updatecas23comments',  aipondicontroller.updatecas23comments);
+app.get('/api/v1/cas23links',  aipondicontroller.cas23links);
+app.get('/api/v1/cas23docs',  aipondicontroller.cas23docs);
+app.get('/api/v1/deletecas23byfac',  aipondicontroller.deletecas23byfac);
+app.get('/api/v1/createcas23byfac',  aipondicontroller.createcas23byfac);
+app.get('/api/v1/getcas241byfac',  aipondicontroller.getcas241byfac);
+app.get('/api/v1/cas241byprog',  aipondicontroller.cas241byprog);
+app.get('/api/v1/updatecas241byfac',  aipondicontroller.updatecas241byfac);
+app.get('/api/v1/updatecas241comments',  aipondicontroller.updatecas241comments);
+app.get('/api/v1/cas241links',  aipondicontroller.cas241links);
+app.get('/api/v1/cas241docs',  aipondicontroller.cas241docs);
+app.get('/api/v1/deletecas241byfac',  aipondicontroller.deletecas241byfac);
+app.get('/api/v1/createcas241byfac',  aipondicontroller.createcas241byfac);
+app.get('/api/v1/getcas242byfac',  aipondicontroller.getcas242byfac);
+app.get('/api/v1/cas242byprog',  aipondicontroller.cas242byprog);
+app.get('/api/v1/updatecas242byfac',  aipondicontroller.updatecas242byfac);
+app.get('/api/v1/updatecas242comments',  aipondicontroller.updatecas242comments);
+app.get('/api/v1/cas242links',  aipondicontroller.cas242links);
+app.get('/api/v1/cas242docs',  aipondicontroller.cas242docs);
+app.get('/api/v1/deletecas242byfac',  aipondicontroller.deletecas242byfac);
+app.get('/api/v1/createcas242byfac',  aipondicontroller.createcas242byfac);
+app.get('/api/v1/getcas243byfac',  aipondicontroller.getcas243byfac);
+app.get('/api/v1/cas243byprog',  aipondicontroller.cas243byprog);
+app.get('/api/v1/updatecas243byfac',  aipondicontroller.updatecas243byfac);
+app.get('/api/v1/updatecas243comments',  aipondicontroller.updatecas243comments);
+app.get('/api/v1/cas243links',  aipondicontroller.cas243links);
+app.get('/api/v1/cas243docs',  aipondicontroller.cas243docs);
+app.get('/api/v1/deletecas243byfac',  aipondicontroller.deletecas243byfac);
+app.get('/api/v1/createcas243byfac',  aipondicontroller.createcas243byfac);
+app.get('/api/v1/getcas251byfac',  aipondicontroller.getcas251byfac);
+app.get('/api/v1/cas251byprog',  aipondicontroller.cas251byprog);
+app.get('/api/v1/updatecas251byfac',  aipondicontroller.updatecas251byfac);
+app.get('/api/v1/updatecas251comments',  aipondicontroller.updatecas251comments);
+app.get('/api/v1/cas251links',  aipondicontroller.cas251links);
+app.get('/api/v1/cas251docs',  aipondicontroller.cas251docs);
+app.get('/api/v1/deletecas251byfac',  aipondicontroller.deletecas251byfac);
+app.get('/api/v1/createcas251byfac',  aipondicontroller.createcas251byfac);
+app.get('/api/v1/getcas252byfac',  aipondicontroller.getcas252byfac);
+app.get('/api/v1/cas252byprog',  aipondicontroller.cas252byprog);
+app.get('/api/v1/updatecas252byfac',  aipondicontroller.updatecas252byfac);
+app.get('/api/v1/updatecas252comments',  aipondicontroller.updatecas252comments);
+app.get('/api/v1/cas252links',  aipondicontroller.cas252links);
+app.get('/api/v1/cas252docs',  aipondicontroller.cas252docs);
+app.get('/api/v1/deletecas252byfac',  aipondicontroller.deletecas252byfac);
+app.get('/api/v1/createcas252byfac',  aipondicontroller.createcas252byfac);
+app.get('/api/v1/getcas253byfac',  aipondicontroller.getcas253byfac);
+app.get('/api/v1/cas253byprog',  aipondicontroller.cas253byprog);
+app.get('/api/v1/updatecas253byfac',  aipondicontroller.updatecas253byfac);
+app.get('/api/v1/updatecas253comments',  aipondicontroller.updatecas253comments);
+app.get('/api/v1/cas253links',  aipondicontroller.cas253links);
+app.get('/api/v1/cas253docs',  aipondicontroller.cas253docs);
+app.get('/api/v1/deletecas253byfac',  aipondicontroller.deletecas253byfac);
+app.get('/api/v1/createcas253byfac',  aipondicontroller.createcas253byfac);
+app.get('/api/v1/getcas26byfac',  aipondicontroller.getcas26byfac);
+app.get('/api/v1/cas26byprog',  aipondicontroller.cas26byprog);
+app.get('/api/v1/updatecas26byfac',  aipondicontroller.updatecas26byfac);
+app.get('/api/v1/updatecas26comments',  aipondicontroller.updatecas26comments);
+app.get('/api/v1/cas26links',  aipondicontroller.cas26links);
+app.get('/api/v1/cas26docs',  aipondicontroller.cas26docs);
+app.get('/api/v1/deletecas26byfac',  aipondicontroller.deletecas26byfac);
+app.get('/api/v1/createcas26byfac',  aipondicontroller.createcas26byfac);
+
+
+
+app.get('/api/v1/getacalendernewbyfac',  aipondicontroller.getacalendernewbyfac);
+app.get('/api/v1/acalendernewbyprog',  aipondicontroller.acalendernewbyprog);
+app.get('/api/v1/updateacalendernewbyfac',  aipondicontroller.updateacalendernewbyfac);
+app.get('/api/v1/updateacalendernewcomments',  aipondicontroller.updateacalendernewcomments);
+app.get('/api/v1/acalendernewlinks',  aipondicontroller.acalendernewlinks);
+app.get('/api/v1/acalendernewdocs',  aipondicontroller.acalendernewdocs);
+app.get('/api/v1/deleteacalendernewbyfac',  aipondicontroller.deleteacalendernewbyfac);
+app.get('/api/v1/createacalendernewbyfac',  aipondicontroller.createacalendernewbyfac);
+app.get('/api/v1/getdeptasksbyfac',  aipondicontroller.getdeptasksbyfac);
+app.get('/api/v1/deptasksbyprog',  aipondicontroller.deptasksbyprog);
+app.get('/api/v1/updatedeptasksbyfac',  aipondicontroller.updatedeptasksbyfac);
+app.get('/api/v1/updatedeptaskscomments',  aipondicontroller.updatedeptaskscomments);
+app.get('/api/v1/deptaskslinks',  aipondicontroller.deptaskslinks);
+app.get('/api/v1/deptasksdocs',  aipondicontroller.deptasksdocs);
+app.get('/api/v1/deletedeptasksbyfac',  aipondicontroller.deletedeptasksbyfac);
+app.get('/api/v1/createdeptasksbyfac',  aipondicontroller.createdeptasksbyfac);
+
+
+app.get('/api/v1/getaupaynewbyfac',  aipondicontroller.getaupaynewbyfac);
+app.get('/api/v1/aupaynewbyprog',  aipondicontroller.aupaynewbyprog);
+app.get('/api/v1/updateaupaynewbyfac',  aipondicontroller.updateaupaynewbyfac);
+app.get('/api/v1/updateaupaynewcomments',  aipondicontroller.updateaupaynewcomments);
+app.get('/api/v1/aupaynewlinks',  aipondicontroller.aupaynewlinks);
+app.get('/api/v1/aupaynewlinksnew1',  aipondicontroller.aupaynewlinksnew1);
+app.get('/api/v1/aupaynewlinksall',  aipondicontroller.aupaynewlinksall);
+app.get('/api/v1/aupaynewdocs',  aipondicontroller.aupaynewdocs);
+app.get('/api/v1/deleteaupaynewbyfac',  aipondicontroller.deleteaupaynewbyfac);
+app.get('/api/v1/createaupaynewbyfac',  aipondicontroller.createaupaynewbyfac);
+
+
+app.get('/api/v1/getassignsubmitbyfac',  aipondicontroller.getassignsubmitbyfac);
+app.get('/api/v1/assignsubmitbyprog',  aipondicontroller.assignsubmitbyprog);
+app.get('/api/v1/updateassignsubmitbyfac',  aipondicontroller.updateassignsubmitbyfac);
+app.get('/api/v1/updateassignsubmitcomments',  aipondicontroller.updateassignsubmitcomments);
+app.get('/api/v1/assignsubmitlinks',  aipondicontroller.assignsubmitlinks);
+app.get('/api/v1/assignsubmitdocs',  aipondicontroller.assignsubmitdocs);
+app.get('/api/v1/deleteassignsubmitbyfac',  aipondicontroller.deleteassignsubmitbyfac);
+app.get('/api/v1/createassignsubmitbyfac',  aipondicontroller.createassignsubmitbyfac);
+
+
+app.get('/api/v1/assignmentlinksnew',  aipondicontroller.assignmentlinksnew);
+app.get('/api/v1/getvacnew2byfac',  aipondicontroller.getvacnew2byfac);
+app.get('/api/v1/vacnew2byprog',  aipondicontroller.vacnew2byprog);
+app.get('/api/v1/updatevacnew2byfac',  aipondicontroller.updatevacnew2byfac);
+app.get('/api/v1/updatevacnew2comments',  aipondicontroller.updatevacnew2comments);
+app.get('/api/v1/vacnew2links',  aipondicontroller.vacnew2links);
+app.get('/api/v1/vacnew2docs',  aipondicontroller.vacnew2docs);
+app.get('/api/v1/deletevacnew2byfac',  aipondicontroller.deletevacnew2byfac);
+app.get('/api/v1/createvacnew2byfac',  aipondicontroller.createvacnew2byfac);
+
+
+
+app.get('/api/v1/getvacnew1byfac',  aipondicontroller.getvacnew1byfac);
+app.get('/api/v1/vacnew1byprog',  aipondicontroller.vacnew1byprog);
+app.get('/api/v1/updatevacnew1byfac',  aipondicontroller.updatevacnew1byfac);
+app.get('/api/v1/updatevacnew1comments',  aipondicontroller.updatevacnew1comments);
+app.get('/api/v1/vacnew1links',  aipondicontroller.vacnew1links);
+app.get('/api/v1/vacnew1docs',  aipondicontroller.vacnew1docs);
+app.get('/api/v1/deletevacnew1byfac',  aipondicontroller.deletevacnew1byfac);
+app.get('/api/v1/createvacnew1byfac',  aipondicontroller.createvacnew1byfac);
+app.get('/api/v1/getvacstudents1byfac',  aipondicontroller.getvacstudents1byfac);
+app.get('/api/v1/vacstudents1byprog',  aipondicontroller.vacstudents1byprog);
+app.get('/api/v1/updatevacstudents1byfac',  aipondicontroller.updatevacstudents1byfac);
+app.get('/api/v1/updatevacstudents1comments',  aipondicontroller.updatevacstudents1comments);
+app.get('/api/v1/vacstudents1links',  aipondicontroller.vacstudents1links);
+app.get('/api/v1/vacstudents1docs',  aipondicontroller.vacstudents1docs);
+app.get('/api/v1/deletevacstudents1byfac',  aipondicontroller.deletevacstudents1byfac);
+app.get('/api/v1/createvacstudents1byfac',  aipondicontroller.createvacstudents1byfac);
+
+
+
+app.get('/api/v1/getpstatusnewbyfac',  aipondicontroller.getpstatusnewbyfac);
+app.get('/api/v1/pstatusnewbyprog',  aipondicontroller.pstatusnewbyprog);
+app.get('/api/v1/updatepstatusnewbyfac',  aipondicontroller.updatepstatusnewbyfac);
+app.get('/api/v1/updatepstatusnewcomments',  aipondicontroller.updatepstatusnewcomments);
+app.get('/api/v1/pstatusnewlinks',  aipondicontroller.pstatusnewlinks);
+app.get('/api/v1/pstatusnewdocs',  aipondicontroller.pstatusnewdocs);
+app.get('/api/v1/deletepstatusnewbyfac',  aipondicontroller.deletepstatusnewbyfac);
+app.get('/api/v1/createpstatusnewbyfac',  aipondicontroller.createpstatusnewbyfac);
+app.get('/api/v1/getseedaddbyfac',  aipondicontroller.getseedaddbyfac);
+app.get('/api/v1/seedaddbyprog',  aipondicontroller.seedaddbyprog);
+app.get('/api/v1/updateseedaddbyfac',  aipondicontroller.updateseedaddbyfac);
+app.get('/api/v1/updateseedaddcomments',  aipondicontroller.updateseedaddcomments);
+app.get('/api/v1/seedaddlinks',  aipondicontroller.seedaddlinks);
+app.get('/api/v1/seedadddocs',  aipondicontroller.seedadddocs);
+app.get('/api/v1/deleteseedaddbyfac',  aipondicontroller.deleteseedaddbyfac);
+app.get('/api/v1/createseedaddbyfac',  aipondicontroller.createseedaddbyfac);
+app.get('/api/v1/getphddeclarebyfac',  aipondicontroller.getphddeclarebyfac);
+app.get('/api/v1/phddeclarebyprog',  aipondicontroller.phddeclarebyprog);
+app.get('/api/v1/updatephddeclarebyfac',  aipondicontroller.updatephddeclarebyfac);
+app.get('/api/v1/updatephddeclarecomments',  aipondicontroller.updatephddeclarecomments);
+app.get('/api/v1/phddeclarelinks',  aipondicontroller.phddeclarelinks);
+app.get('/api/v1/phddeclaredocs',  aipondicontroller.phddeclaredocs);
+app.get('/api/v1/deletephddeclarebyfac',  aipondicontroller.deletephddeclarebyfac);
+app.get('/api/v1/createphddeclarebyfac',  aipondicontroller.createphddeclarebyfac);
+app.get('/api/v1/getpfacmasterbyfac',  aipondicontroller.getpfacmasterbyfac);
+app.get('/api/v1/pfacmasterbyprog',  aipondicontroller.pfacmasterbyprog);
+app.get('/api/v1/updatepfacmasterbyfac',  aipondicontroller.updatepfacmasterbyfac);
+app.get('/api/v1/updatepfacmastercomments',  aipondicontroller.updatepfacmastercomments);
+app.get('/api/v1/pfacmasterlinks',  aipondicontroller.pfacmasterlinks);
+app.get('/api/v1/pfacmasterdocs',  aipondicontroller.pfacmasterdocs);
+app.get('/api/v1/deletepfacmasterbyfac',  aipondicontroller.deletepfacmasterbyfac);
+app.get('/api/v1/createpfacmasterbyfac',  aipondicontroller.createpfacmasterbyfac);
+
+
+
+
+app.get('/api/v1/getauattbyfac',  aipondicontroller.getauattbyfac);
+app.get('/api/v1/auattbyprog',  aipondicontroller.auattbyprog);
+app.get('/api/v1/updateauattbyfac',  aipondicontroller.updateauattbyfac);
+app.get('/api/v1/updateauattcomments',  aipondicontroller.updateauattcomments);
+app.get('/api/v1/auattlinks',  aipondicontroller.auattlinks);
+app.get('/api/v1/auattdocs',  aipondicontroller.auattdocs);
+app.get('/api/v1/deleteauattbyfac',  aipondicontroller.deleteauattbyfac);
+app.get('/api/v1/createauattbyfac',  aipondicontroller.createauattbyfac);
+app.get('/api/v1/getauattsummarybyfac',  aipondicontroller.getauattsummarybyfac);
+app.get('/api/v1/auattsummarybyprog',  aipondicontroller.auattsummarybyprog);
+app.get('/api/v1/updateauattsummarybyfac',  aipondicontroller.updateauattsummarybyfac);
+app.get('/api/v1/updateauattsummarycomments',  aipondicontroller.updateauattsummarycomments);
+app.get('/api/v1/auattsummarylinks',  aipondicontroller.auattsummarylinks);
+app.get('/api/v1/auattsummarydocs',  aipondicontroller.auattsummarydocs);
+app.get('/api/v1/deleteauattsummarybyfac',  aipondicontroller.deleteauattsummarybyfac);
+app.get('/api/v1/createauattsummarybyfac',  aipondicontroller.createauattsummarybyfac);
+
+
+app.get('/api/v1/getpasspercentbyfac',  aipondicontroller.getpasspercentbyfac);
+app.get('/api/v1/passpercentbyprog',  aipondicontroller.passpercentbyprog);
+app.get('/api/v1/updatepasspercentbyfac',  aipondicontroller.updatepasspercentbyfac);
+app.get('/api/v1/updatepasspercentcomments',  aipondicontroller.updatepasspercentcomments);
+app.get('/api/v1/passpercentlinks',  aipondicontroller.passpercentlinks);
+app.get('/api/v1/passpercentdocs',  aipondicontroller.passpercentdocs);
+app.get('/api/v1/deletepasspercentbyfac',  aipondicontroller.deletepasspercentbyfac);
+app.get('/api/v1/createpasspercentbyfac',  aipondicontroller.createpasspercentbyfac);
+app.get('/api/v1/getnugrievancebyfac',  aipondicontroller.getnugrievancebyfac);
+app.get('/api/v1/nugrievancebyprog',  aipondicontroller.nugrievancebyprog);
+app.get('/api/v1/updatenugrievancebyfac',  aipondicontroller.updatenugrievancebyfac);
+app.get('/api/v1/updatenugrievancecomments',  aipondicontroller.updatenugrievancecomments);
+app.get('/api/v1/nugrievancelinks',  aipondicontroller.nugrievancelinks);
+app.get('/api/v1/nugrievancedocs',  aipondicontroller.nugrievancedocs);
+app.get('/api/v1/deletenugrievancebyfac',  aipondicontroller.deletenugrievancebyfac);
+app.get('/api/v1/createnugrievancebyfac',  aipondicontroller.createnugrievancebyfac);
+
+
+app.get('/api/v1/getaustudu1byfac',  aipondicontroller.getaustudu1byfac);
+app.get('/api/v1/austudu1byprog',  aipondicontroller.austudu1byprog);
+app.get('/api/v1/updateaustudu1byfac',  aipondicontroller.updateaustudu1byfac);
+app.get('/api/v1/updateaustudu1comments',  aipondicontroller.updateaustudu1comments);
+app.get('/api/v1/austudu1links',  aipondicontroller.austudu1links);
+app.get('/api/v1/austudu1docs',  aipondicontroller.austudu1docs);
+app.get('/api/v1/deleteaustudu1byfac',  aipondicontroller.deleteaustudu1byfac);
+app.get('/api/v1/createaustudu1byfac',  aipondicontroller.createaustudu1byfac);
+
+
+app.get('/api/v1/getaustudubyfac',  aipondicontroller.getaustudubyfac);
+app.get('/api/v1/austudubyprog',  aipondicontroller.austudubyprog);
+app.get('/api/v1/updateaustudubyfac',  aipondicontroller.updateaustudubyfac);
+app.get('/api/v1/updateaustuducomments',  aipondicontroller.updateaustuducomments);
+app.get('/api/v1/austudulinks',  aipondicontroller.austudulinks);
+app.get('/api/v1/austududocs',  aipondicontroller.austududocs);
+app.get('/api/v1/deleteaustudubyfac',  aipondicontroller.deleteaustudubyfac);
+app.get('/api/v1/createaustudubyfac',  aipondicontroller.createaustudubyfac);
+
+
+
+app.get('/api/v1/getaaucn1byfac',  aipondicontroller.getaaucn1byfac);
+app.get('/api/v1/aaucn1byprog',  aipondicontroller.aaucn1byprog);
+app.get('/api/v1/updateaaucn1byfac',  aipondicontroller.updateaaucn1byfac);
+app.get('/api/v1/updateaaucn1comments',  aipondicontroller.updateaaucn1comments);
+app.get('/api/v1/aaucn1links',  aipondicontroller.aaucn1links);
+app.get('/api/v1/aaucn1docs',  aipondicontroller.aaucn1docs);
+app.get('/api/v1/deleteaaucn1byfac',  aipondicontroller.deleteaaucn1byfac);
+app.get('/api/v1/createaaucn1byfac',  aipondicontroller.createaaucn1byfac);
+app.get('/api/v1/getaaucn2byfac',  aipondicontroller.getaaucn2byfac);
+app.get('/api/v1/getaaucn2byfac2',  aipondicontroller.getaaucn2byfac2);
+app.get('/api/v1/aaucn2byprog',  aipondicontroller.aaucn2byprog);
+app.get('/api/v1/updateaaucn2byfac',  aipondicontroller.updateaaucn2byfac);
+app.get('/api/v1/updateaaucn2comments',  aipondicontroller.updateaaucn2comments);
+app.get('/api/v1/aaucn2links',  aipondicontroller.aaucn2links);
+app.get('/api/v1/aaucn2docs',  aipondicontroller.aaucn2docs);
+app.get('/api/v1/deleteaaucn2byfac',  aipondicontroller.deleteaaucn2byfac);
+app.get('/api/v1/createaaucn2byfac',  aipondicontroller.createaaucn2byfac);
+app.get('/api/v1/createaaucn2byfac2',  aipondicontroller.createaaucn2byfac2);
+app.get('/api/v1/getaaucfees2byfac',  aipondicontroller.getaaucfees2byfac);
+app.get('/api/v1/aaucfees2byprog',  aipondicontroller.aaucfees2byprog);
+app.get('/api/v1/updateaaucfees2byfac',  aipondicontroller.updateaaucfees2byfac);
+app.get('/api/v1/updateaaucfees2comments',  aipondicontroller.updateaaucfees2comments);
+app.get('/api/v1/aaucfees2links',  aipondicontroller.aaucfees2links);
+app.get('/api/v1/aaucfees2docs',  aipondicontroller.aaucfees2docs);
+app.get('/api/v1/deleteaaucfees2byfac',  aipondicontroller.deleteaaucfees2byfac);
+app.get('/api/v1/createaaucfees2byfac',  aipondicontroller.createaaucfees2byfac);
+app.get('/api/v1/getaaucother2byfac',  aipondicontroller.getaaucother2byfac);
+app.get('/api/v1/aaucother2byprog',  aipondicontroller.aaucother2byprog);
+app.get('/api/v1/updateaaucother2byfac',  aipondicontroller.updateaaucother2byfac);
+app.get('/api/v1/updateaaucother2comments',  aipondicontroller.updateaaucother2comments);
+app.get('/api/v1/aaucother2links',  aipondicontroller.aaucother2links);
+app.get('/api/v1/aaucother2docs',  aipondicontroller.aaucother2docs);
+app.get('/api/v1/deleteaaucother2byfac',  aipondicontroller.deleteaaucother2byfac);
+app.get('/api/v1/createaaucother2byfac',  aipondicontroller.createaaucother2byfac);
+
+
+
+app.get('/api/v1/getaauc1byfac',  aipondicontroller.getaauc1byfac);
+app.get('/api/v1/aauc1byprog',  aipondicontroller.aauc1byprog);
+app.get('/api/v1/updateaauc1byfac',  aipondicontroller.updateaauc1byfac);
+app.get('/api/v1/updateaauc1comments',  aipondicontroller.updateaauc1comments);
+app.get('/api/v1/aauc1links',  aipondicontroller.aauc1links);
+app.get('/api/v1/aauc1docs',  aipondicontroller.aauc1docs);
+app.get('/api/v1/deleteaauc1byfac',  aipondicontroller.deleteaauc1byfac);
+app.get('/api/v1/createaauc1byfac',  aipondicontroller.createaauc1byfac);
+app.get('/api/v1/getaauc2byfac',  aipondicontroller.getaauc2byfac);
+app.get('/api/v1/getaauc2byfac2',  aipondicontroller.getaauc2byfac2);
+app.get('/api/v1/aauc2byprog',  aipondicontroller.aauc2byprog);
+app.get('/api/v1/updateaauc2byfac',  aipondicontroller.updateaauc2byfac);
+app.get('/api/v1/updateaauc2comments',  aipondicontroller.updateaauc2comments);
+app.get('/api/v1/aauc2links',  aipondicontroller.aauc2links);
+app.get('/api/v1/aauc2docs',  aipondicontroller.aauc2docs);
+app.get('/api/v1/deleteaauc2byfac',  aipondicontroller.deleteaauc2byfac);
+app.get('/api/v1/createaauc2byfac',  aipondicontroller.createaauc2byfac);
+app.get('/api/v1/createaauc2byfac2',  aipondicontroller.createaauc2byfac2);
+app.get('/api/v1/getaaucotherbyfac',  aipondicontroller.getaaucotherbyfac);
+app.get('/api/v1/aaucotherbyprog',  aipondicontroller.aaucotherbyprog);
+app.get('/api/v1/updateaaucotherbyfac',  aipondicontroller.updateaaucotherbyfac);
+app.get('/api/v1/updateaaucothercomments',  aipondicontroller.updateaaucothercomments);
+app.get('/api/v1/aaucotherlinks',  aipondicontroller.aaucotherlinks);
+app.get('/api/v1/aaucotherdocs',  aipondicontroller.aaucotherdocs);
+app.get('/api/v1/deleteaaucotherbyfac',  aipondicontroller.deleteaaucotherbyfac);
+app.get('/api/v1/createaaucotherbyfac',  aipondicontroller.createaaucotherbyfac);
+app.get('/api/v1/getaaucfeesbyfac',  aipondicontroller.getaaucfeesbyfac);
+app.get('/api/v1/aaucfeesbyprog',  aipondicontroller.aaucfeesbyprog);
+app.get('/api/v1/updateaaucfeesbyfac',  aipondicontroller.updateaaucfeesbyfac);
+app.get('/api/v1/updateaaucfeescomments',  aipondicontroller.updateaaucfeescomments);
+app.get('/api/v1/aaucfeeslinks',  aipondicontroller.aaucfeeslinks);
+app.get('/api/v1/aaucfeesdocs',  aipondicontroller.aaucfeesdocs);
+app.get('/api/v1/deleteaaucfeesbyfac',  aipondicontroller.deleteaaucfeesbyfac);
+app.get('/api/v1/createaaucfeesbyfac',  aipondicontroller.createaaucfeesbyfac);
+
+
+app.get('/api/v1/getdoc121acbyfac',  aipondicontroller.getdoc121acbyfac);
+app.get('/api/v1/doc121acbyprog',  aipondicontroller.doc121acbyprog);
+app.get('/api/v1/updatedoc121acbyfac',  aipondicontroller.updatedoc121acbyfac);
+app.get('/api/v1/updatedoc121accomments',  aipondicontroller.updatedoc121accomments);
+app.get('/api/v1/doc121aclinks',  aipondicontroller.doc121aclinks);
+app.get('/api/v1/doc121acdocs',  aipondicontroller.doc121acdocs);
+app.get('/api/v1/deletedoc121acbyfac',  aipondicontroller.deletedoc121acbyfac);
+app.get('/api/v1/createdoc121acbyfac',  aipondicontroller.createdoc121acbyfac);
+app.get('/api/v1/getdoc121bosbyfac',  aipondicontroller.getdoc121bosbyfac);
+app.get('/api/v1/doc121bosbyprog',  aipondicontroller.doc121bosbyprog);
+app.get('/api/v1/updatedoc121bosbyfac',  aipondicontroller.updatedoc121bosbyfac);
+app.get('/api/v1/updatedoc121boscomments',  aipondicontroller.updatedoc121boscomments);
+app.get('/api/v1/doc121boslinks',  aipondicontroller.doc121boslinks);
+app.get('/api/v1/doc121bosdocs',  aipondicontroller.doc121bosdocs);
+app.get('/api/v1/deletedoc121bosbyfac',  aipondicontroller.deletedoc121bosbyfac);
+app.get('/api/v1/createdoc121bosbyfac',  aipondicontroller.createdoc121bosbyfac);
+app.get('/api/v1/getdoc132attbyfac',  aipondicontroller.getdoc132attbyfac);
+app.get('/api/v1/doc132attbyprog',  aipondicontroller.doc132attbyprog);
+app.get('/api/v1/updatedoc132attbyfac',  aipondicontroller.updatedoc132attbyfac);
+app.get('/api/v1/updatedoc132attcomments',  aipondicontroller.updatedoc132attcomments);
+app.get('/api/v1/doc132attlinks',  aipondicontroller.doc132attlinks);
+app.get('/api/v1/doc132attdocs',  aipondicontroller.doc132attdocs);
+app.get('/api/v1/deletedoc132attbyfac',  aipondicontroller.deletedoc132attbyfac);
+app.get('/api/v1/createdoc132attbyfac',  aipondicontroller.createdoc132attbyfac);
+app.get('/api/v1/getdoc132brochurebyfac',  aipondicontroller.getdoc132brochurebyfac);
+app.get('/api/v1/doc132brochurebyprog',  aipondicontroller.doc132brochurebyprog);
+app.get('/api/v1/updatedoc132brochurebyfac',  aipondicontroller.updatedoc132brochurebyfac);
+app.get('/api/v1/updatedoc132brochurecomments',  aipondicontroller.updatedoc132brochurecomments);
+app.get('/api/v1/doc132brochurelinks',  aipondicontroller.doc132brochurelinks);
+app.get('/api/v1/doc132brochuredocs',  aipondicontroller.doc132brochuredocs);
+app.get('/api/v1/deletedoc132brochurebyfac',  aipondicontroller.deletedoc132brochurebyfac);
+app.get('/api/v1/createdoc132brochurebyfac',  aipondicontroller.createdoc132brochurebyfac);
+app.get('/api/v1/getdoc132certbyfac',  aipondicontroller.getdoc132certbyfac);
+app.get('/api/v1/doc132certbyprog',  aipondicontroller.doc132certbyprog);
+app.get('/api/v1/updatedoc132certbyfac',  aipondicontroller.updatedoc132certbyfac);
+app.get('/api/v1/updatedoc132certcomments',  aipondicontroller.updatedoc132certcomments);
+app.get('/api/v1/doc132certlinks',  aipondicontroller.doc132certlinks);
+app.get('/api/v1/doc132certdocs',  aipondicontroller.doc132certdocs);
+app.get('/api/v1/deletedoc132certbyfac',  aipondicontroller.deletedoc132certbyfac);
+app.get('/api/v1/createdoc132certbyfac',  aipondicontroller.createdoc132certbyfac);
+app.get('/api/v1/getdoc133internbyfac',  aipondicontroller.getdoc133internbyfac);
+app.get('/api/v1/doc133internbyprog',  aipondicontroller.doc133internbyprog);
+app.get('/api/v1/updatedoc133internbyfac',  aipondicontroller.updatedoc133internbyfac);
+app.get('/api/v1/updatedoc133interncomments',  aipondicontroller.updatedoc133interncomments);
+app.get('/api/v1/doc133internlinks',  aipondicontroller.doc133internlinks);
+app.get('/api/v1/doc133interndocs',  aipondicontroller.doc133interndocs);
+app.get('/api/v1/deletedoc133internbyfac',  aipondicontroller.deletedoc133internbyfac);
+app.get('/api/v1/createdoc133internbyfac',  aipondicontroller.createdoc133internbyfac);
+app.get('/api/v1/getdoc133bosbyfac',  aipondicontroller.getdoc133bosbyfac);
+app.get('/api/v1/doc133bosbyprog',  aipondicontroller.doc133bosbyprog);
+app.get('/api/v1/updatedoc133bosbyfac',  aipondicontroller.updatedoc133bosbyfac);
+app.get('/api/v1/updatedoc133boscomments',  aipondicontroller.updatedoc133boscomments);
+app.get('/api/v1/doc133boslinks',  aipondicontroller.doc133boslinks);
+app.get('/api/v1/doc133bosdocs',  aipondicontroller.doc133bosdocs);
+app.get('/api/v1/deletedoc133bosbyfac',  aipondicontroller.deletedoc133bosbyfac);
+app.get('/api/v1/createdoc133bosbyfac',  aipondicontroller.createdoc133bosbyfac);
+app.get('/api/v1/getdoc141fsubmitbyfac',  aipondicontroller.getdoc141fsubmitbyfac);
+app.get('/api/v1/doc141fsubmitbyprog',  aipondicontroller.doc141fsubmitbyprog);
+app.get('/api/v1/updatedoc141fsubmitbyfac',  aipondicontroller.updatedoc141fsubmitbyfac);
+app.get('/api/v1/updatedoc141fsubmitcomments',  aipondicontroller.updatedoc141fsubmitcomments);
+app.get('/api/v1/doc141fsubmitlinks',  aipondicontroller.doc141fsubmitlinks);
+app.get('/api/v1/doc141fsubmitdocs',  aipondicontroller.doc141fsubmitdocs);
+app.get('/api/v1/deletedoc141fsubmitbyfac',  aipondicontroller.deletedoc141fsubmitbyfac);
+app.get('/api/v1/createdoc141fsubmitbyfac',  aipondicontroller.createdoc141fsubmitbyfac);
+app.get('/api/v1/getdoc141samplebyfac',  aipondicontroller.getdoc141samplebyfac);
+app.get('/api/v1/doc141samplebyprog',  aipondicontroller.doc141samplebyprog);
+app.get('/api/v1/updatedoc141samplebyfac',  aipondicontroller.updatedoc141samplebyfac);
+app.get('/api/v1/updatedoc141samplecomments',  aipondicontroller.updatedoc141samplecomments);
+app.get('/api/v1/doc141samplelinks',  aipondicontroller.doc141samplelinks);
+app.get('/api/v1/doc141sampledocs',  aipondicontroller.doc141sampledocs);
+app.get('/api/v1/deletedoc141samplebyfac',  aipondicontroller.deletedoc141samplebyfac);
+app.get('/api/v1/createdoc141samplebyfac',  aipondicontroller.createdoc141samplebyfac);
+app.get('/api/v1/getdoc141actionbyfac',  aipondicontroller.getdoc141actionbyfac);
+app.get('/api/v1/doc141actionbyprog',  aipondicontroller.doc141actionbyprog);
+app.get('/api/v1/updatedoc141actionbyfac',  aipondicontroller.updatedoc141actionbyfac);
+app.get('/api/v1/updatedoc141actioncomments',  aipondicontroller.updatedoc141actioncomments);
+app.get('/api/v1/doc141actionlinks',  aipondicontroller.doc141actionlinks);
+app.get('/api/v1/doc141actiondocs',  aipondicontroller.doc141actiondocs);
+app.get('/api/v1/deletedoc141actionbyfac',  aipondicontroller.deletedoc141actionbyfac);
+app.get('/api/v1/createdoc141actionbyfac',  aipondicontroller.createdoc141actionbyfac);
+app.get('/api/v1/getdod211intakebyfac',  aipondicontroller.getdod211intakebyfac);
+app.get('/api/v1/dod211intakebyprog',  aipondicontroller.dod211intakebyprog);
+app.get('/api/v1/updatedod211intakebyfac',  aipondicontroller.updatedod211intakebyfac);
+app.get('/api/v1/updatedod211intakecomments',  aipondicontroller.updatedod211intakecomments);
+app.get('/api/v1/dod211intakelinks',  aipondicontroller.dod211intakelinks);
+app.get('/api/v1/dod211intakedocs',  aipondicontroller.dod211intakedocs);
+app.get('/api/v1/deletedod211intakebyfac',  aipondicontroller.deletedod211intakebyfac);
+app.get('/api/v1/createdod211intakebyfac',  aipondicontroller.createdod211intakebyfac);
+app.get('/api/v1/getdoc211extractbyfac',  aipondicontroller.getdoc211extractbyfac);
+app.get('/api/v1/doc211extractbyprog',  aipondicontroller.doc211extractbyprog);
+app.get('/api/v1/updatedoc211extractbyfac',  aipondicontroller.updatedoc211extractbyfac);
+app.get('/api/v1/updatedoc211extractcomments',  aipondicontroller.updatedoc211extractcomments);
+app.get('/api/v1/doc211extractlinks',  aipondicontroller.doc211extractlinks);
+app.get('/api/v1/doc211extractdocs',  aipondicontroller.doc211extractdocs);
+app.get('/api/v1/deletedoc211extractbyfac',  aipondicontroller.deletedoc211extractbyfac);
+app.get('/api/v1/createdoc211extractbyfac',  aipondicontroller.createdoc211extractbyfac);
+app.get('/api/v1/getdoc212finalbyfac',  aipondicontroller.getdoc212finalbyfac);
+app.get('/api/v1/doc212finalbyprog',  aipondicontroller.doc212finalbyprog);
+app.get('/api/v1/updatedoc212finalbyfac',  aipondicontroller.updatedoc212finalbyfac);
+app.get('/api/v1/updatedoc212finalcomments',  aipondicontroller.updatedoc212finalcomments);
+app.get('/api/v1/doc212finallinks',  aipondicontroller.doc212finallinks);
+app.get('/api/v1/doc212finaldocs',  aipondicontroller.doc212finaldocs);
+app.get('/api/v1/deletedoc212finalbyfac',  aipondicontroller.deletedoc212finalbyfac);
+app.get('/api/v1/createdoc212finalbyfac',  aipondicontroller.createdoc212finalbyfac);
+app.get('/api/v1/getdoc212letterbyfac',  aipondicontroller.getdoc212letterbyfac);
+app.get('/api/v1/doc212letterbyprog',  aipondicontroller.doc212letterbyprog);
+app.get('/api/v1/updatedoc212letterbyfac',  aipondicontroller.updatedoc212letterbyfac);
+app.get('/api/v1/updatedoc212lettercomments',  aipondicontroller.updatedoc212lettercomments);
+app.get('/api/v1/doc212letterlinks',  aipondicontroller.doc212letterlinks);
+app.get('/api/v1/doc212letterdocs',  aipondicontroller.doc212letterdocs);
+app.get('/api/v1/deletedoc212letterbyfac',  aipondicontroller.deletedoc212letterbyfac);
+app.get('/api/v1/createdoc212letterbyfac',  aipondicontroller.createdoc212letterbyfac);
+app.get('/api/v1/getdod222studbyfac',  aipondicontroller.getdod222studbyfac);
+app.get('/api/v1/dod222studbyprog',  aipondicontroller.dod222studbyprog);
+app.get('/api/v1/updatedod222studbyfac',  aipondicontroller.updatedod222studbyfac);
+app.get('/api/v1/updatedod222studcomments',  aipondicontroller.updatedod222studcomments);
+app.get('/api/v1/dod222studlinks',  aipondicontroller.dod222studlinks);
+app.get('/api/v1/dod222studdocs',  aipondicontroller.dod222studdocs);
+app.get('/api/v1/deletedod222studbyfac',  aipondicontroller.deletedod222studbyfac);
+app.get('/api/v1/createdod222studbyfac',  aipondicontroller.createdod222studbyfac);
+app.get('/api/v1/getdoc222teachersbyfac',  aipondicontroller.getdoc222teachersbyfac);
+app.get('/api/v1/doc222teachersbyprog',  aipondicontroller.doc222teachersbyprog);
+app.get('/api/v1/updatedoc222teachersbyfac',  aipondicontroller.updatedoc222teachersbyfac);
+app.get('/api/v1/updatedoc222teacherscomments',  aipondicontroller.updatedoc222teacherscomments);
+app.get('/api/v1/doc222teacherslinks',  aipondicontroller.doc222teacherslinks);
+app.get('/api/v1/doc222teachersdocs',  aipondicontroller.doc222teachersdocs);
+app.get('/api/v1/deletedoc222teachersbyfac',  aipondicontroller.deletedoc222teachersbyfac);
+app.get('/api/v1/createdoc222teachersbyfac',  aipondicontroller.createdoc222teachersbyfac);
+app.get('/api/v1/getdoc241sanctionbyfac',  aipondicontroller.getdoc241sanctionbyfac);
+app.get('/api/v1/doc241sanctionbyprog',  aipondicontroller.doc241sanctionbyprog);
+app.get('/api/v1/updatedoc241sanctionbyfac',  aipondicontroller.updatedoc241sanctionbyfac);
+app.get('/api/v1/updatedoc241sanctioncomments',  aipondicontroller.updatedoc241sanctioncomments);
+app.get('/api/v1/doc241sanctionlinks',  aipondicontroller.doc241sanctionlinks);
+app.get('/api/v1/doc241sanctiondocs',  aipondicontroller.doc241sanctiondocs);
+app.get('/api/v1/deletedoc241sanctionbyfac',  aipondicontroller.deletedoc241sanctionbyfac);
+app.get('/api/v1/createdoc241sanctionbyfac',  aipondicontroller.createdoc241sanctionbyfac);
+app.get('/api/v1/getdoc242faclistbyfac',  aipondicontroller.getdoc242faclistbyfac);
+app.get('/api/v1/doc242faclistbyprog',  aipondicontroller.doc242faclistbyprog);
+app.get('/api/v1/updatedoc242faclistbyfac',  aipondicontroller.updatedoc242faclistbyfac);
+app.get('/api/v1/updatedoc242faclistcomments',  aipondicontroller.updatedoc242faclistcomments);
+app.get('/api/v1/doc242faclistlinks',  aipondicontroller.doc242faclistlinks);
+app.get('/api/v1/doc242faclistdocs',  aipondicontroller.doc242faclistdocs);
+app.get('/api/v1/deletedoc242faclistbyfac',  aipondicontroller.deletedoc242faclistbyfac);
+app.get('/api/v1/createdoc242faclistbyfac',  aipondicontroller.createdoc242faclistbyfac);
+app.get('/api/v1/getdoc252listbyfac',  aipondicontroller.getdoc252listbyfac);
+app.get('/api/v1/doc252listbyprog',  aipondicontroller.doc252listbyprog);
+app.get('/api/v1/updatedoc252listbyfac',  aipondicontroller.updatedoc252listbyfac);
+app.get('/api/v1/updatedoc252listcomments',  aipondicontroller.updatedoc252listcomments);
+app.get('/api/v1/doc252listlinks',  aipondicontroller.doc252listlinks);
+app.get('/api/v1/doc252listdocs',  aipondicontroller.doc252listdocs);
+app.get('/api/v1/deletedoc252listbyfac',  aipondicontroller.deletedoc252listbyfac);
+app.get('/api/v1/createdoc252listbyfac',  aipondicontroller.createdoc252listbyfac);
+app.get('/api/v1/getdoc253screenshotbyfac',  aipondicontroller.getdoc253screenshotbyfac);
+app.get('/api/v1/doc253screenshotbyprog',  aipondicontroller.doc253screenshotbyprog);
+app.get('/api/v1/updatedoc253screenshotbyfac',  aipondicontroller.updatedoc253screenshotbyfac);
+app.get('/api/v1/updatedoc253screenshotcomments',  aipondicontroller.updatedoc253screenshotcomments);
+app.get('/api/v1/doc253screenshotlinks',  aipondicontroller.doc253screenshotlinks);
+app.get('/api/v1/doc253screenshotdocs',  aipondicontroller.doc253screenshotdocs);
+app.get('/api/v1/deletedoc253screenshotbyfac',  aipondicontroller.deletedoc253screenshotbyfac);
+app.get('/api/v1/createdoc253screenshotbyfac',  aipondicontroller.createdoc253screenshotbyfac);
+app.get('/api/v1/getdoc253reportbyfac',  aipondicontroller.getdoc253reportbyfac);
+app.get('/api/v1/doc253reportbyprog',  aipondicontroller.doc253reportbyprog);
+app.get('/api/v1/updatedoc253reportbyfac',  aipondicontroller.updatedoc253reportbyfac);
+app.get('/api/v1/updatedoc253reportcomments',  aipondicontroller.updatedoc253reportcomments);
+app.get('/api/v1/doc253reportlinks',  aipondicontroller.doc253reportlinks);
+app.get('/api/v1/doc253reportdocs',  aipondicontroller.doc253reportdocs);
+app.get('/api/v1/deletedoc253reportbyfac',  aipondicontroller.deletedoc253reportbyfac);
+app.get('/api/v1/createdoc253reportbyfac',  aipondicontroller.createdoc253reportbyfac);
+app.get('/api/v1/getdoc261polistbyfac',  aipondicontroller.getdoc261polistbyfac);
+app.get('/api/v1/doc261polistbyprog',  aipondicontroller.doc261polistbyprog);
+app.get('/api/v1/updatedoc261polistbyfac',  aipondicontroller.updatedoc261polistbyfac);
+app.get('/api/v1/updatedoc261polistcomments',  aipondicontroller.updatedoc261polistcomments);
+app.get('/api/v1/doc261polistlinks',  aipondicontroller.doc261polistlinks);
+app.get('/api/v1/doc261polistdocs',  aipondicontroller.doc261polistdocs);
+app.get('/api/v1/deletedoc261polistbyfac',  aipondicontroller.deletedoc261polistbyfac);
+app.get('/api/v1/createdoc261polistbyfac',  aipondicontroller.createdoc261polistbyfac);
+app.get('/api/v1/getdoc261colistbyfac',  aipondicontroller.getdoc261colistbyfac);
+app.get('/api/v1/doc261colistbyprog',  aipondicontroller.doc261colistbyprog);
+app.get('/api/v1/updatedoc261colistbyfac',  aipondicontroller.updatedoc261colistbyfac);
+app.get('/api/v1/updatedoc261colistcomments',  aipondicontroller.updatedoc261colistcomments);
+app.get('/api/v1/doc261colistlinks',  aipondicontroller.doc261colistlinks);
+app.get('/api/v1/doc261colistdocs',  aipondicontroller.doc261colistdocs);
+app.get('/api/v1/deletedoc261colistbyfac',  aipondicontroller.deletedoc261colistbyfac);
+app.get('/api/v1/createdoc261colistbyfac',  aipondicontroller.createdoc261colistbyfac);
+app.get('/api/v1/getdoc262certbyfac',  aipondicontroller.getdoc262certbyfac);
+app.get('/api/v1/doc262certbyprog',  aipondicontroller.doc262certbyprog);
+app.get('/api/v1/updatedoc262certbyfac',  aipondicontroller.updatedoc262certbyfac);
+app.get('/api/v1/updatedoc262certcomments',  aipondicontroller.updatedoc262certcomments);
+app.get('/api/v1/doc262certlinks',  aipondicontroller.doc262certlinks);
+app.get('/api/v1/doc262certdocs',  aipondicontroller.doc262certdocs);
+app.get('/api/v1/deletedoc262certbyfac',  aipondicontroller.deletedoc262certbyfac);
+app.get('/api/v1/createdoc262certbyfac',  aipondicontroller.createdoc262certbyfac);
+app.get('/api/v1/getdoc262annualbyfac',  aipondicontroller.getdoc262annualbyfac);
+app.get('/api/v1/doc262annualbyprog',  aipondicontroller.doc262annualbyprog);
+app.get('/api/v1/updatedoc262annualbyfac',  aipondicontroller.updatedoc262annualbyfac);
+app.get('/api/v1/updatedoc262annualcomments',  aipondicontroller.updatedoc262annualcomments);
+app.get('/api/v1/doc262annuallinks',  aipondicontroller.doc262annuallinks);
+app.get('/api/v1/doc262annualdocs',  aipondicontroller.doc262annualdocs);
+app.get('/api/v1/deletedoc262annualbyfac',  aipondicontroller.deletedoc262annualbyfac);
+app.get('/api/v1/createdoc262annualbyfac',  aipondicontroller.createdoc262annualbyfac);
+app.get('/api/v1/getdoc311cobyfac',  aipondicontroller.getdoc311cobyfac);
+app.get('/api/v1/doc311cobyprog',  aipondicontroller.doc311cobyprog);
+app.get('/api/v1/updatedoc311cobyfac',  aipondicontroller.updatedoc311cobyfac);
+app.get('/api/v1/updatedoc311cocomments',  aipondicontroller.updatedoc311cocomments);
+app.get('/api/v1/doc311colinks',  aipondicontroller.doc311colinks);
+app.get('/api/v1/doc311codocs',  aipondicontroller.doc311codocs);
+app.get('/api/v1/deletedoc311cobyfac',  aipondicontroller.deletedoc311cobyfac);
+app.get('/api/v1/createdoc311cobyfac',  aipondicontroller.createdoc311cobyfac);
+app.get('/api/v1/getdoc312sanctionbyfac',  aipondicontroller.getdoc312sanctionbyfac);
+app.get('/api/v1/doc312sanctionbyprog',  aipondicontroller.doc312sanctionbyprog);
+app.get('/api/v1/updatedoc312sanctionbyfac',  aipondicontroller.updatedoc312sanctionbyfac);
+app.get('/api/v1/updatedoc312sanctioncomments',  aipondicontroller.updatedoc312sanctioncomments);
+app.get('/api/v1/doc312sanctionlinks',  aipondicontroller.doc312sanctionlinks);
+app.get('/api/v1/doc312sanctiondocs',  aipondicontroller.doc312sanctiondocs);
+app.get('/api/v1/deletedoc312sanctionbyfac',  aipondicontroller.deletedoc312sanctionbyfac);
+app.get('/api/v1/createdoc312sanctionbyfac',  aipondicontroller.createdoc312sanctionbyfac);
+app.get('/api/v1/getdoc312financebyfac',  aipondicontroller.getdoc312financebyfac);
+app.get('/api/v1/doc312financebyprog',  aipondicontroller.doc312financebyprog);
+app.get('/api/v1/updatedoc312financebyfac',  aipondicontroller.updatedoc312financebyfac);
+app.get('/api/v1/updatedoc312financecomments',  aipondicontroller.updatedoc312financecomments);
+app.get('/api/v1/doc312financelinks',  aipondicontroller.doc312financelinks);
+app.get('/api/v1/doc312financedocs',  aipondicontroller.doc312financedocs);
+app.get('/api/v1/deletedoc312financebyfac',  aipondicontroller.deletedoc312financebyfac);
+app.get('/api/v1/createdoc312financebyfac',  aipondicontroller.createdoc312financebyfac);
+app.get('/api/v1/getdoc341syllabusbyfac',  aipondicontroller.getdoc341syllabusbyfac);
+app.get('/api/v1/doc341syllabusbyprog',  aipondicontroller.doc341syllabusbyprog);
+app.get('/api/v1/updatedoc341syllabusbyfac',  aipondicontroller.updatedoc341syllabusbyfac);
+app.get('/api/v1/updatedoc341syllabuscomments',  aipondicontroller.updatedoc341syllabuscomments);
+app.get('/api/v1/doc341syllabuslinks',  aipondicontroller.doc341syllabuslinks);
+app.get('/api/v1/doc341syllabusdocs',  aipondicontroller.doc341syllabusdocs);
+app.get('/api/v1/deletedoc341syllabusbyfac',  aipondicontroller.deletedoc341syllabusbyfac);
+app.get('/api/v1/createdoc341syllabusbyfac',  aipondicontroller.createdoc341syllabusbyfac);
+app.get('/api/v1/getdoc341ethicsbyfac',  aipondicontroller.getdoc341ethicsbyfac);
+app.get('/api/v1/doc341ethicsbyprog',  aipondicontroller.doc341ethicsbyprog);
+app.get('/api/v1/updatedoc341ethicsbyfac',  aipondicontroller.updatedoc341ethicsbyfac);
+app.get('/api/v1/updatedoc341ethicscomments',  aipondicontroller.updatedoc341ethicscomments);
+app.get('/api/v1/doc341ethicslinks',  aipondicontroller.doc341ethicslinks);
+app.get('/api/v1/doc341ethicsdocs',  aipondicontroller.doc341ethicsdocs);
+app.get('/api/v1/deletedoc341ethicsbyfac',  aipondicontroller.deletedoc341ethicsbyfac);
+app.get('/api/v1/createdoc341ethicsbyfac',  aipondicontroller.createdoc341ethicsbyfac);
+app.get('/api/v1/getdoc341ethicsminbyfac',  aipondicontroller.getdoc341ethicsminbyfac);
+app.get('/api/v1/doc341ethicsminbyprog',  aipondicontroller.doc341ethicsminbyprog);
+app.get('/api/v1/updatedoc341ethicsminbyfac',  aipondicontroller.updatedoc341ethicsminbyfac);
+app.get('/api/v1/updatedoc341ethicsmincomments',  aipondicontroller.updatedoc341ethicsmincomments);
+app.get('/api/v1/doc341ethicsminlinks',  aipondicontroller.doc341ethicsminlinks);
+app.get('/api/v1/doc341ethicsmindocs',  aipondicontroller.doc341ethicsmindocs);
+app.get('/api/v1/deletedoc341ethicsminbyfac',  aipondicontroller.deletedoc341ethicsminbyfac);
+app.get('/api/v1/createdoc341ethicsminbyfac',  aipondicontroller.createdoc341ethicsminbyfac);
+app.get('/api/v1/getdoc341researchbyfac',  aipondicontroller.getdoc341researchbyfac);
+app.get('/api/v1/doc341researchbyprog',  aipondicontroller.doc341researchbyprog);
+app.get('/api/v1/updatedoc341researchbyfac',  aipondicontroller.updatedoc341researchbyfac);
+app.get('/api/v1/updatedoc341researchcomments',  aipondicontroller.updatedoc341researchcomments);
+app.get('/api/v1/doc341researchlinks',  aipondicontroller.doc341researchlinks);
+app.get('/api/v1/doc341researchdocs',  aipondicontroller.doc341researchdocs);
+app.get('/api/v1/deletedoc341researchbyfac',  aipondicontroller.deletedoc341researchbyfac);
+app.get('/api/v1/createdoc341researchbyfac',  aipondicontroller.createdoc341researchbyfac);
+app.get('/api/v1/getdoc341researchminbyfac',  aipondicontroller.getdoc341researchminbyfac);
+app.get('/api/v1/doc341researchminbyprog',  aipondicontroller.doc341researchminbyprog);
+app.get('/api/v1/updatedoc341researchminbyfac',  aipondicontroller.updatedoc341researchminbyfac);
+app.get('/api/v1/updatedoc341researchmincomments',  aipondicontroller.updatedoc341researchmincomments);
+app.get('/api/v1/doc341researchminlinks',  aipondicontroller.doc341researchminlinks);
+app.get('/api/v1/doc341researchmindocs',  aipondicontroller.doc341researchmindocs);
+app.get('/api/v1/deletedoc341researchminbyfac',  aipondicontroller.deletedoc341researchminbyfac);
+app.get('/api/v1/createdoc341researchminbyfac',  aipondicontroller.createdoc341researchminbyfac);
+app.get('/api/v1/getdoc341billsbyfac',  aipondicontroller.getdoc341billsbyfac);
+app.get('/api/v1/doc341billsbyprog',  aipondicontroller.doc341billsbyprog);
+app.get('/api/v1/updatedoc341billsbyfac',  aipondicontroller.updatedoc341billsbyfac);
+app.get('/api/v1/updatedoc341billscomments',  aipondicontroller.updatedoc341billscomments);
+app.get('/api/v1/doc341billslinks',  aipondicontroller.doc341billslinks);
+app.get('/api/v1/doc341billsdocs',  aipondicontroller.doc341billsdocs);
+app.get('/api/v1/deletedoc341billsbyfac',  aipondicontroller.deletedoc341billsbyfac);
+app.get('/api/v1/createdoc341billsbyfac',  aipondicontroller.createdoc341billsbyfac);
+app.get('/api/v1/getdoc342phdawardbyfac',  aipondicontroller.getdoc342phdawardbyfac);
+app.get('/api/v1/doc342phdawardbyprog',  aipondicontroller.doc342phdawardbyprog);
+app.get('/api/v1/updatedoc342phdawardbyfac',  aipondicontroller.updatedoc342phdawardbyfac);
+app.get('/api/v1/updatedoc342phdawardcomments',  aipondicontroller.updatedoc342phdawardcomments);
+app.get('/api/v1/doc342phdawardlinks',  aipondicontroller.doc342phdawardlinks);
+app.get('/api/v1/doc342phdawarddocs',  aipondicontroller.doc342phdawarddocs);
+app.get('/api/v1/deletedoc342phdawardbyfac',  aipondicontroller.deletedoc342phdawardbyfac);
+app.get('/api/v1/createdoc342phdawardbyfac',  aipondicontroller.createdoc342phdawardbyfac);
+app.get('/api/v1/getdoc342letterbyfac',  aipondicontroller.getdoc342letterbyfac);
+app.get('/api/v1/doc342letterbyprog',  aipondicontroller.doc342letterbyprog);
+app.get('/api/v1/updatedoc342letterbyfac',  aipondicontroller.updatedoc342letterbyfac);
+app.get('/api/v1/updatedoc342lettercomments',  aipondicontroller.updatedoc342lettercomments);
+app.get('/api/v1/doc342letterlinks',  aipondicontroller.doc342letterlinks);
+app.get('/api/v1/doc342letterdocs',  aipondicontroller.doc342letterdocs);
+app.get('/api/v1/deletedoc342letterbyfac',  aipondicontroller.deletedoc342letterbyfac);
+app.get('/api/v1/createdoc342letterbyfac',  aipondicontroller.createdoc342letterbyfac);
+app.get('/api/v1/getdoc346agencybyfac',  aipondicontroller.getdoc346agencybyfac);
+app.get('/api/v1/doc346agencybyprog',  aipondicontroller.doc346agencybyprog);
+app.get('/api/v1/updatedoc346agencybyfac',  aipondicontroller.updatedoc346agencybyfac);
+app.get('/api/v1/updatedoc346agencycomments',  aipondicontroller.updatedoc346agencycomments);
+app.get('/api/v1/doc346agencylinks',  aipondicontroller.doc346agencylinks);
+app.get('/api/v1/doc346agencydocs',  aipondicontroller.doc346agencydocs);
+app.get('/api/v1/deletedoc346agencybyfac',  aipondicontroller.deletedoc346agencybyfac);
+app.get('/api/v1/createdoc346agencybyfac',  aipondicontroller.createdoc346agencybyfac);
+app.get('/api/v1/getdoc346ecbyfac',  aipondicontroller.getdoc346ecbyfac);
+app.get('/api/v1/doc346ecbyprog',  aipondicontroller.doc346ecbyprog);
+app.get('/api/v1/updatedoc346ecbyfac',  aipondicontroller.updatedoc346ecbyfac);
+app.get('/api/v1/updatedoc346eccomments',  aipondicontroller.updatedoc346eccomments);
+app.get('/api/v1/doc346eclinks',  aipondicontroller.doc346eclinks);
+app.get('/api/v1/doc346ecdocs',  aipondicontroller.doc346ecdocs);
+app.get('/api/v1/deletedoc346ecbyfac',  aipondicontroller.deletedoc346ecbyfac);
+app.get('/api/v1/createdoc346ecbyfac',  aipondicontroller.createdoc346ecbyfac);
+app.get('/api/v1/getdoc346lmsbyfac',  aipondicontroller.getdoc346lmsbyfac);
+app.get('/api/v1/doc346lmsbyprog',  aipondicontroller.doc346lmsbyprog);
+app.get('/api/v1/updatedoc346lmsbyfac',  aipondicontroller.updatedoc346lmsbyfac);
+app.get('/api/v1/updatedoc346lmscomments',  aipondicontroller.updatedoc346lmscomments);
+app.get('/api/v1/doc346lmslinks',  aipondicontroller.doc346lmslinks);
+app.get('/api/v1/doc346lmsdocs',  aipondicontroller.doc346lmsdocs);
+app.get('/api/v1/deletedoc346lmsbyfac',  aipondicontroller.deletedoc346lmsbyfac);
+app.get('/api/v1/createdoc346lmsbyfac',  aipondicontroller.createdoc346lmsbyfac);
+app.get('/api/v1/getdoc351corporatebyfac',  aipondicontroller.getdoc351corporatebyfac);
+app.get('/api/v1/doc351corporatebyprog',  aipondicontroller.doc351corporatebyprog);
+app.get('/api/v1/updatedoc351corporatebyfac',  aipondicontroller.updatedoc351corporatebyfac);
+app.get('/api/v1/updatedoc351corporatecomments',  aipondicontroller.updatedoc351corporatecomments);
+app.get('/api/v1/doc351corporatelinks',  aipondicontroller.doc351corporatelinks);
+app.get('/api/v1/doc351corporatedocs',  aipondicontroller.doc351corporatedocs);
+app.get('/api/v1/deletedoc351corporatebyfac',  aipondicontroller.deletedoc351corporatebyfac);
+app.get('/api/v1/createdoc351corporatebyfac',  aipondicontroller.createdoc351corporatebyfac);
+app.get('/api/v1/getdoc351consultancybyfac',  aipondicontroller.getdoc351consultancybyfac);
+app.get('/api/v1/doc351consultancybyprog',  aipondicontroller.doc351consultancybyprog);
+app.get('/api/v1/updatedoc351consultancybyfac',  aipondicontroller.updatedoc351consultancybyfac);
+app.get('/api/v1/updatedoc351consultancycomments',  aipondicontroller.updatedoc351consultancycomments);
+app.get('/api/v1/doc351consultancylinks',  aipondicontroller.doc351consultancylinks);
+app.get('/api/v1/doc351consultancydocs',  aipondicontroller.doc351consultancydocs);
+app.get('/api/v1/deletedoc351consultancybyfac',  aipondicontroller.deletedoc351consultancybyfac);
+app.get('/api/v1/createdoc351consultancybyfac',  aipondicontroller.createdoc351consultancybyfac);
+app.get('/api/v1/getdoc351cabyfac',  aipondicontroller.getdoc351cabyfac);
+app.get('/api/v1/doc351cabyprog',  aipondicontroller.doc351cabyprog);
+app.get('/api/v1/updatedoc351cabyfac',  aipondicontroller.updatedoc351cabyfac);
+app.get('/api/v1/updatedoc351cacomments',  aipondicontroller.updatedoc351cacomments);
+app.get('/api/v1/doc351calinks',  aipondicontroller.doc351calinks);
+app.get('/api/v1/doc351cadocs',  aipondicontroller.doc351cadocs);
+app.get('/api/v1/deletedoc351cabyfac',  aipondicontroller.deletedoc351cabyfac);
+app.get('/api/v1/createdoc351cabyfac',  aipondicontroller.createdoc351cabyfac);
+app.get('/api/v1/getdoc351auditbyfac',  aipondicontroller.getdoc351auditbyfac);
+app.get('/api/v1/doc351auditbyprog',  aipondicontroller.doc351auditbyprog);
+app.get('/api/v1/updatedoc351auditbyfac',  aipondicontroller.updatedoc351auditbyfac);
+app.get('/api/v1/updatedoc351auditcomments',  aipondicontroller.updatedoc351auditcomments);
+app.get('/api/v1/doc351auditlinks',  aipondicontroller.doc351auditlinks);
+app.get('/api/v1/doc351auditdocs',  aipondicontroller.doc351auditdocs);
+app.get('/api/v1/deletedoc351auditbyfac',  aipondicontroller.deletedoc351auditbyfac);
+app.get('/api/v1/createdoc351auditbyfac',  aipondicontroller.createdoc351auditbyfac);
+app.get('/api/v1/getdoc362photosbyfac',  aipondicontroller.getdoc362photosbyfac);
+app.get('/api/v1/doc362photosbyprog',  aipondicontroller.doc362photosbyprog);
+app.get('/api/v1/updatedoc362photosbyfac',  aipondicontroller.updatedoc362photosbyfac);
+app.get('/api/v1/updatedoc362photoscomments',  aipondicontroller.updatedoc362photoscomments);
+app.get('/api/v1/doc362photoslinks',  aipondicontroller.doc362photoslinks);
+app.get('/api/v1/doc362photosdocs',  aipondicontroller.doc362photosdocs);
+app.get('/api/v1/deletedoc362photosbyfac',  aipondicontroller.deletedoc362photosbyfac);
+app.get('/api/v1/createdoc362photosbyfac',  aipondicontroller.createdoc362photosbyfac);
+app.get('/api/v1/getdoc371msummarybyfac',  aipondicontroller.getdoc371msummarybyfac);
+app.get('/api/v1/doc371msummarybyprog',  aipondicontroller.doc371msummarybyprog);
+app.get('/api/v1/updatedoc371msummarybyfac',  aipondicontroller.updatedoc371msummarybyfac);
+app.get('/api/v1/updatedoc371msummarycomments',  aipondicontroller.updatedoc371msummarycomments);
+app.get('/api/v1/doc371msummarylinks',  aipondicontroller.doc371msummarylinks);
+app.get('/api/v1/doc371msummarydocs',  aipondicontroller.doc371msummarydocs);
+app.get('/api/v1/deletedoc371msummarybyfac',  aipondicontroller.deletedoc371msummarybyfac);
+app.get('/api/v1/createdoc371msummarybyfac',  aipondicontroller.createdoc371msummarybyfac);
+app.get('/api/v1/getdoc432stockbyfac',  aipondicontroller.getdoc432stockbyfac);
+app.get('/api/v1/doc432stockbyprog',  aipondicontroller.doc432stockbyprog);
+app.get('/api/v1/updatedoc432stockbyfac',  aipondicontroller.updatedoc432stockbyfac);
+app.get('/api/v1/updatedoc432stockcomments',  aipondicontroller.updatedoc432stockcomments);
+app.get('/api/v1/doc432stocklinks',  aipondicontroller.doc432stocklinks);
+app.get('/api/v1/doc432stockdocs',  aipondicontroller.doc432stockdocs);
+app.get('/api/v1/deletedoc432stockbyfac',  aipondicontroller.deletedoc432stockbyfac);
+app.get('/api/v1/createdoc432stockbyfac',  aipondicontroller.createdoc432stockbyfac);
+app.get('/api/v1/getdoc432billsbyfac',  aipondicontroller.getdoc432billsbyfac);
+app.get('/api/v1/doc432billsbyprog',  aipondicontroller.doc432billsbyprog);
+app.get('/api/v1/updatedoc432billsbyfac',  aipondicontroller.updatedoc432billsbyfac);
+app.get('/api/v1/updatedoc432billscomments',  aipondicontroller.updatedoc432billscomments);
+app.get('/api/v1/doc432billslinks',  aipondicontroller.doc432billslinks);
+app.get('/api/v1/doc432billsdocs',  aipondicontroller.doc432billsdocs);
+app.get('/api/v1/deletedoc432billsbyfac',  aipondicontroller.deletedoc432billsbyfac);
+app.get('/api/v1/createdoc432billsbyfac',  aipondicontroller.createdoc432billsbyfac);
+app.get('/api/v1/getdoc433photosbyfac',  aipondicontroller.getdoc433photosbyfac);
+app.get('/api/v1/doc433photosbyprog',  aipondicontroller.doc433photosbyprog);
+app.get('/api/v1/updatedoc433photosbyfac',  aipondicontroller.updatedoc433photosbyfac);
+app.get('/api/v1/updatedoc433photoscomments',  aipondicontroller.updatedoc433photoscomments);
+app.get('/api/v1/doc433photoslinks',  aipondicontroller.doc433photoslinks);
+app.get('/api/v1/doc433photosdocs',  aipondicontroller.doc433photosdocs);
+app.get('/api/v1/deletedoc433photosbyfac',  aipondicontroller.deletedoc433photosbyfac);
+app.get('/api/v1/createdoc433photosbyfac',  aipondicontroller.createdoc433photosbyfac);
+app.get('/api/v1/getdoc433stockbyfac',  aipondicontroller.getdoc433stockbyfac);
+app.get('/api/v1/doc433stockbyprog',  aipondicontroller.doc433stockbyprog);
+app.get('/api/v1/updatedoc433stockbyfac',  aipondicontroller.updatedoc433stockbyfac);
+app.get('/api/v1/updatedoc433stockcomments',  aipondicontroller.updatedoc433stockcomments);
+app.get('/api/v1/doc433stocklinks',  aipondicontroller.doc433stocklinks);
+app.get('/api/v1/doc433stockdocs',  aipondicontroller.doc433stockdocs);
+app.get('/api/v1/deletedoc433stockbyfac',  aipondicontroller.deletedoc433stockbyfac);
+app.get('/api/v1/createdoc433stockbyfac',  aipondicontroller.createdoc433stockbyfac);
+app.get('/api/v1/getdoc433billsbyfac',  aipondicontroller.getdoc433billsbyfac);
+app.get('/api/v1/doc433billsbyprog',  aipondicontroller.doc433billsbyprog);
+app.get('/api/v1/updatedoc433billsbyfac',  aipondicontroller.updatedoc433billsbyfac);
+app.get('/api/v1/updatedoc433billscomments',  aipondicontroller.updatedoc433billscomments);
+app.get('/api/v1/doc433billslinks',  aipondicontroller.doc433billslinks);
+app.get('/api/v1/doc433billsdocs',  aipondicontroller.doc433billsdocs);
+app.get('/api/v1/deletedoc433billsbyfac',  aipondicontroller.deletedoc433billsbyfac);
+app.get('/api/v1/createdoc433billsbyfac',  aipondicontroller.createdoc433billsbyfac);
+app.get('/api/v1/getdoc511studentsbyfac',  aipondicontroller.getdoc511studentsbyfac);
+app.get('/api/v1/doc511studentsbyprog',  aipondicontroller.doc511studentsbyprog);
+app.get('/api/v1/updatedoc511studentsbyfac',  aipondicontroller.updatedoc511studentsbyfac);
+app.get('/api/v1/updatedoc511studentscomments',  aipondicontroller.updatedoc511studentscomments);
+app.get('/api/v1/doc511studentslinks',  aipondicontroller.doc511studentslinks);
+app.get('/api/v1/doc511studentsdocs',  aipondicontroller.doc511studentsdocs);
+app.get('/api/v1/deletedoc511studentsbyfac',  aipondicontroller.deletedoc511studentsbyfac);
+app.get('/api/v1/createdoc511studentsbyfac',  aipondicontroller.createdoc511studentsbyfac);
+app.get('/api/v1/getdoc511policybyfac',  aipondicontroller.getdoc511policybyfac);
+app.get('/api/v1/doc511policybyprog',  aipondicontroller.doc511policybyprog);
+app.get('/api/v1/updatedoc511policybyfac',  aipondicontroller.updatedoc511policybyfac);
+app.get('/api/v1/updatedoc511policycomments',  aipondicontroller.updatedoc511policycomments);
+app.get('/api/v1/doc511policylinks',  aipondicontroller.doc511policylinks);
+app.get('/api/v1/doc511policydocs',  aipondicontroller.doc511policydocs);
+app.get('/api/v1/deletedoc511policybyfac',  aipondicontroller.deletedoc511policybyfac);
+app.get('/api/v1/createdoc511policybyfac',  aipondicontroller.createdoc511policybyfac);
+app.get('/api/v1/getdoc513skillsbyfac',  aipondicontroller.getdoc513skillsbyfac);
+app.get('/api/v1/doc513skillsbyprog',  aipondicontroller.doc513skillsbyprog);
+app.get('/api/v1/updatedoc513skillsbyfac',  aipondicontroller.updatedoc513skillsbyfac);
+app.get('/api/v1/updatedoc513skillscomments',  aipondicontroller.updatedoc513skillscomments);
+app.get('/api/v1/doc513skillslinks',  aipondicontroller.doc513skillslinks);
+app.get('/api/v1/doc513skillsdocs',  aipondicontroller.doc513skillsdocs);
+app.get('/api/v1/deletedoc513skillsbyfac',  aipondicontroller.deletedoc513skillsbyfac);
+app.get('/api/v1/createdoc513skillsbyfac',  aipondicontroller.createdoc513skillsbyfac);
+app.get('/api/v1/getdoc513lifebyfac',  aipondicontroller.getdoc513lifebyfac);
+app.get('/api/v1/doc513lifebyprog',  aipondicontroller.doc513lifebyprog);
+app.get('/api/v1/updatedoc513lifebyfac',  aipondicontroller.updatedoc513lifebyfac);
+app.get('/api/v1/updatedoc513lifecomments',  aipondicontroller.updatedoc513lifecomments);
+app.get('/api/v1/doc513lifelinks',  aipondicontroller.doc513lifelinks);
+app.get('/api/v1/doc513lifedocs',  aipondicontroller.doc513lifedocs);
+app.get('/api/v1/deletedoc513lifebyfac',  aipondicontroller.deletedoc513lifebyfac);
+app.get('/api/v1/createdoc513lifebyfac',  aipondicontroller.createdoc513lifebyfac);
+app.get('/api/v1/getdoc513langbyfac',  aipondicontroller.getdoc513langbyfac);
+app.get('/api/v1/doc513langbyprog',  aipondicontroller.doc513langbyprog);
+app.get('/api/v1/updatedoc513langbyfac',  aipondicontroller.updatedoc513langbyfac);
+app.get('/api/v1/updatedoc513langcomments',  aipondicontroller.updatedoc513langcomments);
+app.get('/api/v1/doc513langlinks',  aipondicontroller.doc513langlinks);
+app.get('/api/v1/doc513langdocs',  aipondicontroller.doc513langdocs);
+app.get('/api/v1/deletedoc513langbyfac',  aipondicontroller.deletedoc513langbyfac);
+app.get('/api/v1/createdoc513langbyfac',  aipondicontroller.createdoc513langbyfac);
+app.get('/api/v1/getdoc513ictbyfac',  aipondicontroller.getdoc513ictbyfac);
+app.get('/api/v1/doc513ictbyprog',  aipondicontroller.doc513ictbyprog);
+app.get('/api/v1/updatedoc513ictbyfac',  aipondicontroller.updatedoc513ictbyfac);
+app.get('/api/v1/updatedoc513ictcomments',  aipondicontroller.updatedoc513ictcomments);
+app.get('/api/v1/doc513ictlinks',  aipondicontroller.doc513ictlinks);
+app.get('/api/v1/doc513ictdocs',  aipondicontroller.doc513ictdocs);
+app.get('/api/v1/deletedoc513ictbyfac',  aipondicontroller.deletedoc513ictbyfac);
+app.get('/api/v1/createdoc513ictbyfac',  aipondicontroller.createdoc513ictbyfac);
+app.get('/api/v1/getdoc514awarenessbyfac',  aipondicontroller.getdoc514awarenessbyfac);
+app.get('/api/v1/doc514awarenessbyprog',  aipondicontroller.doc514awarenessbyprog);
+app.get('/api/v1/updatedoc514awarenessbyfac',  aipondicontroller.updatedoc514awarenessbyfac);
+app.get('/api/v1/updatedoc514awarenesscomments',  aipondicontroller.updatedoc514awarenesscomments);
+app.get('/api/v1/doc514awarenesslinks',  aipondicontroller.doc514awarenesslinks);
+app.get('/api/v1/doc514awarenessdocs',  aipondicontroller.doc514awarenessdocs);
+app.get('/api/v1/deletedoc514awarenessbyfac',  aipondicontroller.deletedoc514awarenessbyfac);
+app.get('/api/v1/createdoc514awarenessbyfac',  aipondicontroller.createdoc514awarenessbyfac);
+app.get('/api/v1/getdoc514submissionbyfac',  aipondicontroller.getdoc514submissionbyfac);
+app.get('/api/v1/doc514submissionbyprog',  aipondicontroller.doc514submissionbyprog);
+app.get('/api/v1/updatedoc514submissionbyfac',  aipondicontroller.updatedoc514submissionbyfac);
+app.get('/api/v1/updatedoc514submissioncomments',  aipondicontroller.updatedoc514submissioncomments);
+app.get('/api/v1/doc514submissionlinks',  aipondicontroller.doc514submissionlinks);
+app.get('/api/v1/doc514submissiondocs',  aipondicontroller.doc514submissiondocs);
+app.get('/api/v1/deletedoc514submissionbyfac',  aipondicontroller.deletedoc514submissionbyfac);
+app.get('/api/v1/createdoc514submissionbyfac',  aipondicontroller.createdoc514submissionbyfac);
+app.get('/api/v1/getdoc514implementationbyfac',  aipondicontroller.getdoc514implementationbyfac);
+app.get('/api/v1/doc514implementationbyprog',  aipondicontroller.doc514implementationbyprog);
+app.get('/api/v1/updatedoc514implementationbyfac',  aipondicontroller.updatedoc514implementationbyfac);
+app.get('/api/v1/updatedoc514implementationcomments',  aipondicontroller.updatedoc514implementationcomments);
+app.get('/api/v1/doc514implementationlinks',  aipondicontroller.doc514implementationlinks);
+app.get('/api/v1/doc514implementationdocs',  aipondicontroller.doc514implementationdocs);
+app.get('/api/v1/deletedoc514implementationbyfac',  aipondicontroller.deletedoc514implementationbyfac);
+app.get('/api/v1/createdoc514implementationbyfac',  aipondicontroller.createdoc514implementationbyfac);
+app.get('/api/v1/getdoc514combyfac',  aipondicontroller.getdoc514combyfac);
+app.get('/api/v1/doc514combyprog',  aipondicontroller.doc514combyprog);
+app.get('/api/v1/updatedoc514combyfac',  aipondicontroller.updatedoc514combyfac);
+app.get('/api/v1/updatedoc514comcomments',  aipondicontroller.updatedoc514comcomments);
+app.get('/api/v1/doc514comlinks',  aipondicontroller.doc514comlinks);
+app.get('/api/v1/doc514comdocs',  aipondicontroller.doc514comdocs);
+app.get('/api/v1/deletedoc514combyfac',  aipondicontroller.deletedoc514combyfac);
+app.get('/api/v1/createdoc514combyfac',  aipondicontroller.createdoc514combyfac);
+app.get('/api/v1/getdoc514annualbyfac',  aipondicontroller.getdoc514annualbyfac);
+app.get('/api/v1/doc514annualbyprog',  aipondicontroller.doc514annualbyprog);
+app.get('/api/v1/updatedoc514annualbyfac',  aipondicontroller.updatedoc514annualbyfac);
+app.get('/api/v1/updatedoc514annualcomments',  aipondicontroller.updatedoc514annualcomments);
+app.get('/api/v1/doc514annuallinks',  aipondicontroller.doc514annuallinks);
+app.get('/api/v1/doc514annualdocs',  aipondicontroller.doc514annualdocs);
+app.get('/api/v1/deletedoc514annualbyfac',  aipondicontroller.deletedoc514annualbyfac);
+app.get('/api/v1/createdoc514annualbyfac',  aipondicontroller.createdoc514annualbyfac);
+app.get('/api/v1/getdoc523studlistbyfac',  aipondicontroller.getdoc523studlistbyfac);
+app.get('/api/v1/doc523studlistbyprog',  aipondicontroller.doc523studlistbyprog);
+app.get('/api/v1/updatedoc523studlistbyfac',  aipondicontroller.updatedoc523studlistbyfac);
+app.get('/api/v1/updatedoc523studlistcomments',  aipondicontroller.updatedoc523studlistcomments);
+app.get('/api/v1/doc523studlistlinks',  aipondicontroller.doc523studlistlinks);
+app.get('/api/v1/doc523studlistdocs',  aipondicontroller.doc523studlistdocs);
+app.get('/api/v1/deletedoc523studlistbyfac',  aipondicontroller.deletedoc523studlistbyfac);
+app.get('/api/v1/createdoc523studlistbyfac',  aipondicontroller.createdoc523studlistbyfac);
+app.get('/api/v1/getdoc533festbyfac',  aipondicontroller.getdoc533festbyfac);
+app.get('/api/v1/doc533festbyprog',  aipondicontroller.doc533festbyprog);
+app.get('/api/v1/updatedoc533festbyfac',  aipondicontroller.updatedoc533festbyfac);
+app.get('/api/v1/updatedoc533festcomments',  aipondicontroller.updatedoc533festcomments);
+app.get('/api/v1/doc533festlinks',  aipondicontroller.doc533festlinks);
+app.get('/api/v1/doc533festdocs',  aipondicontroller.doc533festdocs);
+app.get('/api/v1/deletedoc533festbyfac',  aipondicontroller.deletedoc533festbyfac);
+app.get('/api/v1/createdoc533festbyfac',  aipondicontroller.createdoc533festbyfac);
+app.get('/api/v1/getdoc533sportsbyfac',  aipondicontroller.getdoc533sportsbyfac);
+app.get('/api/v1/doc533sportsbyprog',  aipondicontroller.doc533sportsbyprog);
+app.get('/api/v1/updatedoc533sportsbyfac',  aipondicontroller.updatedoc533sportsbyfac);
+app.get('/api/v1/updatedoc533sportscomments',  aipondicontroller.updatedoc533sportscomments);
+app.get('/api/v1/doc533sportslinks',  aipondicontroller.doc533sportslinks);
+app.get('/api/v1/doc533sportsdocs',  aipondicontroller.doc533sportsdocs);
+app.get('/api/v1/deletedoc533sportsbyfac',  aipondicontroller.deletedoc533sportsbyfac);
+app.get('/api/v1/createdoc533sportsbyfac',  aipondicontroller.createdoc533sportsbyfac);
+app.get('/api/v1/getdoc533culturalbyfac',  aipondicontroller.getdoc533culturalbyfac);
+app.get('/api/v1/doc533culturalbyprog',  aipondicontroller.doc533culturalbyprog);
+app.get('/api/v1/updatedoc533culturalbyfac',  aipondicontroller.updatedoc533culturalbyfac);
+app.get('/api/v1/updatedoc533culturalcomments',  aipondicontroller.updatedoc533culturalcomments);
+app.get('/api/v1/doc533culturallinks',  aipondicontroller.doc533culturallinks);
+app.get('/api/v1/doc533culturaldocs',  aipondicontroller.doc533culturaldocs);
+app.get('/api/v1/deletedoc533culturalbyfac',  aipondicontroller.deletedoc533culturalbyfac);
+app.get('/api/v1/createdoc533culturalbyfac',  aipondicontroller.createdoc533culturalbyfac);
+app.get('/api/v1/getdoc533clubsbyfac',  aipondicontroller.getdoc533clubsbyfac);
+app.get('/api/v1/doc533clubsbyprog',  aipondicontroller.doc533clubsbyprog);
+app.get('/api/v1/updatedoc533clubsbyfac',  aipondicontroller.updatedoc533clubsbyfac);
+app.get('/api/v1/updatedoc533clubscomments',  aipondicontroller.updatedoc533clubscomments);
+app.get('/api/v1/doc533clubslinks',  aipondicontroller.doc533clubslinks);
+app.get('/api/v1/doc533clubsdocs',  aipondicontroller.doc533clubsdocs);
+app.get('/api/v1/deletedoc533clubsbyfac',  aipondicontroller.deletedoc533clubsbyfac);
+app.get('/api/v1/createdoc533clubsbyfac',  aipondicontroller.createdoc533clubsbyfac);
+app.get('/api/v1/getdoc622screenbyfac',  aipondicontroller.getdoc622screenbyfac);
+app.get('/api/v1/doc622screenbyprog',  aipondicontroller.doc622screenbyprog);
+app.get('/api/v1/updatedoc622screenbyfac',  aipondicontroller.updatedoc622screenbyfac);
+app.get('/api/v1/updatedoc622screencomments',  aipondicontroller.updatedoc622screencomments);
+app.get('/api/v1/doc622screenlinks',  aipondicontroller.doc622screenlinks);
+app.get('/api/v1/doc622screendocs',  aipondicontroller.doc622screendocs);
+app.get('/api/v1/deletedoc622screenbyfac',  aipondicontroller.deletedoc622screenbyfac);
+app.get('/api/v1/createdoc622screenbyfac',  aipondicontroller.createdoc622screenbyfac);
+app.get('/api/v1/getdoc622egrepbyfac',  aipondicontroller.getdoc622egrepbyfac);
+app.get('/api/v1/doc622egrepbyprog',  aipondicontroller.doc622egrepbyprog);
+app.get('/api/v1/updatedoc622egrepbyfac',  aipondicontroller.updatedoc622egrepbyfac);
+app.get('/api/v1/updatedoc622egrepcomments',  aipondicontroller.updatedoc622egrepcomments);
+app.get('/api/v1/doc622egreplinks',  aipondicontroller.doc622egreplinks);
+app.get('/api/v1/doc622egrepdocs',  aipondicontroller.doc622egrepdocs);
+app.get('/api/v1/deletedoc622egrepbyfac',  aipondicontroller.deletedoc622egrepbyfac);
+app.get('/api/v1/createdoc622egrepbyfac',  aipondicontroller.createdoc622egrepbyfac);
+app.get('/api/v1/getdoc632policybyfac',  aipondicontroller.getdoc632policybyfac);
+app.get('/api/v1/doc632policybyprog',  aipondicontroller.doc632policybyprog);
+app.get('/api/v1/updatedoc632policybyfac',  aipondicontroller.updatedoc632policybyfac);
+app.get('/api/v1/updatedoc632policycomments',  aipondicontroller.updatedoc632policycomments);
+app.get('/api/v1/doc632policylinks',  aipondicontroller.doc632policylinks);
+app.get('/api/v1/doc632policydocs',  aipondicontroller.doc632policydocs);
+app.get('/api/v1/deletedoc632policybyfac',  aipondicontroller.deletedoc632policybyfac);
+app.get('/api/v1/createdoc632policybyfac',  aipondicontroller.createdoc632policybyfac);
+app.get('/api/v1/getdoc632auditbyfac',  aipondicontroller.getdoc632auditbyfac);
+app.get('/api/v1/doc632auditbyprog',  aipondicontroller.doc632auditbyprog);
+app.get('/api/v1/updatedoc632auditbyfac',  aipondicontroller.updatedoc632auditbyfac);
+app.get('/api/v1/updatedoc632auditcomments',  aipondicontroller.updatedoc632auditcomments);
+app.get('/api/v1/doc632auditlinks',  aipondicontroller.doc632auditlinks);
+app.get('/api/v1/doc632auditdocs',  aipondicontroller.doc632auditdocs);
+app.get('/api/v1/deletedoc632auditbyfac',  aipondicontroller.deletedoc632auditbyfac);
+app.get('/api/v1/createdoc632auditbyfac',  aipondicontroller.createdoc632auditbyfac);
+app.get('/api/v1/getdoc642auditbyfac',  aipondicontroller.getdoc642auditbyfac);
+app.get('/api/v1/doc642auditbyprog',  aipondicontroller.doc642auditbyprog);
+app.get('/api/v1/updatedoc642auditbyfac',  aipondicontroller.updatedoc642auditbyfac);
+app.get('/api/v1/updatedoc642auditcomments',  aipondicontroller.updatedoc642auditcomments);
+app.get('/api/v1/doc642auditlinks',  aipondicontroller.doc642auditlinks);
+app.get('/api/v1/doc642auditdocs',  aipondicontroller.doc642auditdocs);
+app.get('/api/v1/deletedoc642auditbyfac',  aipondicontroller.deletedoc642auditbyfac);
+app.get('/api/v1/createdoc642auditbyfac',  aipondicontroller.createdoc642auditbyfac);
+app.get('/api/v1/getdoc652byfac',  aipondicontroller.getdoc652byfac);
+app.get('/api/v1/doc652byprog',  aipondicontroller.doc652byprog);
+app.get('/api/v1/updatedoc652byfac',  aipondicontroller.updatedoc652byfac);
+app.get('/api/v1/updatedoc652comments',  aipondicontroller.updatedoc652comments);
+app.get('/api/v1/doc652links',  aipondicontroller.doc652links);
+app.get('/api/v1/doc652docs',  aipondicontroller.doc652docs);
+app.get('/api/v1/deletedoc652byfac',  aipondicontroller.deletedoc652byfac);
+app.get('/api/v1/createdoc652byfac',  aipondicontroller.createdoc652byfac);
+app.get('/api/v1/getdoc652orientationbyfac',  aipondicontroller.getdoc652orientationbyfac);
+app.get('/api/v1/doc652orientationbyprog',  aipondicontroller.doc652orientationbyprog);
+app.get('/api/v1/updatedoc652orientationbyfac',  aipondicontroller.updatedoc652orientationbyfac);
+app.get('/api/v1/updatedoc652orientationcomments',  aipondicontroller.updatedoc652orientationcomments);
+app.get('/api/v1/doc652orientationlinks',  aipondicontroller.doc652orientationlinks);
+app.get('/api/v1/doc652orientationdocs',  aipondicontroller.doc652orientationdocs);
+app.get('/api/v1/deletedoc652orientationbyfac',  aipondicontroller.deletedoc652orientationbyfac);
+app.get('/api/v1/createdoc652orientationbyfac',  aipondicontroller.createdoc652orientationbyfac);
+app.get('/api/v1/getdoc652workshopbyfac',  aipondicontroller.getdoc652workshopbyfac);
+app.get('/api/v1/doc652workshopbyprog',  aipondicontroller.doc652workshopbyprog);
+app.get('/api/v1/updatedoc652workshopbyfac',  aipondicontroller.updatedoc652workshopbyfac);
+app.get('/api/v1/updatedoc652workshopcomments',  aipondicontroller.updatedoc652workshopcomments);
+app.get('/api/v1/doc652workshoplinks',  aipondicontroller.doc652workshoplinks);
+app.get('/api/v1/doc652workshopdocs',  aipondicontroller.doc652workshopdocs);
+app.get('/api/v1/deletedoc652workshopbyfac',  aipondicontroller.deletedoc652workshopbyfac);
+app.get('/api/v1/createdoc652workshopbyfac',  aipondicontroller.createdoc652workshopbyfac);
+app.get('/api/v1/getdoc652collabbyfac',  aipondicontroller.getdoc652collabbyfac);
+app.get('/api/v1/doc652collabbyprog',  aipondicontroller.doc652collabbyprog);
+app.get('/api/v1/updatedoc652collabbyfac',  aipondicontroller.updatedoc652collabbyfac);
+app.get('/api/v1/updatedoc652collabcomments',  aipondicontroller.updatedoc652collabcomments);
+app.get('/api/v1/doc652collablinks',  aipondicontroller.doc652collablinks);
+app.get('/api/v1/doc652collabdocs',  aipondicontroller.doc652collabdocs);
+app.get('/api/v1/deletedoc652collabbyfac',  aipondicontroller.deletedoc652collabbyfac);
+app.get('/api/v1/createdoc652collabbyfac',  aipondicontroller.createdoc652collabbyfac);
+app.get('/api/v1/getdoc712permissionbyfac',  aipondicontroller.getdoc712permissionbyfac);
+app.get('/api/v1/doc712permissionbyprog',  aipondicontroller.doc712permissionbyprog);
+app.get('/api/v1/updatedoc712permissionbyfac',  aipondicontroller.updatedoc712permissionbyfac);
+app.get('/api/v1/updatedoc712permissioncomments',  aipondicontroller.updatedoc712permissioncomments);
+app.get('/api/v1/doc712permissionlinks',  aipondicontroller.doc712permissionlinks);
+app.get('/api/v1/doc712permissiondocs',  aipondicontroller.doc712permissiondocs);
+app.get('/api/v1/deletedoc712permissionbyfac',  aipondicontroller.deletedoc712permissionbyfac);
+app.get('/api/v1/createdoc712permissionbyfac',  aipondicontroller.createdoc712permissionbyfac);
+app.get('/api/v1/getdoc712photosbyfac',  aipondicontroller.getdoc712photosbyfac);
+app.get('/api/v1/doc712photosbyprog',  aipondicontroller.doc712photosbyprog);
+app.get('/api/v1/updatedoc712photosbyfac',  aipondicontroller.updatedoc712photosbyfac);
+app.get('/api/v1/updatedoc712photoscomments',  aipondicontroller.updatedoc712photoscomments);
+app.get('/api/v1/doc712photoslinks',  aipondicontroller.doc712photoslinks);
+app.get('/api/v1/doc712photosdocs',  aipondicontroller.doc712photosdocs);
+app.get('/api/v1/deletedoc712photosbyfac',  aipondicontroller.deletedoc712photosbyfac);
+app.get('/api/v1/createdoc712photosbyfac',  aipondicontroller.createdoc712photosbyfac);
+app.get('/api/v1/getdoc712billbyfac',  aipondicontroller.getdoc712billbyfac);
+app.get('/api/v1/doc712billbyprog',  aipondicontroller.doc712billbyprog);
+app.get('/api/v1/updatedoc712billbyfac',  aipondicontroller.updatedoc712billbyfac);
+app.get('/api/v1/updatedoc712billcomments',  aipondicontroller.updatedoc712billcomments);
+app.get('/api/v1/doc712billlinks',  aipondicontroller.doc712billlinks);
+app.get('/api/v1/doc712billdocs',  aipondicontroller.doc712billdocs);
+app.get('/api/v1/deletedoc712billbyfac',  aipondicontroller.deletedoc712billbyfac);
+app.get('/api/v1/createdoc712billbyfac',  aipondicontroller.createdoc712billbyfac);
+app.get('/api/v1/getdoc714greeenbyfac',  aipondicontroller.getdoc714greeenbyfac);
+app.get('/api/v1/doc714greeenbyprog',  aipondicontroller.doc714greeenbyprog);
+app.get('/api/v1/updatedoc714greeenbyfac',  aipondicontroller.updatedoc714greeenbyfac);
+app.get('/api/v1/updatedoc714greeencomments',  aipondicontroller.updatedoc714greeencomments);
+app.get('/api/v1/doc714greeenlinks',  aipondicontroller.doc714greeenlinks);
+app.get('/api/v1/doc714greeendocs',  aipondicontroller.doc714greeendocs);
+app.get('/api/v1/deletedoc714greeenbyfac',  aipondicontroller.deletedoc714greeenbyfac);
+app.get('/api/v1/createdoc714greeenbyfac',  aipondicontroller.createdoc714greeenbyfac);
+app.get('/api/v1/getdoc714photosbyfac',  aipondicontroller.getdoc714photosbyfac);
+app.get('/api/v1/doc714photosbyprog',  aipondicontroller.doc714photosbyprog);
+app.get('/api/v1/updatedoc714photosbyfac',  aipondicontroller.updatedoc714photosbyfac);
+app.get('/api/v1/updatedoc714photoscomments',  aipondicontroller.updatedoc714photoscomments);
+app.get('/api/v1/doc714photoslinks',  aipondicontroller.doc714photoslinks);
+app.get('/api/v1/doc714photosdocs',  aipondicontroller.doc714photosdocs);
+app.get('/api/v1/deletedoc714photosbyfac',  aipondicontroller.deletedoc714photosbyfac);
+app.get('/api/v1/createdoc714photosbyfac',  aipondicontroller.createdoc714photosbyfac);
+app.get('/api/v1/getdoc714billsbyfac',  aipondicontroller.getdoc714billsbyfac);
+app.get('/api/v1/doc714billsbyprog',  aipondicontroller.doc714billsbyprog);
+app.get('/api/v1/updatedoc714billsbyfac',  aipondicontroller.updatedoc714billsbyfac);
+app.get('/api/v1/updatedoc714billscomments',  aipondicontroller.updatedoc714billscomments);
+app.get('/api/v1/doc714billslinks',  aipondicontroller.doc714billslinks);
+app.get('/api/v1/doc714billsdocs',  aipondicontroller.doc714billsdocs);
+app.get('/api/v1/deletedoc714billsbyfac',  aipondicontroller.deletedoc714billsbyfac);
+app.get('/api/v1/createdoc714billsbyfac',  aipondicontroller.createdoc714billsbyfac);
+app.get('/api/v1/getdoc715policybyfac',  aipondicontroller.getdoc715policybyfac);
+app.get('/api/v1/doc715policybyprog',  aipondicontroller.doc715policybyprog);
+app.get('/api/v1/updatedoc715policybyfac',  aipondicontroller.updatedoc715policybyfac);
+app.get('/api/v1/updatedoc715policycomments',  aipondicontroller.updatedoc715policycomments);
+app.get('/api/v1/doc715policylinks',  aipondicontroller.doc715policylinks);
+app.get('/api/v1/doc715policydocs',  aipondicontroller.doc715policydocs);
+app.get('/api/v1/deletedoc715policybyfac',  aipondicontroller.deletedoc715policybyfac);
+app.get('/api/v1/createdoc715policybyfac',  aipondicontroller.createdoc715policybyfac);
+app.get('/api/v1/getdoc715photosbyfac',  aipondicontroller.getdoc715photosbyfac);
+app.get('/api/v1/doc715photosbyprog',  aipondicontroller.doc715photosbyprog);
+app.get('/api/v1/updatedoc715photosbyfac',  aipondicontroller.updatedoc715photosbyfac);
+app.get('/api/v1/updatedoc715photoscomments',  aipondicontroller.updatedoc715photoscomments);
+app.get('/api/v1/doc715photoslinks',  aipondicontroller.doc715photoslinks);
+app.get('/api/v1/doc715photosdocs',  aipondicontroller.doc715photosdocs);
+app.get('/api/v1/deletedoc715photosbyfac',  aipondicontroller.deletedoc715photosbyfac);
+app.get('/api/v1/createdoc715photosbyfac',  aipondicontroller.createdoc715photosbyfac);
+app.get('/api/v1/getdoc715reportsbyfac',  aipondicontroller.getdoc715reportsbyfac);
+app.get('/api/v1/doc715reportsbyprog',  aipondicontroller.doc715reportsbyprog);
+app.get('/api/v1/updatedoc715reportsbyfac',  aipondicontroller.updatedoc715reportsbyfac);
+app.get('/api/v1/updatedoc715reportscomments',  aipondicontroller.updatedoc715reportscomments);
+app.get('/api/v1/doc715reportslinks',  aipondicontroller.doc715reportslinks);
+app.get('/api/v1/doc715reportsdocs',  aipondicontroller.doc715reportsdocs);
+app.get('/api/v1/deletedoc715reportsbyfac',  aipondicontroller.deletedoc715reportsbyfac);
+app.get('/api/v1/createdoc715reportsbyfac',  aipondicontroller.createdoc715reportsbyfac);
+app.get('/api/v1/getdoc716reportsbyfac',  aipondicontroller.getdoc716reportsbyfac);
+app.get('/api/v1/doc716reportsbyprog',  aipondicontroller.doc716reportsbyprog);
+app.get('/api/v1/updatedoc716reportsbyfac',  aipondicontroller.updatedoc716reportsbyfac);
+app.get('/api/v1/updatedoc716reportscomments',  aipondicontroller.updatedoc716reportscomments);
+app.get('/api/v1/doc716reportslinks',  aipondicontroller.doc716reportslinks);
+app.get('/api/v1/doc716reportsdocs',  aipondicontroller.doc716reportsdocs);
+app.get('/api/v1/deletedoc716reportsbyfac',  aipondicontroller.deletedoc716reportsbyfac);
+app.get('/api/v1/createdoc716reportsbyfac',  aipondicontroller.createdoc716reportsbyfac);
+app.get('/api/v1/getdoc716greeenbyfac',  aipondicontroller.getdoc716greeenbyfac);
+app.get('/api/v1/doc716greeenbyprog',  aipondicontroller.doc716greeenbyprog);
+app.get('/api/v1/updatedoc716greeenbyfac',  aipondicontroller.updatedoc716greeenbyfac);
+app.get('/api/v1/updatedoc716greeencomments',  aipondicontroller.updatedoc716greeencomments);
+app.get('/api/v1/doc716greeenlinks',  aipondicontroller.doc716greeenlinks);
+app.get('/api/v1/doc716greeendocs',  aipondicontroller.doc716greeendocs);
+app.get('/api/v1/deletedoc716greeenbyfac',  aipondicontroller.deletedoc716greeenbyfac);
+app.get('/api/v1/createdoc716greeenbyfac',  aipondicontroller.createdoc716greeenbyfac);
+app.get('/api/v1/getdoc7110reportbyfac',  aipondicontroller.getdoc7110reportbyfac);
+app.get('/api/v1/doc7110reportbyprog',  aipondicontroller.doc7110reportbyprog);
+app.get('/api/v1/updatedoc7110reportbyfac',  aipondicontroller.updatedoc7110reportbyfac);
+app.get('/api/v1/updatedoc7110reportcomments',  aipondicontroller.updatedoc7110reportcomments);
+app.get('/api/v1/doc7110reportlinks',  aipondicontroller.doc7110reportlinks);
+app.get('/api/v1/doc7110reportdocs',  aipondicontroller.doc7110reportdocs);
+app.get('/api/v1/deletedoc7110reportbyfac',  aipondicontroller.deletedoc7110reportbyfac);
+app.get('/api/v1/createdoc7110reportbyfac',  aipondicontroller.createdoc7110reportbyfac);
+app.get('/api/v1/getdoc7110codebyfac',  aipondicontroller.getdoc7110codebyfac);
+app.get('/api/v1/doc7110codebyprog',  aipondicontroller.doc7110codebyprog);
+app.get('/api/v1/updatedoc7110codebyfac',  aipondicontroller.updatedoc7110codebyfac);
+app.get('/api/v1/updatedoc7110codecomments',  aipondicontroller.updatedoc7110codecomments);
+app.get('/api/v1/doc7110codelinks',  aipondicontroller.doc7110codelinks);
+app.get('/api/v1/doc7110codedocs',  aipondicontroller.doc7110codedocs);
+app.get('/api/v1/deletedoc7110codebyfac',  aipondicontroller.deletedoc7110codebyfac);
+app.get('/api/v1/createdoc7110codebyfac',  aipondicontroller.createdoc7110codebyfac);
+
+
+
+
+
+app.get('/api/v1/getnallcoursesbyfac',  aipondicontroller.getnallcoursesbyfac);
+app.get('/api/v1/nallcoursesbyprog',  aipondicontroller.nallcoursesbyprog);
+app.get('/api/v1/updatenallcoursesbyfac',  aipondicontroller.updatenallcoursesbyfac);
+app.get('/api/v1/updatenallcoursescomments',  aipondicontroller.updatenallcoursescomments);
+app.get('/api/v1/nallcourseslinks',  aipondicontroller.nallcourseslinks);
+app.get('/api/v1/nallcoursesdocs',  aipondicontroller.nallcoursesdocs);
+app.get('/api/v1/deletenallcoursesbyfac',  aipondicontroller.deletenallcoursesbyfac);
+app.get('/api/v1/createnallcoursesbyfac',  aipondicontroller.createnallcoursesbyfac);
+
+
+app.get('/api/v1/getaddoncbyfac',  aipondicontroller.getaddoncbyfac);
+app.get('/api/v1/addoncbyprog',  aipondicontroller.addoncbyprog);
+app.get('/api/v1/updateaddoncbyfac',  aipondicontroller.updateaddoncbyfac);
+app.get('/api/v1/updateaddonccomments',  aipondicontroller.updateaddonccomments);
+app.get('/api/v1/addonclinks',  aipondicontroller.addonclinks);
+app.get('/api/v1/addoncdocs',  aipondicontroller.addoncdocs);
+app.get('/api/v1/deleteaddoncbyfac',  aipondicontroller.deleteaddoncbyfac);
+app.get('/api/v1/createaddoncbyfac',  aipondicontroller.createaddoncbyfac);
+
+app.get('/api/v1/getaddoncstudbyfac',  aipondicontroller.getaddoncstudbyfac);
+app.get('/api/v1/addoncstudbyprog',  aipondicontroller.addoncstudbyprog);
+app.get('/api/v1/updateaddoncstudbyfac',  aipondicontroller.updateaddoncstudbyfac);
+app.get('/api/v1/updateaddoncstudcomments',  aipondicontroller.updateaddoncstudcomments);
+app.get('/api/v1/addoncstudlinks',  aipondicontroller.addoncstudlinks);
+app.get('/api/v1/addoncstuddocs',  aipondicontroller.addoncstuddocs);
+app.get('/api/v1/deleteaddoncstudbyfac',  aipondicontroller.deleteaddoncstudbyfac);
+app.get('/api/v1/createaddoncstudbyfac',  aipondicontroller.createaddoncstudbyfac);
+
+
+app.get('/api/v1/getpublicationsbyfac',  aipondicontroller.getpublicationsbyfac);
+app.get('/api/v1/publicationsbyprog',  aipondicontroller.publicationsbyprog);
+app.get('/api/v1/updatepublicationsbyfac',  aipondicontroller.updatepublicationsbyfac);
+app.get('/api/v1/updatepublicationscomments',  aipondicontroller.updatepublicationscomments);
+app.get('/api/v1/publicationslinks',  aipondicontroller.publicationslinks);
+app.get('/api/v1/publicationsdocs',  aipondicontroller.publicationsdocs);
+app.get('/api/v1/deletepublicationsbyfac',  aipondicontroller.deletepublicationsbyfac);
+app.get('/api/v1/createpublicationsbyfac',  aipondicontroller.createpublicationsbyfac);
+app.get('/api/v1/getseminarbyfac',  aipondicontroller.getseminarbyfac);
+app.get('/api/v1/seminarbyprog',  aipondicontroller.seminarbyprog);
+app.get('/api/v1/updateseminarbyfac',  aipondicontroller.updateseminarbyfac);
+app.get('/api/v1/updateseminarcomments',  aipondicontroller.updateseminarcomments);
+app.get('/api/v1/seminarlinks',  aipondicontroller.seminarlinks);
+app.get('/api/v1/seminardocs',  aipondicontroller.seminardocs);
+app.get('/api/v1/deleteseminarbyfac',  aipondicontroller.deleteseminarbyfac);
+app.get('/api/v1/createseminarbyfac',  aipondicontroller.createseminarbyfac);
+app.get('/api/v1/getcertificatesbyfac',  aipondicontroller.getcertificatesbyfac);
+app.get('/api/v1/certificatesbyprog',  aipondicontroller.certificatesbyprog);
+app.get('/api/v1/updatecertificatesbyfac',  aipondicontroller.updatecertificatesbyfac);
+app.get('/api/v1/updatecertificatescomments',  aipondicontroller.updatecertificatescomments);
+app.get('/api/v1/certificateslinks',  aipondicontroller.certificateslinks);
+app.get('/api/v1/certificatesdocs',  aipondicontroller.certificatesdocs);
+app.get('/api/v1/deletecertificatesbyfac',  aipondicontroller.deletecertificatesbyfac);
+app.get('/api/v1/createcertificatesbyfac',  aipondicontroller.createcertificatesbyfac);
+app.get('/api/v1/getemploymentallbyfac',  aipondicontroller.getemploymentallbyfac);
+app.get('/api/v1/employmentallbyprog',  aipondicontroller.employmentallbyprog);
+app.get('/api/v1/updateemploymentallbyfac',  aipondicontroller.updateemploymentallbyfac);
+app.get('/api/v1/updateemploymentallcomments',  aipondicontroller.updateemploymentallcomments);
+app.get('/api/v1/employmentalllinks',  aipondicontroller.employmentalllinks);
+app.get('/api/v1/employmentalldocs',  aipondicontroller.employmentalldocs);
+app.get('/api/v1/deleteemploymentallbyfac',  aipondicontroller.deleteemploymentallbyfac);
+app.get('/api/v1/createemploymentallbyfac',  aipondicontroller.createemploymentallbyfac);
+
+
+app.get('/api/v1/getprojectsbyfac',  aipondicontroller.getprojectsbyfac);
+app.get('/api/v1/projectsbyprog',  aipondicontroller.projectsbyprog);
+app.get('/api/v1/updateprojectsbyfac',  aipondicontroller.updateprojectsbyfac);
+app.get('/api/v1/updateprojectscomments',  aipondicontroller.updateprojectscomments);
+app.get('/api/v1/projectslinks',  aipondicontroller.projectslinks);
+app.get('/api/v1/projectsdocs',  aipondicontroller.projectsdocs);
+app.get('/api/v1/deleteprojectsbyfac',  aipondicontroller.deleteprojectsbyfac);
+app.get('/api/v1/createprojectsbyfac',  aipondicontroller.createprojectsbyfac);
+
+app.get('/api/v1/updateprofilepassword',  aipondicontroller.updateprofilepassword);
+
+app.get('/api/v1/getsalarypaidbyfac',  aipondicontroller.getsalarypaidbyfac);
+app.get('/api/v1/salarypaidbyprog',  aipondicontroller.salarypaidbyprog);
+app.get('/api/v1/updatesalarypaidbyfac',  aipondicontroller.updatesalarypaidbyfac);
+app.get('/api/v1/updatesalarypaidcomments',  aipondicontroller.updatesalarypaidcomments);
+app.get('/api/v1/salarypaidlinks',  aipondicontroller.salarypaidlinks);
+app.get('/api/v1/salarypaiddocs',  aipondicontroller.salarypaiddocs);
+app.get('/api/v1/deletesalarypaidbyfac',  aipondicontroller.deletesalarypaidbyfac);
+app.get('/api/v1/createsalarypaidbyfac',  aipondicontroller.createsalarypaidbyfac);
+app.get('/api/v1/getemptravelbyfac',  aipondicontroller.getemptravelbyfac);
+app.get('/api/v1/emptravelbyprog',  aipondicontroller.emptravelbyprog);
+app.get('/api/v1/updateemptravelbyfac',  aipondicontroller.updateemptravelbyfac);
+app.get('/api/v1/updateemptravelcomments',  aipondicontroller.updateemptravelcomments);
+app.get('/api/v1/emptravellinks',  aipondicontroller.emptravellinks);
+app.get('/api/v1/emptraveldocs',  aipondicontroller.emptraveldocs);
+app.get('/api/v1/deleteemptravelbyfac',  aipondicontroller.deleteemptravelbyfac);
+app.get('/api/v1/createemptravelbyfac',  aipondicontroller.createemptravelbyfac);
+
+
+app.get('/api/v1/getgenderauditbyfac',  aipondicontroller.getgenderauditbyfac);
+app.get('/api/v1/genderauditbyprog',  aipondicontroller.genderauditbyprog);
+app.get('/api/v1/updategenderauditbyfac',  aipondicontroller.updategenderauditbyfac);
+app.get('/api/v1/updategenderauditcomments',  aipondicontroller.updategenderauditcomments);
+app.get('/api/v1/genderauditlinks',  aipondicontroller.genderauditlinks);
+app.get('/api/v1/genderauditdocs',  aipondicontroller.genderauditdocs);
+app.get('/api/v1/deletegenderauditbyfac',  aipondicontroller.deletegenderauditbyfac);
+app.get('/api/v1/creategenderauditbyfac',  aipondicontroller.creategenderauditbyfac);
+
+
+app.get('/api/v1/getevguestsbyfac',  aipondicontroller.getevguestsbyfac);
+app.get('/api/v1/getevguestsbyev',  aipondicontroller.getevguestsbyev);
+app.get('/api/v1/evguestsbyprog',  aipondicontroller.evguestsbyprog);
+app.get('/api/v1/updateevguestsbyfac',  aipondicontroller.updateevguestsbyfac);
+app.get('/api/v1/updateevguestscomments',  aipondicontroller.updateevguestscomments);
+app.get('/api/v1/evguestslinks',  aipondicontroller.evguestslinks);
+app.get('/api/v1/evguestsdocs',  aipondicontroller.evguestsdocs);
+app.get('/api/v1/deleteevguestsbyfac',  aipondicontroller.deleteevguestsbyfac);
+app.get('/api/v1/createevguestsbyfac',  aipondicontroller.createevguestsbyfac);
+
+
+app.get('/api/v1/getamfacallnbyfac',  aipondicontroller.getamfacallnbyfac);
+app.get('/api/v1/amfacallnbyprog',  aipondicontroller.amfacallnbyprog);
+app.get('/api/v1/updateamfacallnbyfac',  aipondicontroller.updateamfacallnbyfac);
+app.get('/api/v1/updateamfacallncomments',  aipondicontroller.updateamfacallncomments);
+app.get('/api/v1/amfacallnlinks',  aipondicontroller.amfacallnlinks);
+app.get('/api/v1/amfacallndocs',  aipondicontroller.amfacallndocs);
+app.get('/api/v1/deleteamfacallnbyfac',  aipondicontroller.deleteamfacallnbyfac);
+app.get('/api/v1/createamfacallnbyfac',  aipondicontroller.createamfacallnbyfac);
+
+
+app.get('/api/v1/getpayimagesbyfac',  aipondicontroller.getpayimagesbyfac);
+app.get('/api/v1/payimagesbyprog',  aipondicontroller.payimagesbyprog);
+app.get('/api/v1/updatepayimagesbyfac',  aipondicontroller.updatepayimagesbyfac);
+app.get('/api/v1/updatepayimagescomments',  aipondicontroller.updatepayimagescomments);
+app.get('/api/v1/payimageslinks',  aipondicontroller.payimageslinks);
+app.get('/api/v1/payimagesdocs',  aipondicontroller.payimagesdocs);
+app.get('/api/v1/deletepayimagesbyfac',  aipondicontroller.deletepayimagesbyfac);
+app.get('/api/v1/createpayimagesbyfac',  aipondicontroller.createpayimagesbyfac);
+app.get('/api/v1/getalumnipaybyfac',  aipondicontroller.getalumnipaybyfac);
+app.get('/api/v1/alumnipaybyprog',  aipondicontroller.alumnipaybyprog);
+app.get('/api/v1/updatealumnipaybyfac',  aipondicontroller.updatealumnipaybyfac);
+app.get('/api/v1/updatealumnipaycomments',  aipondicontroller.updatealumnipaycomments);
+app.get('/api/v1/alumnipaylinks',  aipondicontroller.alumnipaylinks);
+app.get('/api/v1/alumnipaydocs',  aipondicontroller.alumnipaydocs);
+app.get('/api/v1/deletealumnipaybyfac',  aipondicontroller.deletealumnipaybyfac);
+app.get('/api/v1/createalumnipaybyfac',  aipondicontroller.createalumnipaybyfac);
+
+
+app.get('/api/v1/getcocalbyfac',  aipondicontroller.getcocalbyfac);
+app.get('/api/v1/cocalbyprog',  aipondicontroller.cocalbyprog);
+app.get('/api/v1/updatecocalbyfac',  aipondicontroller.updatecocalbyfac);
+app.get('/api/v1/updatecocalcomments',  aipondicontroller.updatecocalcomments);
+app.get('/api/v1/cocallinks',  aipondicontroller.cocallinks);
+app.get('/api/v1/cocaldocs',  aipondicontroller.cocaldocs);
+app.get('/api/v1/deletecocalbyfac',  aipondicontroller.deletecocalbyfac);
+app.get('/api/v1/createcocalbyfac',  aipondicontroller.createcocalbyfac);
+
+
+app.get('/api/v1/getfeedbackbyfac',  aipondicontroller.getfeedbackbyfac);
+app.get('/api/v1/feedbackbyprog',  aipondicontroller.feedbackbyprog);
+app.get('/api/v1/updatefeedbackbyfac',  aipondicontroller.updatefeedbackbyfac);
+app.get('/api/v1/updatefeedbackcomments',  aipondicontroller.updatefeedbackcomments);
+app.get('/api/v1/feedbacklinks',  aipondicontroller.feedbacklinks);
+app.get('/api/v1/feedbackdocs',  aipondicontroller.feedbackdocs);
+app.get('/api/v1/deletefeedbackbyfac',  aipondicontroller.deletefeedbackbyfac);
+app.get('/api/v1/createfeedbackbyfac',  aipondicontroller.createfeedbackbyfac);
+
+
+app.get('/api/v1/getbookbyfac',  aipondicontroller.getbookbyfac);
+app.get('/api/v1/bookbyprog',  aipondicontroller.bookbyprog);
+app.get('/api/v1/updatebookbyfac',  aipondicontroller.updatebookbyfac);
+app.get('/api/v1/updatebookcomments',  aipondicontroller.updatebookcomments);
+app.get('/api/v1/booklinks',  aipondicontroller.booklinks);
+app.get('/api/v1/bookdocs',  aipondicontroller.bookdocs);
+app.get('/api/v1/deletebookbyfac',  aipondicontroller.deletebookbyfac);
+app.get('/api/v1/createbookbyfac',  aipondicontroller.createbookbyfac);
+
+
+
+
+app.get('/api/v1/registeradm',  aipondicontroller.registeradm);
+app.get('/api/v1/getphotoofadm',  aipondicontroller.getphotoofadm);
+app.get('/api/v1/updateadmphoto',  aipondicontroller.updateadmphoto);
+app.get('/api/v1/loginadmusers',  aipondicontroller.loginadmusers);
+
+app.get('/api/v1/getawsconfigbyfac',  aipondicontroller.getawsconfigbyfac);
+app.get('/api/v1/awsconfigbyprog',  aipondicontroller.awsconfigbyprog);
+app.get('/api/v1/updateawsconfigbyfac',  aipondicontroller.updateawsconfigbyfac);
+app.get('/api/v1/updateawsconfigcomments',  aipondicontroller.updateawsconfigcomments);
+app.get('/api/v1/awsconfiglinks',  aipondicontroller.awsconfiglinks);
+app.get('/api/v1/awsconfigdocs',  aipondicontroller.awsconfigdocs);
+app.get('/api/v1/deleteawsconfigbyfac',  aipondicontroller.deleteawsconfigbyfac);
+app.get('/api/v1/createawsconfigbyfac',  aipondicontroller.createawsconfigbyfac);
+
+
+app.get('/api/v1/getmsuallfacnewbyfac',  aipondicontroller.getmsuallfacnewbyfac);
+app.get('/api/v1/msuallfacnewbyprog',  aipondicontroller.msuallfacnewbyprog);
+app.get('/api/v1/updatemsuallfacnewbyfac',  aipondicontroller.updatemsuallfacnewbyfac);
+app.get('/api/v1/updatemsuallfacnewcomments',  aipondicontroller.updatemsuallfacnewcomments);
+app.get('/api/v1/msuallfacnewlinks',  aipondicontroller.msuallfacnewlinks);
+app.get('/api/v1/msuallfacnewdocs',  aipondicontroller.msuallfacnewdocs);
+app.get('/api/v1/deletemsuallfacnewbyfac',  aipondicontroller.deletemsuallfacnewbyfac);
+app.get('/api/v1/createmsuallfacnewbyfac',  aipondicontroller.createmsuallfacnewbyfac);
+
+
+app.get('/api/v1/getmsusancseatnbyfac',  aipondicontroller.getmsusancseatnbyfac);
+app.get('/api/v1/msusancseatnbyunivid',  aipondicontroller.msusancseatnbyunivid);
+app.get('/api/v1/msusancseatnbyprog',  aipondicontroller.msusancseatnbyprog);
+app.get('/api/v1/updatemsusancseatnbyfac',  aipondicontroller.updatemsusancseatnbyfac);
+app.get('/api/v1/updatemsusancseatadm',  aipondicontroller.updatemsusancseatadm);
+app.get('/api/v1/updatemsusancseatncomments',  aipondicontroller.updatemsusancseatncomments);
+app.get('/api/v1/msusancseatnlinks',  aipondicontroller.msusancseatnlinks);
+app.get('/api/v1/msusancseatndocs',  aipondicontroller.msusancseatndocs);
+app.get('/api/v1/deletemsusancseatnbyfac',  aipondicontroller.deletemsusancseatnbyfac);
+app.get('/api/v1/createmsusancseatnbyfac',  aipondicontroller.createmsusancseatnbyfac);
+
+
+app.get('/api/v1/getnlibtable1byfac',  aipondicontroller.getnlibtable1byfac);
+app.get('/api/v1/nlibtable1byprog',  aipondicontroller.nlibtable1byprog);
+app.get('/api/v1/updatenlibtable1byfac',  aipondicontroller.updatenlibtable1byfac);
+app.get('/api/v1/updatenlibtable1comments',  aipondicontroller.updatenlibtable1comments);
+app.get('/api/v1/nlibtable1links',  aipondicontroller.nlibtable1links);
+app.get('/api/v1/nlibtable1docs',  aipondicontroller.nlibtable1docs);
+app.get('/api/v1/deletenlibtable1byfac',  aipondicontroller.deletenlibtable1byfac);
+app.get('/api/v1/createnlibtable1byfac',  aipondicontroller.createnlibtable1byfac);
+app.get('/api/v1/getnlibtable2byfac',  aipondicontroller.getnlibtable2byfac);
+app.get('/api/v1/nlibtable2byprog',  aipondicontroller.nlibtable2byprog);
+app.get('/api/v1/updatenlibtable2byfac',  aipondicontroller.updatenlibtable2byfac);
+app.get('/api/v1/updatenlibtable2comments',  aipondicontroller.updatenlibtable2comments);
+app.get('/api/v1/nlibtable2links',  aipondicontroller.nlibtable2links);
+app.get('/api/v1/nlibtable2docs',  aipondicontroller.nlibtable2docs);
+app.get('/api/v1/deletenlibtable2byfac',  aipondicontroller.deletenlibtable2byfac);
+app.get('/api/v1/createnlibtable2byfac',  aipondicontroller.createnlibtable2byfac);
+app.get('/api/v1/getnofficefacilitybyfac',  aipondicontroller.getnofficefacilitybyfac);
+app.get('/api/v1/nofficefacilitybyprog',  aipondicontroller.nofficefacilitybyprog);
+app.get('/api/v1/updatenofficefacilitybyfac',  aipondicontroller.updatenofficefacilitybyfac);
+app.get('/api/v1/updatenofficefacilitycomments',  aipondicontroller.updatenofficefacilitycomments);
+app.get('/api/v1/nofficefacilitylinks',  aipondicontroller.nofficefacilitylinks);
+app.get('/api/v1/nofficefacilitydocs',  aipondicontroller.nofficefacilitydocs);
+app.get('/api/v1/deletenofficefacilitybyfac',  aipondicontroller.deletenofficefacilitybyfac);
+app.get('/api/v1/createnofficefacilitybyfac',  aipondicontroller.createnofficefacilitybyfac);
+
+
+
+// app.get('/api/v1/getsssstudbyfac',  aipondicontroller.getsssstudbyfac);
+// app.get('/api/v1/sssstudbyprog',  aipondicontroller.sssstudbyprog);
+// app.get('/api/v1/updatesssstudbyfac',  aipondicontroller.updatesssstudbyfac);
+// app.get('/api/v1/updatesssstudcomments',  aipondicontroller.updatesssstudcomments);
+// app.get('/api/v1/sssstudlinks',  aipondicontroller.sssstudlinks);
+// app.get('/api/v1/sssstuddocs',  aipondicontroller.sssstuddocs);
+// app.get('/api/v1/deletesssstudbyfac',  aipondicontroller.deletesssstudbyfac);
+// app.get('/api/v1/createsssstudbyfac',  aipondicontroller.createsssstudbyfac);
+
+
+
+app.get('/api/v1/getrsmuadmupbyfac',  aipondicontroller.getrsmuadmupbyfac);
+app.get('/api/v1/rsmuadmupbyprog',  aipondicontroller.rsmuadmupbyprog);
+app.get('/api/v1/updatersmuadmupbyfac',  aipondicontroller.updatersmuadmupbyfac);
+app.get('/api/v1/updatersmuadmupcomments',  aipondicontroller.updatersmuadmupcomments);
+app.get('/api/v1/rsmuadmuplinks',  aipondicontroller.rsmuadmuplinks);
+app.get('/api/v1/rsmuadmupdocs',  aipondicontroller.rsmuadmupdocs);
+app.get('/api/v1/deletersmuadmupbyfac',  aipondicontroller.deletersmuadmupbyfac);
+app.get('/api/v1/creatersmuadmupbyfac',  aipondicontroller.creatersmuadmupbyfac);
+app.get('/api/v1/getrsmucoldetaupbyfac',  aipondicontroller.getrsmucoldetaupbyfac);
+app.get('/api/v1/rsmucoldetaupbyprog',  aipondicontroller.rsmucoldetaupbyprog);
+app.get('/api/v1/updatersmucoldetaupbyfac',  aipondicontroller.updatersmucoldetaupbyfac);
+app.get('/api/v1/updatersmucoldetaupcomments',  aipondicontroller.updatersmucoldetaupcomments);
+app.get('/api/v1/rsmucoldetauplinks',  aipondicontroller.rsmucoldetauplinks);
+app.get('/api/v1/rsmucoldetaupdocs',  aipondicontroller.rsmucoldetaupdocs);
+app.get('/api/v1/deletersmucoldetaupbyfac',  aipondicontroller.deletersmucoldetaupbyfac);
+app.get('/api/v1/creatersmucoldetaupbyfac',  aipondicontroller.creatersmucoldetaupbyfac);
+app.get('/api/v1/getrsmutrustupbyfac',  aipondicontroller.getrsmutrustupbyfac);
+app.get('/api/v1/rsmutrustupbyprog',  aipondicontroller.rsmutrustupbyprog);
+app.get('/api/v1/updatersmutrustupbyfac',  aipondicontroller.updatersmutrustupbyfac);
+app.get('/api/v1/updatersmutrustupcomments',  aipondicontroller.updatersmutrustupcomments);
+app.get('/api/v1/rsmutrustuplinks',  aipondicontroller.rsmutrustuplinks);
+app.get('/api/v1/rsmutrustupdocs',  aipondicontroller.rsmutrustupdocs);
+app.get('/api/v1/deletersmutrustupbyfac',  aipondicontroller.deletersmutrustupbyfac);
+app.get('/api/v1/creatersmutrustupbyfac',  aipondicontroller.creatersmutrustupbyfac);
+app.get('/api/v1/getrsmuprinupbyfac',  aipondicontroller.getrsmuprinupbyfac);
+app.get('/api/v1/rsmuprinupbyprog',  aipondicontroller.rsmuprinupbyprog);
+app.get('/api/v1/updatersmuprinupbyfac',  aipondicontroller.updatersmuprinupbyfac);
+app.get('/api/v1/updatersmuprinupcomments',  aipondicontroller.updatersmuprinupcomments);
+app.get('/api/v1/rsmuprinuplinks',  aipondicontroller.rsmuprinuplinks);
+app.get('/api/v1/rsmuprinupdocs',  aipondicontroller.rsmuprinupdocs);
+app.get('/api/v1/deletersmuprinupbyfac',  aipondicontroller.deletersmuprinupbyfac);
+app.get('/api/v1/creatersmuprinupbyfac',  aipondicontroller.creatersmuprinupbyfac);
+app.get('/api/v1/getrsmuendowupbyfac',  aipondicontroller.getrsmuendowupbyfac);
+app.get('/api/v1/rsmuendowupbyprog',  aipondicontroller.rsmuendowupbyprog);
+app.get('/api/v1/updatersmuendowupbyfac',  aipondicontroller.updatersmuendowupbyfac);
+app.get('/api/v1/updatersmuendowupcomments',  aipondicontroller.updatersmuendowupcomments);
+app.get('/api/v1/rsmuendowuplinks',  aipondicontroller.rsmuendowuplinks);
+app.get('/api/v1/rsmuendowupdocs',  aipondicontroller.rsmuendowupdocs);
+app.get('/api/v1/deletersmuendowupbyfac',  aipondicontroller.deletersmuendowupbyfac);
+app.get('/api/v1/creatersmuendowupbyfac',  aipondicontroller.creatersmuendowupbyfac);
+app.get('/api/v1/getrsmuadcourupbyfac',  aipondicontroller.getrsmuadcourupbyfac);
+app.get('/api/v1/rsmuadcourupbyprog',  aipondicontroller.rsmuadcourupbyprog);
+app.get('/api/v1/updatersmuadcourupbyfac',  aipondicontroller.updatersmuadcourupbyfac);
+app.get('/api/v1/updatersmuadcourupcomments',  aipondicontroller.updatersmuadcourupcomments);
+app.get('/api/v1/rsmuadcouruplinks',  aipondicontroller.rsmuadcouruplinks);
+app.get('/api/v1/rsmuadcourupdocs',  aipondicontroller.rsmuadcourupdocs);
+app.get('/api/v1/deletersmuadcourupbyfac',  aipondicontroller.deletersmuadcourupbyfac);
+app.get('/api/v1/creatersmuadcourupbyfac',  aipondicontroller.creatersmuadcourupbyfac);
+app.get('/api/v1/getrsmufacnewupbyfac',  aipondicontroller.getrsmufacnewupbyfac);
+app.get('/api/v1/rsmufacnewupbyprog',  aipondicontroller.rsmufacnewupbyprog);
+app.get('/api/v1/updatersmufacnewupbyfac',  aipondicontroller.updatersmufacnewupbyfac);
+app.get('/api/v1/updatersmufacnewupcomments',  aipondicontroller.updatersmufacnewupcomments);
+app.get('/api/v1/rsmufacnewuplinks',  aipondicontroller.rsmufacnewuplinks);
+app.get('/api/v1/rsmufacnewupdocs',  aipondicontroller.rsmufacnewupdocs);
+app.get('/api/v1/deletersmufacnewupbyfac',  aipondicontroller.deletersmufacnewupbyfac);
+app.get('/api/v1/creatersmufacnewupbyfac',  aipondicontroller.creatersmufacnewupbyfac);
+app.get('/api/v1/getrsmufacqualifupbyfac',  aipondicontroller.getrsmufacqualifupbyfac);
+app.get('/api/v1/rsmufacqualifupbyprog',  aipondicontroller.rsmufacqualifupbyprog);
+app.get('/api/v1/updatersmufacqualifupbyfac',  aipondicontroller.updatersmufacqualifupbyfac);
+app.get('/api/v1/updatersmufacqualifupcomments',  aipondicontroller.updatersmufacqualifupcomments);
+app.get('/api/v1/rsmufacqualifuplinks',  aipondicontroller.rsmufacqualifuplinks);
+app.get('/api/v1/rsmufacqualifupdocs',  aipondicontroller.rsmufacqualifupdocs);
+app.get('/api/v1/deletersmufacqualifupbyfac',  aipondicontroller.deletersmufacqualifupbyfac);
+app.get('/api/v1/creatersmufacqualifupbyfac',  aipondicontroller.creatersmufacqualifupbyfac);
+app.get('/api/v1/getrsmunontechupbyfac',  aipondicontroller.getrsmunontechupbyfac);
+app.get('/api/v1/rsmunontechupbyprog',  aipondicontroller.rsmunontechupbyprog);
+app.get('/api/v1/updatersmunontechupbyfac',  aipondicontroller.updatersmunontechupbyfac);
+app.get('/api/v1/updatersmunontechupcomments',  aipondicontroller.updatersmunontechupcomments);
+app.get('/api/v1/rsmunontechuplinks',  aipondicontroller.rsmunontechuplinks);
+app.get('/api/v1/rsmunontechupdocs',  aipondicontroller.rsmunontechupdocs);
+app.get('/api/v1/deletersmunontechupbyfac',  aipondicontroller.deletersmunontechupbyfac);
+app.get('/api/v1/creatersmunontechupbyfac',  aipondicontroller.creatersmunontechupbyfac);
+
+
+
+app.get('/api/v1/getuserbyfac',  aipondicontroller.getuserbyfac);
+app.get('/api/v1/userbyprog',  aipondicontroller.userbyprog);
+app.get('/api/v1/updateuserbyfac',  aipondicontroller.updateuserbyfac);
+app.get('/api/v1/updateusercomments',  aipondicontroller.updateusercomments);
+app.get('/api/v1/userlinks',  aipondicontroller.userlinks);
+app.get('/api/v1/userdocs',  aipondicontroller.userdocs);
+app.get('/api/v1/deleteuserbyfac',  aipondicontroller.deleteuserbyfac);
+app.get('/api/v1/createuserbyfac',  aipondicontroller.createuserbyfac);
+
+
+
+app.get('/api/v1/getrsmuaddetacngbyfac',  aipondicontroller.getrsmuaddetacngbyfac);
+app.get('/api/v1/rsmuaddetacngbyprog',  aipondicontroller.rsmuaddetacngbyprog);
+app.get('/api/v1/updatersmuaddetacngbyfac',  aipondicontroller.updatersmuaddetacngbyfac);
+app.get('/api/v1/updatersmuaddetacngcomments',  aipondicontroller.updatersmuaddetacngcomments);
+app.get('/api/v1/rsmuaddetacnglinks',  aipondicontroller.rsmuaddetacnglinks);
+app.get('/api/v1/rsmuaddetacngdocs',  aipondicontroller.rsmuaddetacngdocs);
+app.get('/api/v1/deletersmuaddetacngbyfac',  aipondicontroller.deletersmuaddetacngbyfac);
+app.get('/api/v1/creatersmuaddetacngbyfac',  aipondicontroller.creatersmuaddetacngbyfac);
+app.get('/api/v1/getrmsutrustdatacngbyfac',  aipondicontroller.getrmsutrustdatacngbyfac);
+app.get('/api/v1/rmsutrustdatacngbyprog',  aipondicontroller.rmsutrustdatacngbyprog);
+app.get('/api/v1/updatermsutrustdatacngbyfac',  aipondicontroller.updatermsutrustdatacngbyfac);
+app.get('/api/v1/updatermsutrustdatacngcomments',  aipondicontroller.updatermsutrustdatacngcomments);
+app.get('/api/v1/rmsutrustdatacnglinks',  aipondicontroller.rmsutrustdatacnglinks);
+app.get('/api/v1/rmsutrustdatacngdocs',  aipondicontroller.rmsutrustdatacngdocs);
+app.get('/api/v1/deletermsutrustdatacngbyfac',  aipondicontroller.deletermsutrustdatacngbyfac);
+app.get('/api/v1/creatermsutrustdatacngbyfac',  aipondicontroller.creatermsutrustdatacngbyfac);
+app.get('/api/v1/getrsmufacnewcngbyfac',  aipondicontroller.getrsmufacnewcngbyfac);
+app.get('/api/v1/rsmufacnewcngbyprog',  aipondicontroller.rsmufacnewcngbyprog);
+app.get('/api/v1/updatersmufacnewcngbyfac',  aipondicontroller.updatersmufacnewcngbyfac);
+app.get('/api/v1/updatersmufacnewcngcomments',  aipondicontroller.updatersmufacnewcngcomments);
+app.get('/api/v1/rsmufacnewcnglinks',  aipondicontroller.rsmufacnewcnglinks);
+app.get('/api/v1/rsmufacnewcngdocs',  aipondicontroller.rsmufacnewcngdocs);
+app.get('/api/v1/deletersmufacnewcngbyfac',  aipondicontroller.deletersmufacnewcngbyfac);
+app.get('/api/v1/creatersmufacnewcngbyfac',  aipondicontroller.creatersmufacnewcngbyfac);
+app.get('/api/v1/getrsmuendowmentcngbyfac',  aipondicontroller.getrsmuendowmentcngbyfac);
+app.get('/api/v1/rsmuendowmentcngbyprog',  aipondicontroller.rsmuendowmentcngbyprog);
+app.get('/api/v1/updatersmuendowmentcngbyfac',  aipondicontroller.updatersmuendowmentcngbyfac);
+app.get('/api/v1/updatersmuendowmentcngcomments',  aipondicontroller.updatersmuendowmentcngcomments);
+app.get('/api/v1/rsmuendowmentcnglinks',  aipondicontroller.rsmuendowmentcnglinks);
+app.get('/api/v1/rsmuendowmentcngdocs',  aipondicontroller.rsmuendowmentcngdocs);
+app.get('/api/v1/deletersmuendowmentcngbyfac',  aipondicontroller.deletersmuendowmentcngbyfac);
+app.get('/api/v1/creatersmuendowmentcngbyfac',  aipondicontroller.creatersmuendowmentcngbyfac);
+app.get('/api/v1/getrsmulanddetacngbyfac',  aipondicontroller.getrsmulanddetacngbyfac);
+app.get('/api/v1/rsmulanddetacngbyprog',  aipondicontroller.rsmulanddetacngbyprog);
+app.get('/api/v1/updatersmulanddetacngbyfac',  aipondicontroller.updatersmulanddetacngbyfac);
+app.get('/api/v1/updatersmulanddetacngcomments',  aipondicontroller.updatersmulanddetacngcomments);
+app.get('/api/v1/rsmulanddetacnglinks',  aipondicontroller.rsmulanddetacnglinks);
+app.get('/api/v1/rsmulanddetacngdocs',  aipondicontroller.rsmulanddetacngdocs);
+app.get('/api/v1/deletersmulanddetacngbyfac',  aipondicontroller.deletersmulanddetacngbyfac);
+app.get('/api/v1/creatersmulanddetacngbyfac',  aipondicontroller.creatersmulanddetacngbyfac);
+
+
+app.get('/api/v1/getrmsucoldetabyfac',  aipondicontroller.getrmsucoldetabyfac);
+app.get('/api/v1/rmsucoldetabyprog',  aipondicontroller.rmsucoldetabyprog);
+app.get('/api/v1/updatermsucoldetabyfac',  aipondicontroller.updatermsucoldetabyfac);
+app.get('/api/v1/updatermsucoldetacomments',  aipondicontroller.updatermsucoldetacomments);
+app.get('/api/v1/rmsucoldetalinks',  aipondicontroller.rmsucoldetalinks);
+app.get('/api/v1/rmsucoldetadocs',  aipondicontroller.rmsucoldetadocs);
+app.get('/api/v1/deletermsucoldetabyfac',  aipondicontroller.deletermsucoldetabyfac);
+app.get('/api/v1/creatermsucoldetabyfac',  aipondicontroller.creatermsucoldetabyfac);
+app.get('/api/v1/getrmsunirfbyfac',  aipondicontroller.getrmsunirfbyfac);
+app.get('/api/v1/rmsunirfbyprog',  aipondicontroller.rmsunirfbyprog);
+app.get('/api/v1/updatermsunirfbyfac',  aipondicontroller.updatermsunirfbyfac);
+app.get('/api/v1/updatermsunirfcomments',  aipondicontroller.updatermsunirfcomments);
+app.get('/api/v1/rmsunirflinks',  aipondicontroller.rmsunirflinks);
+app.get('/api/v1/rmsunirfdocs',  aipondicontroller.rmsunirfdocs);
+app.get('/api/v1/deletermsunirfbyfac',  aipondicontroller.deletermsunirfbyfac);
+app.get('/api/v1/creatermsunirfbyfac',  aipondicontroller.creatermsunirfbyfac);
+app.get('/api/v1/getrsmuaddetabyfac',  aipondicontroller.getrsmuaddetabyfac);
+app.get('/api/v1/rsmuaddetabyprog',  aipondicontroller.rsmuaddetabyprog);
+app.get('/api/v1/updatersmuaddetabyfac',  aipondicontroller.updatersmuaddetabyfac);
+app.get('/api/v1/updatersmuaddetacomments',  aipondicontroller.updatersmuaddetacomments);
+app.get('/api/v1/rsmuaddetalinks',  aipondicontroller.rsmuaddetalinks);
+app.get('/api/v1/rsmuaddetadocs',  aipondicontroller.rsmuaddetadocs);
+app.get('/api/v1/deletersmuaddetabyfac',  aipondicontroller.deletersmuaddetabyfac);
+app.get('/api/v1/creatersmuaddetabyfac',  aipondicontroller.creatersmuaddetabyfac);
+app.get('/api/v1/getrsmucoldetaexbyfac',  aipondicontroller.getrsmucoldetaexbyfac);
+app.get('/api/v1/rsmucoldetaexbyprog',  aipondicontroller.rsmucoldetaexbyprog);
+app.get('/api/v1/updatersmucoldetaexbyfac',  aipondicontroller.updatersmucoldetaexbyfac);
+app.get('/api/v1/updatersmucoldetaexcomments',  aipondicontroller.updatersmucoldetaexcomments);
+app.get('/api/v1/rsmucoldetaexlinks',  aipondicontroller.rsmucoldetaexlinks);
+app.get('/api/v1/rsmucoldetaexdocs',  aipondicontroller.rsmucoldetaexdocs);
+app.get('/api/v1/deletersmucoldetaexbyfac',  aipondicontroller.deletersmucoldetaexbyfac);
+app.get('/api/v1/creatersmucoldetaexbyfac',  aipondicontroller.creatersmucoldetaexbyfac);
+app.get('/api/v1/getrsmuprincdetabyfac',  aipondicontroller.getrsmuprincdetabyfac);
+app.get('/api/v1/rsmuprincdetabyprog',  aipondicontroller.rsmuprincdetabyprog);
+app.get('/api/v1/updatersmuprincdetabyfac',  aipondicontroller.updatersmuprincdetabyfac);
+app.get('/api/v1/updatersmuprincdetacomments',  aipondicontroller.updatersmuprincdetacomments);
+app.get('/api/v1/rsmuprincdetalinks',  aipondicontroller.rsmuprincdetalinks);
+app.get('/api/v1/rsmuprincdetadocs',  aipondicontroller.rsmuprincdetadocs);
+app.get('/api/v1/deletersmuprincdetabyfac',  aipondicontroller.deletersmuprincdetabyfac);
+app.get('/api/v1/creatersmuprincdetabyfac',  aipondicontroller.creatersmuprincdetabyfac);
+app.get('/api/v1/getrsmugovcouncilbyfac',  aipondicontroller.getrsmugovcouncilbyfac);
+app.get('/api/v1/rsmugovcouncilbyprog',  aipondicontroller.rsmugovcouncilbyprog);
+app.get('/api/v1/updatersmugovcouncilbyfac',  aipondicontroller.updatersmugovcouncilbyfac);
+app.get('/api/v1/updatersmugovcouncilcomments',  aipondicontroller.updatersmugovcouncilcomments);
+app.get('/api/v1/rsmugovcouncillinks',  aipondicontroller.rsmugovcouncillinks);
+app.get('/api/v1/rsmugovcouncildocs',  aipondicontroller.rsmugovcouncildocs);
+app.get('/api/v1/deletersmugovcouncilbyfac',  aipondicontroller.deletersmugovcouncilbyfac);
+app.get('/api/v1/creatersmugovcouncilbyfac',  aipondicontroller.creatersmugovcouncilbyfac);
+app.get('/api/v1/getrsmuragcomtbyfac',  aipondicontroller.getrsmuragcomtbyfac);
+app.get('/api/v1/rsmuragcomtbyprog',  aipondicontroller.rsmuragcomtbyprog);
+app.get('/api/v1/updatersmuragcomtbyfac',  aipondicontroller.updatersmuragcomtbyfac);
+app.get('/api/v1/updatersmuragcomtcomments',  aipondicontroller.updatersmuragcomtcomments);
+app.get('/api/v1/rsmuragcomtlinks',  aipondicontroller.rsmuragcomtlinks);
+app.get('/api/v1/rsmuragcomtdocs',  aipondicontroller.rsmuragcomtdocs);
+app.get('/api/v1/deletersmuragcomtbyfac',  aipondicontroller.deletersmuragcomtbyfac);
+app.get('/api/v1/creatersmuragcomtbyfac',  aipondicontroller.creatersmuragcomtbyfac);
+app.get('/api/v1/getrsmuragsquadbyfac',  aipondicontroller.getrsmuragsquadbyfac);
+app.get('/api/v1/rsmuragsquadbyprog',  aipondicontroller.rsmuragsquadbyprog);
+app.get('/api/v1/updatersmuragsquadbyfac',  aipondicontroller.updatersmuragsquadbyfac);
+app.get('/api/v1/updatersmuragsquadcomments',  aipondicontroller.updatersmuragsquadcomments);
+app.get('/api/v1/rsmuragsquadlinks',  aipondicontroller.rsmuragsquadlinks);
+app.get('/api/v1/rsmuragsquaddocs',  aipondicontroller.rsmuragsquaddocs);
+app.get('/api/v1/deletersmuragsquadbyfac',  aipondicontroller.deletersmuragsquadbyfac);
+app.get('/api/v1/creatersmuragsquadbyfac',  aipondicontroller.creatersmuragsquadbyfac);
+app.get('/api/v1/getrsmubankacntsbyfac',  aipondicontroller.getrsmubankacntsbyfac);
+app.get('/api/v1/rsmubankacntsbyprog',  aipondicontroller.rsmubankacntsbyprog);
+app.get('/api/v1/updatersmubankacntsbyfac',  aipondicontroller.updatersmubankacntsbyfac);
+app.get('/api/v1/updatersmubankacntscomments',  aipondicontroller.updatersmubankacntscomments);
+app.get('/api/v1/rsmubankacntslinks',  aipondicontroller.rsmubankacntslinks);
+app.get('/api/v1/rsmubankacntsdocs',  aipondicontroller.rsmubankacntsdocs);
+app.get('/api/v1/deletersmubankacntsbyfac',  aipondicontroller.deletersmubankacntsbyfac);
+app.get('/api/v1/creatersmubankacntsbyfac',  aipondicontroller.creatersmubankacntsbyfac);
+app.get('/api/v1/getrsmudepositbyfac',  aipondicontroller.getrsmudepositbyfac);
+app.get('/api/v1/rsmudepositbyprog',  aipondicontroller.rsmudepositbyprog);
+app.get('/api/v1/updatersmudepositbyfac',  aipondicontroller.updatersmudepositbyfac);
+app.get('/api/v1/updatersmudepositcomments',  aipondicontroller.updatersmudepositcomments);
+app.get('/api/v1/rsmudepositlinks',  aipondicontroller.rsmudepositlinks);
+app.get('/api/v1/rsmudepositdocs',  aipondicontroller.rsmudepositdocs);
+app.get('/api/v1/deletersmudepositbyfac',  aipondicontroller.deletersmudepositbyfac);
+app.get('/api/v1/creatersmudepositbyfac',  aipondicontroller.creatersmudepositbyfac);
+app.get('/api/v1/getrsmuendowmentbyfac',  aipondicontroller.getrsmuendowmentbyfac);
+app.get('/api/v1/rsmuendowmentbyprog',  aipondicontroller.rsmuendowmentbyprog);
+app.get('/api/v1/updatersmuendowmentbyfac',  aipondicontroller.updatersmuendowmentbyfac);
+app.get('/api/v1/updatersmuendowmentcomments',  aipondicontroller.updatersmuendowmentcomments);
+app.get('/api/v1/rsmuendowmentlinks',  aipondicontroller.rsmuendowmentlinks);
+app.get('/api/v1/rsmuendowmentdocs',  aipondicontroller.rsmuendowmentdocs);
+app.get('/api/v1/deletersmuendowmentbyfac',  aipondicontroller.deletersmuendowmentbyfac);
+app.get('/api/v1/creatersmuendowmentbyfac',  aipondicontroller.creatersmuendowmentbyfac);
+app.get('/api/v1/getrsmubuildetabyfac',  aipondicontroller.getrsmubuildetabyfac);
+app.get('/api/v1/rsmubuildetabyprog',  aipondicontroller.rsmubuildetabyprog);
+app.get('/api/v1/updatersmubuildetabyfac',  aipondicontroller.updatersmubuildetabyfac);
+app.get('/api/v1/updatersmubuildetacomments',  aipondicontroller.updatersmubuildetacomments);
+app.get('/api/v1/rsmubuildetalinks',  aipondicontroller.rsmubuildetalinks);
+app.get('/api/v1/rsmubuildetadocs',  aipondicontroller.rsmubuildetadocs);
+app.get('/api/v1/deletersmubuildetabyfac',  aipondicontroller.deletersmubuildetabyfac);
+app.get('/api/v1/creatersmubuildetabyfac',  aipondicontroller.creatersmubuildetabyfac);
+app.get('/api/v1/getrsmufeduqualifbyfac',  aipondicontroller.getrsmufeduqualifbyfac);
+app.get('/api/v1/rsmufeduqualifbyprog',  aipondicontroller.rsmufeduqualifbyprog);
+app.get('/api/v1/updatersmufeduqualifbyfac',  aipondicontroller.updatersmufeduqualifbyfac);
+app.get('/api/v1/updatersmufeduqualifcomments',  aipondicontroller.updatersmufeduqualifcomments);
+app.get('/api/v1/rsmufeduqualiflinks',  aipondicontroller.rsmufeduqualiflinks);
+app.get('/api/v1/rsmufeduqualifdocs',  aipondicontroller.rsmufeduqualifdocs);
+app.get('/api/v1/deletersmufeduqualifbyfac',  aipondicontroller.deletersmufeduqualifbyfac);
+app.get('/api/v1/creatersmufeduqualifbyfac',  aipondicontroller.creatersmufeduqualifbyfac);
+app.get('/api/v1/getrsmufacnewbyfac',  aipondicontroller.getrsmufacnewbyfac);
+app.get('/api/v1/rsmufacnewbyprog',  aipondicontroller.rsmufacnewbyprog);
+app.get('/api/v1/updatersmufacnewbyfac',  aipondicontroller.updatersmufacnewbyfac);
+app.get('/api/v1/updatersmufacnewcomments',  aipondicontroller.updatersmufacnewcomments);
+app.get('/api/v1/rsmufacnewlinks',  aipondicontroller.rsmufacnewlinks);
+app.get('/api/v1/rsmufacnewdocs',  aipondicontroller.rsmufacnewdocs);
+app.get('/api/v1/deletersmufacnewbyfac',  aipondicontroller.deletersmufacnewbyfac);
+app.get('/api/v1/creatersmufacnewbyfac',  aipondicontroller.creatersmufacnewbyfac);
+app.get('/api/v1/getrsmuontstaffbyfac',  aipondicontroller.getrsmuontstaffbyfac);
+app.get('/api/v1/rsmuontstaffbyprog',  aipondicontroller.rsmuontstaffbyprog);
+app.get('/api/v1/updatersmuontstaffbyfac',  aipondicontroller.updatersmuontstaffbyfac);
+app.get('/api/v1/updatersmuontstaffcomments',  aipondicontroller.updatersmuontstaffcomments);
+app.get('/api/v1/rsmuontstafflinks',  aipondicontroller.rsmuontstafflinks);
+app.get('/api/v1/rsmuontstaffdocs',  aipondicontroller.rsmuontstaffdocs);
+app.get('/api/v1/deletersmuontstaffbyfac',  aipondicontroller.deletersmuontstaffbyfac);
+app.get('/api/v1/creatersmuontstaffbyfac',  aipondicontroller.creatersmuontstaffbyfac);
+app.get('/api/v1/getrmsucoursebyfac',  aipondicontroller.getrmsucoursebyfac);
+app.get('/api/v1/rmsucoursebyprog',  aipondicontroller.rmsucoursebyprog);
+app.get('/api/v1/updatermsucoursebyfac',  aipondicontroller.updatermsucoursebyfac);
+app.get('/api/v1/updatermsucoursecomments',  aipondicontroller.updatermsucoursecomments);
+app.get('/api/v1/rmsucourselinks',  aipondicontroller.rmsucourselinks);
+app.get('/api/v1/rmsucoursedocs',  aipondicontroller.rmsucoursedocs);
+app.get('/api/v1/deletermsucoursebyfac',  aipondicontroller.deletermsucoursebyfac);
+app.get('/api/v1/creatermsucoursebyfac',  aipondicontroller.creatermsucoursebyfac);
+app.get('/api/v1/getrsunontstaffbyfac',  aipondicontroller.getrsunontstaffbyfac);
+app.get('/api/v1/rsunontstaffbyprog',  aipondicontroller.rsunontstaffbyprog);
+app.get('/api/v1/updatersunontstaffbyfac',  aipondicontroller.updatersunontstaffbyfac);
+app.get('/api/v1/updatersunontstaffcomments',  aipondicontroller.updatersunontstaffcomments);
+app.get('/api/v1/rsunontstafflinks',  aipondicontroller.rsunontstafflinks);
+app.get('/api/v1/rsunontstaffdocs',  aipondicontroller.rsunontstaffdocs);
+app.get('/api/v1/deletersunontstaffbyfac',  aipondicontroller.deletersunontstaffbyfac);
+app.get('/api/v1/creatersunontstaffbyfac',  aipondicontroller.creatersunontstaffbyfac);
+
+
+app.get('/api/v1/getaffcolprogbyfac',  aipondicontroller.getaffcolprogbyfac);
+app.get('/api/v1/affcolprogbyprog',  aipondicontroller.affcolprogbyprog);
+app.get('/api/v1/affcolprogbycollege',  aipondicontroller.affcolprogbycollege);
+app.get('/api/v1/updateaffcolprogbyfac',  aipondicontroller.updateaffcolprogbyfac);
+app.get('/api/v1/updateaffcolprogcomments',  aipondicontroller.updateaffcolprogcomments);
+app.get('/api/v1/affcolproglinks',  aipondicontroller.affcolproglinks);
+app.get('/api/v1/affcolprogdocs',  aipondicontroller.affcolprogdocs);
+app.get('/api/v1/deleteaffcolprogbyfac',  aipondicontroller.deleteaffcolprogbyfac);
+app.get('/api/v1/createaffcolprogbyfac',  aipondicontroller.createaffcolprogbyfac);
+app.get('/api/v1/getaffproglistbyfac',  aipondicontroller.getaffproglistbyfac);
+app.get('/api/v1/affproglistbyprog',  aipondicontroller.affproglistbyprog);
+app.get('/api/v1/updateaffproglistbyfac',  aipondicontroller.updateaffproglistbyfac);
+app.get('/api/v1/updateaffproglistcomments',  aipondicontroller.updateaffproglistcomments);
+app.get('/api/v1/affproglistlinks',  aipondicontroller.affproglistlinks);
+app.get('/api/v1/affproglistdocs',  aipondicontroller.affproglistdocs);
+app.get('/api/v1/deleteaffproglistbyfac',  aipondicontroller.deleteaffproglistbyfac);
+app.get('/api/v1/createaffproglistbyfac',  aipondicontroller.createaffproglistbyfac);
+app.get('/api/v1/getInstitutionsbyfac',  aipondicontroller.getInstitutionsbyfac);
+app.get('/api/v1/Institutionsbyprog',  aipondicontroller.Institutionsbyprog);
+app.get('/api/v1/updateInstitutionsbyfac',  aipondicontroller.updateInstitutionsbyfac);
+app.get('/api/v1/updateInstitutionscomments',  aipondicontroller.updateInstitutionscomments);
+app.get('/api/v1/Institutionslinks',  aipondicontroller.Institutionslinks);
+app.get('/api/v1/Institutionsdocs',  aipondicontroller.Institutionsdocs);
+app.get('/api/v1/deleteInstitutionsbyfac',  aipondicontroller.deleteInstitutionsbyfac);
+app.get('/api/v1/createInstitutionsbyfac',  aipondicontroller.createInstitutionsbyfac);
+
+
+app.get('/api/v1/getamastudnewbyfac',  aipondicontroller.getamastudnewbyfac);
+app.get('/api/v1/getamastudnewbyunivid',  aipondicontroller.getamastudnewbyunivid);
+app.get('/api/v1/amastudnewbyprog',  aipondicontroller.amastudnewbyprog);
+app.get('/api/v1/updateamastudnewbyfac',  aipondicontroller.updateamastudnewbyfac);
+app.get('/api/v1/updateamastudnewcomments',  aipondicontroller.updateamastudnewcomments);
+app.get('/api/v1/amastudnewlinks',  aipondicontroller.amastudnewlinks);
+app.get('/api/v1/amastudnewdocs',  aipondicontroller.amastudnewdocs);
+app.get('/api/v1/deleteamastudnewbyfac',  aipondicontroller.deleteamastudnewbyfac);
+app.get('/api/v1/createamastudnewbyfac',  aipondicontroller.createamastudnewbyfac);
+
+
+app.get('/api/v1/getanmstudnewbyfac',  aipondicontroller.getanmstudnewbyfac);
+app.get('/api/v1/anmstudnewbyprog',  aipondicontroller.anmstudnewbyprog);
+app.get('/api/v1/anmstudnewbyproguniv',  aipondicontroller.anmstudnewbyproguniv);
+app.get('/api/v1/updateanmstudnewbyfac',  aipondicontroller.updateanmstudnewbyfac);
+app.get('/api/v1/updateanmstudnewcomments',  aipondicontroller.updateanmstudnewcomments);
+app.get('/api/v1/anmstudnewlinks',  aipondicontroller.anmstudnewlinks);
+app.get('/api/v1/anmstudnewdocs',  aipondicontroller.anmstudnewdocs);
+app.get('/api/v1/deleteanmstudnewbyfac',  aipondicontroller.deleteanmstudnewbyfac);
+app.get('/api/v1/createanmstudnewbyfac',  aipondicontroller.createanmstudnewbyfac);
+
+
+app.get('/api/v1/getmkustudbyfac',  aipondicontroller.getmkustudbyfac);
+app.get('/api/v1/getmkustudbyregno',  aipondicontroller.getmkustudbyregno);
+app.get('/api/v1/mkustudbyprog',  aipondicontroller.mkustudbyprog);
+app.get('/api/v1/updatemkustudbyfac',  aipondicontroller.updatemkustudbyfac);
+app.get('/api/v1/updatemkustudcomments',  aipondicontroller.updatemkustudcomments);
+app.get('/api/v1/mkustudlinks',  aipondicontroller.mkustudlinks);
+app.get('/api/v1/mkustuddocs',  aipondicontroller.mkustuddocs);
+app.get('/api/v1/deletemkustudbyfac',  aipondicontroller.deletemkustudbyfac);
+app.get('/api/v1/createmkustudbyfac',  aipondicontroller.createmkustudbyfac);
+app.get('/api/v1/getmkumarksbyfac',  aipondicontroller.getmkumarksbyfac);
+app.get('/api/v1/getmkumarksbyregno',  aipondicontroller.getmkumarksbyregno);
+app.get('/api/v1/mkumarksbyprog',  aipondicontroller.mkumarksbyprog);
+app.get('/api/v1/updatemkumarksbyfac',  aipondicontroller.updatemkumarksbyfac);
+app.get('/api/v1/updatemkumarkscomments',  aipondicontroller.updatemkumarkscomments);
+app.get('/api/v1/mkumarkslinks',  aipondicontroller.mkumarkslinks);
+app.get('/api/v1/mkumarksdocs',  aipondicontroller.mkumarksdocs);
+app.get('/api/v1/deletemkumarksbyfac',  aipondicontroller.deletemkumarksbyfac);
+app.get('/api/v1/createmkumarksbyfac',  aipondicontroller.createmkumarksbyfac);
+
+
+app.get('/api/v1/getamcpdetails3byfac',  aipondicontroller.getamcpdetails3byfac);
+app.get('/api/v1/amcpdetails3byprog',  aipondicontroller.amcpdetails3byprog);
+app.get('/api/v1/updateamcpdetails3byfac',  aipondicontroller.updateamcpdetails3byfac);
+app.get('/api/v1/updateamcpdetails3comments',  aipondicontroller.updateamcpdetails3comments);
+app.get('/api/v1/amcpdetails3links',  aipondicontroller.amcpdetails3links);
+app.get('/api/v1/amcpdetails3docs',  aipondicontroller.amcpdetails3docs);
+app.get('/api/v1/deleteamcpdetails3byfac',  aipondicontroller.deleteamcpdetails3byfac);
+app.get('/api/v1/createamcpdetails3byfac',  aipondicontroller.createamcpdetails3byfac);
+app.get('/api/v1/getamcpobservationsbyfac',  aipondicontroller.getamcpobservationsbyfac);
+app.get('/api/v1/amcpobservationsbyprog',  aipondicontroller.amcpobservationsbyprog);
+app.get('/api/v1/updateamcpobservationsbyfac',  aipondicontroller.updateamcpobservationsbyfac);
+app.get('/api/v1/updateamcpobservationscomments',  aipondicontroller.updateamcpobservationscomments);
+app.get('/api/v1/amcpobservationslinks',  aipondicontroller.amcpobservationslinks);
+app.get('/api/v1/amcpobservationsdocs',  aipondicontroller.amcpobservationsdocs);
+app.get('/api/v1/deleteamcpobservationsbyfac',  aipondicontroller.deleteamcpobservationsbyfac);
+app.get('/api/v1/createamcpobservationsbyfac',  aipondicontroller.createamcpobservationsbyfac);
+app.get('/api/v1/getammember1byfac',  aipondicontroller.getammember1byfac);
+app.get('/api/v1/ammember1byprog',  aipondicontroller.ammember1byprog);
+app.get('/api/v1/updateammember1byfac',  aipondicontroller.updateammember1byfac);
+app.get('/api/v1/updateammember1comments',  aipondicontroller.updateammember1comments);
+app.get('/api/v1/ammember1links',  aipondicontroller.ammember1links);
+app.get('/api/v1/ammember1docs',  aipondicontroller.ammember1docs);
+app.get('/api/v1/deleteammember1byfac',  aipondicontroller.deleteammember1byfac);
+app.get('/api/v1/createammember1byfac',  aipondicontroller.createammember1byfac);
+app.get('/api/v1/getammbr2compbyfac',  aipondicontroller.getammbr2compbyfac);
+app.get('/api/v1/ammbr2compbyprog',  aipondicontroller.ammbr2compbyprog);
+app.get('/api/v1/updateammbr2compbyfac',  aipondicontroller.updateammbr2compbyfac);
+app.get('/api/v1/updateammbr2compcomments',  aipondicontroller.updateammbr2compcomments);
+app.get('/api/v1/ammbr2complinks',  aipondicontroller.ammbr2complinks);
+app.get('/api/v1/ammbr2compdocs',  aipondicontroller.ammbr2compdocs);
+app.get('/api/v1/deleteammbr2compbyfac',  aipondicontroller.deleteammbr2compbyfac);
+app.get('/api/v1/createammbr2compbyfac',  aipondicontroller.createammbr2compbyfac);
+app.get('/api/v1/getammbr2detbyfac',  aipondicontroller.getammbr2detbyfac);
+app.get('/api/v1/ammbr2detbyprog',  aipondicontroller.ammbr2detbyprog);
+app.get('/api/v1/updateammbr2detbyfac',  aipondicontroller.updateammbr2detbyfac);
+app.get('/api/v1/updateammbr2detcomments',  aipondicontroller.updateammbr2detcomments);
+app.get('/api/v1/ammbr2detlinks',  aipondicontroller.ammbr2detlinks);
+app.get('/api/v1/ammbr2detdocs',  aipondicontroller.ammbr2detdocs);
+app.get('/api/v1/deleteammbr2detbyfac',  aipondicontroller.deleteammbr2detbyfac);
+app.get('/api/v1/createammbr2detbyfac',  aipondicontroller.createammbr2detbyfac);
+
+
+app.get('/api/v1/getaffassignbyfac',  aipondicontroller.getaffassignbyfac);
+app.get('/api/v1/affassignbyprog',  aipondicontroller.affassignbyprog);
+app.get('/api/v1/updateaffassignbyfac',  aipondicontroller.updateaffassignbyfac);
+app.get('/api/v1/updateaffassigncomments',  aipondicontroller.updateaffassigncomments);
+app.get('/api/v1/affassignlinks',  aipondicontroller.affassignlinks);
+app.get('/api/v1/affassigndocs',  aipondicontroller.affassigndocs);
+app.get('/api/v1/deleteaffassignbyfac',  aipondicontroller.deleteaffassignbyfac);
+app.get('/api/v1/createaffassignbyfac',  aipondicontroller.createaffassignbyfac);
+
+app.get('/api/v1/getassignmentbyfac',  aipondicontroller.getassignmentbyfac);
+app.get('/api/v1/assignmentbyprog',  aipondicontroller.assignmentbyprog);
+app.get('/api/v1/updateassignmentbyfac',  aipondicontroller.updateassignmentbyfac);
+app.get('/api/v1/updateassignmentcomments',  aipondicontroller.updateassignmentcomments);
+app.get('/api/v1/assignmentlinks',  aipondicontroller.assignmentlinks);
+app.get('/api/v1/assignmentdocs',  aipondicontroller.assignmentdocs);
+app.get('/api/v1/deleteassignmentbyfac',  aipondicontroller.deleteassignmentbyfac);
+app.get('/api/v1/createassignmentbyfac',  aipondicontroller.createassignmentbyfac);
+app.get('/api/v1/getcoursefilesbyfac',  aipondicontroller.getcoursefilesbyfac);
+app.get('/api/v1/coursefilesbyprog',  aipondicontroller.coursefilesbyprog);
+app.get('/api/v1/updatecoursefilesbyfac',  aipondicontroller.updatecoursefilesbyfac);
+app.get('/api/v1/updatecoursefilescomments',  aipondicontroller.updatecoursefilescomments);
+app.get('/api/v1/coursefileslinks',  aipondicontroller.coursefileslinks);
+app.get('/api/v1/coursefilesdocs',  aipondicontroller.coursefilesdocs);
+app.get('/api/v1/deletecoursefilesbyfac',  aipondicontroller.deletecoursefilesbyfac);
+app.get('/api/v1/createcoursefilesbyfac',  aipondicontroller.createcoursefilesbyfac);
+
+
+
+app.get('/api/v1/getphotoofadm',  aipondicontroller.getphotoofadm);
+app.get('/api/v1/updateadmphoto',  aipondicontroller.updateadmphoto);
+
+
+app.get('/api/v1/getadmusersbyfac',  aipondicontroller.getadmusersbyfac);
+app.get('/api/v1/admusersbyprog',  aipondicontroller.admusersbyprog);
+app.get('/api/v1/updateadmusersbyfac',  aipondicontroller.updateadmusersbyfac);
+app.get('/api/v1/updateadmuserscomments',  aipondicontroller.updateadmuserscomments);
+app.get('/api/v1/admuserslinks',  aipondicontroller.admuserslinks);
+app.get('/api/v1/admusersdocs',  aipondicontroller.admusersdocs);
+app.get('/api/v1/deleteadmusersbyfac',  aipondicontroller.deleteadmusersbyfac);
+app.get('/api/v1/createadmusersbyfac',  aipondicontroller.createadmusersbyfac);
+app.get('/api/v1/getadmedubyfac',  aipondicontroller.getadmedubyfac);
+app.get('/api/v1/admedubyprog',  aipondicontroller.admedubyprog);
+app.get('/api/v1/updateadmedubyfac',  aipondicontroller.updateadmedubyfac);
+app.get('/api/v1/updateadmeducomments',  aipondicontroller.updateadmeducomments);
+app.get('/api/v1/admedulinks',  aipondicontroller.admedulinks);
+app.get('/api/v1/admedudocs',  aipondicontroller.admedudocs);
+app.get('/api/v1/deleteadmedubyfac',  aipondicontroller.deleteadmedubyfac);
+app.get('/api/v1/createadmedubyfac',  aipondicontroller.createadmedubyfac);
+app.get('/api/v1/getadmworkbyfac',  aipondicontroller.getadmworkbyfac);
+app.get('/api/v1/admworkbyprog',  aipondicontroller.admworkbyprog);
+app.get('/api/v1/updateadmworkbyfac',  aipondicontroller.updateadmworkbyfac);
+app.get('/api/v1/updateadmworkcomments',  aipondicontroller.updateadmworkcomments);
+app.get('/api/v1/admworklinks',  aipondicontroller.admworklinks);
+app.get('/api/v1/admworkdocs',  aipondicontroller.admworkdocs);
+app.get('/api/v1/deleteadmworkbyfac',  aipondicontroller.deleteadmworkbyfac);
+app.get('/api/v1/createadmworkbyfac',  aipondicontroller.createadmworkbyfac);
+app.get('/api/v1/getadmprogramsbyfac',  aipondicontroller.getadmprogramsbyfac);
+app.get('/api/v1/admprogramsbyprog',  aipondicontroller.admprogramsbyprog);
+app.get('/api/v1/updateadmprogramsbyfac',  aipondicontroller.updateadmprogramsbyfac);
+app.get('/api/v1/updateadmprogramscomments',  aipondicontroller.updateadmprogramscomments);
+app.get('/api/v1/admprogramslinks',  aipondicontroller.admprogramslinks);
+app.get('/api/v1/admprogramsdocs',  aipondicontroller.admprogramsdocs);
+app.get('/api/v1/deleteadmprogramsbyfac',  aipondicontroller.deleteadmprogramsbyfac);
+app.get('/api/v1/createadmprogramsbyfac',  aipondicontroller.createadmprogramsbyfac);
+app.get('/api/v1/getadminternbyfac',  aipondicontroller.getadminternbyfac);
+app.get('/api/v1/adminternbyprog',  aipondicontroller.adminternbyprog);
+app.get('/api/v1/updateadminternbyfac',  aipondicontroller.updateadminternbyfac);
+app.get('/api/v1/updateadminterncomments',  aipondicontroller.updateadminterncomments);
+app.get('/api/v1/adminternlinks',  aipondicontroller.adminternlinks);
+app.get('/api/v1/adminterndocs',  aipondicontroller.adminterndocs);
+app.get('/api/v1/deleteadminternbyfac',  aipondicontroller.deleteadminternbyfac);
+app.get('/api/v1/createadminternbyfac',  aipondicontroller.createadminternbyfac);
+app.get('/api/v1/getadmextrabyfac',  aipondicontroller.getadmextrabyfac);
+app.get('/api/v1/admextrabyprog',  aipondicontroller.admextrabyprog);
+app.get('/api/v1/updateadmextrabyfac',  aipondicontroller.updateadmextrabyfac);
+app.get('/api/v1/updateadmextracomments',  aipondicontroller.updateadmextracomments);
+app.get('/api/v1/admextralinks',  aipondicontroller.admextralinks);
+app.get('/api/v1/admextradocs',  aipondicontroller.admextradocs);
+app.get('/api/v1/deleteadmextrabyfac',  aipondicontroller.deleteadmextrabyfac);
+app.get('/api/v1/createadmextrabyfac',  aipondicontroller.createadmextrabyfac);
+app.get('/api/v1/getadmlanguagesbyfac',  aipondicontroller.getadmlanguagesbyfac);
+app.get('/api/v1/admlanguagesbyprog',  aipondicontroller.admlanguagesbyprog);
+app.get('/api/v1/updateadmlanguagesbyfac',  aipondicontroller.updateadmlanguagesbyfac);
+app.get('/api/v1/updateadmlanguagescomments',  aipondicontroller.updateadmlanguagescomments);
+app.get('/api/v1/admlanguageslinks',  aipondicontroller.admlanguageslinks);
+app.get('/api/v1/admlanguagesdocs',  aipondicontroller.admlanguagesdocs);
+app.get('/api/v1/deleteadmlanguagesbyfac',  aipondicontroller.deleteadmlanguagesbyfac);
+app.get('/api/v1/createadmlanguagesbyfac',  aipondicontroller.createadmlanguagesbyfac);
+app.get('/api/v1/getadmfacilitiesbyfac',  aipondicontroller.getadmfacilitiesbyfac);
+app.get('/api/v1/admfacilitiesbyprog',  aipondicontroller.admfacilitiesbyprog);
+app.get('/api/v1/updateadmfacilitiesbyfac',  aipondicontroller.updateadmfacilitiesbyfac);
+app.get('/api/v1/updateadmfacilitiescomments',  aipondicontroller.updateadmfacilitiescomments);
+app.get('/api/v1/admfacilitieslinks',  aipondicontroller.admfacilitieslinks);
+app.get('/api/v1/admfacilitiesdocs',  aipondicontroller.admfacilitiesdocs);
+app.get('/api/v1/deleteadmfacilitiesbyfac',  aipondicontroller.deleteadmfacilitiesbyfac);
+app.get('/api/v1/createadmfacilitiesbyfac',  aipondicontroller.createadmfacilitiesbyfac);
+app.get('/api/v1/getadmmarksbyfac',  aipondicontroller.getadmmarksbyfac);
+app.get('/api/v1/admmarksbyprog',  aipondicontroller.admmarksbyprog);
+app.get('/api/v1/updateadmmarksbyfac',  aipondicontroller.updateadmmarksbyfac);
+app.get('/api/v1/updateadmmarkscomments',  aipondicontroller.updateadmmarkscomments);
+app.get('/api/v1/admmarkslinks',  aipondicontroller.admmarkslinks);
+app.get('/api/v1/admmarksdocs',  aipondicontroller.admmarksdocs);
+app.get('/api/v1/deleteadmmarksbyfac',  aipondicontroller.deleteadmmarksbyfac);
+app.get('/api/v1/createadmmarksbyfac',  aipondicontroller.createadmmarksbyfac);
+
+
+
+
+app.get('/api/v1/getsssstudbyfac',  aipondicontroller.getsssstudbyfac);
+app.get('/api/v1/sssstudbyprog',  aipondicontroller.sssstudbyprog);
+app.get('/api/v1/updatesssstudbyfac',  aipondicontroller.updatesssstudbyfac);
+app.get('/api/v1/updatesssstudcomments',  aipondicontroller.updatesssstudcomments);
+app.get('/api/v1/sssstudlinks',  aipondicontroller.sssstudlinks);
+app.get('/api/v1/sssstuddocs',  aipondicontroller.sssstuddocs);
+app.get('/api/v1/deletesssstudbyfac',  aipondicontroller.deletesssstudbyfac);
+app.get('/api/v1/createsssstudbyfac',  aipondicontroller.createsssstudbyfac);
+
+app.get('/api/v1/deleteallcocal',  aipondicontroller.deleteallcocal);
+
+app.get('/api/v1/deleteallaffprog',  aipondicontroller.deleteallaffprog);
+
+app.get('/api/v1/deleteallnprojectsnew',  aipondicontroller.deleteallnprojectsnew);
+app.get('/api/v1/getcnewfeedbackbyfac',  aipondicontroller.getcnewfeedbackbyfac);
+app.get('/api/v1/cnewfeedbackbyprog',  aipondicontroller.cnewfeedbackbyprog);
+app.get('/api/v1/updatecnewfeedbackbyfac',  aipondicontroller.updatecnewfeedbackbyfac);
+app.get('/api/v1/updatecnewfeedbackcomments',  aipondicontroller.updatecnewfeedbackcomments);
+app.get('/api/v1/cnewfeedbacklinks',  aipondicontroller.cnewfeedbacklinks);
+app.get('/api/v1/cnewfeedbackdocs',  aipondicontroller.cnewfeedbackdocs);
+app.get('/api/v1/deletecnewfeedbackbyfac',  aipondicontroller.deletecnewfeedbackbyfac);
+app.get('/api/v1/createcnewfeedbackbyfac',  aipondicontroller.createcnewfeedbackbyfac);
+
+
+app.get('/api/v1/getpfilesbyfac',  aipondicontroller.getpfilesbyfac);
+app.get('/api/v1/pfilesbyprog',  aipondicontroller.pfilesbyprog);
+app.get('/api/v1/updatepfilesbyfac',  aipondicontroller.updatepfilesbyfac);
+app.get('/api/v1/updatepfilescomments',  aipondicontroller.updatepfilescomments);
+app.get('/api/v1/pfileslinks',  aipondicontroller.pfileslinks);
+app.get('/api/v1/pfilesdocs',  aipondicontroller.pfilesdocs);
+app.get('/api/v1/deletepfilesbyfac',  aipondicontroller.deletepfilesbyfac);
+app.get('/api/v1/createpfilesbyfac',  aipondicontroller.createpfilesbyfac);
+app.get('/api/v1/getpdeliverablesbyfac',  aipondicontroller.getpdeliverablesbyfac);
+app.get('/api/v1/pdeliverablesbyprog',  aipondicontroller.pdeliverablesbyprog);
+app.get('/api/v1/updatepdeliverablesbyfac',  aipondicontroller.updatepdeliverablesbyfac);
+app.get('/api/v1/updatepdeliverablescomments',  aipondicontroller.updatepdeliverablescomments);
+app.get('/api/v1/pdeliverableslinks',  aipondicontroller.pdeliverableslinks);
+app.get('/api/v1/pdeliverablesdocs',  aipondicontroller.pdeliverablesdocs);
+app.get('/api/v1/deletepdeliverablesbyfac',  aipondicontroller.deletepdeliverablesbyfac);
+app.get('/api/v1/createpdeliverablesbyfac',  aipondicontroller.createpdeliverablesbyfac);
+
+
+app.get('/api/v1/registeralumni',  aipondicontroller.registeralumni);
+app.get('/api/v1/getphotoofalumni',  aipondicontroller.getphotoofalumni);
+app.get('/api/v1/updatealumniphoto',  aipondicontroller.updatealumniphoto);
+app.get('/api/v1/loginalumni',  aipondicontroller.loginalumni);
+app.get('/api/v1/getalumniusersbyfac',  aipondicontroller.getalumniusersbyfac);
+app.get('/api/v1/alumniusersbyprog',  aipondicontroller.alumniusersbyprog);
+app.get('/api/v1/updatealumniusersbyfac',  aipondicontroller.updatealumniusersbyfac);
+app.get('/api/v1/updatealumniuserscomments',  aipondicontroller.updatealumniuserscomments);
+app.get('/api/v1/alumniuserslinks',  aipondicontroller.alumniuserslinks);
+app.get('/api/v1/alumniusersdocs',  aipondicontroller.alumniusersdocs);
+app.get('/api/v1/deletealumniusersbyfac',  aipondicontroller.deletealumniusersbyfac);
+app.get('/api/v1/createalumniusersbyfac',  aipondicontroller.createalumniusersbyfac);
+app.get('/api/v1/getalumniworkbyfac',  aipondicontroller.getalumniworkbyfac);
+app.get('/api/v1/alumniworkbyprog',  aipondicontroller.alumniworkbyprog);
+app.get('/api/v1/updatealumniworkbyfac',  aipondicontroller.updatealumniworkbyfac);
+app.get('/api/v1/updatealumniworkcomments',  aipondicontroller.updatealumniworkcomments);
+app.get('/api/v1/alumniworklinks',  aipondicontroller.alumniworklinks);
+app.get('/api/v1/alumniworkdocs',  aipondicontroller.alumniworkdocs);
+app.get('/api/v1/deletealumniworkbyfac',  aipondicontroller.deletealumniworkbyfac);
+app.get('/api/v1/createalumniworkbyfac',  aipondicontroller.createalumniworkbyfac);
+app.get('/api/v1/getalumnihigheredbyfac',  aipondicontroller.getalumnihigheredbyfac);
+app.get('/api/v1/alumnihigheredbyprog',  aipondicontroller.alumnihigheredbyprog);
+app.get('/api/v1/updatealumnihigheredbyfac',  aipondicontroller.updatealumnihigheredbyfac);
+app.get('/api/v1/updatealumnihigheredcomments',  aipondicontroller.updatealumnihigheredcomments);
+app.get('/api/v1/alumnihigheredlinks',  aipondicontroller.alumnihigheredlinks);
+app.get('/api/v1/alumnihighereddocs',  aipondicontroller.alumnihighereddocs);
+app.get('/api/v1/deletealumnihigheredbyfac',  aipondicontroller.deletealumnihigheredbyfac);
+app.get('/api/v1/createalumnihigheredbyfac',  aipondicontroller.createalumnihigheredbyfac);
+app.get('/api/v1/getalumnicontributebyfac',  aipondicontroller.getalumnicontributebyfac);
+app.get('/api/v1/alumnicontributebyprog',  aipondicontroller.alumnicontributebyprog);
+app.get('/api/v1/updatealumnicontributebyfac',  aipondicontroller.updatealumnicontributebyfac);
+app.get('/api/v1/updatealumnicontributecomments',  aipondicontroller.updatealumnicontributecomments);
+app.get('/api/v1/alumnicontributelinks',  aipondicontroller.alumnicontributelinks);
+app.get('/api/v1/alumnicontributedocs',  aipondicontroller.alumnicontributedocs);
+app.get('/api/v1/deletealumnicontributebyfac',  aipondicontroller.deletealumnicontributebyfac);
+app.get('/api/v1/createalumnicontributebyfac',  aipondicontroller.createalumnicontributebyfac);
+app.get('/api/v1/getalumnijobsbyfac',  aipondicontroller.getalumnijobsbyfac);
+app.get('/api/v1/alumnijobsbyprog',  aipondicontroller.alumnijobsbyprog);
+app.get('/api/v1/updatealumnijobsbyfac',  aipondicontroller.updatealumnijobsbyfac);
+app.get('/api/v1/updatealumnijobscomments',  aipondicontroller.updatealumnijobscomments);
+app.get('/api/v1/alumnijobslinks',  aipondicontroller.alumnijobslinks);
+app.get('/api/v1/alumnijobsdocs',  aipondicontroller.alumnijobsdocs);
+app.get('/api/v1/deletealumnijobsbyfac',  aipondicontroller.deletealumnijobsbyfac);
+app.get('/api/v1/createalumnijobsbyfac',  aipondicontroller.createalumnijobsbyfac);
+app.get('/api/v1/getalumnieventsbyfac',  aipondicontroller.getalumnieventsbyfac);
+app.get('/api/v1/alumnieventsbyprog',  aipondicontroller.alumnieventsbyprog);
+app.get('/api/v1/updatealumnieventsbyfac',  aipondicontroller.updatealumnieventsbyfac);
+app.get('/api/v1/updatealumnieventscomments',  aipondicontroller.updatealumnieventscomments);
+app.get('/api/v1/alumnieventslinks',  aipondicontroller.alumnieventslinks);
+app.get('/api/v1/alumnieventsdocs',  aipondicontroller.alumnieventsdocs);
+app.get('/api/v1/deletealumnieventsbyfac',  aipondicontroller.deletealumnieventsbyfac);
+app.get('/api/v1/createalumnieventsbyfac',  aipondicontroller.createalumnieventsbyfac);
+
+
+app.get('/api/v1/getstudmentorbyfac',  aipondicontroller.getstudmentorbyfac);
+app.get('/api/v1/studmentorbyprog',  aipondicontroller.studmentorbyprog);
+app.get('/api/v1/updatestudmentorbyfac',  aipondicontroller.updatestudmentorbyfac);
+app.get('/api/v1/updatestudmentorcomments',  aipondicontroller.updatestudmentorcomments);
+app.get('/api/v1/studmentorlinks',  aipondicontroller.studmentorlinks);
+app.get('/api/v1/studmentordocs',  aipondicontroller.studmentordocs);
+app.get('/api/v1/deletestudmentorbyfac',  aipondicontroller.deletestudmentorbyfac);
+app.get('/api/v1/createstudmentorbyfac',  aipondicontroller.createstudmentorbyfac);
+app.get('/api/v1/getlphdfacbyfac',  aipondicontroller.getlphdfacbyfac);
+app.get('/api/v1/lphdfacbyprog',  aipondicontroller.lphdfacbyprog);
+app.get('/api/v1/updatelphdfacbyfac',  aipondicontroller.updatelphdfacbyfac);
+app.get('/api/v1/updatelphdfaccomments',  aipondicontroller.updatelphdfaccomments);
+app.get('/api/v1/lphdfaclinks',  aipondicontroller.lphdfaclinks);
+app.get('/api/v1/lphdfacdocs',  aipondicontroller.lphdfacdocs);
+app.get('/api/v1/deletelphdfacbyfac',  aipondicontroller.deletelphdfacbyfac);
+app.get('/api/v1/createlphdfacbyfac',  aipondicontroller.createlphdfacbyfac);
+
+
+app.get('/api/v1/getamprogramsbyfac',  aipondicontroller.getamprogramsbyfac);
+app.get('/api/v1/amprogramsbyprog',  aipondicontroller.amprogramsbyprog);
+app.get('/api/v1/updateamprogramsbyfac',  aipondicontroller.updateamprogramsbyfac);
+app.get('/api/v1/updateamprogramscomments',  aipondicontroller.updateamprogramscomments);
+app.get('/api/v1/amprogramslinks',  aipondicontroller.amprogramslinks);
+app.get('/api/v1/amprogramsdocs',  aipondicontroller.amprogramsdocs);
+app.get('/api/v1/deleteamprogramsbyfac',  aipondicontroller.deleteamprogramsbyfac);
+app.get('/api/v1/createamprogramsbyfac',  aipondicontroller.createamprogramsbyfac);
+app.get('/api/v1/getamclassroombyfac',  aipondicontroller.getamclassroombyfac);
+app.get('/api/v1/amclassroombyprog',  aipondicontroller.amclassroombyprog);
+app.get('/api/v1/updateamclassroombyfac',  aipondicontroller.updateamclassroombyfac);
+app.get('/api/v1/updateamclassroomcomments',  aipondicontroller.updateamclassroomcomments);
+app.get('/api/v1/amclassroomlinks',  aipondicontroller.amclassroomlinks);
+app.get('/api/v1/amclassroomdocs',  aipondicontroller.amclassroomdocs);
+app.get('/api/v1/deleteamclassroombyfac',  aipondicontroller.deleteamclassroombyfac);
+app.get('/api/v1/createamclassroombyfac',  aipondicontroller.createamclassroombyfac);
+app.get('/api/v1/getamequipmentsbyfac',  aipondicontroller.getamequipmentsbyfac);
+app.get('/api/v1/amequipmentsbyprog',  aipondicontroller.amequipmentsbyprog);
+app.get('/api/v1/updateamequipmentsbyfac',  aipondicontroller.updateamequipmentsbyfac);
+app.get('/api/v1/updateamequipmentscomments',  aipondicontroller.updateamequipmentscomments);
+app.get('/api/v1/amequipmentslinks',  aipondicontroller.amequipmentslinks);
+app.get('/api/v1/amequipmentsdocs',  aipondicontroller.amequipmentsdocs);
+app.get('/api/v1/deleteamequipmentsbyfac',  aipondicontroller.deleteamequipmentsbyfac);
+app.get('/api/v1/createamequipmentsbyfac',  aipondicontroller.createamequipmentsbyfac);
+app.get('/api/v1/getamlibrarybyfac',  aipondicontroller.getamlibrarybyfac);
+app.get('/api/v1/amlibrarybyprog',  aipondicontroller.amlibrarybyprog);
+app.get('/api/v1/updateamlibrarybyfac',  aipondicontroller.updateamlibrarybyfac);
+app.get('/api/v1/updateamlibrarycomments',  aipondicontroller.updateamlibrarycomments);
+app.get('/api/v1/amlibrarylinks',  aipondicontroller.amlibrarylinks);
+app.get('/api/v1/amlibrarydocs',  aipondicontroller.amlibrarydocs);
+app.get('/api/v1/deleteamlibrarybyfac',  aipondicontroller.deleteamlibrarybyfac);
+app.get('/api/v1/createamlibrarybyfac',  aipondicontroller.createamlibrarybyfac);
+app.get('/api/v1/getamlibdetailsbyfac',  aipondicontroller.getamlibdetailsbyfac);
+app.get('/api/v1/amlibdetailsbyprog',  aipondicontroller.amlibdetailsbyprog);
+app.get('/api/v1/updateamlibdetailsbyfac',  aipondicontroller.updateamlibdetailsbyfac);
+app.get('/api/v1/updateamlibdetailscomments',  aipondicontroller.updateamlibdetailscomments);
+app.get('/api/v1/amlibdetailslinks',  aipondicontroller.amlibdetailslinks);
+app.get('/api/v1/amlibdetailsdocs',  aipondicontroller.amlibdetailsdocs);
+app.get('/api/v1/deleteamlibdetailsbyfac',  aipondicontroller.deleteamlibdetailsbyfac);
+app.get('/api/v1/createamlibdetailsbyfac',  aipondicontroller.createamlibdetailsbyfac);
+app.get('/api/v1/getamfacultiesbyfac',  aipondicontroller.getamfacultiesbyfac);
+app.get('/api/v1/amfacultiesbyprog',  aipondicontroller.amfacultiesbyprog);
+app.get('/api/v1/updateamfacultiesbyfac',  aipondicontroller.updateamfacultiesbyfac);
+app.get('/api/v1/updateamfacultiescomments',  aipondicontroller.updateamfacultiescomments);
+app.get('/api/v1/amfacultieslinks',  aipondicontroller.amfacultieslinks);
+app.get('/api/v1/amfacultiesdocs',  aipondicontroller.amfacultiesdocs);
+app.get('/api/v1/deleteamfacultiesbyfac',  aipondicontroller.deleteamfacultiesbyfac);
+app.get('/api/v1/createamfacultiesbyfac',  aipondicontroller.createamfacultiesbyfac);
+app.get('/api/v1/getamadminstaffbyfac',  aipondicontroller.getamadminstaffbyfac);
+app.get('/api/v1/amadminstaffbyprog',  aipondicontroller.amadminstaffbyprog);
+app.get('/api/v1/updateamadminstaffbyfac',  aipondicontroller.updateamadminstaffbyfac);
+app.get('/api/v1/updateamadminstaffcomments',  aipondicontroller.updateamadminstaffcomments);
+app.get('/api/v1/amadminstafflinks',  aipondicontroller.amadminstafflinks);
+app.get('/api/v1/amadminstaffdocs',  aipondicontroller.amadminstaffdocs);
+app.get('/api/v1/deleteamadminstaffbyfac',  aipondicontroller.deleteamadminstaffbyfac);
+app.get('/api/v1/createamadminstaffbyfac',  aipondicontroller.createamadminstaffbyfac);
+app.get('/api/v1/getaminfsuffbyfac',  aipondicontroller.getaminfsuffbyfac);
+app.get('/api/v1/aminfsuffbyprog',  aipondicontroller.aminfsuffbyprog);
+app.get('/api/v1/updateaminfsuffbyfac',  aipondicontroller.updateaminfsuffbyfac);
+app.get('/api/v1/updateaminfsuffcomments',  aipondicontroller.updateaminfsuffcomments);
+app.get('/api/v1/aminfsufflinks',  aipondicontroller.aminfsufflinks);
+app.get('/api/v1/aminfsuffdocs',  aipondicontroller.aminfsuffdocs);
+app.get('/api/v1/deleteaminfsuffbyfac',  aipondicontroller.deleteaminfsuffbyfac);
+app.get('/api/v1/createaminfsuffbyfac',  aipondicontroller.createaminfsuffbyfac);
+app.get('/api/v1/getamimprovementsbyfac',  aipondicontroller.getamimprovementsbyfac);
+app.get('/api/v1/amimprovementsbyprog',  aipondicontroller.amimprovementsbyprog);
+app.get('/api/v1/updateamimprovementsbyfac',  aipondicontroller.updateamimprovementsbyfac);
+app.get('/api/v1/updateamimprovementscomments',  aipondicontroller.updateamimprovementscomments);
+app.get('/api/v1/amimprovementslinks',  aipondicontroller.amimprovementslinks);
+app.get('/api/v1/amimprovementsdocs',  aipondicontroller.amimprovementsdocs);
+app.get('/api/v1/deleteamimprovementsbyfac',  aipondicontroller.deleteamimprovementsbyfac);
+app.get('/api/v1/createamimprovementsbyfac',  aipondicontroller.createamimprovementsbyfac);
+app.get('/api/v1/getamrecommendationbyfac',  aipondicontroller.getamrecommendationbyfac);
+app.get('/api/v1/amrecommendationbyprog',  aipondicontroller.amrecommendationbyprog);
+app.get('/api/v1/updateamrecommendationbyfac',  aipondicontroller.updateamrecommendationbyfac);
+app.get('/api/v1/updateamrecommendationcomments',  aipondicontroller.updateamrecommendationcomments);
+app.get('/api/v1/amrecommendationlinks',  aipondicontroller.amrecommendationlinks);
+app.get('/api/v1/amrecommendationdocs',  aipondicontroller.amrecommendationdocs);
+app.get('/api/v1/deleteamrecommendationbyfac',  aipondicontroller.deleteamrecommendationbyfac);
+app.get('/api/v1/createamrecommendationbyfac',  aipondicontroller.createamrecommendationbyfac);
+app.get('/api/v1/getamchemicalsbyfac',  aipondicontroller.getamchemicalsbyfac);
+app.get('/api/v1/amchemicalsbyprog',  aipondicontroller.amchemicalsbyprog);
+app.get('/api/v1/updateamchemicalsbyfac',  aipondicontroller.updateamchemicalsbyfac);
+app.get('/api/v1/updateamchemicalscomments',  aipondicontroller.updateamchemicalscomments);
+app.get('/api/v1/amchemicalslinks',  aipondicontroller.amchemicalslinks);
+app.get('/api/v1/amchemicalsdocs',  aipondicontroller.amchemicalsdocs);
+app.get('/api/v1/deleteamchemicalsbyfac',  aipondicontroller.deleteamchemicalsbyfac);
+app.get('/api/v1/createamchemicalsbyfac',  aipondicontroller.createamchemicalsbyfac);
+app.get('/api/v1/getamprogfacultiesbyfac',  aipondicontroller.getamprogfacultiesbyfac);
+app.get('/api/v1/amprogfacultiesbyprog',  aipondicontroller.amprogfacultiesbyprog);
+app.get('/api/v1/updateamprogfacultiesbyfac',  aipondicontroller.updateamprogfacultiesbyfac);
+app.get('/api/v1/updateamprogfacultiescomments',  aipondicontroller.updateamprogfacultiescomments);
+app.get('/api/v1/amprogfacultieslinks',  aipondicontroller.amprogfacultieslinks);
+app.get('/api/v1/amprogfacultiesdocs',  aipondicontroller.amprogfacultiesdocs);
+app.get('/api/v1/deleteamprogfacultiesbyfac',  aipondicontroller.deleteamprogfacultiesbyfac);
+app.get('/api/v1/createamprogfacultiesbyfac',  aipondicontroller.createamprogfacultiesbyfac);
+
+
+app.get('/api/v1/studmasteranamoly',  aipondicontroller.studmasteranamoly);
+app.get('/api/v1/studmasteranamoly1',  aipondicontroller.studmasteranamoly1);
+app.get('/api/v1/getstudmasterallbyfac',  aipondicontroller.getstudmasterallbyfac);
+app.get('/api/v1/studmasterallbyprog',  aipondicontroller.studmasterallbyprog);
+app.get('/api/v1/updatestudmasterallbyfac',  aipondicontroller.updatestudmasterallbyfac);
+app.get('/api/v1/updatestudmasterallcomments',  aipondicontroller.updatestudmasterallcomments);
+app.get('/api/v1/studmasteralllinks',  aipondicontroller.studmasteralllinks);
+app.get('/api/v1/studmasteralldocs',  aipondicontroller.studmasteralldocs);
+app.get('/api/v1/deletestudmasterallbyfac',  aipondicontroller.deletestudmasterallbyfac);
+app.get('/api/v1/createstudmasterallbyfac',  aipondicontroller.createstudmasterallbyfac);
+
+
+app.get('/api/v1/getinnovationnewbyfac',  aipondicontroller.getinnovationnewbyfac);
+app.get('/api/v1/innovationnewbyprog',  aipondicontroller.innovationnewbyprog);
+app.get('/api/v1/updateinnovationnewbyfac',  aipondicontroller.updateinnovationnewbyfac);
+app.get('/api/v1/updateinnovationnewcomments',  aipondicontroller.updateinnovationnewcomments);
+app.get('/api/v1/innovationnewlinks',  aipondicontroller.innovationnewlinks);
+app.get('/api/v1/innovationnewdocs',  aipondicontroller.innovationnewdocs);
+app.get('/api/v1/deleteinnovationnewbyfac',  aipondicontroller.deleteinnovationnewbyfac);
+app.get('/api/v1/createinnovationnewbyfac',  aipondicontroller.createinnovationnewbyfac);
+app.get('/api/v1/getbooknewbyfac',  aipondicontroller.getbooknewbyfac);
+app.get('/api/v1/booknewbyprog',  aipondicontroller.booknewbyprog);
+app.get('/api/v1/updatebooknewbyfac',  aipondicontroller.updatebooknewbyfac);
+app.get('/api/v1/updatebooknewcomments',  aipondicontroller.updatebooknewcomments);
+app.get('/api/v1/booknewlinks',  aipondicontroller.booknewlinks);
+app.get('/api/v1/booknewdocs',  aipondicontroller.booknewdocs);
+app.get('/api/v1/deletebooknewbyfac',  aipondicontroller.deletebooknewbyfac);
+app.get('/api/v1/createbooknewbyfac',  aipondicontroller.createbooknewbyfac);
+app.get('/api/v1/getexpenditurenewbyfac',  aipondicontroller.getexpenditurenewbyfac);
+app.get('/api/v1/expenditurenewbyprog',  aipondicontroller.expenditurenewbyprog);
+app.get('/api/v1/updateexpenditurenewbyfac',  aipondicontroller.updateexpenditurenewbyfac);
+app.get('/api/v1/updateexpenditurenewcomments',  aipondicontroller.updateexpenditurenewcomments);
+app.get('/api/v1/expenditurenewlinks',  aipondicontroller.expenditurenewlinks);
+app.get('/api/v1/expenditurenewdocs',  aipondicontroller.expenditurenewdocs);
+app.get('/api/v1/deleteexpenditurenewbyfac',  aipondicontroller.deleteexpenditurenewbyfac);
+app.get('/api/v1/createexpenditurenewbyfac',  aipondicontroller.createexpenditurenewbyfac);
+app.get('/api/v1/getqualitynewbyfac',  aipondicontroller.getqualitynewbyfac);
+app.get('/api/v1/qualitynewbyprog',  aipondicontroller.qualitynewbyprog);
+app.get('/api/v1/updatequalitynewbyfac',  aipondicontroller.updatequalitynewbyfac);
+app.get('/api/v1/updatequalitynewcomments',  aipondicontroller.updatequalitynewcomments);
+app.get('/api/v1/qualitynewlinks',  aipondicontroller.qualitynewlinks);
+app.get('/api/v1/qualitynewdocs',  aipondicontroller.qualitynewdocs);
+app.get('/api/v1/deletequalitynewbyfac',  aipondicontroller.deletequalitynewbyfac);
+app.get('/api/v1/createqualitynewbyfac',  aipondicontroller.createqualitynewbyfac);
+app.get('/api/v1/getlqualitybyfac',  aipondicontroller.getlqualitybyfac);
+app.get('/api/v1/lqualitybyprog',  aipondicontroller.lqualitybyprog);
+app.get('/api/v1/updatelqualitybyfac',  aipondicontroller.updatelqualitybyfac);
+app.get('/api/v1/updatelqualitycomments',  aipondicontroller.updatelqualitycomments);
+app.get('/api/v1/lqualitylinks',  aipondicontroller.lqualitylinks);
+app.get('/api/v1/lqualitydocs',  aipondicontroller.lqualitydocs);
+app.get('/api/v1/deletelqualitybyfac',  aipondicontroller.deletelqualitybyfac);
+app.get('/api/v1/createlqualitybyfac',  aipondicontroller.createlqualitybyfac);
+app.get('/api/v1/getuqualitybyfac',  aipondicontroller.getuqualitybyfac);
+app.get('/api/v1/uqualitybyprog',  aipondicontroller.uqualitybyprog);
+app.get('/api/v1/updateuqualitybyfac',  aipondicontroller.updateuqualitybyfac);
+app.get('/api/v1/updateuqualitycomments',  aipondicontroller.updateuqualitycomments);
+app.get('/api/v1/uqualitylinks',  aipondicontroller.uqualitylinks);
+app.get('/api/v1/uqualitydocs',  aipondicontroller.uqualitydocs);
+app.get('/api/v1/deleteuqualitybyfac',  aipondicontroller.deleteuqualitybyfac);
+app.get('/api/v1/createuqualitybyfac',  aipondicontroller.createuqualitybyfac);
+app.get('/api/v1/getstudschspnewbyfac',  aipondicontroller.getstudschspnewbyfac);
+app.get('/api/v1/studschspnewbyprog',  aipondicontroller.studschspnewbyprog);
+app.get('/api/v1/updatestudschspnewbyfac',  aipondicontroller.updatestudschspnewbyfac);
+app.get('/api/v1/updatestudschspnewcomments',  aipondicontroller.updatestudschspnewcomments);
+app.get('/api/v1/studschspnewlinks',  aipondicontroller.studschspnewlinks);
+app.get('/api/v1/studschspnewdocs',  aipondicontroller.studschspnewdocs);
+app.get('/api/v1/deletestudschspnewbyfac',  aipondicontroller.deletestudschspnewbyfac);
+app.get('/api/v1/createstudschspnewbyfac',  aipondicontroller.createstudschspnewbyfac);
+app.get('/api/v1/getustudschspbyfac',  aipondicontroller.getustudschspbyfac);
+app.get('/api/v1/ustudschspbyprog',  aipondicontroller.ustudschspbyprog);
+app.get('/api/v1/updateustudschspbyfac',  aipondicontroller.updateustudschspbyfac);
+app.get('/api/v1/updateustudschspcomments',  aipondicontroller.updateustudschspcomments);
+app.get('/api/v1/ustudschsplinks',  aipondicontroller.ustudschsplinks);
+app.get('/api/v1/ustudschspdocs',  aipondicontroller.ustudschspdocs);
+app.get('/api/v1/deleteustudschspbyfac',  aipondicontroller.deleteustudschspbyfac);
+app.get('/api/v1/createustudschspbyfac',  aipondicontroller.createustudschspbyfac);
+
+
+app.get('/api/v1/getnprojectsnewbyfac',  aipondicontroller.getnprojectsnewbyfac);
+app.get('/api/v1/nprojectsnewbyprog',  aipondicontroller.nprojectsnewbyprog);
+app.get('/api/v1/updatenprojectsnewbyfac',  aipondicontroller.updatenprojectsnewbyfac);
+app.get('/api/v1/updatenprojectsnewcomments',  aipondicontroller.updatenprojectsnewcomments);
+app.get('/api/v1/nprojectsnewlinks',  aipondicontroller.nprojectsnewlinks);
+app.get('/api/v1/nprojectsnewdocs',  aipondicontroller.nprojectsnewdocs);
+app.get('/api/v1/deletenprojectsnewbyfac',  aipondicontroller.deletenprojectsnewbyfac);
+app.get('/api/v1/createnprojectsnewbyfac',  aipondicontroller.createnprojectsnewbyfac);
+
+
+app.get('/api/v1/getnstatusbyfac',  aipondicontroller.getnstatusbyfac);
+app.get('/api/v1/nstatusbyprog',  aipondicontroller.nstatusbyprog);
+app.get('/api/v1/updatenstatusbyfac',  aipondicontroller.updatenstatusbyfac);
+app.get('/api/v1/updatenstatuscomments',  aipondicontroller.updatenstatuscomments);
+app.get('/api/v1/nstatuslinks',  aipondicontroller.nstatuslinks);
+app.get('/api/v1/nstatusdocs',  aipondicontroller.nstatusdocs);
+app.get('/api/v1/deletenstatusbyfac',  aipondicontroller.deletenstatusbyfac);
+app.get('/api/v1/createnstatusbyfac',  aipondicontroller.createnstatusbyfac);
+app.get('/api/v1/getnprojectsbyfac',  aipondicontroller.getnprojectsbyfac);
+app.get('/api/v1/nprojectsbyprog',  aipondicontroller.nprojectsbyprog);
+app.get('/api/v1/updatenprojectsbyfac',  aipondicontroller.updatenprojectsbyfac);
+app.get('/api/v1/updatenprojectscomments',  aipondicontroller.updatenprojectscomments);
+app.get('/api/v1/nprojectslinks',  aipondicontroller.nprojectslinks);
+app.get('/api/v1/nprojectsdocs',  aipondicontroller.nprojectsdocs);
+app.get('/api/v1/deletenprojectsbyfac',  aipondicontroller.deletenprojectsbyfac);
+app.get('/api/v1/createnprojectsbyfac',  aipondicontroller.createnprojectsbyfac);
+
+
+app.get('/api/v1/getninvoicefnewbyfac',  aipondicontroller.getninvoicefnewbyfac);
+app.get('/api/v1/getninvoicefnewbyid',  aipondicontroller.getninvoicefnewbyid);
+app.get('/api/v1/ninvoicefnewbyprog',  aipondicontroller.ninvoicefnewbyprog);
+app.get('/api/v1/updateninvoicefnewbyfac',  aipondicontroller.updateninvoicefnewbyfac);
+app.get('/api/v1/updateninvoicefnewcomments',  aipondicontroller.updateninvoicefnewcomments);
+app.get('/api/v1/ninvoicefnewlinks',  aipondicontroller.ninvoicefnewlinks);
+app.get('/api/v1/ninvoicefnewdocs',  aipondicontroller.ninvoicefnewdocs);
+app.get('/api/v1/deleteninvoicefnewbyfac',  aipondicontroller.deleteninvoicefnewbyfac);
+app.get('/api/v1/createninvoicefnewbyfac',  aipondicontroller.createninvoicefnewbyfac);
+app.get('/api/v1/getnorgdetailsbyfac',  aipondicontroller.getnorgdetailsbyfac);
+app.get('/api/v1/getnorgdetailsbyid',  aipondicontroller.getnorgdetailsbyid);
+app.get('/api/v1/norgdetailsbyprog',  aipondicontroller.norgdetailsbyprog);
+app.get('/api/v1/updatenorgdetailsbyfac',  aipondicontroller.updatenorgdetailsbyfac);
+app.get('/api/v1/updatenorgdetailscomments',  aipondicontroller.updatenorgdetailscomments);
+app.get('/api/v1/norgdetailslinks',  aipondicontroller.norgdetailslinks);
+app.get('/api/v1/norgdetailsdocs',  aipondicontroller.norgdetailsdocs);
+app.get('/api/v1/deletenorgdetailsbyfac',  aipondicontroller.deletenorgdetailsbyfac);
+app.get('/api/v1/createnorgdetailsbyfac',  aipondicontroller.createnorgdetailsbyfac);
+
+
+app.get('/api/v1/getninvoicefinalbyfac',  aipondicontroller.getninvoicefinalbyfac);
+app.get('/api/v1/getninvoicefinalbyid',  aipondicontroller.getninvoicefinalbyid);
+app.get('/api/v1/ninvoicefinalbyprog',  aipondicontroller.ninvoicefinalbyprog);
+app.get('/api/v1/updateninvoicefinalbyfac',  aipondicontroller.updateninvoicefinalbyfac);
+app.get('/api/v1/updateninvoicefinalcomments',  aipondicontroller.updateninvoicefinalcomments);
+app.get('/api/v1/ninvoicefinallinks',  aipondicontroller.ninvoicefinallinks);
+app.get('/api/v1/ninvoicefinaldocs',  aipondicontroller.ninvoicefinaldocs);
+app.get('/api/v1/deleteninvoicefinalbyfac',  aipondicontroller.deleteninvoicefinalbyfac);
+app.get('/api/v1/createninvoicefinalbyfac',  aipondicontroller.createninvoicefinalbyfac);
+
+
+app.get('/api/v1/getninvoicenbyfac',  aipondicontroller.getninvoicenbyfac);
+app.get('/api/v1/ninvoicenbyprog',  aipondicontroller.ninvoicenbyprog);
+app.get('/api/v1/updateninvoicenbyfac',  aipondicontroller.updateninvoicenbyfac);
+app.get('/api/v1/updateninvoicencomments',  aipondicontroller.updateninvoicencomments);
+app.get('/api/v1/ninvoicenlinks',  aipondicontroller.ninvoicenlinks);
+app.get('/api/v1/ninvoicendocs',  aipondicontroller.ninvoicendocs);
+app.get('/api/v1/deleteninvoicenbyfac',  aipondicontroller.deleteninvoicenbyfac);
+app.get('/api/v1/createninvoicenbyfac',  aipondicontroller.createninvoicenbyfac);
+
+
+app.get('/api/v1/getninvoicenewbyfac',  aipondicontroller.getninvoicenewbyfac);
+app.get('/api/v1/ninvoicenewbyprog',  aipondicontroller.ninvoicenewbyprog);
+app.get('/api/v1/updateninvoicenewbyfac',  aipondicontroller.updateninvoicenewbyfac);
+app.get('/api/v1/updateninvoicenewcomments',  aipondicontroller.updateninvoicenewcomments);
+app.get('/api/v1/ninvoicenewlinks',  aipondicontroller.ninvoicenewlinks);
+app.get('/api/v1/ninvoicenewdocs',  aipondicontroller.ninvoicenewdocs);
+app.get('/api/v1/deleteninvoicenewbyfac',  aipondicontroller.deleteninvoicenewbyfac);
+app.get('/api/v1/createninvoicenewbyfac',  aipondicontroller.createninvoicenewbyfac);
+app.get('/api/v1/getninvoiceitemsbyfac',  aipondicontroller.getninvoiceitemsbyfac);
+app.get('/api/v1/getninvoiceitemsbyinv',  aipondicontroller.getninvoiceitemsbyinv);
+app.get('/api/v1/ninvoiceitemsbyprog',  aipondicontroller.ninvoiceitemsbyprog);
+app.get('/api/v1/updateninvoiceitemsbyfac',  aipondicontroller.updateninvoiceitemsbyfac);
+app.get('/api/v1/updateninvoiceitemscomments',  aipondicontroller.updateninvoiceitemscomments);
+app.get('/api/v1/ninvoiceitemslinks',  aipondicontroller.ninvoiceitemslinks);
+app.get('/api/v1/ninvoiceitemsdocs',  aipondicontroller.ninvoiceitemsdocs);
+app.get('/api/v1/deleteninvoiceitemsbyfac',  aipondicontroller.deleteninvoiceitemsbyfac);
+app.get('/api/v1/createninvoiceitemsbyfac',  aipondicontroller.createninvoiceitemsbyfac);
+
+
+app.get('/api/v1/getvacstudentsbyfac',  aipondicontroller.getvacstudentsbyfac);
+app.get('/api/v1/vacstudentsbyprog',  aipondicontroller.vacstudentsbyprog);
+app.get('/api/v1/updatevacstudentsbyfac',  aipondicontroller.updatevacstudentsbyfac);
+app.get('/api/v1/updatevacstudentscomments',  aipondicontroller.updatevacstudentscomments);
+app.get('/api/v1/vacstudentslinks',  aipondicontroller.vacstudentslinks);
+app.get('/api/v1/vacstudentsdocs',  aipondicontroller.vacstudentsdocs);
+app.get('/api/v1/deletevacstudentsbyfac',  aipondicontroller.deletevacstudentsbyfac);
+app.get('/api/v1/createvacstudentsbyfac',  aipondicontroller.createvacstudentsbyfac);
+
+
+app.get('/api/v1/getanlibjournalsbyfac',  aipondicontroller.getanlibjournalsbyfac);
+app.get('/api/v1/anlibjournalsbyprog',  aipondicontroller.anlibjournalsbyprog);
+app.get('/api/v1/updateanlibjournalsbyfac',  aipondicontroller.updateanlibjournalsbyfac);
+app.get('/api/v1/updateanlibjournalscomments',  aipondicontroller.updateanlibjournalscomments);
+app.get('/api/v1/anlibjournalslinks',  aipondicontroller.anlibjournalslinks);
+app.get('/api/v1/anlibjournalsdocs',  aipondicontroller.anlibjournalsdocs);
+app.get('/api/v1/deleteanlibjournalsbyfac',  aipondicontroller.deleteanlibjournalsbyfac);
+app.get('/api/v1/createanlibjournalsbyfac',  aipondicontroller.createanlibjournalsbyfac);
+
+
+app.get('/api/v1/getawardsnewbyfac',  aipondicontroller.getawardsnewbyfac);
+app.get('/api/v1/awardsnewbyprog',  aipondicontroller.awardsnewbyprog);
+app.get('/api/v1/updateawardsnewbyfac',  aipondicontroller.updateawardsnewbyfac);
+app.get('/api/v1/updateawardsnewcomments',  aipondicontroller.updateawardsnewcomments);
+app.get('/api/v1/awardsnewlinks',  aipondicontroller.awardsnewlinks);
+app.get('/api/v1/awardsnewdocs',  aipondicontroller.awardsnewdocs);
+app.get('/api/v1/deleteawardsnewbyfac',  aipondicontroller.deleteawardsnewbyfac);
+app.get('/api/v1/createawardsnewbyfac',  aipondicontroller.createawardsnewbyfac);
+
+
+app.get('/api/v1/getainscombyfac',  aipondicontroller.getainscombyfac);
+app.get('/api/v1/ainscombyprog',  aipondicontroller.ainscombyprog);
+app.get('/api/v1/updateainscombyfac',  aipondicontroller.updateainscombyfac);
+app.get('/api/v1/updateainscomcomments',  aipondicontroller.updateainscomcomments);
+app.get('/api/v1/ainscomlinks',  aipondicontroller.ainscomlinks);
+app.get('/api/v1/ainscomdocs',  aipondicontroller.ainscomdocs);
+app.get('/api/v1/deleteainscombyfac',  aipondicontroller.deleteainscombyfac);
+app.get('/api/v1/createainscombyfac',  aipondicontroller.createainscombyfac);
+app.get('/api/v1/getafaccadrebyfac',  aipondicontroller.getafaccadrebyfac);
+app.get('/api/v1/afaccadrebyprog',  aipondicontroller.afaccadrebyprog);
+app.get('/api/v1/updateafaccadrebyfac',  aipondicontroller.updateafaccadrebyfac);
+app.get('/api/v1/updateafaccadrecomments',  aipondicontroller.updateafaccadrecomments);
+app.get('/api/v1/afaccadrelinks',  aipondicontroller.afaccadrelinks);
+app.get('/api/v1/afaccadredocs',  aipondicontroller.afaccadredocs);
+app.get('/api/v1/deleteafaccadrebyfac',  aipondicontroller.deleteafaccadrebyfac);
+app.get('/api/v1/createafaccadrebyfac',  aipondicontroller.createafaccadrebyfac);
+app.get('/api/v1/getaequipmentsbyfac',  aipondicontroller.getaequipmentsbyfac);
+app.get('/api/v1/aequipmentsbyprog',  aipondicontroller.aequipmentsbyprog);
+app.get('/api/v1/updateaequipmentsbyfac',  aipondicontroller.updateaequipmentsbyfac);
+app.get('/api/v1/updateaequipmentscomments',  aipondicontroller.updateaequipmentscomments);
+app.get('/api/v1/aequipmentslinks',  aipondicontroller.aequipmentslinks);
+app.get('/api/v1/aequipmentsdocs',  aipondicontroller.aequipmentsdocs);
+app.get('/api/v1/deleteaequipmentsbyfac',  aipondicontroller.deleteaequipmentsbyfac);
+app.get('/api/v1/createaequipmentsbyfac',  aipondicontroller.createaequipmentsbyfac);
+app.get('/api/v1/getawardsbyfac',  aipondicontroller.getawardsbyfac);
+app.get('/api/v1/awardsbyprog',  aipondicontroller.awardsbyprog);
+app.get('/api/v1/updateawardsbyfac',  aipondicontroller.updateawardsbyfac);
+app.get('/api/v1/updateawardscomments',  aipondicontroller.updateawardscomments);
+app.get('/api/v1/awardslinks',  aipondicontroller.awardslinks);
+app.get('/api/v1/awardsdocs',  aipondicontroller.awardsdocs);
+app.get('/api/v1/deleteawardsbyfac',  aipondicontroller.deleteawardsbyfac);
+app.get('/api/v1/createawardsbyfac',  aipondicontroller.createawardsbyfac);
+
+
+app.get('/api/v1/gethostelbyfac',  aipondicontroller.gethostelbyfac);
+app.get('/api/v1/hostelbyprog',  aipondicontroller.hostelbyprog);
+app.get('/api/v1/updatehostelbyfac',  aipondicontroller.updatehostelbyfac);
+app.get('/api/v1/updatehostelcomments',  aipondicontroller.updatehostelcomments);
+app.get('/api/v1/hostellinks',  aipondicontroller.hostellinks);
+app.get('/api/v1/hosteldocs',  aipondicontroller.hosteldocs);
+app.get('/api/v1/deletehostelbyfac',  aipondicontroller.deletehostelbyfac);
+app.get('/api/v1/createhostelbyfac',  aipondicontroller.createhostelbyfac);
+
+
+app.get('/api/v1/getppuclgdetailsbyfac',  aipondicontroller.getppuclgdetailsbyfac);
+app.get('/api/v1/ppuclgdetailsbyprog',  aipondicontroller.ppuclgdetailsbyprog);
+app.get('/api/v1/updateppuclgdetailsbyfac',  aipondicontroller.updateppuclgdetailsbyfac);
+app.get('/api/v1/updateppuclgdetailscomments',  aipondicontroller.updateppuclgdetailscomments);
+app.get('/api/v1/ppuclgdetailslinks',  aipondicontroller.ppuclgdetailslinks);
+app.get('/api/v1/ppuclgdetailsdocs',  aipondicontroller.ppuclgdetailsdocs);
+app.get('/api/v1/deleteppuclgdetailsbyfac',  aipondicontroller.deleteppuclgdetailsbyfac);
+app.get('/api/v1/createppuclgdetailsbyfac',  aipondicontroller.createppuclgdetailsbyfac);
+app.get('/api/v1/getppuheaddetailsbyfac',  aipondicontroller.getppuheaddetailsbyfac);
+app.get('/api/v1/ppuheaddetailsbyprog',  aipondicontroller.ppuheaddetailsbyprog);
+app.get('/api/v1/updateppuheaddetailsbyfac',  aipondicontroller.updateppuheaddetailsbyfac);
+app.get('/api/v1/updateppuheaddetailscomments',  aipondicontroller.updateppuheaddetailscomments);
+app.get('/api/v1/ppuheaddetailslinks',  aipondicontroller.ppuheaddetailslinks);
+app.get('/api/v1/ppuheaddetailsdocs',  aipondicontroller.ppuheaddetailsdocs);
+app.get('/api/v1/deleteppuheaddetailsbyfac',  aipondicontroller.deleteppuheaddetailsbyfac);
+app.get('/api/v1/createppuheaddetailsbyfac',  aipondicontroller.createppuheaddetailsbyfac);
+app.get('/api/v1/getppulegalrepbyfac',  aipondicontroller.getppulegalrepbyfac);
+app.get('/api/v1/ppulegalrepbyprog',  aipondicontroller.ppulegalrepbyprog);
+app.get('/api/v1/updateppulegalrepbyfac',  aipondicontroller.updateppulegalrepbyfac);
+app.get('/api/v1/updateppulegalrepcomments',  aipondicontroller.updateppulegalrepcomments);
+app.get('/api/v1/ppulegalreplinks',  aipondicontroller.ppulegalreplinks);
+app.get('/api/v1/ppulegalrepdocs',  aipondicontroller.ppulegalrepdocs);
+app.get('/api/v1/deleteppulegalrepbyfac',  aipondicontroller.deleteppulegalrepbyfac);
+app.get('/api/v1/createppulegalrepbyfac',  aipondicontroller.createppulegalrepbyfac);
+app.get('/api/v1/getpputrustdetailsbyfac',  aipondicontroller.getpputrustdetailsbyfac);
+app.get('/api/v1/pputrustdetailsbyprog',  aipondicontroller.pputrustdetailsbyprog);
+app.get('/api/v1/updatepputrustdetailsbyfac',  aipondicontroller.updatepputrustdetailsbyfac);
+app.get('/api/v1/updatepputrustdetailscomments',  aipondicontroller.updatepputrustdetailscomments);
+app.get('/api/v1/pputrustdetailslinks',  aipondicontroller.pputrustdetailslinks);
+app.get('/api/v1/pputrustdetailsdocs',  aipondicontroller.pputrustdetailsdocs);
+app.get('/api/v1/deletepputrustdetailsbyfac',  aipondicontroller.deletepputrustdetailsbyfac);
+app.get('/api/v1/createpputrustdetailsbyfac',  aipondicontroller.createpputrustdetailsbyfac);
+app.get('/api/v1/getppupermissionbyfac',  aipondicontroller.getppupermissionbyfac);
+app.get('/api/v1/ppupermissionbyprog',  aipondicontroller.ppupermissionbyprog);
+app.get('/api/v1/updateppupermissionbyfac',  aipondicontroller.updateppupermissionbyfac);
+app.get('/api/v1/updateppupermissioncomments',  aipondicontroller.updateppupermissioncomments);
+app.get('/api/v1/ppupermissionlinks',  aipondicontroller.ppupermissionlinks);
+app.get('/api/v1/ppupermissiondocs',  aipondicontroller.ppupermissiondocs);
+app.get('/api/v1/deleteppupermissionbyfac',  aipondicontroller.deleteppupermissionbyfac);
+app.get('/api/v1/createppupermissionbyfac',  aipondicontroller.createppupermissionbyfac);
+app.get('/api/v1/getppumanagingbodybyfac',  aipondicontroller.getppumanagingbodybyfac);
+app.get('/api/v1/ppumanagingbodybyprog',  aipondicontroller.ppumanagingbodybyprog);
+app.get('/api/v1/updateppumanagingbodybyfac',  aipondicontroller.updateppumanagingbodybyfac);
+app.get('/api/v1/updateppumanagingbodycomments',  aipondicontroller.updateppumanagingbodycomments);
+app.get('/api/v1/ppumanagingbodylinks',  aipondicontroller.ppumanagingbodylinks);
+app.get('/api/v1/ppumanagingbodydocs',  aipondicontroller.ppumanagingbodydocs);
+app.get('/api/v1/deleteppumanagingbodybyfac',  aipondicontroller.deleteppumanagingbodybyfac);
+app.get('/api/v1/createppumanagingbodybyfac',  aipondicontroller.createppumanagingbodybyfac);
+app.get('/api/v1/getppuwlfcomtbyfac',  aipondicontroller.getppuwlfcomtbyfac);
+app.get('/api/v1/ppuwlfcomtbyprog',  aipondicontroller.ppuwlfcomtbyprog);
+app.get('/api/v1/updateppuwlfcomtbyfac',  aipondicontroller.updateppuwlfcomtbyfac);
+app.get('/api/v1/updateppuwlfcomtcomments',  aipondicontroller.updateppuwlfcomtcomments);
+app.get('/api/v1/ppuwlfcomtlinks',  aipondicontroller.ppuwlfcomtlinks);
+app.get('/api/v1/ppuwlfcomtdocs',  aipondicontroller.ppuwlfcomtdocs);
+app.get('/api/v1/deleteppuwlfcomtbyfac',  aipondicontroller.deleteppuwlfcomtbyfac);
+app.get('/api/v1/createppuwlfcomtbyfac',  aipondicontroller.createppuwlfcomtbyfac);
+app.get('/api/v1/getpputrustfinbyfac',  aipondicontroller.getpputrustfinbyfac);
+app.get('/api/v1/pputrustfinbyprog',  aipondicontroller.pputrustfinbyprog);
+app.get('/api/v1/updatepputrustfinbyfac',  aipondicontroller.updatepputrustfinbyfac);
+app.get('/api/v1/updatepputrustfincomments',  aipondicontroller.updatepputrustfincomments);
+app.get('/api/v1/pputrustfinlinks',  aipondicontroller.pputrustfinlinks);
+app.get('/api/v1/pputrustfindocs',  aipondicontroller.pputrustfindocs);
+app.get('/api/v1/deletepputrustfinbyfac',  aipondicontroller.deletepputrustfinbyfac);
+app.get('/api/v1/createpputrustfinbyfac',  aipondicontroller.createpputrustfinbyfac);
+app.get('/api/v1/getppufdrdetailsbyfac',  aipondicontroller.getppufdrdetailsbyfac);
+app.get('/api/v1/ppufdrdetailsbyprog',  aipondicontroller.ppufdrdetailsbyprog);
+app.get('/api/v1/updateppufdrdetailsbyfac',  aipondicontroller.updateppufdrdetailsbyfac);
+app.get('/api/v1/updateppufdrdetailscomments',  aipondicontroller.updateppufdrdetailscomments);
+app.get('/api/v1/ppufdrdetailslinks',  aipondicontroller.ppufdrdetailslinks);
+app.get('/api/v1/ppufdrdetailsdocs',  aipondicontroller.ppufdrdetailsdocs);
+app.get('/api/v1/deleteppufdrdetailsbyfac',  aipondicontroller.deleteppufdrdetailsbyfac);
+app.get('/api/v1/createppufdrdetailsbyfac',  aipondicontroller.createppufdrdetailsbyfac);
+app.get('/api/v1/getppuimmvpropbyfac',  aipondicontroller.getppuimmvpropbyfac);
+app.get('/api/v1/ppuimmvpropbyprog',  aipondicontroller.ppuimmvpropbyprog);
+app.get('/api/v1/updateppuimmvpropbyfac',  aipondicontroller.updateppuimmvpropbyfac);
+app.get('/api/v1/updateppuimmvpropcomments',  aipondicontroller.updateppuimmvpropcomments);
+app.get('/api/v1/ppuimmvproplinks',  aipondicontroller.ppuimmvproplinks);
+app.get('/api/v1/ppuimmvpropdocs',  aipondicontroller.ppuimmvpropdocs);
+app.get('/api/v1/deleteppuimmvpropbyfac',  aipondicontroller.deleteppuimmvpropbyfac);
+app.get('/api/v1/createppuimmvpropbyfac',  aipondicontroller.createppuimmvpropbyfac);
+app.get('/api/v1/getppufinancebyfac',  aipondicontroller.getppufinancebyfac);
+app.get('/api/v1/ppufinancebyprog',  aipondicontroller.ppufinancebyprog);
+app.get('/api/v1/updateppufinancebyfac',  aipondicontroller.updateppufinancebyfac);
+app.get('/api/v1/updateppufinancecomments',  aipondicontroller.updateppufinancecomments);
+app.get('/api/v1/ppufinancelinks',  aipondicontroller.ppufinancelinks);
+app.get('/api/v1/ppufinancedocs',  aipondicontroller.ppufinancedocs);
+app.get('/api/v1/deleteppufinancebyfac',  aipondicontroller.deleteppufinancebyfac);
+app.get('/api/v1/createppufinancebyfac',  aipondicontroller.createppufinancebyfac);
+app.get('/api/v1/getppulandbyfac',  aipondicontroller.getppulandbyfac);
+app.get('/api/v1/ppulandbyprog',  aipondicontroller.ppulandbyprog);
+app.get('/api/v1/updateppulandbyfac',  aipondicontroller.updateppulandbyfac);
+app.get('/api/v1/updateppulandcomments',  aipondicontroller.updateppulandcomments);
+app.get('/api/v1/ppulandlinks',  aipondicontroller.ppulandlinks);
+app.get('/api/v1/ppulanddocs',  aipondicontroller.ppulanddocs);
+app.get('/api/v1/deleteppulandbyfac',  aipondicontroller.deleteppulandbyfac);
+app.get('/api/v1/createppulandbyfac',  aipondicontroller.createppulandbyfac);
+app.get('/api/v1/getppubuildingbyfac',  aipondicontroller.getppubuildingbyfac);
+app.get('/api/v1/ppubuildingbyprog',  aipondicontroller.ppubuildingbyprog);
+app.get('/api/v1/updateppubuildingbyfac',  aipondicontroller.updateppubuildingbyfac);
+app.get('/api/v1/updateppubuildingcomments',  aipondicontroller.updateppubuildingcomments);
+app.get('/api/v1/ppubuildinglinks',  aipondicontroller.ppubuildinglinks);
+app.get('/api/v1/ppubuildingdocs',  aipondicontroller.ppubuildingdocs);
+app.get('/api/v1/deleteppubuildingbyfac',  aipondicontroller.deleteppubuildingbyfac);
+app.get('/api/v1/createppubuildingbyfac',  aipondicontroller.createppubuildingbyfac);
+app.get('/api/v1/getppuhostelbyfac',  aipondicontroller.getppuhostelbyfac);
+app.get('/api/v1/ppuhostelbyprog',  aipondicontroller.ppuhostelbyprog);
+app.get('/api/v1/updateppuhostelbyfac',  aipondicontroller.updateppuhostelbyfac);
+app.get('/api/v1/updateppuhostelcomments',  aipondicontroller.updateppuhostelcomments);
+app.get('/api/v1/ppuhostellinks',  aipondicontroller.ppuhostellinks);
+app.get('/api/v1/ppuhosteldocs',  aipondicontroller.ppuhosteldocs);
+app.get('/api/v1/deleteppuhostelbyfac',  aipondicontroller.deleteppuhostelbyfac);
+app.get('/api/v1/createppuhostelbyfac',  aipondicontroller.createppuhostelbyfac);
+app.get('/api/v1/getppuroomsbyfac',  aipondicontroller.getppuroomsbyfac);
+app.get('/api/v1/ppuroomsbyprog',  aipondicontroller.ppuroomsbyprog);
+app.get('/api/v1/updateppuroomsbyfac',  aipondicontroller.updateppuroomsbyfac);
+app.get('/api/v1/updateppuroomscomments',  aipondicontroller.updateppuroomscomments);
+app.get('/api/v1/ppuroomslinks',  aipondicontroller.ppuroomslinks);
+app.get('/api/v1/ppuroomsdocs',  aipondicontroller.ppuroomsdocs);
+app.get('/api/v1/deleteppuroomsbyfac',  aipondicontroller.deleteppuroomsbyfac);
+app.get('/api/v1/createppuroomsbyfac',  aipondicontroller.createppuroomsbyfac);
+app.get('/api/v1/getppuphyedubyfac',  aipondicontroller.getppuphyedubyfac);
+app.get('/api/v1/ppuphyedubyprog',  aipondicontroller.ppuphyedubyprog);
+app.get('/api/v1/updateppuphyedubyfac',  aipondicontroller.updateppuphyedubyfac);
+app.get('/api/v1/updateppuphyeducomments',  aipondicontroller.updateppuphyeducomments);
+app.get('/api/v1/ppuphyedulinks',  aipondicontroller.ppuphyedulinks);
+app.get('/api/v1/ppuphyedudocs',  aipondicontroller.ppuphyedudocs);
+app.get('/api/v1/deleteppuphyedubyfac',  aipondicontroller.deleteppuphyedubyfac);
+app.get('/api/v1/createppuphyedubyfac',  aipondicontroller.createppuphyedubyfac);
+app.get('/api/v1/getppustaffbyfac',  aipondicontroller.getppustaffbyfac);
+app.get('/api/v1/ppustaffbyprog',  aipondicontroller.ppustaffbyprog);
+app.get('/api/v1/updateppustaffbyfac',  aipondicontroller.updateppustaffbyfac);
+app.get('/api/v1/updateppustaffcomments',  aipondicontroller.updateppustaffcomments);
+app.get('/api/v1/ppustafflinks',  aipondicontroller.ppustafflinks);
+app.get('/api/v1/ppustaffdocs',  aipondicontroller.ppustaffdocs);
+app.get('/api/v1/deleteppustaffbyfac',  aipondicontroller.deleteppustaffbyfac);
+app.get('/api/v1/createppustaffbyfac',  aipondicontroller.createppustaffbyfac);
+app.get('/api/v1/getppucollegebyfac',  aipondicontroller.getppucollegebyfac);
+app.get('/api/v1/ppucollegebyprog',  aipondicontroller.ppucollegebyprog);
+app.get('/api/v1/updateppucollegebyfac',  aipondicontroller.updateppucollegebyfac);
+app.get('/api/v1/updateppucollegecomments',  aipondicontroller.updateppucollegecomments);
+app.get('/api/v1/ppucollegelinks',  aipondicontroller.ppucollegelinks);
+app.get('/api/v1/ppucollegedocs',  aipondicontroller.ppucollegedocs);
+app.get('/api/v1/deleteppucollegebyfac',  aipondicontroller.deleteppucollegebyfac);
+app.get('/api/v1/createppucollegebyfac',  aipondicontroller.createppucollegebyfac);
+app.get('/api/v1/getpputrustbyfac',  aipondicontroller.getpputrustbyfac);
+app.get('/api/v1/pputrustbyprog',  aipondicontroller.pputrustbyprog);
+app.get('/api/v1/updatepputrustbyfac',  aipondicontroller.updatepputrustbyfac);
+app.get('/api/v1/updatepputrustcomments',  aipondicontroller.updatepputrustcomments);
+app.get('/api/v1/pputrustlinks',  aipondicontroller.pputrustlinks);
+app.get('/api/v1/pputrustdocs',  aipondicontroller.pputrustdocs);
+app.get('/api/v1/deletepputrustbyfac',  aipondicontroller.deletepputrustbyfac);
+app.get('/api/v1/createpputrustbyfac',  aipondicontroller.createpputrustbyfac);
+app.get('/api/v1/getppuaddprogbyfac',  aipondicontroller.getppuaddprogbyfac);
+app.get('/api/v1/ppuaddprogbyprog',  aipondicontroller.ppuaddprogbyprog);
+app.get('/api/v1/updateppuaddprogbyfac',  aipondicontroller.updateppuaddprogbyfac);
+app.get('/api/v1/updateppuaddprogcomments',  aipondicontroller.updateppuaddprogcomments);
+app.get('/api/v1/ppuaddproglinks',  aipondicontroller.ppuaddproglinks);
+app.get('/api/v1/ppuaddprogdocs',  aipondicontroller.ppuaddprogdocs);
+app.get('/api/v1/deleteppuaddprogbyfac',  aipondicontroller.deleteppuaddprogbyfac);
+app.get('/api/v1/createppuaddprogbyfac',  aipondicontroller.createppuaddprogbyfac);
+app.get('/api/v1/getppuvarintakebyfac',  aipondicontroller.getppuvarintakebyfac);
+app.get('/api/v1/ppuvarintakebyprog',  aipondicontroller.ppuvarintakebyprog);
+app.get('/api/v1/updateppuvarintakebyfac',  aipondicontroller.updateppuvarintakebyfac);
+app.get('/api/v1/updateppuvarintakecomments',  aipondicontroller.updateppuvarintakecomments);
+app.get('/api/v1/ppuvarintakelinks',  aipondicontroller.ppuvarintakelinks);
+app.get('/api/v1/ppuvarintakedocs',  aipondicontroller.ppuvarintakedocs);
+app.get('/api/v1/deleteppuvarintakebyfac',  aipondicontroller.deleteppuvarintakebyfac);
+app.get('/api/v1/createppuvarintakebyfac',  aipondicontroller.createppuvarintakebyfac);
+app.get('/api/v1/getppuexistprogbyfac',  aipondicontroller.getppuexistprogbyfac);
+app.get('/api/v1/ppuexistprogbyprog',  aipondicontroller.ppuexistprogbyprog);
+app.get('/api/v1/updateppuexistprogbyfac',  aipondicontroller.updateppuexistprogbyfac);
+app.get('/api/v1/updateppuexistprogcomments',  aipondicontroller.updateppuexistprogcomments);
+app.get('/api/v1/ppuexistproglinks',  aipondicontroller.ppuexistproglinks);
+app.get('/api/v1/ppuexistprogdocs',  aipondicontroller.ppuexistprogdocs);
+app.get('/api/v1/deleteppuexistprogbyfac',  aipondicontroller.deleteppuexistprogbyfac);
+app.get('/api/v1/createppuexistprogbyfac',  aipondicontroller.createppuexistprogbyfac);
+app.get('/api/v1/getppucoursesbyfac',  aipondicontroller.getppucoursesbyfac);
+app.get('/api/v1/ppucoursesbyprog',  aipondicontroller.ppucoursesbyprog);
+app.get('/api/v1/updateppucoursesbyfac',  aipondicontroller.updateppucoursesbyfac);
+app.get('/api/v1/updateppucoursescomments',  aipondicontroller.updateppucoursescomments);
+app.get('/api/v1/ppucourseslinks',  aipondicontroller.ppucourseslinks);
+app.get('/api/v1/ppucoursesdocs',  aipondicontroller.ppucoursesdocs);
+app.get('/api/v1/deleteppucoursesbyfac',  aipondicontroller.deleteppucoursesbyfac);
+app.get('/api/v1/createppucoursesbyfac',  aipondicontroller.createppucoursesbyfac);
+app.get('/api/v1/getppucoursrepbyfac',  aipondicontroller.getppucoursrepbyfac);
+app.get('/api/v1/ppucoursrepbyprog',  aipondicontroller.ppucoursrepbyprog);
+app.get('/api/v1/updateppucoursrepbyfac',  aipondicontroller.updateppucoursrepbyfac);
+app.get('/api/v1/updateppucoursrepcomments',  aipondicontroller.updateppucoursrepcomments);
+app.get('/api/v1/ppucoursreplinks',  aipondicontroller.ppucoursreplinks);
+app.get('/api/v1/ppucoursrepdocs',  aipondicontroller.ppucoursrepdocs);
+app.get('/api/v1/deleteppucoursrepbyfac',  aipondicontroller.deleteppucoursrepbyfac);
+app.get('/api/v1/createppucoursrepbyfac',  aipondicontroller.createppucoursrepbyfac);
+app.get('/api/v1/getppuprincipalbyfac',  aipondicontroller.getppuprincipalbyfac);
+app.get('/api/v1/ppuprincipalbyprog',  aipondicontroller.ppuprincipalbyprog);
+app.get('/api/v1/updateppuprincipalbyfac',  aipondicontroller.updateppuprincipalbyfac);
+app.get('/api/v1/updateppuprincipalcomments',  aipondicontroller.updateppuprincipalcomments);
+app.get('/api/v1/ppuprincipallinks',  aipondicontroller.ppuprincipallinks);
+app.get('/api/v1/ppuprincipaldocs',  aipondicontroller.ppuprincipaldocs);
+app.get('/api/v1/deleteppuprincipalbyfac',  aipondicontroller.deleteppuprincipalbyfac);
+app.get('/api/v1/createppuprincipalbyfac',  aipondicontroller.createppuprincipalbyfac);
+app.get('/api/v1/getppufacultybyfac',  aipondicontroller.getppufacultybyfac);
+app.get('/api/v1/ppufacultybyprog',  aipondicontroller.ppufacultybyprog);
+app.get('/api/v1/updateppufacultybyfac',  aipondicontroller.updateppufacultybyfac);
+app.get('/api/v1/updateppufacultycomments',  aipondicontroller.updateppufacultycomments);
+app.get('/api/v1/ppufacultylinks',  aipondicontroller.ppufacultylinks);
+app.get('/api/v1/ppufacultydocs',  aipondicontroller.ppufacultydocs);
+app.get('/api/v1/deleteppufacultybyfac',  aipondicontroller.deleteppufacultybyfac);
+app.get('/api/v1/createppufacultybyfac',  aipondicontroller.createppufacultybyfac);
+app.get('/api/v1/getppustafstudratiobyfac',  aipondicontroller.getppustafstudratiobyfac);
+app.get('/api/v1/ppustafstudratiobyprog',  aipondicontroller.ppustafstudratiobyprog);
+app.get('/api/v1/updateppustafstudratiobyfac',  aipondicontroller.updateppustafstudratiobyfac);
+app.get('/api/v1/updateppustafstudratiocomments',  aipondicontroller.updateppustafstudratiocomments);
+app.get('/api/v1/ppustafstudratiolinks',  aipondicontroller.ppustafstudratiolinks);
+app.get('/api/v1/ppustafstudratiodocs',  aipondicontroller.ppustafstudratiodocs);
+app.get('/api/v1/deleteppustafstudratiobyfac',  aipondicontroller.deleteppustafstudratiobyfac);
+app.get('/api/v1/createppustafstudratiobyfac',  aipondicontroller.createppustafstudratiobyfac);
+app.get('/api/v1/getppulabequipbyfac',  aipondicontroller.getppulabequipbyfac);
+app.get('/api/v1/ppulabequipbyprog',  aipondicontroller.ppulabequipbyprog);
+app.get('/api/v1/updateppulabequipbyfac',  aipondicontroller.updateppulabequipbyfac);
+app.get('/api/v1/updateppulabequipcomments',  aipondicontroller.updateppulabequipcomments);
+app.get('/api/v1/ppulabequiplinks',  aipondicontroller.ppulabequiplinks);
+app.get('/api/v1/ppulabequipdocs',  aipondicontroller.ppulabequipdocs);
+app.get('/api/v1/deleteppulabequipbyfac',  aipondicontroller.deleteppulabequipbyfac);
+app.get('/api/v1/createppulabequipbyfac',  aipondicontroller.createppulabequipbyfac);
+app.get('/api/v1/getppulabequipprocurebyfac',  aipondicontroller.getppulabequipprocurebyfac);
+app.get('/api/v1/ppulabequipprocurebyprog',  aipondicontroller.ppulabequipprocurebyprog);
+app.get('/api/v1/updateppulabequipprocurebyfac',  aipondicontroller.updateppulabequipprocurebyfac);
+app.get('/api/v1/updateppulabequipprocurecomments',  aipondicontroller.updateppulabequipprocurecomments);
+app.get('/api/v1/ppulabequipprocurelinks',  aipondicontroller.ppulabequipprocurelinks);
+app.get('/api/v1/ppulabequipprocuredocs',  aipondicontroller.ppulabequipprocuredocs);
+app.get('/api/v1/deleteppulabequipprocurebyfac',  aipondicontroller.deleteppulabequipprocurebyfac);
+app.get('/api/v1/createppulabequipprocurebyfac',  aipondicontroller.createppulabequipprocurebyfac);
+app.get('/api/v1/getppulectureroomsbyfac',  aipondicontroller.getppulectureroomsbyfac);
+app.get('/api/v1/ppulectureroomsbyprog',  aipondicontroller.ppulectureroomsbyprog);
+app.get('/api/v1/updateppulectureroomsbyfac',  aipondicontroller.updateppulectureroomsbyfac);
+app.get('/api/v1/updateppulectureroomscomments',  aipondicontroller.updateppulectureroomscomments);
+app.get('/api/v1/ppulectureroomslinks',  aipondicontroller.ppulectureroomslinks);
+app.get('/api/v1/ppulectureroomsdocs',  aipondicontroller.ppulectureroomsdocs);
+app.get('/api/v1/deleteppulectureroomsbyfac',  aipondicontroller.deleteppulectureroomsbyfac);
+app.get('/api/v1/createppulectureroomsbyfac',  aipondicontroller.createppulectureroomsbyfac);
+app.get('/api/v1/getppuavailclsroombyfac',  aipondicontroller.getppuavailclsroombyfac);
+app.get('/api/v1/ppuavailclsroombyprog',  aipondicontroller.ppuavailclsroombyprog);
+app.get('/api/v1/updateppuavailclsroombyfac',  aipondicontroller.updateppuavailclsroombyfac);
+app.get('/api/v1/updateppuavailclsroomcomments',  aipondicontroller.updateppuavailclsroomcomments);
+app.get('/api/v1/ppuavailclsroomlinks',  aipondicontroller.ppuavailclsroomlinks);
+app.get('/api/v1/ppuavailclsroomdocs',  aipondicontroller.ppuavailclsroomdocs);
+app.get('/api/v1/deleteppuavailclsroombyfac',  aipondicontroller.deleteppuavailclsroombyfac);
+app.get('/api/v1/createppuavailclsroombyfac',  aipondicontroller.createppuavailclsroombyfac);
+app.get('/api/v1/getppunetworkbyfac',  aipondicontroller.getppunetworkbyfac);
+app.get('/api/v1/ppunetworkbyprog',  aipondicontroller.ppunetworkbyprog);
+app.get('/api/v1/updateppunetworkbyfac',  aipondicontroller.updateppunetworkbyfac);
+app.get('/api/v1/updateppunetworkcomments',  aipondicontroller.updateppunetworkcomments);
+app.get('/api/v1/ppunetworklinks',  aipondicontroller.ppunetworklinks);
+app.get('/api/v1/ppunetworkdocs',  aipondicontroller.ppunetworkdocs);
+app.get('/api/v1/deleteppunetworkbyfac',  aipondicontroller.deleteppunetworkbyfac);
+app.get('/api/v1/createppunetworkbyfac',  aipondicontroller.createppunetworkbyfac);
+app.get('/api/v1/getppucompfacibyfac',  aipondicontroller.getppucompfacibyfac);
+app.get('/api/v1/ppucompfacibyprog',  aipondicontroller.ppucompfacibyprog);
+app.get('/api/v1/updateppucompfacibyfac',  aipondicontroller.updateppucompfacibyfac);
+app.get('/api/v1/updateppucompfacicomments',  aipondicontroller.updateppucompfacicomments);
+app.get('/api/v1/ppucompfacilinks',  aipondicontroller.ppucompfacilinks);
+app.get('/api/v1/ppucompfacidocs',  aipondicontroller.ppucompfacidocs);
+app.get('/api/v1/deleteppucompfacibyfac',  aipondicontroller.deleteppucompfacibyfac);
+app.get('/api/v1/createppucompfacibyfac',  aipondicontroller.createppucompfacibyfac);
+app.get('/api/v1/getppucompsoftwarebyfac',  aipondicontroller.getppucompsoftwarebyfac);
+app.get('/api/v1/ppucompsoftwarebyprog',  aipondicontroller.ppucompsoftwarebyprog);
+app.get('/api/v1/updateppucompsoftwarebyfac',  aipondicontroller.updateppucompsoftwarebyfac);
+app.get('/api/v1/updateppucompsoftwarecomments',  aipondicontroller.updateppucompsoftwarecomments);
+app.get('/api/v1/ppucompsoftwarelinks',  aipondicontroller.ppucompsoftwarelinks);
+app.get('/api/v1/ppucompsoftwaredocs',  aipondicontroller.ppucompsoftwaredocs);
+app.get('/api/v1/deleteppucompsoftwarebyfac',  aipondicontroller.deleteppucompsoftwarebyfac);
+app.get('/api/v1/createppucompsoftwarebyfac',  aipondicontroller.createppucompsoftwarebyfac);
+app.get('/api/v1/getppucompaddinfobyfac',  aipondicontroller.getppucompaddinfobyfac);
+app.get('/api/v1/ppucompaddinfobyprog',  aipondicontroller.ppucompaddinfobyprog);
+app.get('/api/v1/updateppucompaddinfobyfac',  aipondicontroller.updateppucompaddinfobyfac);
+app.get('/api/v1/updateppucompaddinfocomments',  aipondicontroller.updateppucompaddinfocomments);
+app.get('/api/v1/ppucompaddinfolinks',  aipondicontroller.ppucompaddinfolinks);
+app.get('/api/v1/ppucompaddinfodocs',  aipondicontroller.ppucompaddinfodocs);
+app.get('/api/v1/deleteppucompaddinfobyfac',  aipondicontroller.deleteppucompaddinfobyfac);
+app.get('/api/v1/createppucompaddinfobyfac',  aipondicontroller.createppucompaddinfobyfac);
+app.get('/api/v1/getppucompaddsoftbyfac',  aipondicontroller.getppucompaddsoftbyfac);
+app.get('/api/v1/ppucompaddsoftbyprog',  aipondicontroller.ppucompaddsoftbyprog);
+app.get('/api/v1/updateppucompaddsoftbyfac',  aipondicontroller.updateppucompaddsoftbyfac);
+app.get('/api/v1/updateppucompaddsoftcomments',  aipondicontroller.updateppucompaddsoftcomments);
+app.get('/api/v1/ppucompaddsoftlinks',  aipondicontroller.ppucompaddsoftlinks);
+app.get('/api/v1/ppucompaddsoftdocs',  aipondicontroller.ppucompaddsoftdocs);
+app.get('/api/v1/deleteppucompaddsoftbyfac',  aipondicontroller.deleteppucompaddsoftbyfac);
+app.get('/api/v1/createppucompaddsoftbyfac',  aipondicontroller.createppucompaddsoftbyfac);
+app.get('/api/v1/getppulibrarybyfac',  aipondicontroller.getppulibrarybyfac);
+app.get('/api/v1/ppulibrarybyprog',  aipondicontroller.ppulibrarybyprog);
+app.get('/api/v1/updateppulibrarybyfac',  aipondicontroller.updateppulibrarybyfac);
+app.get('/api/v1/updateppulibrarycomments',  aipondicontroller.updateppulibrarycomments);
+app.get('/api/v1/ppulibrarylinks',  aipondicontroller.ppulibrarylinks);
+app.get('/api/v1/ppulibrarydocs',  aipondicontroller.ppulibrarydocs);
+app.get('/api/v1/deleteppulibrarybyfac',  aipondicontroller.deleteppulibrarybyfac);
+app.get('/api/v1/createppulibrarybyfac',  aipondicontroller.createppulibrarybyfac);
+app.get('/api/v1/getppulibstaffbyfac',  aipondicontroller.getppulibstaffbyfac);
+app.get('/api/v1/ppulibstaffbyprog',  aipondicontroller.ppulibstaffbyprog);
+app.get('/api/v1/updateppulibstaffbyfac',  aipondicontroller.updateppulibstaffbyfac);
+app.get('/api/v1/updateppulibstaffcomments',  aipondicontroller.updateppulibstaffcomments);
+app.get('/api/v1/ppulibstafflinks',  aipondicontroller.ppulibstafflinks);
+app.get('/api/v1/ppulibstaffdocs',  aipondicontroller.ppulibstaffdocs);
+app.get('/api/v1/deleteppulibstaffbyfac',  aipondicontroller.deleteppulibstaffbyfac);
+app.get('/api/v1/createppulibstaffbyfac',  aipondicontroller.createppulibstaffbyfac);
+app.get('/api/v1/getppulibbooksbyfac',  aipondicontroller.getppulibbooksbyfac);
+app.get('/api/v1/ppulibbooksbyprog',  aipondicontroller.ppulibbooksbyprog);
+app.get('/api/v1/updateppulibbooksbyfac',  aipondicontroller.updateppulibbooksbyfac);
+app.get('/api/v1/updateppulibbookscomments',  aipondicontroller.updateppulibbookscomments);
+app.get('/api/v1/ppulibbookslinks',  aipondicontroller.ppulibbookslinks);
+app.get('/api/v1/ppulibbooksdocs',  aipondicontroller.ppulibbooksdocs);
+app.get('/api/v1/deleteppulibbooksbyfac',  aipondicontroller.deleteppulibbooksbyfac);
+app.get('/api/v1/createppulibbooksbyfac',  aipondicontroller.createppulibbooksbyfac);
+app.get('/api/v1/getppulibindjrnlbyfac',  aipondicontroller.getppulibindjrnlbyfac);
+app.get('/api/v1/ppulibindjrnlbyprog',  aipondicontroller.ppulibindjrnlbyprog);
+app.get('/api/v1/updateppulibindjrnlbyfac',  aipondicontroller.updateppulibindjrnlbyfac);
+app.get('/api/v1/updateppulibindjrnlcomments',  aipondicontroller.updateppulibindjrnlcomments);
+app.get('/api/v1/ppulibindjrnllinks',  aipondicontroller.ppulibindjrnllinks);
+app.get('/api/v1/ppulibindjrnldocs',  aipondicontroller.ppulibindjrnldocs);
+app.get('/api/v1/deleteppulibindjrnlbyfac',  aipondicontroller.deleteppulibindjrnlbyfac);
+app.get('/api/v1/createppulibindjrnlbyfac',  aipondicontroller.createppulibindjrnlbyfac);
+app.get('/api/v1/getppulibforgjrnlbyfac',  aipondicontroller.getppulibforgjrnlbyfac);
+app.get('/api/v1/ppulibforgjrnlbyprog',  aipondicontroller.ppulibforgjrnlbyprog);
+app.get('/api/v1/updateppulibforgjrnlbyfac',  aipondicontroller.updateppulibforgjrnlbyfac);
+app.get('/api/v1/updateppulibforgjrnlcomments',  aipondicontroller.updateppulibforgjrnlcomments);
+app.get('/api/v1/ppulibforgjrnllinks',  aipondicontroller.ppulibforgjrnllinks);
+app.get('/api/v1/ppulibforgjrnldocs',  aipondicontroller.ppulibforgjrnldocs);
+app.get('/api/v1/deleteppulibforgjrnlbyfac',  aipondicontroller.deleteppulibforgjrnlbyfac);
+app.get('/api/v1/createppulibforgjrnlbyfac',  aipondicontroller.createppulibforgjrnlbyfac);
+app.get('/api/v1/getppulibautomationbyfac',  aipondicontroller.getppulibautomationbyfac);
+app.get('/api/v1/ppulibautomationbyprog',  aipondicontroller.ppulibautomationbyprog);
+app.get('/api/v1/updateppulibautomationbyfac',  aipondicontroller.updateppulibautomationbyfac);
+app.get('/api/v1/updateppulibautomationcomments',  aipondicontroller.updateppulibautomationcomments);
+app.get('/api/v1/ppulibautomationlinks',  aipondicontroller.ppulibautomationlinks);
+app.get('/api/v1/ppulibautomationdocs',  aipondicontroller.ppulibautomationdocs);
+app.get('/api/v1/deleteppulibautomationbyfac',  aipondicontroller.deleteppulibautomationbyfac);
+app.get('/api/v1/createppulibautomationbyfac',  aipondicontroller.createppulibautomationbyfac);
+app.get('/api/v1/getppulibprocurebyfac',  aipondicontroller.getppulibprocurebyfac);
+app.get('/api/v1/ppulibprocurebyprog',  aipondicontroller.ppulibprocurebyprog);
+app.get('/api/v1/updateppulibprocurebyfac',  aipondicontroller.updateppulibprocurebyfac);
+app.get('/api/v1/updateppulibprocurecomments',  aipondicontroller.updateppulibprocurecomments);
+app.get('/api/v1/ppulibprocurelinks',  aipondicontroller.ppulibprocurelinks);
+app.get('/api/v1/ppulibprocuredocs',  aipondicontroller.ppulibprocuredocs);
+app.get('/api/v1/deleteppulibprocurebyfac',  aipondicontroller.deleteppulibprocurebyfac);
+app.get('/api/v1/createppulibprocurebyfac',  aipondicontroller.createppulibprocurebyfac);
+app.get('/api/v1/getppulibexpbyfac',  aipondicontroller.getppulibexpbyfac);
+app.get('/api/v1/ppulibexpbyprog',  aipondicontroller.ppulibexpbyprog);
+app.get('/api/v1/updateppulibexpbyfac',  aipondicontroller.updateppulibexpbyfac);
+app.get('/api/v1/updateppulibexpcomments',  aipondicontroller.updateppulibexpcomments);
+app.get('/api/v1/ppulibexplinks',  aipondicontroller.ppulibexplinks);
+app.get('/api/v1/ppulibexpdocs',  aipondicontroller.ppulibexpdocs);
+app.get('/api/v1/deleteppulibexpbyfac',  aipondicontroller.deleteppulibexpbyfac);
+app.get('/api/v1/createppulibexpbyfac',  aipondicontroller.createppulibexpbyfac);
+app.get('/api/v1/getppustudfacibyfac',  aipondicontroller.getppustudfacibyfac);
+app.get('/api/v1/ppustudfacibyprog',  aipondicontroller.ppustudfacibyprog);
+app.get('/api/v1/updateppustudfacibyfac',  aipondicontroller.updateppustudfacibyfac);
+app.get('/api/v1/updateppustudfacicomments',  aipondicontroller.updateppustudfacicomments);
+app.get('/api/v1/ppustudfacilinks',  aipondicontroller.ppustudfacilinks);
+app.get('/api/v1/ppustudfacidocs',  aipondicontroller.ppustudfacidocs);
+app.get('/api/v1/deleteppustudfacibyfac',  aipondicontroller.deleteppustudfacibyfac);
+app.get('/api/v1/createppustudfacibyfac',  aipondicontroller.createppustudfacibyfac);
+app.get('/api/v1/getppuotherfacibyfac',  aipondicontroller.getppuotherfacibyfac);
+app.get('/api/v1/ppuotherfacibyprog',  aipondicontroller.ppuotherfacibyprog);
+app.get('/api/v1/updateppuotherfacibyfac',  aipondicontroller.updateppuotherfacibyfac);
+app.get('/api/v1/updateppuotherfacicomments',  aipondicontroller.updateppuotherfacicomments);
+app.get('/api/v1/ppuotherfacilinks',  aipondicontroller.ppuotherfacilinks);
+app.get('/api/v1/ppuotherfacidocs',  aipondicontroller.ppuotherfacidocs);
+app.get('/api/v1/deleteppuotherfacibyfac',  aipondicontroller.deleteppuotherfacibyfac);
+app.get('/api/v1/createppuotherfacibyfac',  aipondicontroller.createppuotherfacibyfac);
+app.get('/api/v1/getppumedservicebyfac',  aipondicontroller.getppumedservicebyfac);
+app.get('/api/v1/ppumedservicebyprog',  aipondicontroller.ppumedservicebyprog);
+app.get('/api/v1/updateppumedservicebyfac',  aipondicontroller.updateppumedservicebyfac);
+app.get('/api/v1/updateppumedservicecomments',  aipondicontroller.updateppumedservicecomments);
+app.get('/api/v1/ppumedservicelinks',  aipondicontroller.ppumedservicelinks);
+app.get('/api/v1/ppumedservicedocs',  aipondicontroller.ppumedservicedocs);
+app.get('/api/v1/deleteppumedservicebyfac',  aipondicontroller.deleteppumedservicebyfac);
+app.get('/api/v1/createppumedservicebyfac',  aipondicontroller.createppumedservicebyfac);
+app.get('/api/v1/getppuaudvidequipbyfac',  aipondicontroller.getppuaudvidequipbyfac);
+app.get('/api/v1/ppuaudvidequipbyprog',  aipondicontroller.ppuaudvidequipbyprog);
+app.get('/api/v1/updateppuaudvidequipbyfac',  aipondicontroller.updateppuaudvidequipbyfac);
+app.get('/api/v1/updateppuaudvidequipcomments',  aipondicontroller.updateppuaudvidequipcomments);
+app.get('/api/v1/ppuaudvidequiplinks',  aipondicontroller.ppuaudvidequiplinks);
+app.get('/api/v1/ppuaudvidequipdocs',  aipondicontroller.ppuaudvidequipdocs);
+app.get('/api/v1/deleteppuaudvidequipbyfac',  aipondicontroller.deleteppuaudvidequipbyfac);
+app.get('/api/v1/createppuaudvidequipbyfac',  aipondicontroller.createppuaudvidequipbyfac);
+app.get('/api/v1/getppuclubsbyfac',  aipondicontroller.getppuclubsbyfac);
+app.get('/api/v1/ppuclubsbyprog',  aipondicontroller.ppuclubsbyprog);
+app.get('/api/v1/updateppuclubsbyfac',  aipondicontroller.updateppuclubsbyfac);
+app.get('/api/v1/updateppuclubscomments',  aipondicontroller.updateppuclubscomments);
+app.get('/api/v1/ppuclubslinks',  aipondicontroller.ppuclubslinks);
+app.get('/api/v1/ppuclubsdocs',  aipondicontroller.ppuclubsdocs);
+app.get('/api/v1/deleteppuclubsbyfac',  aipondicontroller.deleteppuclubsbyfac);
+app.get('/api/v1/createppuclubsbyfac',  aipondicontroller.createppuclubsbyfac);
+app.get('/api/v1/getpputechstaffbyfac',  aipondicontroller.getpputechstaffbyfac);
+app.get('/api/v1/pputechstaffbyprog',  aipondicontroller.pputechstaffbyprog);
+app.get('/api/v1/updatepputechstaffbyfac',  aipondicontroller.updatepputechstaffbyfac);
+app.get('/api/v1/updatepputechstaffcomments',  aipondicontroller.updatepputechstaffcomments);
+app.get('/api/v1/pputechstafflinks',  aipondicontroller.pputechstafflinks);
+app.get('/api/v1/pputechstaffdocs',  aipondicontroller.pputechstaffdocs);
+app.get('/api/v1/deletepputechstaffbyfac',  aipondicontroller.deletepputechstaffbyfac);
+app.get('/api/v1/createpputechstaffbyfac',  aipondicontroller.createpputechstaffbyfac);
+app.get('/api/v1/getppuminststaffbyfac',  aipondicontroller.getppuminststaffbyfac);
+app.get('/api/v1/ppuminststaffbyprog',  aipondicontroller.ppuminststaffbyprog);
+app.get('/api/v1/updateppuminststaffbyfac',  aipondicontroller.updateppuminststaffbyfac);
+app.get('/api/v1/updateppuminststaffcomments',  aipondicontroller.updateppuminststaffcomments);
+app.get('/api/v1/ppuminststafflinks',  aipondicontroller.ppuminststafflinks);
+app.get('/api/v1/ppuminststaffdocs',  aipondicontroller.ppuminststaffdocs);
+app.get('/api/v1/deleteppuminststaffbyfac',  aipondicontroller.deleteppuminststaffbyfac);
+app.get('/api/v1/createppuminststaffbyfac',  aipondicontroller.createppuminststaffbyfac);
+app.get('/api/v1/getppuaddinfobyfac',  aipondicontroller.getppuaddinfobyfac);
+app.get('/api/v1/ppuaddinfobyprog',  aipondicontroller.ppuaddinfobyprog);
+app.get('/api/v1/updateppuaddinfobyfac',  aipondicontroller.updateppuaddinfobyfac);
+app.get('/api/v1/updateppuaddinfocomments',  aipondicontroller.updateppuaddinfocomments);
+app.get('/api/v1/ppuaddinfolinks',  aipondicontroller.ppuaddinfolinks);
+app.get('/api/v1/ppuaddinfodocs',  aipondicontroller.ppuaddinfodocs);
+app.get('/api/v1/deleteppuaddinfobyfac',  aipondicontroller.deleteppuaddinfobyfac);
+app.get('/api/v1/createppuaddinfobyfac',  aipondicontroller.createppuaddinfobyfac);
+app.get('/api/v1/getppudeclarationbyfac',  aipondicontroller.getppudeclarationbyfac);
+app.get('/api/v1/ppudeclarationbyprog',  aipondicontroller.ppudeclarationbyprog);
+app.get('/api/v1/updateppudeclarationbyfac',  aipondicontroller.updateppudeclarationbyfac);
+app.get('/api/v1/updateppudeclarationcomments',  aipondicontroller.updateppudeclarationcomments);
+app.get('/api/v1/ppudeclarationlinks',  aipondicontroller.ppudeclarationlinks);
+app.get('/api/v1/ppudeclarationdocs',  aipondicontroller.ppudeclarationdocs);
+app.get('/api/v1/deleteppudeclarationbyfac',  aipondicontroller.deleteppudeclarationbyfac);
+app.get('/api/v1/createppudeclarationbyfac',  aipondicontroller.createppudeclarationbyfac);
+app.get('/api/v1/getppucertificatesbyfac',  aipondicontroller.getppucertificatesbyfac);
+app.get('/api/v1/ppucertificatesbyprog',  aipondicontroller.ppucertificatesbyprog);
+app.get('/api/v1/updateppucertificatesbyfac',  aipondicontroller.updateppucertificatesbyfac);
+app.get('/api/v1/updateppucertificatescomments',  aipondicontroller.updateppucertificatescomments);
+app.get('/api/v1/ppucertificateslinks',  aipondicontroller.ppucertificateslinks);
+app.get('/api/v1/ppucertificatesdocs',  aipondicontroller.ppucertificatesdocs);
+app.get('/api/v1/deleteppucertificatesbyfac',  aipondicontroller.deleteppucertificatesbyfac);
+app.get('/api/v1/createppucertificatesbyfac',  aipondicontroller.createppucertificatesbyfac);
+app.get('/api/v1/getppuaddinfoprogbyfac',  aipondicontroller.getppuaddinfoprogbyfac);
+app.get('/api/v1/ppuaddinfoprogbyprog',  aipondicontroller.ppuaddinfoprogbyprog);
+app.get('/api/v1/updateppuaddinfoprogbyfac',  aipondicontroller.updateppuaddinfoprogbyfac);
+app.get('/api/v1/updateppuaddinfoprogcomments',  aipondicontroller.updateppuaddinfoprogcomments);
+app.get('/api/v1/ppuaddinfoproglinks',  aipondicontroller.ppuaddinfoproglinks);
+app.get('/api/v1/ppuaddinfoprogdocs',  aipondicontroller.ppuaddinfoprogdocs);
+app.get('/api/v1/deleteppuaddinfoprogbyfac',  aipondicontroller.deleteppuaddinfoprogbyfac);
+app.get('/api/v1/createppuaddinfoprogbyfac',  aipondicontroller.createppuaddinfoprogbyfac);
+app.get('/api/v1/getppuaddinfonocbyfac',  aipondicontroller.getppuaddinfonocbyfac);
+app.get('/api/v1/ppuaddinfonocbyprog',  aipondicontroller.ppuaddinfonocbyprog);
+app.get('/api/v1/updateppuaddinfonocbyfac',  aipondicontroller.updateppuaddinfonocbyfac);
+app.get('/api/v1/updateppuaddinfonoccomments',  aipondicontroller.updateppuaddinfonoccomments);
+app.get('/api/v1/ppuaddinfonoclinks',  aipondicontroller.ppuaddinfonoclinks);
+app.get('/api/v1/ppuaddinfonocdocs',  aipondicontroller.ppuaddinfonocdocs);
+app.get('/api/v1/deleteppuaddinfonocbyfac',  aipondicontroller.deleteppuaddinfonocbyfac);
+app.get('/api/v1/createppuaddinfonocbyfac',  aipondicontroller.createppuaddinfonocbyfac);
+app.get('/api/v1/getppuaddinfopermissionbyfac',  aipondicontroller.getppuaddinfopermissionbyfac);
+app.get('/api/v1/ppuaddinfopermissionbyprog',  aipondicontroller.ppuaddinfopermissionbyprog);
+app.get('/api/v1/updateppuaddinfopermissionbyfac',  aipondicontroller.updateppuaddinfopermissionbyfac);
+app.get('/api/v1/updateppuaddinfopermissioncomments',  aipondicontroller.updateppuaddinfopermissioncomments);
+app.get('/api/v1/ppuaddinfopermissionlinks',  aipondicontroller.ppuaddinfopermissionlinks);
+app.get('/api/v1/ppuaddinfopermissiondocs',  aipondicontroller.ppuaddinfopermissiondocs);
+app.get('/api/v1/deleteppuaddinfopermissionbyfac',  aipondicontroller.deleteppuaddinfopermissionbyfac);
+app.get('/api/v1/createppuaddinfopermissionbyfac',  aipondicontroller.createppuaddinfopermissionbyfac);
+app.get('/api/v1/getppuaddinfobosbyfac',  aipondicontroller.getppuaddinfobosbyfac);
+app.get('/api/v1/ppuaddinfobosbyprog',  aipondicontroller.ppuaddinfobosbyprog);
+app.get('/api/v1/updateppuaddinfobosbyfac',  aipondicontroller.updateppuaddinfobosbyfac);
+app.get('/api/v1/updateppuaddinfoboscomments',  aipondicontroller.updateppuaddinfoboscomments);
+app.get('/api/v1/ppuaddinfoboslinks',  aipondicontroller.ppuaddinfoboslinks);
+app.get('/api/v1/ppuaddinfobosdocs',  aipondicontroller.ppuaddinfobosdocs);
+app.get('/api/v1/deleteppuaddinfobosbyfac',  aipondicontroller.deleteppuaddinfobosbyfac);
+app.get('/api/v1/createppuaddinfobosbyfac',  aipondicontroller.createppuaddinfobosbyfac);
+app.get('/api/v1/getppuaddinfosyllabibyfac',  aipondicontroller.getppuaddinfosyllabibyfac);
+app.get('/api/v1/ppuaddinfosyllabibyprog',  aipondicontroller.ppuaddinfosyllabibyprog);
+app.get('/api/v1/updateppuaddinfosyllabibyfac',  aipondicontroller.updateppuaddinfosyllabibyfac);
+app.get('/api/v1/updateppuaddinfosyllabicomments',  aipondicontroller.updateppuaddinfosyllabicomments);
+app.get('/api/v1/ppuaddinfosyllabilinks',  aipondicontroller.ppuaddinfosyllabilinks);
+app.get('/api/v1/ppuaddinfosyllabidocs',  aipondicontroller.ppuaddinfosyllabidocs);
+app.get('/api/v1/deleteppuaddinfosyllabibyfac',  aipondicontroller.deleteppuaddinfosyllabibyfac);
+app.get('/api/v1/createppuaddinfosyllabibyfac',  aipondicontroller.createppuaddinfosyllabibyfac);
+app.get('/api/v1/getppuaddinfofacbyfac',  aipondicontroller.getppuaddinfofacbyfac);
+app.get('/api/v1/ppuaddinfofacbyprog',  aipondicontroller.ppuaddinfofacbyprog);
+app.get('/api/v1/updateppuaddinfofacbyfac',  aipondicontroller.updateppuaddinfofacbyfac);
+app.get('/api/v1/updateppuaddinfofaccomments',  aipondicontroller.updateppuaddinfofaccomments);
+app.get('/api/v1/ppuaddinfofaclinks',  aipondicontroller.ppuaddinfofaclinks);
+app.get('/api/v1/ppuaddinfofacdocs',  aipondicontroller.ppuaddinfofacdocs);
+app.get('/api/v1/deleteppuaddinfofacbyfac',  aipondicontroller.deleteppuaddinfofacbyfac);
+app.get('/api/v1/createppuaddinfofacbyfac',  aipondicontroller.createppuaddinfofacbyfac);
+app.get('/api/v1/getppuaddinfostaffdetailsbyfac',  aipondicontroller.getppuaddinfostaffdetailsbyfac);
+app.get('/api/v1/ppuaddinfostaffdetailsbyprog',  aipondicontroller.ppuaddinfostaffdetailsbyprog);
+app.get('/api/v1/updateppuaddinfostaffdetailsbyfac',  aipondicontroller.updateppuaddinfostaffdetailsbyfac);
+app.get('/api/v1/updateppuaddinfostaffdetailscomments',  aipondicontroller.updateppuaddinfostaffdetailscomments);
+app.get('/api/v1/ppuaddinfostaffdetailslinks',  aipondicontroller.ppuaddinfostaffdetailslinks);
+app.get('/api/v1/ppuaddinfostaffdetailsdocs',  aipondicontroller.ppuaddinfostaffdetailsdocs);
+app.get('/api/v1/deleteppuaddinfostaffdetailsbyfac',  aipondicontroller.deleteppuaddinfostaffdetailsbyfac);
+app.get('/api/v1/createppuaddinfostaffdetailsbyfac',  aipondicontroller.createppuaddinfostaffdetailsbyfac);
+app.get('/api/v1/getppuaddfacdetailsbyfac',  aipondicontroller.getppuaddfacdetailsbyfac);
+app.get('/api/v1/ppuaddfacdetailsbyprog',  aipondicontroller.ppuaddfacdetailsbyprog);
+app.get('/api/v1/updateppuaddfacdetailsbyfac',  aipondicontroller.updateppuaddfacdetailsbyfac);
+app.get('/api/v1/updateppuaddfacdetailscomments',  aipondicontroller.updateppuaddfacdetailscomments);
+app.get('/api/v1/ppuaddfacdetailslinks',  aipondicontroller.ppuaddfacdetailslinks);
+app.get('/api/v1/ppuaddfacdetailsdocs',  aipondicontroller.ppuaddfacdetailsdocs);
+app.get('/api/v1/deleteppuaddfacdetailsbyfac',  aipondicontroller.deleteppuaddfacdetailsbyfac);
+app.get('/api/v1/createppuaddfacdetailsbyfac',  aipondicontroller.createppuaddfacdetailsbyfac);
+app.get('/api/v1/getppufacworkloadbyfac',  aipondicontroller.getppufacworkloadbyfac);
+app.get('/api/v1/ppufacworkloadbyprog',  aipondicontroller.ppufacworkloadbyprog);
+app.get('/api/v1/updateppufacworkloadbyfac',  aipondicontroller.updateppufacworkloadbyfac);
+app.get('/api/v1/updateppufacworkloadcomments',  aipondicontroller.updateppufacworkloadcomments);
+app.get('/api/v1/ppufacworkloadlinks',  aipondicontroller.ppufacworkloadlinks);
+app.get('/api/v1/ppufacworkloaddocs',  aipondicontroller.ppufacworkloaddocs);
+app.get('/api/v1/deleteppufacworkloadbyfac',  aipondicontroller.deleteppufacworkloadbyfac);
+app.get('/api/v1/createppufacworkloadbyfac',  aipondicontroller.createppufacworkloadbyfac);
+
+
+
+
+
+const aiannacontroller=require('./controllers/aiannacontroller');
+
+app.get('/api/v1/getpaunfacnewbyfac',  aiannacontroller.getpaunfacnewbyfac);
+app.get('/api/v1/paunfacnewbyprog',  aiannacontroller.paunfacnewbyprog);
+app.get('/api/v1/updatepaunfacnewbyfac',  aiannacontroller.updatepaunfacnewbyfac);
+app.get('/api/v1/updatepaunfacnewcomments',  aiannacontroller.updatepaunfacnewcomments);
+app.get('/api/v1/paunfacnewlinks',  aiannacontroller.paunfacnewlinks);
+app.get('/api/v1/paunfacnewdocs',  aiannacontroller.paunfacnewdocs);
+app.get('/api/v1/deletepaunfacnewbyfac',  aiannacontroller.deletepaunfacnewbyfac);
+app.get('/api/v1/createpaunfacnewbyfac',  aiannacontroller.createpaunfacnewbyfac);
+app.get('/api/v1/getpauprncplphdbyfac',  aiannacontroller.getpauprncplphdbyfac);
+app.get('/api/v1/pauprncplphdbyprog',  aiannacontroller.pauprncplphdbyprog);
+app.get('/api/v1/updatepauprncplphdbyfac',  aiannacontroller.updatepauprncplphdbyfac);
+app.get('/api/v1/updatepauprncplphdcomments',  aiannacontroller.updatepauprncplphdcomments);
+app.get('/api/v1/pauprncplphdlinks',  aiannacontroller.pauprncplphdlinks);
+app.get('/api/v1/pauprncplphddocs',  aiannacontroller.pauprncplphddocs);
+app.get('/api/v1/deletepauprncplphdbyfac',  aiannacontroller.deletepauprncplphdbyfac);
+app.get('/api/v1/createpauprncplphdbyfac',  aiannacontroller.createpauprncplphdbyfac);
+app.get('/api/v1/getpauprncplpubbyfac',  aiannacontroller.getpauprncplpubbyfac);
+app.get('/api/v1/pauprncplpubbyprog',  aiannacontroller.pauprncplpubbyprog);
+app.get('/api/v1/updatepauprncplpubbyfac',  aiannacontroller.updatepauprncplpubbyfac);
+app.get('/api/v1/updatepauprncplpubcomments',  aiannacontroller.updatepauprncplpubcomments);
+app.get('/api/v1/pauprncplpublinks',  aiannacontroller.pauprncplpublinks);
+app.get('/api/v1/pauprncplpubdocs',  aiannacontroller.pauprncplpubdocs);
+app.get('/api/v1/deletepauprncplpubbyfac',  aiannacontroller.deletepauprncplpubbyfac);
+app.get('/api/v1/createpauprncplpubbyfac',  aiannacontroller.createpauprncplpubbyfac);
+
+
+app.get('/api/v1/getainsmasterbyfac',  aiannacontroller.getainsmasterbyfac);
+app.get('/api/v1/ainsmasterbyprog',  aiannacontroller.ainsmasterbyprog);
+app.get('/api/v1/updateainsmasterbyfac',  aiannacontroller.updateainsmasterbyfac);
+app.get('/api/v1/updateainsmastercomments',  aiannacontroller.updateainsmastercomments);
+app.get('/api/v1/ainsmasterlinks',  aiannacontroller.ainsmasterlinks);
+app.get('/api/v1/ainsmasterdocs',  aiannacontroller.ainsmasterdocs);
+app.get('/api/v1/deleteainsmasterbyfac',  aiannacontroller.deleteainsmasterbyfac);
+app.get('/api/v1/createainsmasterbyfac',  aiannacontroller.createainsmasterbyfac);
+
+
+app.get('/api/v1/getpauinstdetailsbyfac',  aiannacontroller.getpauinstdetailsbyfac);
+app.get('/api/v1/pauinstdetailsbyprog',  aiannacontroller.pauinstdetailsbyprog);
+app.get('/api/v1/updatepauinstdetailsbyfac',  aiannacontroller.updatepauinstdetailsbyfac);
+app.get('/api/v1/updatepauinstdetailscomments',  aiannacontroller.updatepauinstdetailscomments);
+app.get('/api/v1/pauinstdetailslinks',  aiannacontroller.pauinstdetailslinks);
+app.get('/api/v1/pauinstdetailsdocs',  aiannacontroller.pauinstdetailsdocs);
+app.get('/api/v1/deletepauinstdetailsbyfac',  aiannacontroller.deletepauinstdetailsbyfac);
+app.get('/api/v1/createpauinstdetailsbyfac',  aiannacontroller.createpauinstdetailsbyfac);
+app.get('/api/v1/getpauinstcoursebyfac',  aiannacontroller.getpauinstcoursebyfac);
+app.get('/api/v1/pauinstcoursebyprog',  aiannacontroller.pauinstcoursebyprog);
+app.get('/api/v1/updatepauinstcoursebyfac',  aiannacontroller.updatepauinstcoursebyfac);
+app.get('/api/v1/updatepauinstcoursecomments',  aiannacontroller.updatepauinstcoursecomments);
+app.get('/api/v1/pauinstcourselinks',  aiannacontroller.pauinstcourselinks);
+app.get('/api/v1/pauinstcoursedocs',  aiannacontroller.pauinstcoursedocs);
+app.get('/api/v1/deletepauinstcoursebyfac',  aiannacontroller.deletepauinstcoursebyfac);
+app.get('/api/v1/createpauinstcoursebyfac',  aiannacontroller.createpauinstcoursebyfac);
+app.get('/api/v1/getpaunequipbyfac',  aiannacontroller.getpaunequipbyfac);
+app.get('/api/v1/paunequipbyprog',  aiannacontroller.paunequipbyprog);
+app.get('/api/v1/updatepaunequipbyfac',  aiannacontroller.updatepaunequipbyfac);
+app.get('/api/v1/updatepaunequipcomments',  aiannacontroller.updatepaunequipcomments);
+app.get('/api/v1/paunequiplinks',  aiannacontroller.paunequiplinks);
+app.get('/api/v1/paunequipdocs',  aiannacontroller.paunequipdocs);
+app.get('/api/v1/deletepaunequipbyfac',  aiannacontroller.deletepaunequipbyfac);
+app.get('/api/v1/createpaunequipbyfac',  aiannacontroller.createpaunequipbyfac);
+app.get('/api/v1/getpaunewfcoeexpbyfac',  aiannacontroller.getpaunewfcoeexpbyfac);
+app.get('/api/v1/paunewfcoeexpbyprog',  aiannacontroller.paunewfcoeexpbyprog);
+app.get('/api/v1/updatepaunewfcoeexpbyfac',  aiannacontroller.updatepaunewfcoeexpbyfac);
+app.get('/api/v1/updatepaunewfcoeexpcomments',  aiannacontroller.updatepaunewfcoeexpcomments);
+app.get('/api/v1/paunewfcoeexplinks',  aiannacontroller.paunewfcoeexplinks);
+app.get('/api/v1/paunewfcoeexpdocs',  aiannacontroller.paunewfcoeexpdocs);
+app.get('/api/v1/deletepaunewfcoeexpbyfac',  aiannacontroller.deletepaunewfcoeexpbyfac);
+app.get('/api/v1/createpaunewfcoeexpbyfac',  aiannacontroller.createpaunewfcoeexpbyfac);
+
+
+
+app.get('/api/v1/getpaunewfacultydetailsbyfac',  aiannacontroller.getpaunewfacultydetailsbyfac);
+app.get('/api/v1/paunewfacultydetailsbyprog',  aiannacontroller.paunewfacultydetailsbyprog);
+app.get('/api/v1/updatepaunewfacultydetailsbyfac',  aiannacontroller.updatepaunewfacultydetailsbyfac);
+app.get('/api/v1/updatepaunewfacultydetailscomments',  aiannacontroller.updatepaunewfacultydetailscomments);
+app.get('/api/v1/paunewfacultydetailslinks',  aiannacontroller.paunewfacultydetailslinks);
+app.get('/api/v1/paunewfacultydetailsdocs',  aiannacontroller.paunewfacultydetailsdocs);
+app.get('/api/v1/deletepaunewfacultydetailsbyfac',  aiannacontroller.deletepaunewfacultydetailsbyfac);
+app.get('/api/v1/createpaunewfacultydetailsbyfac',  aiannacontroller.createpaunewfacultydetailsbyfac);
+app.get('/api/v1/getpaunewfaddqualifbyfac',  aiannacontroller.getpaunewfaddqualifbyfac);
+app.get('/api/v1/paunewfaddqualifbyprog',  aiannacontroller.paunewfaddqualifbyprog);
+app.get('/api/v1/updatepaunewfaddqualifbyfac',  aiannacontroller.updatepaunewfaddqualifbyfac);
+app.get('/api/v1/updatepaunewfaddqualifcomments',  aiannacontroller.updatepaunewfaddqualifcomments);
+app.get('/api/v1/paunewfaddqualiflinks',  aiannacontroller.paunewfaddqualiflinks);
+app.get('/api/v1/paunewfaddqualifdocs',  aiannacontroller.paunewfaddqualifdocs);
+app.get('/api/v1/deletepaunewfaddqualifbyfac',  aiannacontroller.deletepaunewfaddqualifbyfac);
+app.get('/api/v1/createpaunewfaddqualifbyfac',  aiannacontroller.createpaunewfaddqualifbyfac);
+app.get('/api/v1/getpaunewfacdexpbyfac',  aiannacontroller.getpaunewfacdexpbyfac);
+app.get('/api/v1/paunewfacdexpbyprog',  aiannacontroller.paunewfacdexpbyprog);
+app.get('/api/v1/updatepaunewfacdexpbyfac',  aiannacontroller.updatepaunewfacdexpbyfac);
+app.get('/api/v1/updatepaunewfacdexpcomments',  aiannacontroller.updatepaunewfacdexpcomments);
+app.get('/api/v1/paunewfacdexplinks',  aiannacontroller.paunewfacdexplinks);
+app.get('/api/v1/paunewfacdexpdocs',  aiannacontroller.paunewfacdexpdocs);
+app.get('/api/v1/deletepaunewfacdexpbyfac',  aiannacontroller.deletepaunewfacdexpbyfac);
+app.get('/api/v1/createpaunewfacdexpbyfac',  aiannacontroller.createpaunewfacdexpbyfac);
+app.get('/api/v1/getpaunewfindexpbyfac',  aiannacontroller.getpaunewfindexpbyfac);
+app.get('/api/v1/paunewfindexpbyprog',  aiannacontroller.paunewfindexpbyprog);
+app.get('/api/v1/updatepaunewfindexpbyfac',  aiannacontroller.updatepaunewfindexpbyfac);
+app.get('/api/v1/updatepaunewfindexpcomments',  aiannacontroller.updatepaunewfindexpcomments);
+app.get('/api/v1/paunewfindexplinks',  aiannacontroller.paunewfindexplinks);
+app.get('/api/v1/paunewfindexpdocs',  aiannacontroller.paunewfindexpdocs);
+app.get('/api/v1/deletepaunewfindexpbyfac',  aiannacontroller.deletepaunewfindexpbyfac);
+app.get('/api/v1/createpaunewfindexpbyfac',  aiannacontroller.createpaunewfindexpbyfac);
+app.get('/api/v1/getpaunewfeduqualifbyfac',  aiannacontroller.getpaunewfeduqualifbyfac);
+app.get('/api/v1/paunewfeduqualifbyprog',  aiannacontroller.paunewfeduqualifbyprog);
+app.get('/api/v1/updatepaunewfeduqualifbyfac',  aiannacontroller.updatepaunewfeduqualifbyfac);
+app.get('/api/v1/updatepaunewfeduqualifcomments',  aiannacontroller.updatepaunewfeduqualifcomments);
+app.get('/api/v1/paunewfeduqualiflinks',  aiannacontroller.paunewfeduqualiflinks);
+app.get('/api/v1/paunewfeduqualifdocs',  aiannacontroller.paunewfeduqualifdocs);
+app.get('/api/v1/deletepaunewfeduqualifbyfac',  aiannacontroller.deletepaunewfeduqualifbyfac);
+app.get('/api/v1/createpaunewfeduqualifbyfac',  aiannacontroller.createpaunewfeduqualifbyfac);
+app.get('/api/v1/getpaunewlanddetailsbyfac',  aiannacontroller.getpaunewlanddetailsbyfac);
+app.get('/api/v1/paunewlanddetailsbyprog',  aiannacontroller.paunewlanddetailsbyprog);
+app.get('/api/v1/updatepaunewlanddetailsbyfac',  aiannacontroller.updatepaunewlanddetailsbyfac);
+app.get('/api/v1/updatepaunewlanddetailscomments',  aiannacontroller.updatepaunewlanddetailscomments);
+app.get('/api/v1/paunewlanddetailslinks',  aiannacontroller.paunewlanddetailslinks);
+app.get('/api/v1/paunewlanddetailsdocs',  aiannacontroller.paunewlanddetailsdocs);
+app.get('/api/v1/deletepaunewlanddetailsbyfac',  aiannacontroller.deletepaunewlanddetailsbyfac);
+app.get('/api/v1/createpaunewlanddetailsbyfac',  aiannacontroller.createpaunewlanddetailsbyfac);
+
+
+
+app.get('/api/v1/getpaunlibbooksbyfac',  aiannacontroller.getpaunlibbooksbyfac);
+app.get('/api/v1/paunlibbooksbyprog',  aiannacontroller.paunlibbooksbyprog);
+app.get('/api/v1/updatepaunlibbooksbyfac',  aiannacontroller.updatepaunlibbooksbyfac);
+app.get('/api/v1/updatepaunlibbookscomments',  aiannacontroller.updatepaunlibbookscomments);
+app.get('/api/v1/paunlibbookslinks',  aiannacontroller.paunlibbookslinks);
+app.get('/api/v1/paunlibbooksdocs',  aiannacontroller.paunlibbooksdocs);
+app.get('/api/v1/deletepaunlibbooksbyfac',  aiannacontroller.deletepaunlibbooksbyfac);
+app.get('/api/v1/createpaunlibbooksbyfac',  aiannacontroller.createpaunlibbooksbyfac);
+app.get('/api/v1/getpaunewidetailsbyfac',  aiannacontroller.getpaunewidetailsbyfac);
+app.get('/api/v1/paunewidetailsbyprog',  aiannacontroller.paunewidetailsbyprog);
+app.get('/api/v1/updatepaunewidetailsbyfac',  aiannacontroller.updatepaunewidetailsbyfac);
+app.get('/api/v1/updatepaunewidetailscomments',  aiannacontroller.updatepaunewidetailscomments);
+app.get('/api/v1/paunewidetailslinks',  aiannacontroller.paunewidetailslinks);
+app.get('/api/v1/paunewidetailsdocs',  aiannacontroller.paunewidetailsdocs);
+app.get('/api/v1/deletepaunewidetailsbyfac',  aiannacontroller.deletepaunewidetailsbyfac);
+app.get('/api/v1/createpaunewidetailsbyfac',  aiannacontroller.createpaunewidetailsbyfac);
+app.get('/api/v1/getpaunewprincipalbyfac',  aiannacontroller.getpaunewprincipalbyfac);
+app.get('/api/v1/paunewprincipalbyprog',  aiannacontroller.paunewprincipalbyprog);
+app.get('/api/v1/updatepaunewprincipalbyfac',  aiannacontroller.updatepaunewprincipalbyfac);
+app.get('/api/v1/updatepaunewprincipalcomments',  aiannacontroller.updatepaunewprincipalcomments);
+app.get('/api/v1/paunewprincipallinks',  aiannacontroller.paunewprincipallinks);
+app.get('/api/v1/paunewprincipaldocs',  aiannacontroller.paunewprincipaldocs);
+app.get('/api/v1/deletepaunewprincipalbyfac',  aiannacontroller.deletepaunewprincipalbyfac);
+app.get('/api/v1/createpaunewprincipalbyfac',  aiannacontroller.createpaunewprincipalbyfac);
+app.get('/api/v1/getpauclassblockbyfac',  aiannacontroller.getpauclassblockbyfac);
+app.get('/api/v1/pauclassblockbyprog',  aiannacontroller.pauclassblockbyprog);
+app.get('/api/v1/updatepauclassblockbyfac',  aiannacontroller.updatepauclassblockbyfac);
+app.get('/api/v1/updatepauclassblockcomments',  aiannacontroller.updatepauclassblockcomments);
+app.get('/api/v1/pauclassblocklinks',  aiannacontroller.pauclassblocklinks);
+app.get('/api/v1/pauclassblockdocs',  aiannacontroller.pauclassblockdocs);
+app.get('/api/v1/deletepauclassblockbyfac',  aiannacontroller.deletepauclassblockbyfac);
+app.get('/api/v1/createpauclassblockbyfac',  aiannacontroller.createpauclassblockbyfac);
+app.get('/api/v1/getpauclassnewbyfac',  aiannacontroller.getpauclassnewbyfac);
+app.get('/api/v1/pauclassnewbyprog',  aiannacontroller.pauclassnewbyprog);
+app.get('/api/v1/updatepauclassnewbyfac',  aiannacontroller.updatepauclassnewbyfac);
+app.get('/api/v1/updatepauclassnewcomments',  aiannacontroller.updatepauclassnewcomments);
+app.get('/api/v1/pauclassnewlinks',  aiannacontroller.pauclassnewlinks);
+app.get('/api/v1/pauclassnewdocs',  aiannacontroller.pauclassnewdocs);
+app.get('/api/v1/deletepauclassnewbyfac',  aiannacontroller.deletepauclassnewbyfac);
+app.get('/api/v1/createpauclassnewbyfac',  aiannacontroller.createpauclassnewbyfac);
+app.get('/api/v1/getpaunlibjournalbyfac',  aiannacontroller.getpaunlibjournalbyfac);
+app.get('/api/v1/paunlibjournalbyprog',  aiannacontroller.paunlibjournalbyprog);
+app.get('/api/v1/updatepaunlibjournalbyfac',  aiannacontroller.updatepaunlibjournalbyfac);
+app.get('/api/v1/updatepaunlibjournalcomments',  aiannacontroller.updatepaunlibjournalcomments);
+app.get('/api/v1/paunlibjournallinks',  aiannacontroller.paunlibjournallinks);
+app.get('/api/v1/paunlibjournaldocs',  aiannacontroller.paunlibjournaldocs);
+app.get('/api/v1/deletepaunlibjournalbyfac',  aiannacontroller.deletepaunlibjournalbyfac);
+app.get('/api/v1/createpaunlibjournalbyfac',  aiannacontroller.createpaunlibjournalbyfac);
+
+
+
+app.get('/api/v1/getpaunnprincipalbyfac',  aiannacontroller.getpaunnprincipalbyfac);
+app.get('/api/v1/paunnprincipalbyprog',  aiannacontroller.paunnprincipalbyprog);
+app.get('/api/v1/updatepaunnprincipalbyfac',  aiannacontroller.updatepaunnprincipalbyfac);
+app.get('/api/v1/updatepaunnprincipalcomments',  aiannacontroller.updatepaunnprincipalcomments);
+app.get('/api/v1/paunnprincipallinks',  aiannacontroller.paunnprincipallinks);
+app.get('/api/v1/paunnprincipaldocs',  aiannacontroller.paunnprincipaldocs);
+app.get('/api/v1/deletepaunnprincipalbyfac',  aiannacontroller.deletepaunnprincipalbyfac);
+app.get('/api/v1/createpaunnprincipalbyfac',  aiannacontroller.createpaunnprincipalbyfac);
+app.get('/api/v1/getpaungovcouncilbyfac',  aiannacontroller.getpaungovcouncilbyfac);
+app.get('/api/v1/paungovcouncilbyprog',  aiannacontroller.paungovcouncilbyprog);
+app.get('/api/v1/updatepaungovcouncilbyfac',  aiannacontroller.updatepaungovcouncilbyfac);
+app.get('/api/v1/updatepaungovcouncilcomments',  aiannacontroller.updatepaungovcouncilcomments);
+app.get('/api/v1/paungovcouncillinks',  aiannacontroller.paungovcouncillinks);
+app.get('/api/v1/paungovcouncildocs',  aiannacontroller.paungovcouncildocs);
+app.get('/api/v1/deletepaungovcouncilbyfac',  aiannacontroller.deletepaungovcouncilbyfac);
+app.get('/api/v1/createpaungovcouncilbyfac',  aiannacontroller.createpaungovcouncilbyfac);
+app.get('/api/v1/getpaunboardbyfac',  aiannacontroller.getpaunboardbyfac);
+app.get('/api/v1/paunboardbyprog',  aiannacontroller.paunboardbyprog);
+app.get('/api/v1/updatepaunboardbyfac',  aiannacontroller.updatepaunboardbyfac);
+app.get('/api/v1/updatepaunboardcomments',  aiannacontroller.updatepaunboardcomments);
+app.get('/api/v1/paunboardlinks',  aiannacontroller.paunboardlinks);
+app.get('/api/v1/paunboarddocs',  aiannacontroller.paunboarddocs);
+app.get('/api/v1/deletepaunboardbyfac',  aiannacontroller.deletepaunboardbyfac);
+app.get('/api/v1/createpaunboardbyfac',  aiannacontroller.createpaunboardbyfac);
+app.get('/api/v1/getpaunprocfeebyfac',  aiannacontroller.getpaunprocfeebyfac);
+app.get('/api/v1/paunprocfeebyprog',  aiannacontroller.paunprocfeebyprog);
+app.get('/api/v1/updatepaunprocfeebyfac',  aiannacontroller.updatepaunprocfeebyfac);
+app.get('/api/v1/updatepaunprocfeecomments',  aiannacontroller.updatepaunprocfeecomments);
+app.get('/api/v1/paunprocfeelinks',  aiannacontroller.paunprocfeelinks);
+app.get('/api/v1/paunprocfeedocs',  aiannacontroller.paunprocfeedocs);
+app.get('/api/v1/deletepaunprocfeebyfac',  aiannacontroller.deletepaunprocfeebyfac);
+app.get('/api/v1/createpaunprocfeebyfac',  aiannacontroller.createpaunprocfeebyfac);
+app.get('/api/v1/getpauntermlanwanbyfac',  aiannacontroller.getpauntermlanwanbyfac);
+app.get('/api/v1/pauntermlanwanbyprog',  aiannacontroller.pauntermlanwanbyprog);
+app.get('/api/v1/updatepauntermlanwanbyfac',  aiannacontroller.updatepauntermlanwanbyfac);
+app.get('/api/v1/updatepauntermlanwancomments',  aiannacontroller.updatepauntermlanwancomments);
+app.get('/api/v1/pauntermlanwanlinks',  aiannacontroller.pauntermlanwanlinks);
+app.get('/api/v1/pauntermlanwandocs',  aiannacontroller.pauntermlanwandocs);
+app.get('/api/v1/deletepauntermlanwanbyfac',  aiannacontroller.deletepauntermlanwanbyfac);
+app.get('/api/v1/createpauntermlanwanbyfac',  aiannacontroller.createpauntermlanwanbyfac);
+app.get('/api/v1/getpaunidetailsbyfac',  aiannacontroller.getpaunidetailsbyfac);
+app.get('/api/v1/paunidetailsbyprog',  aiannacontroller.paunidetailsbyprog);
+app.get('/api/v1/updatepaunidetailsbyfac',  aiannacontroller.updatepaunidetailsbyfac);
+app.get('/api/v1/updatepaunidetailscomments',  aiannacontroller.updatepaunidetailscomments);
+app.get('/api/v1/paunidetailslinks',  aiannacontroller.paunidetailslinks);
+app.get('/api/v1/paunidetailsdocs',  aiannacontroller.paunidetailsdocs);
+app.get('/api/v1/deletepaunidetailsbyfac',  aiannacontroller.deletepaunidetailsbyfac);
+app.get('/api/v1/createpaunidetailsbyfac',  aiannacontroller.createpaunidetailsbyfac);
+app.get('/api/v1/getpaunfacultydetailsbyfac',  aiannacontroller.getpaunfacultydetailsbyfac);
+app.get('/api/v1/paunfacultydetailsbyprog',  aiannacontroller.paunfacultydetailsbyprog);
+app.get('/api/v1/updatepaunfacultydetailsbyfac',  aiannacontroller.updatepaunfacultydetailsbyfac);
+app.get('/api/v1/updatepaunfacultydetailscomments',  aiannacontroller.updatepaunfacultydetailscomments);
+app.get('/api/v1/paunfacultydetailslinks',  aiannacontroller.paunfacultydetailslinks);
+app.get('/api/v1/paunfacultydetailsdocs',  aiannacontroller.paunfacultydetailsdocs);
+app.get('/api/v1/deletepaunfacultydetailsbyfac',  aiannacontroller.deletepaunfacultydetailsbyfac);
+app.get('/api/v1/createpaunfacultydetailsbyfac',  aiannacontroller.createpaunfacultydetailsbyfac);
+app.get('/api/v1/getpaunfaddqualifbyfac',  aiannacontroller.getpaunfaddqualifbyfac);
+app.get('/api/v1/paunfaddqualifbyprog',  aiannacontroller.paunfaddqualifbyprog);
+app.get('/api/v1/updatepaunfaddqualifbyfac',  aiannacontroller.updatepaunfaddqualifbyfac);
+app.get('/api/v1/updatepaunfaddqualifcomments',  aiannacontroller.updatepaunfaddqualifcomments);
+app.get('/api/v1/paunfaddqualiflinks',  aiannacontroller.paunfaddqualiflinks);
+app.get('/api/v1/paunfaddqualifdocs',  aiannacontroller.paunfaddqualifdocs);
+app.get('/api/v1/deletepaunfaddqualifbyfac',  aiannacontroller.deletepaunfaddqualifbyfac);
+app.get('/api/v1/createpaunfaddqualifbyfac',  aiannacontroller.createpaunfaddqualifbyfac);
+app.get('/api/v1/getpaunfacdexpbyfac',  aiannacontroller.getpaunfacdexpbyfac);
+app.get('/api/v1/paunfacdexpbyprog',  aiannacontroller.paunfacdexpbyprog);
+app.get('/api/v1/updatepaunfacdexpbyfac',  aiannacontroller.updatepaunfacdexpbyfac);
+app.get('/api/v1/updatepaunfacdexpcomments',  aiannacontroller.updatepaunfacdexpcomments);
+app.get('/api/v1/paunfacdexplinks',  aiannacontroller.paunfacdexplinks);
+app.get('/api/v1/paunfacdexpdocs',  aiannacontroller.paunfacdexpdocs);
+app.get('/api/v1/deletepaunfacdexpbyfac',  aiannacontroller.deletepaunfacdexpbyfac);
+app.get('/api/v1/createpaunfacdexpbyfac',  aiannacontroller.createpaunfacdexpbyfac);
+app.get('/api/v1/getpaunfindexpbyfac',  aiannacontroller.getpaunfindexpbyfac);
+app.get('/api/v1/paunfindexpbyprog',  aiannacontroller.paunfindexpbyprog);
+app.get('/api/v1/updatepaunfindexpbyfac',  aiannacontroller.updatepaunfindexpbyfac);
+app.get('/api/v1/updatepaunfindexpcomments',  aiannacontroller.updatepaunfindexpcomments);
+app.get('/api/v1/paunfindexplinks',  aiannacontroller.paunfindexplinks);
+app.get('/api/v1/paunfindexpdocs',  aiannacontroller.paunfindexpdocs);
+app.get('/api/v1/deletepaunfindexpbyfac',  aiannacontroller.deletepaunfindexpbyfac);
+app.get('/api/v1/createpaunfindexpbyfac',  aiannacontroller.createpaunfindexpbyfac);
+app.get('/api/v1/getpaunnfeduqualifbyfac',  aiannacontroller.getpaunnfeduqualifbyfac);
+app.get('/api/v1/paunnfeduqualifbyprog',  aiannacontroller.paunnfeduqualifbyprog);
+app.get('/api/v1/updatepaunnfeduqualifbyfac',  aiannacontroller.updatepaunnfeduqualifbyfac);
+app.get('/api/v1/updatepaunnfeduqualifcomments',  aiannacontroller.updatepaunnfeduqualifcomments);
+app.get('/api/v1/paunnfeduqualiflinks',  aiannacontroller.paunnfeduqualiflinks);
+app.get('/api/v1/paunnfeduqualifdocs',  aiannacontroller.paunnfeduqualifdocs);
+app.get('/api/v1/deletepaunnfeduqualifbyfac',  aiannacontroller.deletepaunnfeduqualifbyfac);
+app.get('/api/v1/createpaunnfeduqualifbyfac',  aiannacontroller.createpaunnfeduqualifbyfac);
+app.get('/api/v1/getpaunnfcoeexpbyfac',  aiannacontroller.getpaunnfcoeexpbyfac);
+app.get('/api/v1/paunnfcoeexpbyprog',  aiannacontroller.paunnfcoeexpbyprog);
+app.get('/api/v1/updatepaunnfcoeexpbyfac',  aiannacontroller.updatepaunnfcoeexpbyfac);
+app.get('/api/v1/updatepaunnfcoeexpcomments',  aiannacontroller.updatepaunnfcoeexpcomments);
+app.get('/api/v1/paunnfcoeexplinks',  aiannacontroller.paunnfcoeexplinks);
+app.get('/api/v1/paunnfcoeexpdocs',  aiannacontroller.paunnfcoeexpdocs);
+app.get('/api/v1/deletepaunnfcoeexpbyfac',  aiannacontroller.deletepaunnfcoeexpbyfac);
+app.get('/api/v1/createpaunnfcoeexpbyfac',  aiannacontroller.createpaunnfcoeexpbyfac);
+app.get('/api/v1/getpaunadminareabyfac',  aiannacontroller.getpaunadminareabyfac);
+app.get('/api/v1/paunadminareabyprog',  aiannacontroller.paunadminareabyprog);
+app.get('/api/v1/updatepaunadminareabyfac',  aiannacontroller.updatepaunadminareabyfac);
+app.get('/api/v1/updatepaunadminareacomments',  aiannacontroller.updatepaunadminareacomments);
+app.get('/api/v1/paunadminarealinks',  aiannacontroller.paunadminarealinks);
+app.get('/api/v1/paunadminareadocs',  aiannacontroller.paunadminareadocs);
+app.get('/api/v1/deletepaunadminareabyfac',  aiannacontroller.deletepaunadminareabyfac);
+app.get('/api/v1/createpaunadminareabyfac',  aiannacontroller.createpaunadminareabyfac);
+app.get('/api/v1/getpaunamenbyfac',  aiannacontroller.getpaunamenbyfac);
+app.get('/api/v1/paunamenbyprog',  aiannacontroller.paunamenbyprog);
+app.get('/api/v1/updatepaunamenbyfac',  aiannacontroller.updatepaunamenbyfac);
+app.get('/api/v1/updatepaunamencomments',  aiannacontroller.updatepaunamencomments);
+app.get('/api/v1/paunamenlinks',  aiannacontroller.paunamenlinks);
+app.get('/api/v1/paunamendocs',  aiannacontroller.paunamendocs);
+app.get('/api/v1/deletepaunamenbyfac',  aiannacontroller.deletepaunamenbyfac);
+app.get('/api/v1/createpaunamenbyfac',  aiannacontroller.createpaunamenbyfac);
+app.get('/api/v1/getpaunotherbuildareabyfac',  aiannacontroller.getpaunotherbuildareabyfac);
+app.get('/api/v1/paunotherbuildareabyprog',  aiannacontroller.paunotherbuildareabyprog);
+app.get('/api/v1/updatepaunotherbuildareabyfac',  aiannacontroller.updatepaunotherbuildareabyfac);
+app.get('/api/v1/updatepaunotherbuildareacomments',  aiannacontroller.updatepaunotherbuildareacomments);
+app.get('/api/v1/paunotherbuildarealinks',  aiannacontroller.paunotherbuildarealinks);
+app.get('/api/v1/paunotherbuildareadocs',  aiannacontroller.paunotherbuildareadocs);
+app.get('/api/v1/deletepaunotherbuildareabyfac',  aiannacontroller.deletepaunotherbuildareabyfac);
+app.get('/api/v1/createpaunotherbuildareabyfac',  aiannacontroller.createpaunotherbuildareabyfac);
+
+
+
+app.get('/api/v1/getpnirfbyfac',  aiannacontroller.getpnirfbyfac);
+app.get('/api/v1/pnirfbyprog',  aiannacontroller.pnirfbyprog);
+app.get('/api/v1/updatepnirfbyfac',  aiannacontroller.updatepnirfbyfac);
+app.get('/api/v1/updatepnirfcomments',  aiannacontroller.updatepnirfcomments);
+app.get('/api/v1/pnirflinks',  aiannacontroller.pnirflinks);
+app.get('/api/v1/pnirfdocs',  aiannacontroller.pnirfdocs);
+app.get('/api/v1/deletepnirfbyfac',  aiannacontroller.deletepnirfbyfac);
+app.get('/api/v1/createpnirfbyfac',  aiannacontroller.createpnirfbyfac);
+app.get('/api/v1/getpadmnewbyfac',  aiannacontroller.getpadmnewbyfac);
+app.get('/api/v1/padmnewbyprog',  aiannacontroller.padmnewbyprog);
+app.get('/api/v1/updatepadmnewbyfac',  aiannacontroller.updatepadmnewbyfac);
+app.get('/api/v1/updatepadmnewcomments',  aiannacontroller.updatepadmnewcomments);
+app.get('/api/v1/padmnewlinks',  aiannacontroller.padmnewlinks);
+app.get('/api/v1/padmnewdocs',  aiannacontroller.padmnewdocs);
+app.get('/api/v1/deletepadmnewbyfac',  aiannacontroller.deletepadmnewbyfac);
+app.get('/api/v1/createpadmnewbyfac',  aiannacontroller.createpadmnewbyfac);
+app.get('/api/v1/getpnbanewbyfac',  aiannacontroller.getpnbanewbyfac);
+app.get('/api/v1/pnbanewbyprog',  aiannacontroller.pnbanewbyprog);
+app.get('/api/v1/updatepnbanewbyfac',  aiannacontroller.updatepnbanewbyfac);
+app.get('/api/v1/updatepnbanewcomments',  aiannacontroller.updatepnbanewcomments);
+app.get('/api/v1/pnbanewlinks',  aiannacontroller.pnbanewlinks);
+app.get('/api/v1/pnbanewdocs',  aiannacontroller.pnbanewdocs);
+app.get('/api/v1/deletepnbanewbyfac',  aiannacontroller.deletepnbanewbyfac);
+app.get('/api/v1/createpnbanewbyfac',  aiannacontroller.createpnbanewbyfac);
+app.get('/api/v1/getpaunfcoeexpbyfac',  aiannacontroller.getpaunfcoeexpbyfac);
+app.get('/api/v1/paunfcoeexpbyprog',  aiannacontroller.paunfcoeexpbyprog);
+app.get('/api/v1/updatepaunfcoeexpbyfac',  aiannacontroller.updatepaunfcoeexpbyfac);
+app.get('/api/v1/updatepaunfcoeexpcomments',  aiannacontroller.updatepaunfcoeexpcomments);
+app.get('/api/v1/paunfcoeexplinks',  aiannacontroller.paunfcoeexplinks);
+app.get('/api/v1/paunfcoeexpdocs',  aiannacontroller.paunfcoeexpdocs);
+app.get('/api/v1/deletepaunfcoeexpbyfac',  aiannacontroller.deletepaunfcoeexpbyfac);
+app.get('/api/v1/createpaunfcoeexpbyfac',  aiannacontroller.createpaunfcoeexpbyfac);
+app.get('/api/v1/getpaunprincipalabyfac',  aiannacontroller.getpaunprincipalabyfac);
+app.get('/api/v1/paunprincipalabyprog',  aiannacontroller.paunprincipalabyprog);
+app.get('/api/v1/updatepaunprincipalabyfac',  aiannacontroller.updatepaunprincipalabyfac);
+app.get('/api/v1/updatepaunprincipalacomments',  aiannacontroller.updatepaunprincipalacomments);
+app.get('/api/v1/paunprincipalalinks',  aiannacontroller.paunprincipalalinks);
+app.get('/api/v1/paunprincipaladocs',  aiannacontroller.paunprincipaladocs);
+app.get('/api/v1/deletepaunprincipalabyfac',  aiannacontroller.deletepaunprincipalabyfac);
+app.get('/api/v1/createpaunprincipalabyfac',  aiannacontroller.createpaunprincipalabyfac);
+app.get('/api/v1/getpaunfeduqualifbyfac',  aiannacontroller.getpaunfeduqualifbyfac);
+app.get('/api/v1/paunfeduqualifbyprog',  aiannacontroller.paunfeduqualifbyprog);
+app.get('/api/v1/updatepaunfeduqualifbyfac',  aiannacontroller.updatepaunfeduqualifbyfac);
+app.get('/api/v1/updatepaunfeduqualifcomments',  aiannacontroller.updatepaunfeduqualifcomments);
+app.get('/api/v1/paunfeduqualiflinks',  aiannacontroller.paunfeduqualiflinks);
+app.get('/api/v1/paunfeduqualifdocs',  aiannacontroller.paunfeduqualifdocs);
+app.get('/api/v1/deletepaunfeduqualifbyfac',  aiannacontroller.deletepaunfeduqualifbyfac);
+app.get('/api/v1/createpaunfeduqualifbyfac',  aiannacontroller.createpaunfeduqualifbyfac);
+app.get('/api/v1/getpaunhealthbyfac',  aiannacontroller.getpaunhealthbyfac);
+app.get('/api/v1/paunhealthbyprog',  aiannacontroller.paunhealthbyprog);
+app.get('/api/v1/updatepaunhealthbyfac',  aiannacontroller.updatepaunhealthbyfac);
+app.get('/api/v1/updatepaunhealthcomments',  aiannacontroller.updatepaunhealthcomments);
+app.get('/api/v1/paunhealthlinks',  aiannacontroller.paunhealthlinks);
+app.get('/api/v1/paunhealthdocs',  aiannacontroller.paunhealthdocs);
+app.get('/api/v1/deletepaunhealthbyfac',  aiannacontroller.deletepaunhealthbyfac);
+app.get('/api/v1/createpaunhealthbyfac',  aiannacontroller.createpaunhealthbyfac);
+app.get('/api/v1/getpaunnoofdrawhallbyfac',  aiannacontroller.getpaunnoofdrawhallbyfac);
+app.get('/api/v1/paunnoofdrawhallbyprog',  aiannacontroller.paunnoofdrawhallbyprog);
+app.get('/api/v1/updatepaunnoofdrawhallbyfac',  aiannacontroller.updatepaunnoofdrawhallbyfac);
+app.get('/api/v1/updatepaunnoofdrawhallcomments',  aiannacontroller.updatepaunnoofdrawhallcomments);
+app.get('/api/v1/paunnoofdrawhalllinks',  aiannacontroller.paunnoofdrawhalllinks);
+app.get('/api/v1/paunnoofdrawhalldocs',  aiannacontroller.paunnoofdrawhalldocs);
+app.get('/api/v1/deletepaunnoofdrawhallbyfac',  aiannacontroller.deletepaunnoofdrawhallbyfac);
+app.get('/api/v1/createpaunnoofdrawhallbyfac',  aiannacontroller.createpaunnoofdrawhallbyfac);
+app.get('/api/v1/getpaunstuddetailsbyfac',  aiannacontroller.getpaunstuddetailsbyfac);
+app.get('/api/v1/paunstuddetailsbyprog',  aiannacontroller.paunstuddetailsbyprog);
+app.get('/api/v1/updatepaunstuddetailsbyfac',  aiannacontroller.updatepaunstuddetailsbyfac);
+app.get('/api/v1/updatepaunstuddetailscomments',  aiannacontroller.updatepaunstuddetailscomments);
+app.get('/api/v1/paunstuddetailslinks',  aiannacontroller.paunstuddetailslinks);
+app.get('/api/v1/paunstuddetailsdocs',  aiannacontroller.paunstuddetailsdocs);
+app.get('/api/v1/deletepaunstuddetailsbyfac',  aiannacontroller.deletepaunstuddetailsbyfac);
+app.get('/api/v1/createpaunstuddetailsbyfac',  aiannacontroller.createpaunstuddetailsbyfac);
+
+
+
+
+
+app.get('/api/v1/getpauidetailsabyfac',  aiannacontroller.getpauidetailsabyfac);
+app.get('/api/v1/pauidetailsabyprog',  aiannacontroller.pauidetailsabyprog);
+app.get('/api/v1/updatepauidetailsabyfac',  aiannacontroller.updatepauidetailsabyfac);
+app.get('/api/v1/updatepauidetailsacomments',  aiannacontroller.updatepauidetailsacomments);
+app.get('/api/v1/pauidetailsalinks',  aiannacontroller.pauidetailsalinks);
+app.get('/api/v1/pauidetailsadocs',  aiannacontroller.pauidetailsadocs);
+app.get('/api/v1/deletepauidetailsabyfac',  aiannacontroller.deletepauidetailsabyfac);
+app.get('/api/v1/createpauidetailsabyfac',  aiannacontroller.createpauidetailsabyfac);
+app.get('/api/v1/getpauidetailsbbyfac',  aiannacontroller.getpauidetailsbbyfac);
+app.get('/api/v1/pauidetailsbbyprog',  aiannacontroller.pauidetailsbbyprog);
+app.get('/api/v1/updatepauidetailsbbyfac',  aiannacontroller.updatepauidetailsbbyfac);
+app.get('/api/v1/updatepauidetailsbcomments',  aiannacontroller.updatepauidetailsbcomments);
+app.get('/api/v1/pauidetailsblinks',  aiannacontroller.pauidetailsblinks);
+app.get('/api/v1/pauidetailsbdocs',  aiannacontroller.pauidetailsbdocs);
+app.get('/api/v1/deletepauidetailsbbyfac',  aiannacontroller.deletepauidetailsbbyfac);
+app.get('/api/v1/createpauidetailsbbyfac',  aiannacontroller.createpauidetailsbbyfac);
+app.get('/api/v1/getpauidetailscbyfac',  aiannacontroller.getpauidetailscbyfac);
+app.get('/api/v1/pauidetailscbyprog',  aiannacontroller.pauidetailscbyprog);
+app.get('/api/v1/updatepauidetailscbyfac',  aiannacontroller.updatepauidetailscbyfac);
+app.get('/api/v1/updatepauidetailsccomments',  aiannacontroller.updatepauidetailsccomments);
+app.get('/api/v1/pauidetailsclinks',  aiannacontroller.pauidetailsclinks);
+app.get('/api/v1/pauidetailscdocs',  aiannacontroller.pauidetailscdocs);
+app.get('/api/v1/deletepauidetailscbyfac',  aiannacontroller.deletepauidetailscbyfac);
+app.get('/api/v1/createpauidetailscbyfac',  aiannacontroller.createpauidetailscbyfac);
+app.get('/api/v1/getpautrustbyfac',  aiannacontroller.getpautrustbyfac);
+app.get('/api/v1/pautrustbyprog',  aiannacontroller.pautrustbyprog);
+app.get('/api/v1/updatepautrustbyfac',  aiannacontroller.updatepautrustbyfac);
+app.get('/api/v1/updatepautrustcomments',  aiannacontroller.updatepautrustcomments);
+app.get('/api/v1/pautrustlinks',  aiannacontroller.pautrustlinks);
+app.get('/api/v1/pautrustdocs',  aiannacontroller.pautrustdocs);
+app.get('/api/v1/deletepautrustbyfac',  aiannacontroller.deletepautrustbyfac);
+app.get('/api/v1/createpautrustbyfac',  aiannacontroller.createpautrustbyfac);
+app.get('/api/v1/getpauprincipalabyfac',  aiannacontroller.getpauprincipalabyfac);
+app.get('/api/v1/pauprincipalabyprog',  aiannacontroller.pauprincipalabyprog);
+app.get('/api/v1/updatepauprincipalabyfac',  aiannacontroller.updatepauprincipalabyfac);
+app.get('/api/v1/updatepauprincipalacomments',  aiannacontroller.updatepauprincipalacomments);
+app.get('/api/v1/pauprincipalalinks',  aiannacontroller.pauprincipalalinks);
+app.get('/api/v1/pauprincipaladocs',  aiannacontroller.pauprincipaladocs);
+app.get('/api/v1/deletepauprincipalabyfac',  aiannacontroller.deletepauprincipalabyfac);
+app.get('/api/v1/createpauprincipalabyfac',  aiannacontroller.createpauprincipalabyfac);
+app.get('/api/v1/getpauprincipalbbyfac',  aiannacontroller.getpauprincipalbbyfac);
+app.get('/api/v1/pauprincipalbbyprog',  aiannacontroller.pauprincipalbbyprog);
+app.get('/api/v1/updatepauprincipalbbyfac',  aiannacontroller.updatepauprincipalbbyfac);
+app.get('/api/v1/updatepauprincipalbcomments',  aiannacontroller.updatepauprincipalbcomments);
+app.get('/api/v1/pauprincipalblinks',  aiannacontroller.pauprincipalblinks);
+app.get('/api/v1/pauprincipalbdocs',  aiannacontroller.pauprincipalbdocs);
+app.get('/api/v1/deletepauprincipalbbyfac',  aiannacontroller.deletepauprincipalbbyfac);
+app.get('/api/v1/createpauprincipalbbyfac',  aiannacontroller.createpauprincipalbbyfac);
+app.get('/api/v1/getpaugovcouncilabyfac',  aiannacontroller.getpaugovcouncilabyfac);
+app.get('/api/v1/paugovcouncilabyprog',  aiannacontroller.paugovcouncilabyprog);
+app.get('/api/v1/updatepaugovcouncilabyfac',  aiannacontroller.updatepaugovcouncilabyfac);
+app.get('/api/v1/updatepaugovcouncilacomments',  aiannacontroller.updatepaugovcouncilacomments);
+app.get('/api/v1/paugovcouncilalinks',  aiannacontroller.paugovcouncilalinks);
+app.get('/api/v1/paugovcounciladocs',  aiannacontroller.paugovcounciladocs);
+app.get('/api/v1/deletepaugovcouncilabyfac',  aiannacontroller.deletepaugovcouncilabyfac);
+app.get('/api/v1/createpaugovcouncilabyfac',  aiannacontroller.createpaugovcouncilabyfac);
+app.get('/api/v1/getpaugovcouncilbbyfac',  aiannacontroller.getpaugovcouncilbbyfac);
+app.get('/api/v1/paugovcouncilbbyprog',  aiannacontroller.paugovcouncilbbyprog);
+app.get('/api/v1/updatepaugovcouncilbbyfac',  aiannacontroller.updatepaugovcouncilbbyfac);
+app.get('/api/v1/updatepaugovcouncilbcomments',  aiannacontroller.updatepaugovcouncilbcomments);
+app.get('/api/v1/paugovcouncilblinks',  aiannacontroller.paugovcouncilblinks);
+app.get('/api/v1/paugovcouncilbdocs',  aiannacontroller.paugovcouncilbdocs);
+app.get('/api/v1/deletepaugovcouncilbbyfac',  aiannacontroller.deletepaugovcouncilbbyfac);
+app.get('/api/v1/createpaugovcouncilbbyfac',  aiannacontroller.createpaugovcouncilbbyfac);
+app.get('/api/v1/getpauboardabyfac',  aiannacontroller.getpauboardabyfac);
+app.get('/api/v1/pauboardabyprog',  aiannacontroller.pauboardabyprog);
+app.get('/api/v1/updatepauboardabyfac',  aiannacontroller.updatepauboardabyfac);
+app.get('/api/v1/updatepauboardacomments',  aiannacontroller.updatepauboardacomments);
+app.get('/api/v1/pauboardalinks',  aiannacontroller.pauboardalinks);
+app.get('/api/v1/pauboardadocs',  aiannacontroller.pauboardadocs);
+app.get('/api/v1/deletepauboardabyfac',  aiannacontroller.deletepauboardabyfac);
+app.get('/api/v1/createpauboardabyfac',  aiannacontroller.createpauboardabyfac);
+app.get('/api/v1/getpauboardbbyfac',  aiannacontroller.getpauboardbbyfac);
+app.get('/api/v1/pauboardbbyprog',  aiannacontroller.pauboardbbyprog);
+app.get('/api/v1/updatepauboardbbyfac',  aiannacontroller.updatepauboardbbyfac);
+app.get('/api/v1/updatepauboardbcomments',  aiannacontroller.updatepauboardbcomments);
+app.get('/api/v1/pauboardblinks',  aiannacontroller.pauboardblinks);
+app.get('/api/v1/pauboardbdocs',  aiannacontroller.pauboardbdocs);
+app.get('/api/v1/deletepauboardbbyfac',  aiannacontroller.deletepauboardbbyfac);
+app.get('/api/v1/createpauboardbbyfac',  aiannacontroller.createpauboardbbyfac);
+app.get('/api/v1/getpauragcomtbyfac',  aiannacontroller.getpauragcomtbyfac);
+app.get('/api/v1/pauragcomtbyprog',  aiannacontroller.pauragcomtbyprog);
+app.get('/api/v1/updatepauragcomtbyfac',  aiannacontroller.updatepauragcomtbyfac);
+app.get('/api/v1/updatepauragcomtcomments',  aiannacontroller.updatepauragcomtcomments);
+app.get('/api/v1/pauragcomtlinks',  aiannacontroller.pauragcomtlinks);
+app.get('/api/v1/pauragcomtdocs',  aiannacontroller.pauragcomtdocs);
+app.get('/api/v1/deletepauragcomtbyfac',  aiannacontroller.deletepauragcomtbyfac);
+app.get('/api/v1/createpauragcomtbyfac',  aiannacontroller.createpauragcomtbyfac);
+app.get('/api/v1/getpauragsquadbyfac',  aiannacontroller.getpauragsquadbyfac);
+app.get('/api/v1/pauragsquadbyprog',  aiannacontroller.pauragsquadbyprog);
+app.get('/api/v1/updatepauragsquadbyfac',  aiannacontroller.updatepauragsquadbyfac);
+app.get('/api/v1/updatepauragsquadcomments',  aiannacontroller.updatepauragsquadcomments);
+app.get('/api/v1/pauragsquadlinks',  aiannacontroller.pauragsquadlinks);
+app.get('/api/v1/pauragsquaddocs',  aiannacontroller.pauragsquaddocs);
+app.get('/api/v1/deletepauragsquadbyfac',  aiannacontroller.deletepauragsquadbyfac);
+app.get('/api/v1/createpauragsquadbyfac',  aiannacontroller.createpauragsquadbyfac);
+app.get('/api/v1/getpauwelfarecomtbyfac',  aiannacontroller.getpauwelfarecomtbyfac);
+app.get('/api/v1/pauwelfarecomtbyprog',  aiannacontroller.pauwelfarecomtbyprog);
+app.get('/api/v1/updatepauwelfarecomtbyfac',  aiannacontroller.updatepauwelfarecomtbyfac);
+app.get('/api/v1/updatepauwelfarecomtcomments',  aiannacontroller.updatepauwelfarecomtcomments);
+app.get('/api/v1/pauwelfarecomtlinks',  aiannacontroller.pauwelfarecomtlinks);
+app.get('/api/v1/pauwelfarecomtdocs',  aiannacontroller.pauwelfarecomtdocs);
+app.get('/api/v1/deletepauwelfarecomtbyfac',  aiannacontroller.deletepauwelfarecomtbyfac);
+app.get('/api/v1/createpauwelfarecomtbyfac',  aiannacontroller.createpauwelfarecomtbyfac);
+app.get('/api/v1/getpauredressalbyfac',  aiannacontroller.getpauredressalbyfac);
+app.get('/api/v1/pauredressalbyprog',  aiannacontroller.pauredressalbyprog);
+app.get('/api/v1/updatepauredressalbyfac',  aiannacontroller.updatepauredressalbyfac);
+app.get('/api/v1/updatepauredressalcomments',  aiannacontroller.updatepauredressalcomments);
+app.get('/api/v1/pauredressallinks',  aiannacontroller.pauredressallinks);
+app.get('/api/v1/pauredressaldocs',  aiannacontroller.pauredressaldocs);
+app.get('/api/v1/deletepauredressalbyfac',  aiannacontroller.deletepauredressalbyfac);
+app.get('/api/v1/createpauredressalbyfac',  aiannacontroller.createpauredressalbyfac);
+app.get('/api/v1/getpaubankacntsbyfac',  aiannacontroller.getpaubankacntsbyfac);
+app.get('/api/v1/paubankacntsbyprog',  aiannacontroller.paubankacntsbyprog);
+app.get('/api/v1/updatepaubankacntsbyfac',  aiannacontroller.updatepaubankacntsbyfac);
+app.get('/api/v1/updatepaubankacntscomments',  aiannacontroller.updatepaubankacntscomments);
+app.get('/api/v1/paubankacntslinks',  aiannacontroller.paubankacntslinks);
+app.get('/api/v1/paubankacntsdocs',  aiannacontroller.paubankacntsdocs);
+app.get('/api/v1/deletepaubankacntsbyfac',  aiannacontroller.deletepaubankacntsbyfac);
+app.get('/api/v1/createpaubankacntsbyfac',  aiannacontroller.createpaubankacntsbyfac);
+app.get('/api/v1/getpaudepositbyfac',  aiannacontroller.getpaudepositbyfac);
+app.get('/api/v1/paudepositbyprog',  aiannacontroller.paudepositbyprog);
+app.get('/api/v1/updatepaudepositbyfac',  aiannacontroller.updatepaudepositbyfac);
+app.get('/api/v1/updatepaudepositcomments',  aiannacontroller.updatepaudepositcomments);
+app.get('/api/v1/paudepositlinks',  aiannacontroller.paudepositlinks);
+app.get('/api/v1/paudepositdocs',  aiannacontroller.paudepositdocs);
+app.get('/api/v1/deletepaudepositbyfac',  aiannacontroller.deletepaudepositbyfac);
+app.get('/api/v1/createpaudepositbyfac',  aiannacontroller.createpaudepositbyfac);
+app.get('/api/v1/getpauendowmentbyfac',  aiannacontroller.getpauendowmentbyfac);
+app.get('/api/v1/pauendowmentbyprog',  aiannacontroller.pauendowmentbyprog);
+app.get('/api/v1/updatepauendowmentbyfac',  aiannacontroller.updatepauendowmentbyfac);
+app.get('/api/v1/updatepauendowmentcomments',  aiannacontroller.updatepauendowmentcomments);
+app.get('/api/v1/pauendowmentlinks',  aiannacontroller.pauendowmentlinks);
+app.get('/api/v1/pauendowmentdocs',  aiannacontroller.pauendowmentdocs);
+app.get('/api/v1/deletepauendowmentbyfac',  aiannacontroller.deletepauendowmentbyfac);
+app.get('/api/v1/createpauendowmentbyfac',  aiannacontroller.createpauendowmentbyfac);
+app.get('/api/v1/getpaulanddetailsabyfac',  aiannacontroller.getpaulanddetailsabyfac);
+app.get('/api/v1/paulanddetailsabyprog',  aiannacontroller.paulanddetailsabyprog);
+app.get('/api/v1/updatepaulanddetailsabyfac',  aiannacontroller.updatepaulanddetailsabyfac);
+app.get('/api/v1/updatepaulanddetailsacomments',  aiannacontroller.updatepaulanddetailsacomments);
+app.get('/api/v1/paulanddetailsalinks',  aiannacontroller.paulanddetailsalinks);
+app.get('/api/v1/paulanddetailsadocs',  aiannacontroller.paulanddetailsadocs);
+app.get('/api/v1/deletepaulanddetailsabyfac',  aiannacontroller.deletepaulanddetailsabyfac);
+app.get('/api/v1/createpaulanddetailsabyfac',  aiannacontroller.createpaulanddetailsabyfac);
+app.get('/api/v1/getpaulanddetailsbbyfac',  aiannacontroller.getpaulanddetailsbbyfac);
+app.get('/api/v1/paulanddetailsbbyprog',  aiannacontroller.paulanddetailsbbyprog);
+app.get('/api/v1/updatepaulanddetailsbbyfac',  aiannacontroller.updatepaulanddetailsbbyfac);
+app.get('/api/v1/updatepaulanddetailsbcomments',  aiannacontroller.updatepaulanddetailsbcomments);
+app.get('/api/v1/paulanddetailsblinks',  aiannacontroller.paulanddetailsblinks);
+app.get('/api/v1/paulanddetailsbdocs',  aiannacontroller.paulanddetailsbdocs);
+app.get('/api/v1/deletepaulanddetailsbbyfac',  aiannacontroller.deletepaulanddetailsbbyfac);
+app.get('/api/v1/createpaulanddetailsbbyfac',  aiannacontroller.createpaulanddetailsbbyfac);
+app.get('/api/v1/getpaucoursebyfac',  aiannacontroller.getpaucoursebyfac);
+app.get('/api/v1/paucoursebyprog',  aiannacontroller.paucoursebyprog);
+app.get('/api/v1/updatepaucoursebyfac',  aiannacontroller.updatepaucoursebyfac);
+app.get('/api/v1/updatepaucoursecomments',  aiannacontroller.updatepaucoursecomments);
+app.get('/api/v1/paucourselinks',  aiannacontroller.paucourselinks);
+app.get('/api/v1/paucoursedocs',  aiannacontroller.paucoursedocs);
+app.get('/api/v1/deletepaucoursebyfac',  aiannacontroller.deletepaucoursebyfac);
+app.get('/api/v1/createpaucoursebyfac',  aiannacontroller.createpaucoursebyfac);
+app.get('/api/v1/getpaucrsedetailsbyfac',  aiannacontroller.getpaucrsedetailsbyfac);
+app.get('/api/v1/paucrsedetailsbyprog',  aiannacontroller.paucrsedetailsbyprog);
+app.get('/api/v1/updatepaucrsedetailsbyfac',  aiannacontroller.updatepaucrsedetailsbyfac);
+app.get('/api/v1/updatepaucrsedetailscomments',  aiannacontroller.updatepaucrsedetailscomments);
+app.get('/api/v1/paucrsedetailslinks',  aiannacontroller.paucrsedetailslinks);
+app.get('/api/v1/paucrsedetailsdocs',  aiannacontroller.paucrsedetailsdocs);
+app.get('/api/v1/deletepaucrsedetailsbyfac',  aiannacontroller.deletepaucrsedetailsbyfac);
+app.get('/api/v1/createpaucrsedetailsbyfac',  aiannacontroller.createpaucrsedetailsbyfac);
+app.get('/api/v1/getpauaddcrsebyfac',  aiannacontroller.getpauaddcrsebyfac);
+app.get('/api/v1/pauaddcrsebyprog',  aiannacontroller.pauaddcrsebyprog);
+app.get('/api/v1/updatepauaddcrsebyfac',  aiannacontroller.updatepauaddcrsebyfac);
+app.get('/api/v1/updatepauaddcrsecomments',  aiannacontroller.updatepauaddcrsecomments);
+app.get('/api/v1/pauaddcrselinks',  aiannacontroller.pauaddcrselinks);
+app.get('/api/v1/pauaddcrsedocs',  aiannacontroller.pauaddcrsedocs);
+app.get('/api/v1/deletepauaddcrsebyfac',  aiannacontroller.deletepauaddcrsebyfac);
+app.get('/api/v1/createpauaddcrsebyfac',  aiannacontroller.createpauaddcrsebyfac);
+app.get('/api/v1/getpaustuddetailsbyfac',  aiannacontroller.getpaustuddetailsbyfac);
+app.get('/api/v1/paustuddetailsbyprog',  aiannacontroller.paustuddetailsbyprog);
+app.get('/api/v1/updatepaustuddetailsbyfac',  aiannacontroller.updatepaustuddetailsbyfac);
+app.get('/api/v1/updatepaustuddetailscomments',  aiannacontroller.updatepaustuddetailscomments);
+app.get('/api/v1/paustuddetailslinks',  aiannacontroller.paustuddetailslinks);
+app.get('/api/v1/paustuddetailsdocs',  aiannacontroller.paustuddetailsdocs);
+app.get('/api/v1/deletepaustuddetailsbyfac',  aiannacontroller.deletepaustuddetailsbyfac);
+app.get('/api/v1/createpaustuddetailsbyfac',  aiannacontroller.createpaustuddetailsbyfac);
+app.get('/api/v1/getpaufacultybyfac',  aiannacontroller.getpaufacultybyfac);
+app.get('/api/v1/paufacultybyprog',  aiannacontroller.paufacultybyprog);
+app.get('/api/v1/updatepaufacultybyfac',  aiannacontroller.updatepaufacultybyfac);
+app.get('/api/v1/updatepaufacultycomments',  aiannacontroller.updatepaufacultycomments);
+app.get('/api/v1/paufacultylinks',  aiannacontroller.paufacultylinks);
+app.get('/api/v1/paufacultydocs',  aiannacontroller.paufacultydocs);
+app.get('/api/v1/deletepaufacultybyfac',  aiannacontroller.deletepaufacultybyfac);
+app.get('/api/v1/createpaufacultybyfac',  aiannacontroller.createpaufacultybyfac);
+app.get('/api/v1/getpaufdetailsabyfac',  aiannacontroller.getpaufdetailsabyfac);
+app.get('/api/v1/paufdetailsabyprog',  aiannacontroller.paufdetailsabyprog);
+app.get('/api/v1/updatepaufdetailsabyfac',  aiannacontroller.updatepaufdetailsabyfac);
+app.get('/api/v1/updatepaufdetailsacomments',  aiannacontroller.updatepaufdetailsacomments);
+app.get('/api/v1/paufdetailsalinks',  aiannacontroller.paufdetailsalinks);
+app.get('/api/v1/paufdetailsadocs',  aiannacontroller.paufdetailsadocs);
+app.get('/api/v1/deletepaufdetailsabyfac',  aiannacontroller.deletepaufdetailsabyfac);
+app.get('/api/v1/createpaufdetailsabyfac',  aiannacontroller.createpaufdetailsabyfac);
+app.get('/api/v1/getpaufdetailsbbyfac',  aiannacontroller.getpaufdetailsbbyfac);
+app.get('/api/v1/paufdetailsbbyprog',  aiannacontroller.paufdetailsbbyprog);
+app.get('/api/v1/updatepaufdetailsbbyfac',  aiannacontroller.updatepaufdetailsbbyfac);
+app.get('/api/v1/updatepaufdetailsbcomments',  aiannacontroller.updatepaufdetailsbcomments);
+app.get('/api/v1/paufdetailsblinks',  aiannacontroller.paufdetailsblinks);
+app.get('/api/v1/paufdetailsbdocs',  aiannacontroller.paufdetailsbdocs);
+app.get('/api/v1/deletepaufdetailsbbyfac',  aiannacontroller.deletepaufdetailsbbyfac);
+app.get('/api/v1/createpaufdetailsbbyfac',  aiannacontroller.createpaufdetailsbbyfac);
+app.get('/api/v1/getpaufeduqualifbyfac',  aiannacontroller.getpaufeduqualifbyfac);
+app.get('/api/v1/paufeduqualifbyprog',  aiannacontroller.paufeduqualifbyprog);
+app.get('/api/v1/updatepaufeduqualifbyfac',  aiannacontroller.updatepaufeduqualifbyfac);
+app.get('/api/v1/updatepaufeduqualifcomments',  aiannacontroller.updatepaufeduqualifcomments);
+app.get('/api/v1/paufeduqualiflinks',  aiannacontroller.paufeduqualiflinks);
+app.get('/api/v1/paufeduqualifdocs',  aiannacontroller.paufeduqualifdocs);
+app.get('/api/v1/deletepaufeduqualifbyfac',  aiannacontroller.deletepaufeduqualifbyfac);
+app.get('/api/v1/createpaufeduqualifbyfac',  aiannacontroller.createpaufeduqualifbyfac);
+app.get('/api/v1/getpaufaddqualifbyfac',  aiannacontroller.getpaufaddqualifbyfac);
+app.get('/api/v1/paufaddqualifbyprog',  aiannacontroller.paufaddqualifbyprog);
+app.get('/api/v1/updatepaufaddqualifbyfac',  aiannacontroller.updatepaufaddqualifbyfac);
+app.get('/api/v1/updatepaufaddqualifcomments',  aiannacontroller.updatepaufaddqualifcomments);
+app.get('/api/v1/paufaddqualiflinks',  aiannacontroller.paufaddqualiflinks);
+app.get('/api/v1/paufaddqualifdocs',  aiannacontroller.paufaddqualifdocs);
+app.get('/api/v1/deletepaufaddqualifbyfac',  aiannacontroller.deletepaufaddqualifbyfac);
+app.get('/api/v1/createpaufaddqualifbyfac',  aiannacontroller.createpaufaddqualifbyfac);
+app.get('/api/v1/getpaufacdexpbyfac',  aiannacontroller.getpaufacdexpbyfac);
+app.get('/api/v1/paufacdexpbyprog',  aiannacontroller.paufacdexpbyprog);
+app.get('/api/v1/updatepaufacdexpbyfac',  aiannacontroller.updatepaufacdexpbyfac);
+app.get('/api/v1/updatepaufacdexpcomments',  aiannacontroller.updatepaufacdexpcomments);
+app.get('/api/v1/paufacdexplinks',  aiannacontroller.paufacdexplinks);
+app.get('/api/v1/paufacdexpdocs',  aiannacontroller.paufacdexpdocs);
+app.get('/api/v1/deletepaufacdexpbyfac',  aiannacontroller.deletepaufacdexpbyfac);
+app.get('/api/v1/createpaufacdexpbyfac',  aiannacontroller.createpaufacdexpbyfac);
+app.get('/api/v1/getpaufindexpbyfac',  aiannacontroller.getpaufindexpbyfac);
+app.get('/api/v1/paufindexpbyprog',  aiannacontroller.paufindexpbyprog);
+app.get('/api/v1/updatepaufindexpbyfac',  aiannacontroller.updatepaufindexpbyfac);
+app.get('/api/v1/updatepaufindexpcomments',  aiannacontroller.updatepaufindexpcomments);
+app.get('/api/v1/paufindexplinks',  aiannacontroller.paufindexplinks);
+app.get('/api/v1/paufindexpdocs',  aiannacontroller.paufindexpdocs);
+app.get('/api/v1/deletepaufindexpbyfac',  aiannacontroller.deletepaufindexpbyfac);
+app.get('/api/v1/createpaufindexpbyfac',  aiannacontroller.createpaufindexpbyfac);
+app.get('/api/v1/getpaufcoeexpbyfac',  aiannacontroller.getpaufcoeexpbyfac);
+app.get('/api/v1/paufcoeexpbyprog',  aiannacontroller.paufcoeexpbyprog);
+app.get('/api/v1/updatepaufcoeexpbyfac',  aiannacontroller.updatepaufcoeexpbyfac);
+app.get('/api/v1/updatepaufcoeexpcomments',  aiannacontroller.updatepaufcoeexpcomments);
+app.get('/api/v1/paufcoeexplinks',  aiannacontroller.paufcoeexplinks);
+app.get('/api/v1/paufcoeexpdocs',  aiannacontroller.paufcoeexpdocs);
+app.get('/api/v1/deletepaufcoeexpbyfac',  aiannacontroller.deletepaufcoeexpbyfac);
+app.get('/api/v1/createpaufcoeexpbyfac',  aiannacontroller.createpaufcoeexpbyfac);
+app.get('/api/v1/getpauconfacshebyfac',  aiannacontroller.getpauconfacshebyfac);
+app.get('/api/v1/pauconfacshebyprog',  aiannacontroller.pauconfacshebyprog);
+app.get('/api/v1/updatepauconfacshebyfac',  aiannacontroller.updatepauconfacshebyfac);
+app.get('/api/v1/updatepauconfacshecomments',  aiannacontroller.updatepauconfacshecomments);
+app.get('/api/v1/pauconfacshelinks',  aiannacontroller.pauconfacshelinks);
+app.get('/api/v1/pauconfacshedocs',  aiannacontroller.pauconfacshedocs);
+app.get('/api/v1/deletepauconfacshebyfac',  aiannacontroller.deletepauconfacshebyfac);
+app.get('/api/v1/createpauconfacshebyfac',  aiannacontroller.createpauconfacshebyfac);
+app.get('/api/v1/getpauconfaccoursebyfac',  aiannacontroller.getpauconfaccoursebyfac);
+app.get('/api/v1/pauconfaccoursebyprog',  aiannacontroller.pauconfaccoursebyprog);
+app.get('/api/v1/updatepauconfaccoursebyfac',  aiannacontroller.updatepauconfaccoursebyfac);
+app.get('/api/v1/updatepauconfaccoursecomments',  aiannacontroller.updatepauconfaccoursecomments);
+app.get('/api/v1/pauconfaccourselinks',  aiannacontroller.pauconfaccourselinks);
+app.get('/api/v1/pauconfaccoursedocs',  aiannacontroller.pauconfaccoursedocs);
+app.get('/api/v1/deletepauconfaccoursebyfac',  aiannacontroller.deletepauconfaccoursebyfac);
+app.get('/api/v1/createpauconfaccoursebyfac',  aiannacontroller.createpauconfaccoursebyfac);
+app.get('/api/v1/getpauconfacmemtechbyfac',  aiannacontroller.getpauconfacmemtechbyfac);
+app.get('/api/v1/pauconfacmemtechbyprog',  aiannacontroller.pauconfacmemtechbyprog);
+app.get('/api/v1/updatepauconfacmemtechbyfac',  aiannacontroller.updatepauconfacmemtechbyfac);
+app.get('/api/v1/updatepauconfacmemtechcomments',  aiannacontroller.updatepauconfacmemtechcomments);
+app.get('/api/v1/pauconfacmemtechlinks',  aiannacontroller.pauconfacmemtechlinks);
+app.get('/api/v1/pauconfacmemtechdocs',  aiannacontroller.pauconfacmemtechdocs);
+app.get('/api/v1/deletepauconfacmemtechbyfac',  aiannacontroller.deletepauconfacmemtechbyfac);
+app.get('/api/v1/createpauconfacmemtechbyfac',  aiannacontroller.createpauconfacmemtechbyfac);
+app.get('/api/v1/getpaunontstaffbyfac',  aiannacontroller.getpaunontstaffbyfac);
+app.get('/api/v1/paunontstaffbyprog',  aiannacontroller.paunontstaffbyprog);
+app.get('/api/v1/updatepaunontstaffbyfac',  aiannacontroller.updatepaunontstaffbyfac);
+app.get('/api/v1/updatepaunontstaffcomments',  aiannacontroller.updatepaunontstaffcomments);
+app.get('/api/v1/paunontstafflinks',  aiannacontroller.paunontstafflinks);
+app.get('/api/v1/paunontstaffdocs',  aiannacontroller.paunontstaffdocs);
+app.get('/api/v1/deletepaunontstaffbyfac',  aiannacontroller.deletepaunontstaffbyfac);
+app.get('/api/v1/createpaunontstaffbyfac',  aiannacontroller.createpaunontstaffbyfac);
+app.get('/api/v1/getpauspacereqbyfac',  aiannacontroller.getpauspacereqbyfac);
+app.get('/api/v1/pauspacereqbyprog',  aiannacontroller.pauspacereqbyprog);
+app.get('/api/v1/updatepauspacereqbyfac',  aiannacontroller.updatepauspacereqbyfac);
+app.get('/api/v1/updatepauspacereqcomments',  aiannacontroller.updatepauspacereqcomments);
+app.get('/api/v1/pauspacereqlinks',  aiannacontroller.pauspacereqlinks);
+app.get('/api/v1/pauspacereqdocs',  aiannacontroller.pauspacereqdocs);
+app.get('/api/v1/deletepauspacereqbyfac',  aiannacontroller.deletepauspacereqbyfac);
+app.get('/api/v1/createpauspacereqbyfac',  aiannacontroller.createpauspacereqbyfac);
+app.get('/api/v1/getpauequipbyfac',  aiannacontroller.getpauequipbyfac);
+app.get('/api/v1/pauequipbyprog',  aiannacontroller.pauequipbyprog);
+app.get('/api/v1/updatepauequipbyfac',  aiannacontroller.updatepauequipbyfac);
+app.get('/api/v1/updatepauequipcomments',  aiannacontroller.updatepauequipcomments);
+app.get('/api/v1/pauequiplinks',  aiannacontroller.pauequiplinks);
+app.get('/api/v1/pauequipdocs',  aiannacontroller.pauequipdocs);
+app.get('/api/v1/deletepauequipbyfac',  aiannacontroller.deletepauequipbyfac);
+app.get('/api/v1/createpauequipbyfac',  aiannacontroller.createpauequipbyfac);
+app.get('/api/v1/getpauequiplistbyfac',  aiannacontroller.getpauequiplistbyfac);
+app.get('/api/v1/pauequiplistbyprog',  aiannacontroller.pauequiplistbyprog);
+app.get('/api/v1/updatepauequiplistbyfac',  aiannacontroller.updatepauequiplistbyfac);
+app.get('/api/v1/updatepauequiplistcomments',  aiannacontroller.updatepauequiplistcomments);
+app.get('/api/v1/pauequiplistlinks',  aiannacontroller.pauequiplistlinks);
+app.get('/api/v1/pauequiplistdocs',  aiannacontroller.pauequiplistdocs);
+app.get('/api/v1/deletepauequiplistbyfac',  aiannacontroller.deletepauequiplistbyfac);
+app.get('/api/v1/createpauequiplistbyfac',  aiannacontroller.createpauequiplistbyfac);
+app.get('/api/v1/getpauccomfareabyfac',  aiannacontroller.getpauccomfareabyfac);
+app.get('/api/v1/pauccomfareabyprog',  aiannacontroller.pauccomfareabyprog);
+app.get('/api/v1/updatepauccomfareabyfac',  aiannacontroller.updatepauccomfareabyfac);
+app.get('/api/v1/updatepauccomfareacomments',  aiannacontroller.updatepauccomfareacomments);
+app.get('/api/v1/pauccomfarealinks',  aiannacontroller.pauccomfarealinks);
+app.get('/api/v1/pauccomfareadocs',  aiannacontroller.pauccomfareadocs);
+app.get('/api/v1/deletepauccomfareabyfac',  aiannacontroller.deletepauccomfareabyfac);
+app.get('/api/v1/createpauccomfareabyfac',  aiannacontroller.createpauccomfareabyfac);
+app.get('/api/v1/getpautermlanwanbyfac',  aiannacontroller.getpautermlanwanbyfac);
+app.get('/api/v1/pautermlanwanbyprog',  aiannacontroller.pautermlanwanbyprog);
+app.get('/api/v1/updatepautermlanwanbyfac',  aiannacontroller.updatepautermlanwanbyfac);
+app.get('/api/v1/updatepautermlanwancomments',  aiannacontroller.updatepautermlanwancomments);
+app.get('/api/v1/pautermlanwanlinks',  aiannacontroller.pautermlanwanlinks);
+app.get('/api/v1/pautermlanwandocs',  aiannacontroller.pautermlanwandocs);
+app.get('/api/v1/deletepautermlanwanbyfac',  aiannacontroller.deletepautermlanwanbyfac);
+app.get('/api/v1/createpautermlanwanbyfac',  aiannacontroller.createpautermlanwanbyfac);
+app.get('/api/v1/getpaunooftermbyfac',  aiannacontroller.getpaunooftermbyfac);
+app.get('/api/v1/paunooftermbyprog',  aiannacontroller.paunooftermbyprog);
+app.get('/api/v1/updatepaunooftermbyfac',  aiannacontroller.updatepaunooftermbyfac);
+app.get('/api/v1/updatepaunooftermcomments',  aiannacontroller.updatepaunooftermcomments);
+app.get('/api/v1/paunooftermlinks',  aiannacontroller.paunooftermlinks);
+app.get('/api/v1/paunooftermdocs',  aiannacontroller.paunooftermdocs);
+app.get('/api/v1/deletepaunooftermbyfac',  aiannacontroller.deletepaunooftermbyfac);
+app.get('/api/v1/createpaunooftermbyfac',  aiannacontroller.createpaunooftermbyfac);
+app.get('/api/v1/getpaunooftermlanbyfac',  aiannacontroller.getpaunooftermlanbyfac);
+app.get('/api/v1/paunooftermlanbyprog',  aiannacontroller.paunooftermlanbyprog);
+app.get('/api/v1/updatepaunooftermlanbyfac',  aiannacontroller.updatepaunooftermlanbyfac);
+app.get('/api/v1/updatepaunooftermlancomments',  aiannacontroller.updatepaunooftermlancomments);
+app.get('/api/v1/paunooftermlanlinks',  aiannacontroller.paunooftermlanlinks);
+app.get('/api/v1/paunooftermlandocs',  aiannacontroller.paunooftermlandocs);
+app.get('/api/v1/deletepaunooftermlanbyfac',  aiannacontroller.deletepaunooftermlanbyfac);
+app.get('/api/v1/createpaunooftermlanbyfac',  aiannacontroller.createpaunooftermlanbyfac);
+app.get('/api/v1/getpaunoofprintersbyfac',  aiannacontroller.getpaunoofprintersbyfac);
+app.get('/api/v1/paunoofprintersbyprog',  aiannacontroller.paunoofprintersbyprog);
+app.get('/api/v1/updatepaunoofprintersbyfac',  aiannacontroller.updatepaunoofprintersbyfac);
+app.get('/api/v1/updatepaunoofprinterscomments',  aiannacontroller.updatepaunoofprinterscomments);
+app.get('/api/v1/paunoofprinterslinks',  aiannacontroller.paunoofprinterslinks);
+app.get('/api/v1/paunoofprintersdocs',  aiannacontroller.paunoofprintersdocs);
+app.get('/api/v1/deletepaunoofprintersbyfac',  aiannacontroller.deletepaunoofprintersbyfac);
+app.get('/api/v1/createpaunoofprintersbyfac',  aiannacontroller.createpaunoofprintersbyfac);
+app.get('/api/v1/getpausoftwarebyfac',  aiannacontroller.getpausoftwarebyfac);
+app.get('/api/v1/pausoftwarebyprog',  aiannacontroller.pausoftwarebyprog);
+app.get('/api/v1/updatepausoftwarebyfac',  aiannacontroller.updatepausoftwarebyfac);
+app.get('/api/v1/updatepausoftwarecomments',  aiannacontroller.updatepausoftwarecomments);
+app.get('/api/v1/pausoftwarelinks',  aiannacontroller.pausoftwarelinks);
+app.get('/api/v1/pausoftwaredocs',  aiannacontroller.pausoftwaredocs);
+app.get('/api/v1/deletepausoftwarebyfac',  aiannacontroller.deletepausoftwarebyfac);
+app.get('/api/v1/createpausoftwarebyfac',  aiannacontroller.createpausoftwarebyfac);
+app.get('/api/v1/getpaunetworkbyfac',  aiannacontroller.getpaunetworkbyfac);
+app.get('/api/v1/paunetworkbyprog',  aiannacontroller.paunetworkbyprog);
+app.get('/api/v1/updatepaunetworkbyfac',  aiannacontroller.updatepaunetworkbyfac);
+app.get('/api/v1/updatepaunetworkcomments',  aiannacontroller.updatepaunetworkcomments);
+app.get('/api/v1/paunetworklinks',  aiannacontroller.paunetworklinks);
+app.get('/api/v1/paunetworkdocs',  aiannacontroller.paunetworkdocs);
+app.get('/api/v1/deletepaunetworkbyfac',  aiannacontroller.deletepaunetworkbyfac);
+app.get('/api/v1/createpaunetworkbyfac',  aiannacontroller.createpaunetworkbyfac);
+app.get('/api/v1/getpaulibareabyfac',  aiannacontroller.getpaulibareabyfac);
+app.get('/api/v1/paulibareabyprog',  aiannacontroller.paulibareabyprog);
+app.get('/api/v1/updatepaulibareabyfac',  aiannacontroller.updatepaulibareabyfac);
+app.get('/api/v1/updatepaulibareacomments',  aiannacontroller.updatepaulibareacomments);
+app.get('/api/v1/paulibarealinks',  aiannacontroller.paulibarealinks);
+app.get('/api/v1/paulibareadocs',  aiannacontroller.paulibareadocs);
+app.get('/api/v1/deletepaulibareabyfac',  aiannacontroller.deletepaulibareabyfac);
+app.get('/api/v1/createpaulibareabyfac',  aiannacontroller.createpaulibareabyfac);
+app.get('/api/v1/getpaulibbooksbyfac',  aiannacontroller.getpaulibbooksbyfac);
+app.get('/api/v1/paulibbooksbyprog',  aiannacontroller.paulibbooksbyprog);
+app.get('/api/v1/updatepaulibbooksbyfac',  aiannacontroller.updatepaulibbooksbyfac);
+app.get('/api/v1/updatepaulibbookscomments',  aiannacontroller.updatepaulibbookscomments);
+app.get('/api/v1/paulibbookslinks',  aiannacontroller.paulibbookslinks);
+app.get('/api/v1/paulibbooksdocs',  aiannacontroller.paulibbooksdocs);
+app.get('/api/v1/deletepaulibbooksbyfac',  aiannacontroller.deletepaulibbooksbyfac);
+app.get('/api/v1/createpaulibbooksbyfac',  aiannacontroller.createpaulibbooksbyfac);
+app.get('/api/v1/getpaulibjournalbyfac',  aiannacontroller.getpaulibjournalbyfac);
+app.get('/api/v1/paulibjournalbyprog',  aiannacontroller.paulibjournalbyprog);
+app.get('/api/v1/updatepaulibjournalbyfac',  aiannacontroller.updatepaulibjournalbyfac);
+app.get('/api/v1/updatepaulibjournalcomments',  aiannacontroller.updatepaulibjournalcomments);
+app.get('/api/v1/paulibjournallinks',  aiannacontroller.paulibjournallinks);
+app.get('/api/v1/paulibjournaldocs',  aiannacontroller.paulibjournaldocs);
+app.get('/api/v1/deletepaulibjournalbyfac',  aiannacontroller.deletepaulibjournalbyfac);
+app.get('/api/v1/createpaulibjournalbyfac',  aiannacontroller.createpaulibjournalbyfac);
+app.get('/api/v1/getpauavailclroombyfac',  aiannacontroller.getpauavailclroombyfac);
+app.get('/api/v1/pauavailclroombyprog',  aiannacontroller.pauavailclroombyprog);
+app.get('/api/v1/updatepauavailclroombyfac',  aiannacontroller.updatepauavailclroombyfac);
+app.get('/api/v1/updatepauavailclroomcomments',  aiannacontroller.updatepauavailclroomcomments);
+app.get('/api/v1/pauavailclroomlinks',  aiannacontroller.pauavailclroomlinks);
+app.get('/api/v1/pauavailclroomdocs',  aiannacontroller.pauavailclroomdocs);
+app.get('/api/v1/deletepauavailclroombyfac',  aiannacontroller.deletepauavailclroombyfac);
+app.get('/api/v1/createpauavailclroombyfac',  aiannacontroller.createpauavailclroombyfac);
+app.get('/api/v1/getpausumofclroombyfac',  aiannacontroller.getpausumofclroombyfac);
+app.get('/api/v1/pausumofclroombyprog',  aiannacontroller.pausumofclroombyprog);
+app.get('/api/v1/updatepausumofclroombyfac',  aiannacontroller.updatepausumofclroombyfac);
+app.get('/api/v1/updatepausumofclroomcomments',  aiannacontroller.updatepausumofclroomcomments);
+app.get('/api/v1/pausumofclroomlinks',  aiannacontroller.pausumofclroomlinks);
+app.get('/api/v1/pausumofclroomdocs',  aiannacontroller.pausumofclroomdocs);
+app.get('/api/v1/deletepausumofclroombyfac',  aiannacontroller.deletepausumofclroombyfac);
+app.get('/api/v1/createpausumofclroombyfac',  aiannacontroller.createpausumofclroombyfac);
+app.get('/api/v1/getpaunoofdrawhallbyfac',  aiannacontroller.getpaunoofdrawhallbyfac);
+app.get('/api/v1/paunoofdrawhallbyprog',  aiannacontroller.paunoofdrawhallbyprog);
+app.get('/api/v1/updatepaunoofdrawhallbyfac',  aiannacontroller.updatepaunoofdrawhallbyfac);
+app.get('/api/v1/updatepaunoofdrawhallcomments',  aiannacontroller.updatepaunoofdrawhallcomments);
+app.get('/api/v1/paunoofdrawhalllinks',  aiannacontroller.paunoofdrawhalllinks);
+app.get('/api/v1/paunoofdrawhalldocs',  aiannacontroller.paunoofdrawhalldocs);
+app.get('/api/v1/deletepaunoofdrawhallbyfac',  aiannacontroller.deletepaunoofdrawhallbyfac);
+app.get('/api/v1/createpaunoofdrawhallbyfac',  aiannacontroller.createpaunoofdrawhallbyfac);
+app.get('/api/v1/getpauadminareabyfac',  aiannacontroller.getpauadminareabyfac);
+app.get('/api/v1/pauadminareabyprog',  aiannacontroller.pauadminareabyprog);
+app.get('/api/v1/updatepauadminareabyfac',  aiannacontroller.updatepauadminareabyfac);
+app.get('/api/v1/updatepauadminareacomments',  aiannacontroller.updatepauadminareacomments);
+app.get('/api/v1/pauadminarealinks',  aiannacontroller.pauadminarealinks);
+app.get('/api/v1/pauadminareadocs',  aiannacontroller.pauadminareadocs);
+app.get('/api/v1/deletepauadminareabyfac',  aiannacontroller.deletepauadminareabyfac);
+app.get('/api/v1/createpauadminareabyfac',  aiannacontroller.createpauadminareabyfac);
+app.get('/api/v1/getpauamenbyfac',  aiannacontroller.getpauamenbyfac);
+app.get('/api/v1/pauamenbyprog',  aiannacontroller.pauamenbyprog);
+app.get('/api/v1/updatepauamenbyfac',  aiannacontroller.updatepauamenbyfac);
+app.get('/api/v1/updatepauamencomments',  aiannacontroller.updatepauamencomments);
+app.get('/api/v1/pauamenlinks',  aiannacontroller.pauamenlinks);
+app.get('/api/v1/pauamendocs',  aiannacontroller.pauamendocs);
+app.get('/api/v1/deletepauamenbyfac',  aiannacontroller.deletepauamenbyfac);
+app.get('/api/v1/createpauamenbyfac',  aiannacontroller.createpauamenbyfac);
+app.get('/api/v1/getpaubhostelbyfac',  aiannacontroller.getpaubhostelbyfac);
+app.get('/api/v1/paubhostelbyprog',  aiannacontroller.paubhostelbyprog);
+app.get('/api/v1/updatepaubhostelbyfac',  aiannacontroller.updatepaubhostelbyfac);
+app.get('/api/v1/updatepaubhostelcomments',  aiannacontroller.updatepaubhostelcomments);
+app.get('/api/v1/paubhostellinks',  aiannacontroller.paubhostellinks);
+app.get('/api/v1/paubhosteldocs',  aiannacontroller.paubhosteldocs);
+app.get('/api/v1/deletepaubhostelbyfac',  aiannacontroller.deletepaubhostelbyfac);
+app.get('/api/v1/createpaubhostelbyfac',  aiannacontroller.createpaubhostelbyfac);
+app.get('/api/v1/getpaughostelbyfac',  aiannacontroller.getpaughostelbyfac);
+app.get('/api/v1/paughostelbyprog',  aiannacontroller.paughostelbyprog);
+app.get('/api/v1/updatepaughostelbyfac',  aiannacontroller.updatepaughostelbyfac);
+app.get('/api/v1/updatepaughostelcomments',  aiannacontroller.updatepaughostelcomments);
+app.get('/api/v1/paughostellinks',  aiannacontroller.paughostellinks);
+app.get('/api/v1/paughosteldocs',  aiannacontroller.paughosteldocs);
+app.get('/api/v1/deletepaughostelbyfac',  aiannacontroller.deletepaughostelbyfac);
+app.get('/api/v1/createpaughostelbyfac',  aiannacontroller.createpaughostelbyfac);
+app.get('/api/v1/getpauotherbuildareabyfac',  aiannacontroller.getpauotherbuildareabyfac);
+app.get('/api/v1/pauotherbuildareabyprog',  aiannacontroller.pauotherbuildareabyprog);
+app.get('/api/v1/updatepauotherbuildareabyfac',  aiannacontroller.updatepauotherbuildareabyfac);
+app.get('/api/v1/updatepauotherbuildareacomments',  aiannacontroller.updatepauotherbuildareacomments);
+app.get('/api/v1/pauotherbuildarealinks',  aiannacontroller.pauotherbuildarealinks);
+app.get('/api/v1/pauotherbuildareadocs',  aiannacontroller.pauotherbuildareadocs);
+app.get('/api/v1/deletepauotherbuildareabyfac',  aiannacontroller.deletepauotherbuildareabyfac);
+app.get('/api/v1/createpauotherbuildareabyfac',  aiannacontroller.createpauotherbuildareabyfac);
+app.get('/api/v1/getpauphyedubyfac',  aiannacontroller.getpauphyedubyfac);
+app.get('/api/v1/pauphyedubyprog',  aiannacontroller.pauphyedubyprog);
+app.get('/api/v1/updatepauphyedubyfac',  aiannacontroller.updatepauphyedubyfac);
+app.get('/api/v1/updatepauphyeducomments',  aiannacontroller.updatepauphyeducomments);
+app.get('/api/v1/pauphyedulinks',  aiannacontroller.pauphyedulinks);
+app.get('/api/v1/pauphyedudocs',  aiannacontroller.pauphyedudocs);
+app.get('/api/v1/deletepauphyedubyfac',  aiannacontroller.deletepauphyedubyfac);
+app.get('/api/v1/createpauphyedubyfac',  aiannacontroller.createpauphyedubyfac);
+app.get('/api/v1/getpautpcbyfac',  aiannacontroller.getpautpcbyfac);
+app.get('/api/v1/pautpcbyprog',  aiannacontroller.pautpcbyprog);
+app.get('/api/v1/updatepautpcbyfac',  aiannacontroller.updatepautpcbyfac);
+app.get('/api/v1/updatepautpccomments',  aiannacontroller.updatepautpccomments);
+app.get('/api/v1/pautpclinks',  aiannacontroller.pautpclinks);
+app.get('/api/v1/pautpcdocs',  aiannacontroller.pautpcdocs);
+app.get('/api/v1/deletepautpcbyfac',  aiannacontroller.deletepautpcbyfac);
+app.get('/api/v1/createpautpcbyfac',  aiannacontroller.createpautpcbyfac);
+app.get('/api/v1/getpaufacilityavailbyfac',  aiannacontroller.getpaufacilityavailbyfac);
+app.get('/api/v1/paufacilityavailbyprog',  aiannacontroller.paufacilityavailbyprog);
+app.get('/api/v1/updatepaufacilityavailbyfac',  aiannacontroller.updatepaufacilityavailbyfac);
+app.get('/api/v1/updatepaufacilityavailcomments',  aiannacontroller.updatepaufacilityavailcomments);
+app.get('/api/v1/paufacilityavaillinks',  aiannacontroller.paufacilityavaillinks);
+app.get('/api/v1/paufacilityavaildocs',  aiannacontroller.paufacilityavaildocs);
+app.get('/api/v1/deletepaufacilityavailbyfac',  aiannacontroller.deletepaufacilityavailbyfac);
+app.get('/api/v1/createpaufacilityavailbyfac',  aiannacontroller.createpaufacilityavailbyfac);
+app.get('/api/v1/getpaualumnibyfac',  aiannacontroller.getpaualumnibyfac);
+app.get('/api/v1/paualumnibyprog',  aiannacontroller.paualumnibyprog);
+app.get('/api/v1/updatepaualumnibyfac',  aiannacontroller.updatepaualumnibyfac);
+app.get('/api/v1/updatepaualumnicomments',  aiannacontroller.updatepaualumnicomments);
+app.get('/api/v1/paualumnilinks',  aiannacontroller.paualumnilinks);
+app.get('/api/v1/paualumnidocs',  aiannacontroller.paualumnidocs);
+app.get('/api/v1/deletepaualumnibyfac',  aiannacontroller.deletepaualumnibyfac);
+app.get('/api/v1/createpaualumnibyfac',  aiannacontroller.createpaualumnibyfac);
+app.get('/api/v1/getpautpcbyfac',  aiannacontroller.getpautpcbyfac);
+app.get('/api/v1/pautpcbyprog',  aiannacontroller.pautpcbyprog);
+app.get('/api/v1/updatepautpcbyfac',  aiannacontroller.updatepautpcbyfac);
+app.get('/api/v1/updatepautpccomments',  aiannacontroller.updatepautpccomments);
+app.get('/api/v1/pautpclinks',  aiannacontroller.pautpclinks);
+app.get('/api/v1/pautpcdocs',  aiannacontroller.pautpcdocs);
+app.get('/api/v1/deletepautpcbyfac',  aiannacontroller.deletepautpcbyfac);
+app.get('/api/v1/createpautpcbyfac',  aiannacontroller.createpautpcbyfac);
+app.get('/api/v1/getpauhealthbyfac',  aiannacontroller.getpauhealthbyfac);
+app.get('/api/v1/pauhealthbyprog',  aiannacontroller.pauhealthbyprog);
+app.get('/api/v1/updatepauhealthbyfac',  aiannacontroller.updatepauhealthbyfac);
+app.get('/api/v1/updatepauhealthcomments',  aiannacontroller.updatepauhealthcomments);
+app.get('/api/v1/pauhealthlinks',  aiannacontroller.pauhealthlinks);
+app.get('/api/v1/pauhealthdocs',  aiannacontroller.pauhealthdocs);
+app.get('/api/v1/deletepauhealthbyfac',  aiannacontroller.deletepauhealthbyfac);
+app.get('/api/v1/createpauhealthbyfac',  aiannacontroller.createpauhealthbyfac);
+app.get('/api/v1/getpauothamenbyfac',  aiannacontroller.getpauothamenbyfac);
+app.get('/api/v1/pauothamenbyprog',  aiannacontroller.pauothamenbyprog);
+app.get('/api/v1/updatepauothamenbyfac',  aiannacontroller.updatepauothamenbyfac);
+app.get('/api/v1/updatepauothamencomments',  aiannacontroller.updatepauothamencomments);
+app.get('/api/v1/pauothamenlinks',  aiannacontroller.pauothamenlinks);
+app.get('/api/v1/pauothamendocs',  aiannacontroller.pauothamendocs);
+app.get('/api/v1/deletepauothamenbyfac',  aiannacontroller.deletepauothamenbyfac);
+app.get('/api/v1/createpauothamenbyfac',  aiannacontroller.createpauothamenbyfac);
+app.get('/api/v1/getpauregrecbyfac',  aiannacontroller.getpauregrecbyfac);
+app.get('/api/v1/pauregrecbyprog',  aiannacontroller.pauregrecbyprog);
+app.get('/api/v1/updatepauregrecbyfac',  aiannacontroller.updatepauregrecbyfac);
+app.get('/api/v1/updatepauregreccomments',  aiannacontroller.updatepauregreccomments);
+app.get('/api/v1/pauregreclinks',  aiannacontroller.pauregreclinks);
+app.get('/api/v1/pauregrecdocs',  aiannacontroller.pauregrecdocs);
+app.get('/api/v1/deletepauregrecbyfac',  aiannacontroller.deletepauregrecbyfac);
+app.get('/api/v1/createpauregrecbyfac',  aiannacontroller.createpauregrecbyfac);
+app.get('/api/v1/getpaucertificatesbyfac',  aiannacontroller.getpaucertificatesbyfac);
+app.get('/api/v1/paucertificatesbyprog',  aiannacontroller.paucertificatesbyprog);
+app.get('/api/v1/updatepaucertificatesbyfac',  aiannacontroller.updatepaucertificatesbyfac);
+app.get('/api/v1/updatepaucertificatescomments',  aiannacontroller.updatepaucertificatescomments);
+app.get('/api/v1/paucertificateslinks',  aiannacontroller.paucertificateslinks);
+app.get('/api/v1/paucertificatesdocs',  aiannacontroller.paucertificatesdocs);
+app.get('/api/v1/deletepaucertificatesbyfac',  aiannacontroller.deletepaucertificatesbyfac);
+app.get('/api/v1/createpaucertificatesbyfac',  aiannacontroller.createpaucertificatesbyfac);
+app.get('/api/v1/getpauprocfeeabyfac',  aiannacontroller.getpauprocfeeabyfac);
+app.get('/api/v1/pauprocfeeabyprog',  aiannacontroller.pauprocfeeabyprog);
+app.get('/api/v1/updatepauprocfeeabyfac',  aiannacontroller.updatepauprocfeeabyfac);
+app.get('/api/v1/updatepauprocfeeacomments',  aiannacontroller.updatepauprocfeeacomments);
+app.get('/api/v1/pauprocfeealinks',  aiannacontroller.pauprocfeealinks);
+app.get('/api/v1/pauprocfeeadocs',  aiannacontroller.pauprocfeeadocs);
+app.get('/api/v1/deletepauprocfeeabyfac',  aiannacontroller.deletepauprocfeeabyfac);
+app.get('/api/v1/createpauprocfeeabyfac',  aiannacontroller.createpauprocfeeabyfac);
+app.get('/api/v1/getpauprocfeebbyfac',  aiannacontroller.getpauprocfeebbyfac);
+app.get('/api/v1/pauprocfeebbyprog',  aiannacontroller.pauprocfeebbyprog);
+app.get('/api/v1/updatepauprocfeebbyfac',  aiannacontroller.updatepauprocfeebbyfac);
+app.get('/api/v1/updatepauprocfeebcomments',  aiannacontroller.updatepauprocfeebcomments);
+app.get('/api/v1/pauprocfeeblinks',  aiannacontroller.pauprocfeeblinks);
+app.get('/api/v1/pauprocfeebdocs',  aiannacontroller.pauprocfeebdocs);
+app.get('/api/v1/deletepauprocfeebbyfac',  aiannacontroller.deletepauprocfeebbyfac);
+app.get('/api/v1/createpauprocfeebbyfac',  aiannacontroller.createpauprocfeebbyfac);
+app.get('/api/v1/getpauprocfeecbyfac',  aiannacontroller.getpauprocfeecbyfac);
+app.get('/api/v1/pauprocfeecbyprog',  aiannacontroller.pauprocfeecbyprog);
+app.get('/api/v1/updatepauprocfeecbyfac',  aiannacontroller.updatepauprocfeecbyfac);
+app.get('/api/v1/updatepauprocfeeccomments',  aiannacontroller.updatepauprocfeeccomments);
+app.get('/api/v1/pauprocfeeclinks',  aiannacontroller.pauprocfeeclinks);
+app.get('/api/v1/pauprocfeecdocs',  aiannacontroller.pauprocfeecdocs);
+app.get('/api/v1/deletepauprocfeecbyfac',  aiannacontroller.deletepauprocfeecbyfac);
+app.get('/api/v1/createpauprocfeecbyfac',  aiannacontroller.createpauprocfeecbyfac);
+app.get('/api/v1/getpauprcplendrsmntbyfac',  aiannacontroller.getpauprcplendrsmntbyfac);
+app.get('/api/v1/pauprcplendrsmntbyprog',  aiannacontroller.pauprcplendrsmntbyprog);
+app.get('/api/v1/updatepauprcplendrsmntbyfac',  aiannacontroller.updatepauprcplendrsmntbyfac);
+app.get('/api/v1/updatepauprcplendrsmntcomments',  aiannacontroller.updatepauprcplendrsmntcomments);
+app.get('/api/v1/pauprcplendrsmntlinks',  aiannacontroller.pauprcplendrsmntlinks);
+app.get('/api/v1/pauprcplendrsmntdocs',  aiannacontroller.pauprcplendrsmntdocs);
+app.get('/api/v1/deletepauprcplendrsmntbyfac',  aiannacontroller.deletepauprcplendrsmntbyfac);
+app.get('/api/v1/createpauprcplendrsmntbyfac',  aiannacontroller.createpauprcplendrsmntbyfac);
+app.get('/api/v1/getpaumngdeclarationbyfac',  aiannacontroller.getpaumngdeclarationbyfac);
+app.get('/api/v1/paumngdeclarationbyprog',  aiannacontroller.paumngdeclarationbyprog);
+app.get('/api/v1/updatepaumngdeclarationbyfac',  aiannacontroller.updatepaumngdeclarationbyfac);
+app.get('/api/v1/updatepaumngdeclarationcomments',  aiannacontroller.updatepaumngdeclarationcomments);
+app.get('/api/v1/paumngdeclarationlinks',  aiannacontroller.paumngdeclarationlinks);
+app.get('/api/v1/paumngdeclarationdocs',  aiannacontroller.paumngdeclarationdocs);
+app.get('/api/v1/deletepaumngdeclarationbyfac',  aiannacontroller.deletepaumngdeclarationbyfac);
+app.get('/api/v1/createpaumngdeclarationbyfac',  aiannacontroller.createpaumngdeclarationbyfac);
+
+
+
+const aierpcontroller=require('./controllers/aierpcontroller');
+
+app.get('/api/v1/getnuexplearningbyfac',  aierpcontroller.getnuexplearningbyfac);
+app.get('/api/v1/nuexplearningbyprog',  aierpcontroller.nuexplearningbyprog);
+app.get('/api/v1/updatenuexplearningbyfac',  aierpcontroller.updatenuexplearningbyfac);
+app.get('/api/v1/updatenuexplearningcomments',  aierpcontroller.updatenuexplearningcomments);
+app.get('/api/v1/nuexplearninglinks',  aierpcontroller.nuexplearninglinks);
+app.get('/api/v1/nuexplearningdocs',  aierpcontroller.nuexplearningdocs);
+app.get('/api/v1/deletenuexplearningbyfac',  aierpcontroller.deletenuexplearningbyfac);
+app.get('/api/v1/createnuexplearningbyfac',  aierpcontroller.createnuexplearningbyfac);
+app.get('/api/v1/getnucodeofethicsbyfac',  aierpcontroller.getnucodeofethicsbyfac);
+app.get('/api/v1/nucodeofethicsbyprog',  aierpcontroller.nucodeofethicsbyprog);
+app.get('/api/v1/updatenucodeofethicsbyfac',  aierpcontroller.updatenucodeofethicsbyfac);
+app.get('/api/v1/updatenucodeofethicscomments',  aierpcontroller.updatenucodeofethicscomments);
+app.get('/api/v1/nucodeofethicslinks',  aierpcontroller.nucodeofethicslinks);
+app.get('/api/v1/nucodeofethicsdocs',  aierpcontroller.nucodeofethicsdocs);
+app.get('/api/v1/deletenucodeofethicsbyfac',  aierpcontroller.deletenucodeofethicsbyfac);
+app.get('/api/v1/createnucodeofethicsbyfac',  aierpcontroller.createnucodeofethicsbyfac);
+app.get('/api/v1/getnlufocusbyfac',  aierpcontroller.getnlufocusbyfac);
+app.get('/api/v1/nlufocusbyprog',  aierpcontroller.nlufocusbyprog);
+app.get('/api/v1/updatenlufocusbyfac',  aierpcontroller.updatenlufocusbyfac);
+app.get('/api/v1/updatenlufocuscomments',  aierpcontroller.updatenlufocuscomments);
+app.get('/api/v1/nlufocuslinks',  aierpcontroller.nlufocuslinks);
+app.get('/api/v1/nlufocusdocs',  aierpcontroller.nlufocusdocs);
+app.get('/api/v1/deletenlufocusbyfac',  aierpcontroller.deletenlufocusbyfac);
+app.get('/api/v1/createnlufocusbyfac',  aierpcontroller.createnlufocusbyfac);
+app.get('/api/v1/getnluadmissionbyfac',  aierpcontroller.getnluadmissionbyfac);
+app.get('/api/v1/nluadmissionbyprog',  aierpcontroller.nluadmissionbyprog);
+app.get('/api/v1/updatenluadmissionbyfac',  aierpcontroller.updatenluadmissionbyfac);
+app.get('/api/v1/updatenluadmissioncomments',  aierpcontroller.updatenluadmissioncomments);
+app.get('/api/v1/nluadmissionlinks',  aierpcontroller.nluadmissionlinks);
+app.get('/api/v1/nluadmissiondocs',  aierpcontroller.nluadmissiondocs);
+app.get('/api/v1/deletenluadmissionbyfac',  aierpcontroller.deletenluadmissionbyfac);
+app.get('/api/v1/createnluadmissionbyfac',  aierpcontroller.createnluadmissionbyfac);
+app.get('/api/v1/getnauscholarshipbyfac',  aierpcontroller.getnauscholarshipbyfac);
+app.get('/api/v1/nauscholarshipbyprog',  aierpcontroller.nauscholarshipbyprog);
+app.get('/api/v1/updatenauscholarshipbyfac',  aierpcontroller.updatenauscholarshipbyfac);
+app.get('/api/v1/updatenauscholarshipcomments',  aierpcontroller.updatenauscholarshipcomments);
+app.get('/api/v1/nauscholarshiplinks',  aierpcontroller.nauscholarshiplinks);
+app.get('/api/v1/nauscholarshipdocs',  aierpcontroller.nauscholarshipdocs);
+app.get('/api/v1/deletenauscholarshipbyfac',  aierpcontroller.deletenauscholarshipbyfac);
+app.get('/api/v1/createnauscholarshipbyfac',  aierpcontroller.createnauscholarshipbyfac);
+
+
+app.get('/api/v1/getainstbyfac',  aierpcontroller.getainstbyfac);
+app.get('/api/v1/ainstbyprog',  aierpcontroller.ainstbyprog);
+app.get('/api/v1/updateainstbyfac',  aierpcontroller.updateainstbyfac);
+app.get('/api/v1/updateainstcomments',  aierpcontroller.updateainstcomments);
+app.get('/api/v1/ainstlinks',  aierpcontroller.ainstlinks);
+app.get('/api/v1/ainstdocs',  aierpcontroller.ainstdocs);
+app.get('/api/v1/deleteainstbyfac',  aierpcontroller.deleteainstbyfac);
+app.get('/api/v1/createainstbyfac',  aierpcontroller.createainstbyfac);
+
+
+app.get('/api/v1/getnluteacherdatabyfac',  aierpcontroller.getnluteacherdatabyfac);
+app.get('/api/v1/nluteacherdatabyprog',  aierpcontroller.nluteacherdatabyprog);
+app.get('/api/v1/updatenluteacherdatabyfac',  aierpcontroller.updatenluteacherdatabyfac);
+app.get('/api/v1/updatenluteacherdatacomments',  aierpcontroller.updatenluteacherdatacomments);
+app.get('/api/v1/nluteacherdatalinks',  aierpcontroller.nluteacherdatalinks);
+app.get('/api/v1/nluteacherdatadocs',  aierpcontroller.nluteacherdatadocs);
+app.get('/api/v1/deletenluteacherdatabyfac',  aierpcontroller.deletenluteacherdatabyfac);
+app.get('/api/v1/createnluteacherdatabyfac',  aierpcontroller.createnluteacherdatabyfac);
+app.get('/api/v1/getnlufacilitiesbyfac',  aierpcontroller.getnlufacilitiesbyfac);
+app.get('/api/v1/nlufacilitiesbyprog',  aierpcontroller.nlufacilitiesbyprog);
+app.get('/api/v1/updatenlufacilitiesbyfac',  aierpcontroller.updatenlufacilitiesbyfac);
+app.get('/api/v1/updatenlufacilitiescomments',  aierpcontroller.updatenlufacilitiescomments);
+app.get('/api/v1/nlufacilitieslinks',  aierpcontroller.nlufacilitieslinks);
+app.get('/api/v1/nlufacilitiesdocs',  aierpcontroller.nlufacilitiesdocs);
+app.get('/api/v1/deletenlufacilitiesbyfac',  aierpcontroller.deletenlufacilitiesbyfac);
+app.get('/api/v1/createnlufacilitiesbyfac',  aierpcontroller.createnlufacilitiesbyfac);
+app.get('/api/v1/getnlurecognitionsbyfac',  aierpcontroller.getnlurecognitionsbyfac);
+app.get('/api/v1/nlurecognitionsbyprog',  aierpcontroller.nlurecognitionsbyprog);
+app.get('/api/v1/updatenlurecognitionsbyfac',  aierpcontroller.updatenlurecognitionsbyfac);
+app.get('/api/v1/updatenlurecognitionscomments',  aierpcontroller.updatenlurecognitionscomments);
+app.get('/api/v1/nlurecognitionslinks',  aierpcontroller.nlurecognitionslinks);
+app.get('/api/v1/nlurecognitionsdocs',  aierpcontroller.nlurecognitionsdocs);
+app.get('/api/v1/deletenlurecognitionsbyfac',  aierpcontroller.deletenlurecognitionsbyfac);
+app.get('/api/v1/createnlurecognitionsbyfac',  aierpcontroller.createnlurecognitionsbyfac);
+app.get('/api/v1/getnlubillsbyfac',  aierpcontroller.getnlubillsbyfac);
+app.get('/api/v1/nlubillsbyprog',  aierpcontroller.nlubillsbyprog);
+app.get('/api/v1/updatenlubillsbyfac',  aierpcontroller.updatenlubillsbyfac);
+app.get('/api/v1/updatenlubillscomments',  aierpcontroller.updatenlubillscomments);
+app.get('/api/v1/nlubillslinks',  aierpcontroller.nlubillslinks);
+app.get('/api/v1/nlubillsdocs',  aierpcontroller.nlubillsdocs);
+app.get('/api/v1/deletenlubillsbyfac',  aierpcontroller.deletenlubillsbyfac);
+app.get('/api/v1/createnlubillsbyfac',  aierpcontroller.createnlubillsbyfac);
+app.get('/api/v1/getnluincentivesbyfac',  aierpcontroller.getnluincentivesbyfac);
+app.get('/api/v1/nluincentivesbyprog',  aierpcontroller.nluincentivesbyprog);
+app.get('/api/v1/updatenluincentivesbyfac',  aierpcontroller.updatenluincentivesbyfac);
+app.get('/api/v1/updatenluincentivescomments',  aierpcontroller.updatenluincentivescomments);
+app.get('/api/v1/nluincentiveslinks',  aierpcontroller.nluincentiveslinks);
+app.get('/api/v1/nluincentivesdocs',  aierpcontroller.nluincentivesdocs);
+app.get('/api/v1/deletenluincentivesbyfac',  aierpcontroller.deletenluincentivesbyfac);
+app.get('/api/v1/createnluincentivesbyfac',  aierpcontroller.createnluincentivesbyfac);
+app.get('/api/v1/getnluphdtheisisbyfac',  aierpcontroller.getnluphdtheisisbyfac);
+app.get('/api/v1/nluphdtheisisbyprog',  aierpcontroller.nluphdtheisisbyprog);
+app.get('/api/v1/updatenluphdtheisisbyfac',  aierpcontroller.updatenluphdtheisisbyfac);
+app.get('/api/v1/updatenluphdtheisiscomments',  aierpcontroller.updatenluphdtheisiscomments);
+app.get('/api/v1/nluphdtheisislinks',  aierpcontroller.nluphdtheisislinks);
+app.get('/api/v1/nluphdtheisisdocs',  aierpcontroller.nluphdtheisisdocs);
+app.get('/api/v1/deletenluphdtheisisbyfac',  aierpcontroller.deletenluphdtheisisbyfac);
+app.get('/api/v1/createnluphdtheisisbyfac',  aierpcontroller.createnluphdtheisisbyfac);
+app.get('/api/v1/getnlucitationbyfac',  aierpcontroller.getnlucitationbyfac);
+app.get('/api/v1/nlucitationbyprog',  aierpcontroller.nlucitationbyprog);
+app.get('/api/v1/updatenlucitationbyfac',  aierpcontroller.updatenlucitationbyfac);
+app.get('/api/v1/updatenlucitationcomments',  aierpcontroller.updatenlucitationcomments);
+app.get('/api/v1/nlucitationlinks',  aierpcontroller.nlucitationlinks);
+app.get('/api/v1/nlucitationdocs',  aierpcontroller.nlucitationdocs);
+app.get('/api/v1/deletenlucitationbyfac',  aierpcontroller.deletenlucitationbyfac);
+app.get('/api/v1/createnlucitationbyfac',  aierpcontroller.createnlucitationbyfac);
+app.get('/api/v1/getnlulegaldatabasesbyfac',  aierpcontroller.getnlulegaldatabasesbyfac);
+app.get('/api/v1/nlulegaldatabasesbyprog',  aierpcontroller.nlulegaldatabasesbyprog);
+app.get('/api/v1/updatenlulegaldatabasesbyfac',  aierpcontroller.updatenlulegaldatabasesbyfac);
+app.get('/api/v1/updatenlulegaldatabasescomments',  aierpcontroller.updatenlulegaldatabasescomments);
+app.get('/api/v1/nlulegaldatabaseslinks',  aierpcontroller.nlulegaldatabaseslinks);
+app.get('/api/v1/nlulegaldatabasesdocs',  aierpcontroller.nlulegaldatabasesdocs);
+app.get('/api/v1/deletenlulegaldatabasesbyfac',  aierpcontroller.deletenlulegaldatabasesbyfac);
+app.get('/api/v1/createnlulegaldatabasesbyfac',  aierpcontroller.createnlulegaldatabasesbyfac);
+app.get('/api/v1/getnlbarbyfac',  aierpcontroller.getnlbarbyfac);
+app.get('/api/v1/nlbarbyprog',  aierpcontroller.nlbarbyprog);
+app.get('/api/v1/updatenlbarbyfac',  aierpcontroller.updatenlbarbyfac);
+app.get('/api/v1/updatenlbarcomments',  aierpcontroller.updatenlbarcomments);
+app.get('/api/v1/nlbarlinks',  aierpcontroller.nlbarlinks);
+app.get('/api/v1/nlbardocs',  aierpcontroller.nlbardocs);
+app.get('/api/v1/deletenlbarbyfac',  aierpcontroller.deletenlbarbyfac);
+app.get('/api/v1/createnlbarbyfac',  aierpcontroller.createnlbarbyfac);
+
+
+app.get('/api/v1/getexplearningbyfac',  aierpcontroller.getexplearningbyfac);
+app.get('/api/v1/explearningbyprog',  aierpcontroller.explearningbyprog);
+app.get('/api/v1/updateexplearningbyfac',  aierpcontroller.updateexplearningbyfac);
+app.get('/api/v1/updateexplearningcomments',  aierpcontroller.updateexplearningcomments);
+app.get('/api/v1/explearninglinks',  aierpcontroller.explearninglinks);
+app.get('/api/v1/explearningdocs',  aierpcontroller.explearningdocs);
+app.get('/api/v1/deleteexplearningbyfac',  aierpcontroller.deleteexplearningbyfac);
+app.get('/api/v1/createexplearningbyfac',  aierpcontroller.createexplearningbyfac);
+app.get('/api/v1/getnufacultydatabyfac',  aierpcontroller.getnufacultydatabyfac);
+app.get('/api/v1/nufacultydatabyprog',  aierpcontroller.nufacultydatabyprog);
+app.get('/api/v1/updatenufacultydatabyfac',  aierpcontroller.updatenufacultydatabyfac);
+app.get('/api/v1/updatenufacultydatacomments',  aierpcontroller.updatenufacultydatacomments);
+app.get('/api/v1/nufacultydatalinks',  aierpcontroller.nufacultydatalinks);
+app.get('/api/v1/nufacultydatadocs',  aierpcontroller.nufacultydatadocs);
+app.get('/api/v1/deletenufacultydatabyfac',  aierpcontroller.deletenufacultydatabyfac);
+app.get('/api/v1/createnufacultydatabyfac',  aierpcontroller.createnufacultydatabyfac);
+app.get('/api/v1/getphdfacebyfac',  aierpcontroller.getphdfacebyfac);
+app.get('/api/v1/phdfacebyprog',  aierpcontroller.phdfacebyprog);
+app.get('/api/v1/updatephdfacebyfac',  aierpcontroller.updatephdfacebyfac);
+app.get('/api/v1/updatephdfacecomments',  aierpcontroller.updatephdfacecomments);
+app.get('/api/v1/phdfacelinks',  aierpcontroller.phdfacelinks);
+app.get('/api/v1/phdfacedocs',  aierpcontroller.phdfacedocs);
+app.get('/api/v1/deletephdfacebyfac',  aierpcontroller.deletephdfacebyfac);
+app.get('/api/v1/createphdfacebyfac',  aierpcontroller.createphdfacebyfac);
+app.get('/api/v1/getteacherdatabyfac',  aierpcontroller.getteacherdatabyfac);
+app.get('/api/v1/teacherdatabyprog',  aierpcontroller.teacherdatabyprog);
+app.get('/api/v1/updateteacherdatabyfac',  aierpcontroller.updateteacherdatabyfac);
+app.get('/api/v1/updateteacherdatacomments',  aierpcontroller.updateteacherdatacomments);
+app.get('/api/v1/teacherdatalinks',  aierpcontroller.teacherdatalinks);
+app.get('/api/v1/teacherdatadocs',  aierpcontroller.teacherdatadocs);
+app.get('/api/v1/deleteteacherdatabyfac',  aierpcontroller.deleteteacherdatabyfac);
+app.get('/api/v1/createteacherdatabyfac',  aierpcontroller.createteacherdatabyfac);
+app.get('/api/v1/getresultbyfac',  aierpcontroller.getresultbyfac);
+app.get('/api/v1/resultbyprog',  aierpcontroller.resultbyprog);
+app.get('/api/v1/updateresultbyfac',  aierpcontroller.updateresultbyfac);
+app.get('/api/v1/updateresultcomments',  aierpcontroller.updateresultcomments);
+app.get('/api/v1/resultlinks',  aierpcontroller.resultlinks);
+app.get('/api/v1/resultdocs',  aierpcontroller.resultdocs);
+app.get('/api/v1/deleteresultbyfac',  aierpcontroller.deleteresultbyfac);
+app.get('/api/v1/createresultbyfac',  aierpcontroller.createresultbyfac);
+app.get('/api/v1/getnugrievancebyfac',  aierpcontroller.getnugrievancebyfac);
+app.get('/api/v1/nugrievancebyprog',  aierpcontroller.nugrievancebyprog);
+app.get('/api/v1/updatenugrievancebyfac',  aierpcontroller.updatenugrievancebyfac);
+app.get('/api/v1/updatenugrievancecomments',  aierpcontroller.updatenugrievancecomments);
+app.get('/api/v1/nugrievancelinks',  aierpcontroller.nugrievancelinks);
+app.get('/api/v1/nugrievancedocs',  aierpcontroller.nugrievancedocs);
+app.get('/api/v1/deletenugrievancebyfac',  aierpcontroller.deletenugrievancebyfac);
+app.get('/api/v1/createnugrievancebyfac',  aierpcontroller.createnugrievancebyfac);
+app.get('/api/v1/getpasspercentbyfac',  aierpcontroller.getpasspercentbyfac);
+app.get('/api/v1/passpercentbyprog',  aierpcontroller.passpercentbyprog);
+app.get('/api/v1/updatepasspercentbyfac',  aierpcontroller.updatepasspercentbyfac);
+app.get('/api/v1/updatepasspercentcomments',  aierpcontroller.updatepasspercentcomments);
+app.get('/api/v1/passpercentlinks',  aierpcontroller.passpercentlinks);
+app.get('/api/v1/passpercentdocs',  aierpcontroller.passpercentdocs);
+app.get('/api/v1/deletepasspercentbyfac',  aierpcontroller.deletepasspercentbyfac);
+app.get('/api/v1/createpasspercentbyfac',  aierpcontroller.createpasspercentbyfac);
+app.get('/api/v1/getteacherfellowbyfac',  aierpcontroller.getteacherfellowbyfac);
+app.get('/api/v1/teacherfellowbyprog',  aierpcontroller.teacherfellowbyprog);
+app.get('/api/v1/updateteacherfellowbyfac',  aierpcontroller.updateteacherfellowbyfac);
+app.get('/api/v1/updateteacherfellowcomments',  aierpcontroller.updateteacherfellowcomments);
+app.get('/api/v1/teacherfellowlinks',  aierpcontroller.teacherfellowlinks);
+app.get('/api/v1/teacherfellowdocs',  aierpcontroller.teacherfellowdocs);
+app.get('/api/v1/deleteteacherfellowbyfac',  aierpcontroller.deleteteacherfellowbyfac);
+app.get('/api/v1/createteacherfellowbyfac',  aierpcontroller.createteacherfellowbyfac);
+app.get('/api/v1/getpatentsbyfac',  aierpcontroller.getpatentsbyfac);
+app.get('/api/v1/patentsbyprog',  aierpcontroller.patentsbyprog);
+app.get('/api/v1/updatepatentsbyfac',  aierpcontroller.updatepatentsbyfac);
+app.get('/api/v1/updatepatentscomments',  aierpcontroller.updatepatentscomments);
+app.get('/api/v1/patentslinks',  aierpcontroller.patentslinks);
+app.get('/api/v1/patentsdocs',  aierpcontroller.patentsdocs);
+app.get('/api/v1/deletepatentsbyfac',  aierpcontroller.deletepatentsbyfac);
+app.get('/api/v1/createpatentsbyfac',  aierpcontroller.createpatentsbyfac);
+app.get('/api/v1/getconsultancybyfac',  aierpcontroller.getconsultancybyfac);
+app.get('/api/v1/consultancybyprog',  aierpcontroller.consultancybyprog);
+app.get('/api/v1/updateconsultancybyfac',  aierpcontroller.updateconsultancybyfac);
+app.get('/api/v1/updateconsultancycomments',  aierpcontroller.updateconsultancycomments);
+app.get('/api/v1/consultancylinks',  aierpcontroller.consultancylinks);
+app.get('/api/v1/consultancydocs',  aierpcontroller.consultancydocs);
+app.get('/api/v1/deleteconsultancybyfac',  aierpcontroller.deleteconsultancybyfac);
+app.get('/api/v1/createconsultancybyfac',  aierpcontroller.createconsultancybyfac);
+app.get('/api/v1/getmoubyfac',  aierpcontroller.getmoubyfac);
+app.get('/api/v1/moubyprog',  aierpcontroller.moubyprog);
+app.get('/api/v1/updatemoubyfac',  aierpcontroller.updatemoubyfac);
+app.get('/api/v1/updatemoucomments',  aierpcontroller.updatemoucomments);
+app.get('/api/v1/moulinks',  aierpcontroller.moulinks);
+app.get('/api/v1/moudocs',  aierpcontroller.moudocs);
+app.get('/api/v1/deletemoubyfac',  aierpcontroller.deletemoubyfac);
+app.get('/api/v1/createmoubyfac',  aierpcontroller.createmoubyfac);
+app.get('/api/v1/getnuefacilitiesbyfac',  aierpcontroller.getnuefacilitiesbyfac);
+app.get('/api/v1/nuefacilitiesbyprog',  aierpcontroller.nuefacilitiesbyprog);
+app.get('/api/v1/updatenuefacilitiesbyfac',  aierpcontroller.updatenuefacilitiesbyfac);
+app.get('/api/v1/updatenuefacilitiescomments',  aierpcontroller.updatenuefacilitiescomments);
+app.get('/api/v1/nuefacilitieslinks',  aierpcontroller.nuefacilitieslinks);
+app.get('/api/v1/nuefacilitiesdocs',  aierpcontroller.nuefacilitiesdocs);
+app.get('/api/v1/deletenuefacilitiesbyfac',  aierpcontroller.deletenuefacilitiesbyfac);
+app.get('/api/v1/createnuefacilitiesbyfac',  aierpcontroller.createnuefacilitiesbyfac);
+app.get('/api/v1/getnustudcompratiobyfac',  aierpcontroller.getnustudcompratiobyfac);
+app.get('/api/v1/nustudcompratiobyprog',  aierpcontroller.nustudcompratiobyprog);
+app.get('/api/v1/updatenustudcompratiobyfac',  aierpcontroller.updatenustudcompratiobyfac);
+app.get('/api/v1/updatenustudcompratiocomments',  aierpcontroller.updatenustudcompratiocomments);
+app.get('/api/v1/nustudcompratiolinks',  aierpcontroller.nustudcompratiolinks);
+app.get('/api/v1/nustudcompratiodocs',  aierpcontroller.nustudcompratiodocs);
+app.get('/api/v1/deletenustudcompratiobyfac',  aierpcontroller.deletenustudcompratiobyfac);
+app.get('/api/v1/createnustudcompratiobyfac',  aierpcontroller.createnustudcompratiobyfac);
+app.get('/api/v1/gethigherexambyfac',  aierpcontroller.gethigherexambyfac);
+app.get('/api/v1/higherexambyprog',  aierpcontroller.higherexambyprog);
+app.get('/api/v1/updatehigherexambyfac',  aierpcontroller.updatehigherexambyfac);
+app.get('/api/v1/updatehigherexamcomments',  aierpcontroller.updatehigherexamcomments);
+app.get('/api/v1/higherexamlinks',  aierpcontroller.higherexamlinks);
+app.get('/api/v1/higherexamdocs',  aierpcontroller.higherexamdocs);
+app.get('/api/v1/deletehigherexambyfac',  aierpcontroller.deletehigherexambyfac);
+app.get('/api/v1/createhigherexambyfac',  aierpcontroller.createhigherexambyfac);
+// app.get('/api/v1/getawardsbyfac',  aierpcontroller.getawardsbyfac);
+// app.get('/api/v1/awardsbyprog',  aierpcontroller.awardsbyprog);
+// app.get('/api/v1/updateawardsbyfac',  aierpcontroller.updateawardsbyfac);
+// app.get('/api/v1/updateawardscomments',  aierpcontroller.updateawardscomments);
+// app.get('/api/v1/awardslinks',  aierpcontroller.awardslinks);
+// app.get('/api/v1/awardsdocs',  aierpcontroller.awardsdocs);
+// app.get('/api/v1/deleteawardsbyfac',  aierpcontroller.deleteawardsbyfac);
+// app.get('/api/v1/createawardsbyfac',  aierpcontroller.createawardsbyfac);
+
+
+
+
+
+app.get('/api/v1/getnlibusagebyfac',  aierpcontroller.getnlibusagebyfac);
+app.get('/api/v1/nlibusagebyprog',  aierpcontroller.nlibusagebyprog);
+app.get('/api/v1/updatenlibusagebyfac',  aierpcontroller.updatenlibusagebyfac);
+app.get('/api/v1/updatenlibusagecomments',  aierpcontroller.updatenlibusagecomments);
+app.get('/api/v1/nlibusagelinks',  aierpcontroller.nlibusagelinks);
+app.get('/api/v1/nlibusagedocs',  aierpcontroller.nlibusagedocs);
+app.get('/api/v1/deletenlibusagebyfac',  aierpcontroller.deletenlibusagebyfac);
+app.get('/api/v1/createnlibusagebyfac',  aierpcontroller.createnlibusagebyfac);
+
+
+
+app.get('/api/v1/getnqualificationbyfac',  aierpcontroller.getnqualificationbyfac);
+app.get('/api/v1/nqualificationbyprog',  aierpcontroller.nqualificationbyprog);
+app.get('/api/v1/updatenqualificationbyfac',  aierpcontroller.updatenqualificationbyfac);
+app.get('/api/v1/updatenqualificationcomments',  aierpcontroller.updatenqualificationcomments);
+app.get('/api/v1/nqualificationlinks',  aierpcontroller.nqualificationlinks);
+app.get('/api/v1/nqualificationdocs',  aierpcontroller.nqualificationdocs);
+app.get('/api/v1/deletenqualificationbyfac',  aierpcontroller.deletenqualificationbyfac);
+app.get('/api/v1/createnqualificationbyfac',  aierpcontroller.createnqualificationbyfac);
+app.get('/api/v1/getnexperiencebyfac',  aierpcontroller.getnexperiencebyfac);
+app.get('/api/v1/nexperiencebyprog',  aierpcontroller.nexperiencebyprog);
+app.get('/api/v1/updatenexperiencebyfac',  aierpcontroller.updatenexperiencebyfac);
+app.get('/api/v1/updatenexperiencecomments',  aierpcontroller.updatenexperiencecomments);
+app.get('/api/v1/nexperiencelinks',  aierpcontroller.nexperiencelinks);
+app.get('/api/v1/nexperiencedocs',  aierpcontroller.nexperiencedocs);
+app.get('/api/v1/deletenexperiencebyfac',  aierpcontroller.deletenexperiencebyfac);
+app.get('/api/v1/createnexperiencebyfac',  aierpcontroller.createnexperiencebyfac);
+app.get('/api/v1/getnmytasksbyfac',  aierpcontroller.getnmytasksbyfac);
+app.get('/api/v1/getnmytasksbystaff',  aierpcontroller.getnmytasksbystaff);
+app.get('/api/v1/getnmytasksbymanager',  aierpcontroller.getnmytasksbymanager);
+app.get('/api/v1/nmytasksbyprog',  aierpcontroller.nmytasksbyprog);
+app.get('/api/v1/updatenmytasksbyfac',  aierpcontroller.updatenmytasksbyfac);
+app.get('/api/v1/updatenmytaskscomments',  aierpcontroller.updatenmytaskscomments);
+app.get('/api/v1/updatenmytasksmanager',  aierpcontroller.updatenmytasksmanager);
+app.get('/api/v1/nmytaskslinks',  aierpcontroller.nmytaskslinks);
+app.get('/api/v1/nmytasksdocs',  aierpcontroller.nmytasksdocs);
+app.get('/api/v1/deletenmytasksbyfac',  aierpcontroller.deletenmytasksbyfac);
+app.get('/api/v1/createnmytasksbyfac',  aierpcontroller.createnmytasksbyfac);
+app.get('/api/v1/getsalarydetailsbyfac',  aierpcontroller.getsalarydetailsbyfac);
+app.get('/api/v1/salarydetailsbyprog',  aierpcontroller.salarydetailsbyprog);
+app.get('/api/v1/updatesalarydetailsbyfac',  aierpcontroller.updatesalarydetailsbyfac);
+app.get('/api/v1/updatesalarydetailscomments',  aierpcontroller.updatesalarydetailscomments);
+app.get('/api/v1/salarydetailslinks',  aierpcontroller.salarydetailslinks);
+app.get('/api/v1/salarydetailsdocs',  aierpcontroller.salarydetailsdocs);
+app.get('/api/v1/deletesalarydetailsbyfac',  aierpcontroller.deletesalarydetailsbyfac);
+app.get('/api/v1/createsalarydetailsbyfac',  aierpcontroller.createsalarydetailsbyfac);
+app.get('/api/v1/getempapprecbyfac',  aierpcontroller.getempapprecbyfac);
+app.get('/api/v1/empapprecbyprog',  aierpcontroller.empapprecbyprog);
+app.get('/api/v1/updateempapprecbyfac',  aierpcontroller.updateempapprecbyfac);
+app.get('/api/v1/updateempappreccomments',  aierpcontroller.updateempappreccomments);
+app.get('/api/v1/empappreclinks',  aierpcontroller.empappreclinks);
+app.get('/api/v1/empapprecdocs',  aierpcontroller.empapprecdocs);
+app.get('/api/v1/deleteempapprecbyfac',  aierpcontroller.deleteempapprecbyfac);
+app.get('/api/v1/createempapprecbyfac',  aierpcontroller.createempapprecbyfac);
+
+
+app.get('/api/v1/getrnphospitalsbyfac',  aierpcontroller.getrnphospitalsbyfac);
+app.get('/api/v1/rnphospitalsbyprog',  aierpcontroller.rnphospitalsbyprog);
+app.get('/api/v1/updaternphospitalsbyfac',  aierpcontroller.updaternphospitalsbyfac);
+app.get('/api/v1/updaternphospitalscomments',  aierpcontroller.updaternphospitalscomments);
+app.get('/api/v1/rnphospitalslinks',  aierpcontroller.rnphospitalslinks);
+app.get('/api/v1/rnphospitalsdocs',  aierpcontroller.rnphospitalsdocs);
+app.get('/api/v1/deleternphospitalsbyfac',  aierpcontroller.deleternphospitalsbyfac);
+app.get('/api/v1/creaternphospitalsbyfac',  aierpcontroller.creaternphospitalsbyfac);
+app.get('/api/v1/getrnbuildingbyfac',  aierpcontroller.getrnbuildingbyfac);
+app.get('/api/v1/rnbuildingbyprog',  aierpcontroller.rnbuildingbyprog);
+app.get('/api/v1/updaternbuildingbyfac',  aierpcontroller.updaternbuildingbyfac);
+app.get('/api/v1/updaternbuildingcomments',  aierpcontroller.updaternbuildingcomments);
+app.get('/api/v1/rnbuildinglinks',  aierpcontroller.rnbuildinglinks);
+app.get('/api/v1/rnbuildingdocs',  aierpcontroller.rnbuildingdocs);
+app.get('/api/v1/deleternbuildingbyfac',  aierpcontroller.deleternbuildingbyfac);
+app.get('/api/v1/creaternbuildingbyfac',  aierpcontroller.creaternbuildingbyfac);
+
+
+
+app.get('/api/v1/getrnothercbyfac',  aierpcontroller.getrnothercbyfac);
+app.get('/api/v1/rnothercbyprog',  aierpcontroller.rnothercbyprog);
+app.get('/api/v1/updaternothercbyfac',  aierpcontroller.updaternothercbyfac);
+app.get('/api/v1/updaternotherccomments',  aierpcontroller.updaternotherccomments);
+app.get('/api/v1/rnotherclinks',  aierpcontroller.rnotherclinks);
+app.get('/api/v1/rnothercdocs',  aierpcontroller.rnothercdocs);
+app.get('/api/v1/deleternothercbyfac',  aierpcontroller.deleternothercbyfac);
+app.get('/api/v1/creaternothercbyfac',  aierpcontroller.creaternothercbyfac);
+app.get('/api/v1/getrnclassroombyfac',  aierpcontroller.getrnclassroombyfac);
+app.get('/api/v1/rnclassroombyprog',  aierpcontroller.rnclassroombyprog);
+app.get('/api/v1/updaternclassroombyfac',  aierpcontroller.updaternclassroombyfac);
+app.get('/api/v1/updaternclassroomcomments',  aierpcontroller.updaternclassroomcomments);
+app.get('/api/v1/rnclassroomlinks',  aierpcontroller.rnclassroomlinks);
+app.get('/api/v1/rnclassroomdocs',  aierpcontroller.rnclassroomdocs);
+app.get('/api/v1/deleternclassroombyfac',  aierpcontroller.deleternclassroombyfac);
+app.get('/api/v1/creaternclassroombyfac',  aierpcontroller.creaternclassroombyfac);
+app.get('/api/v1/getrnlabsbyfac',  aierpcontroller.getrnlabsbyfac);
+app.get('/api/v1/rnlabsbyprog',  aierpcontroller.rnlabsbyprog);
+app.get('/api/v1/updaternlabsbyfac',  aierpcontroller.updaternlabsbyfac);
+app.get('/api/v1/updaternlabscomments',  aierpcontroller.updaternlabscomments);
+app.get('/api/v1/rnlabslinks',  aierpcontroller.rnlabslinks);
+app.get('/api/v1/rnlabsdocs',  aierpcontroller.rnlabsdocs);
+app.get('/api/v1/deleternlabsbyfac',  aierpcontroller.deleternlabsbyfac);
+app.get('/api/v1/creaternlabsbyfac',  aierpcontroller.creaternlabsbyfac);
+app.get('/api/v1/getrnlibrarianbyfac',  aierpcontroller.getrnlibrarianbyfac);
+app.get('/api/v1/rnlibrarianbyprog',  aierpcontroller.rnlibrarianbyprog);
+app.get('/api/v1/updaternlibrarianbyfac',  aierpcontroller.updaternlibrarianbyfac);
+app.get('/api/v1/updaternlibrariancomments',  aierpcontroller.updaternlibrariancomments);
+app.get('/api/v1/rnlibrarianlinks',  aierpcontroller.rnlibrarianlinks);
+app.get('/api/v1/rnlibrariandocs',  aierpcontroller.rnlibrariandocs);
+app.get('/api/v1/deleternlibrarianbyfac',  aierpcontroller.deleternlibrarianbyfac);
+app.get('/api/v1/creaternlibrarianbyfac',  aierpcontroller.creaternlibrarianbyfac);
+app.get('/api/v1/getrnvehiclebyfac',  aierpcontroller.getrnvehiclebyfac);
+app.get('/api/v1/rnvehiclebyprog',  aierpcontroller.rnvehiclebyprog);
+app.get('/api/v1/updaternvehiclebyfac',  aierpcontroller.updaternvehiclebyfac);
+app.get('/api/v1/updaternvehiclecomments',  aierpcontroller.updaternvehiclecomments);
+app.get('/api/v1/rnvehiclelinks',  aierpcontroller.rnvehiclelinks);
+app.get('/api/v1/rnvehicledocs',  aierpcontroller.rnvehicledocs);
+app.get('/api/v1/deleternvehiclebyfac',  aierpcontroller.deleternvehiclebyfac);
+app.get('/api/v1/creaternvehiclebyfac',  aierpcontroller.creaternvehiclebyfac);
+app.get('/api/v1/getrnadministrativebyfac',  aierpcontroller.getrnadministrativebyfac);
+app.get('/api/v1/rnadministrativebyprog',  aierpcontroller.rnadministrativebyprog);
+app.get('/api/v1/updaternadministrativebyfac',  aierpcontroller.updaternadministrativebyfac);
+app.get('/api/v1/updaternadministrativecomments',  aierpcontroller.updaternadministrativecomments);
+app.get('/api/v1/rnadministrativelinks',  aierpcontroller.rnadministrativelinks);
+app.get('/api/v1/rnadministrativedocs',  aierpcontroller.rnadministrativedocs);
+app.get('/api/v1/deleternadministrativebyfac',  aierpcontroller.deleternadministrativebyfac);
+app.get('/api/v1/creaternadministrativebyfac',  aierpcontroller.creaternadministrativebyfac);
+app.get('/api/v1/getrnaffhospitalbyfac',  aierpcontroller.getrnaffhospitalbyfac);
+app.get('/api/v1/rnaffhospitalbyprog',  aierpcontroller.rnaffhospitalbyprog);
+app.get('/api/v1/updaternaffhospitalbyfac',  aierpcontroller.updaternaffhospitalbyfac);
+app.get('/api/v1/updaternaffhospitalcomments',  aierpcontroller.updaternaffhospitalcomments);
+app.get('/api/v1/rnaffhospitallinks',  aierpcontroller.rnaffhospitallinks);
+app.get('/api/v1/rnaffhospitaldocs',  aierpcontroller.rnaffhospitaldocs);
+app.get('/api/v1/deleternaffhospitalbyfac',  aierpcontroller.deleternaffhospitalbyfac);
+app.get('/api/v1/creaternaffhospitalbyfac',  aierpcontroller.creaternaffhospitalbyfac);
+app.get('/api/v1/getrndocumentsbyfac',  aierpcontroller.getrndocumentsbyfac);
+app.get('/api/v1/rndocumentsbyprog',  aierpcontroller.rndocumentsbyprog);
+app.get('/api/v1/updaterndocumentsbyfac',  aierpcontroller.updaterndocumentsbyfac);
+app.get('/api/v1/updaterndocumentscomments',  aierpcontroller.updaterndocumentscomments);
+app.get('/api/v1/rndocumentslinks',  aierpcontroller.rndocumentslinks);
+app.get('/api/v1/rndocumentsdocs',  aierpcontroller.rndocumentsdocs);
+app.get('/api/v1/deleterndocumentsbyfac',  aierpcontroller.deleterndocumentsbyfac);
+app.get('/api/v1/createrndocumentsbyfac',  aierpcontroller.createrndocumentsbyfac);
+app.get('/api/v1/getrnonteachingbyfac',  aierpcontroller.getrnonteachingbyfac);
+app.get('/api/v1/rnonteachingbyprog',  aierpcontroller.rnonteachingbyprog);
+app.get('/api/v1/updaternonteachingbyfac',  aierpcontroller.updaternonteachingbyfac);
+app.get('/api/v1/updaternonteachingcomments',  aierpcontroller.updaternonteachingcomments);
+app.get('/api/v1/rnonteachinglinks',  aierpcontroller.rnonteachinglinks);
+app.get('/api/v1/rnonteachingdocs',  aierpcontroller.rnonteachingdocs);
+app.get('/api/v1/deleternonteachingbyfac',  aierpcontroller.deleternonteachingbyfac);
+app.get('/api/v1/creaternonteachingbyfac',  aierpcontroller.creaternonteachingbyfac);
+
+
+app.get('/api/v1/getrinstitutebyfac',  aierpcontroller.getrinstitutebyfac);
+app.get('/api/v1/rinstitutebyprog',  aierpcontroller.rinstitutebyprog);
+app.get('/api/v1/updaterinstitutebyfac',  aierpcontroller.updaterinstitutebyfac);
+app.get('/api/v1/updaterinstitutecomments',  aierpcontroller.updaterinstitutecomments);
+app.get('/api/v1/rinstitutelinks',  aierpcontroller.rinstitutelinks);
+app.get('/api/v1/rinstitutedocs',  aierpcontroller.rinstitutedocs);
+app.get('/api/v1/deleterinstitutebyfac',  aierpcontroller.deleterinstitutebyfac);
+app.get('/api/v1/createrinstitutebyfac',  aierpcontroller.createrinstitutebyfac);
+
+
+app.get('/api/v1/getrapplicationbyfac',  aierpcontroller.getrapplicationbyfac);
+app.get('/api/v1/rapplicationbyprog',  aierpcontroller.rapplicationbyprog);
+app.get('/api/v1/updaterapplicationbyfac',  aierpcontroller.updaterapplicationbyfac);
+app.get('/api/v1/updaterapplicationcomments',  aierpcontroller.updaterapplicationcomments);
+app.get('/api/v1/rapplicationlinks',  aierpcontroller.rapplicationlinks);
+app.get('/api/v1/rapplicationdocs',  aierpcontroller.rapplicationdocs);
+app.get('/api/v1/rapplicationdocsallc',  aierpcontroller.rapplicationdocsallc);
+app.get('/api/v1/deleterapplicationbyfac',  aierpcontroller.deleterapplicationbyfac);
+app.get('/api/v1/createrapplicationbyfac',  aierpcontroller.createrapplicationbyfac);
+app.get('/api/v1/getrtrustbyfac',  aierpcontroller.getrtrustbyfac);
+app.get('/api/v1/rtrustbyprog',  aierpcontroller.rtrustbyprog);
+app.get('/api/v1/updatertrustbyfac',  aierpcontroller.updatertrustbyfac);
+app.get('/api/v1/updatertrustcomments',  aierpcontroller.updatertrustcomments);
+app.get('/api/v1/rtrustlinks',  aierpcontroller.rtrustlinks);
+app.get('/api/v1/rtrustdocs',  aierpcontroller.rtrustdocs);
+app.get('/api/v1/deletertrustbyfac',  aierpcontroller.deletertrustbyfac);
+app.get('/api/v1/creatertrustbyfac',  aierpcontroller.creatertrustbyfac);
+
+app.get('/api/v1/getopencoursebyfac',  aierpcontroller.getopencoursebyfac);
+app.get('/api/v1/opencoursebyprog',  aierpcontroller.opencoursebyprog);
+app.get('/api/v1/updateopencoursebyfac',  aierpcontroller.updateopencoursebyfac);
+app.get('/api/v1/updateopencoursecomments',  aierpcontroller.updateopencoursecomments);
+app.get('/api/v1/opencourselinks',  aierpcontroller.opencourselinks);
+app.get('/api/v1/opencoursedocs',  aierpcontroller.opencoursedocs);
+app.get('/api/v1/deleteopencoursebyfac',  aierpcontroller.deleteopencoursebyfac);
+app.get('/api/v1/createopencoursebyfac',  aierpcontroller.createopencoursebyfac);
+app.get('/api/v1/getopenmodulesbyfac',  aierpcontroller.getopenmodulesbyfac);
+app.get('/api/v1/openmodulesbyprog',  aierpcontroller.openmodulesbyprog);
+app.get('/api/v1/updateopenmodulesbyfac',  aierpcontroller.updateopenmodulesbyfac);
+app.get('/api/v1/updateopenmodulescomments',  aierpcontroller.updateopenmodulescomments);
+app.get('/api/v1/openmoduleslinks',  aierpcontroller.openmoduleslinks);
+app.get('/api/v1/openmodulesdocs',  aierpcontroller.openmodulesdocs);
+app.get('/api/v1/openmodulesdocsall',  aierpcontroller.openmodulesdocsall);
+app.get('/api/v1/deleteopenmodulesbyfac',  aierpcontroller.deleteopenmodulesbyfac);
+app.get('/api/v1/createopenmodulesbyfac',  aierpcontroller.createopenmodulesbyfac);
+
+
+app.get('/api/v1/getpayslipsbyfac',  aierpcontroller.getpayslipsbyfac);
+app.get('/api/v1/payslipsbyprog',  aierpcontroller.payslipsbyprog);
+app.get('/api/v1/updatepayslipsbyfac',  aierpcontroller.updatepayslipsbyfac);
+app.get('/api/v1/updatepayslipscomments',  aierpcontroller.updatepayslipscomments);
+app.get('/api/v1/payslipslinks',  aierpcontroller.payslipslinks);
+app.get('/api/v1/payslipsdocs',  aierpcontroller.payslipsdocs);
+app.get('/api/v1/deletepayslipsbyfac',  aierpcontroller.deletepayslipsbyfac);
+app.get('/api/v1/createpayslipsbyfac',  aierpcontroller.createpayslipsbyfac);
+app.get('/api/v1/getpayslipdetailsbyfac',  aierpcontroller.getpayslipdetailsbyfac);
+app.get('/api/v1/getpayslipdetailsbyid',  aierpcontroller.getpayslipdetailsbyid);
+app.get('/api/v1/payslipdetailsbyprog',  aierpcontroller.payslipdetailsbyprog);
+app.get('/api/v1/updatepayslipdetailsbyfac',  aierpcontroller.updatepayslipdetailsbyfac);
+app.get('/api/v1/updatepayslipdetailscomments',  aierpcontroller.updatepayslipdetailscomments);
+app.get('/api/v1/payslipdetailslinks',  aierpcontroller.payslipdetailslinks);
+app.get('/api/v1/payslipdetailsdocs',  aierpcontroller.payslipdetailsdocs);
+app.get('/api/v1/deletepayslipdetailsbyfac',  aierpcontroller.deletepayslipdetailsbyfac);
+app.get('/api/v1/createpayslipdetailsbyfac',  aierpcontroller.createpayslipdetailsbyfac);
+
+
+app.get('/api/v1/eventdocsnbytype',  aierpcontroller.eventdocsnbytype);
+app.get('/api/v1/getfacultycadre',  aierpcontroller.getfacultycadre);
+app.get('/api/v1/getsfr',  aierpcontroller.getsfr);
+app.get('/api/v1/getadmissionalertnba',  aierpcontroller.getadmissionalert);
+app.get('/api/v1/getacadapialert',  aierpcontroller.getacadapialert);
+app.get('/api/v1/getacadperfbyfac',  aierpcontroller.getacadperfbyfac);
+app.get('/api/v1/acadperfbyprog',  aierpcontroller.acadperfbyprog);
+app.get('/api/v1/updateacadperfbyfac',  aierpcontroller.updateacadperfbyfac);
+app.get('/api/v1/updateacadperfcomments',  aierpcontroller.updateacadperfcomments);
+app.get('/api/v1/acadperflinks',  aierpcontroller.acadperflinks);
+app.get('/api/v1/acadperfdocs',  aierpcontroller.acadperfdocs);
+app.get('/api/v1/deleteacadperfbyfac',  aierpcontroller.deleteacadperfbyfac);
+app.get('/api/v1/createacadperfbyfac',  aierpcontroller.createacadperfbyfac);
+
+
+app.get('/api/v1/getstartupbyfac',  aierpcontroller.getstartupbyfac);
+app.get('/api/v1/startupbyprog',  aierpcontroller.startupbyprog);
+app.get('/api/v1/updatestartupbyfac',  aierpcontroller.updatestartupbyfac);
+app.get('/api/v1/updatestartupcomments',  aierpcontroller.updatestartupcomments);
+app.get('/api/v1/startuplinks',  aierpcontroller.startuplinks);
+app.get('/api/v1/startupdocs',  aierpcontroller.startupdocs);
+app.get('/api/v1/deletestartupbyfac',  aierpcontroller.deletestartupbyfac);
+app.get('/api/v1/createstartupbyfac',  aierpcontroller.createstartupbyfac);
+
+
+app.get('/api/v1/getprogressionalert',  aierpcontroller.getprogressionalert);
+app.get('/api/v1/getstudmasternewbyfac',  aierpcontroller.getstudmasternewbyfac);
+app.get('/api/v1/studmasternewbyprog',  aierpcontroller.studmasternewbyprog);
+app.get('/api/v1/updatestudmasternewbyfac',  aierpcontroller.updatestudmasternewbyfac);
+app.get('/api/v1/updatestudmasternewcomments',  aierpcontroller.updatestudmasternewcomments);
+app.get('/api/v1/studmasternewlinks',  aierpcontroller.studmasternewlinks);
+app.get('/api/v1/studmasternewdocs',  aierpcontroller.studmasternewdocs);
+app.get('/api/v1/deletestudmasternewbyfac',  aierpcontroller.deletestudmasternewbyfac);
+app.get('/api/v1/createstudmasternewbyfac',  aierpcontroller.createstudmasternewbyfac);
+
+
+
+app.get('/api/v1/getlabsafetybyfac',  aierpcontroller.getlabsafetybyfac);
+app.get('/api/v1/labsafetybyprog',  aierpcontroller.labsafetybyprog);
+app.get('/api/v1/updatelabsafetybyfac',  aierpcontroller.updatelabsafetybyfac);
+app.get('/api/v1/updatelabsafetycomments',  aierpcontroller.updatelabsafetycomments);
+app.get('/api/v1/labsafetylinks',  aierpcontroller.labsafetylinks);
+app.get('/api/v1/labsafetydocs',  aierpcontroller.labsafetydocs);
+app.get('/api/v1/deletelabsafetybyfac',  aierpcontroller.deletelabsafetybyfac);
+app.get('/api/v1/createlabsafetybyfac',  aierpcontroller.createlabsafetybyfac);
+app.get('/api/v1/getlabequipmentsbyfac',  aierpcontroller.getlabequipmentsbyfac);
+app.get('/api/v1/labequipmentsbyprog',  aierpcontroller.labequipmentsbyprog);
+app.get('/api/v1/updatelabequipmentsbyfac',  aierpcontroller.updatelabequipmentsbyfac);
+app.get('/api/v1/updatelabequipmentscomments',  aierpcontroller.updatelabequipmentscomments);
+app.get('/api/v1/labequipmentslinks',  aierpcontroller.labequipmentslinks);
+app.get('/api/v1/labequipmentsdocs',  aierpcontroller.labequipmentsdocs);
+app.get('/api/v1/deletelabequipmentsbyfac',  aierpcontroller.deletelabequipmentsbyfac);
+app.get('/api/v1/createlabequipmentsbyfac',  aierpcontroller.createlabequipmentsbyfac);
+app.get('/api/v1/getprogrambudgetbyfac',  aierpcontroller.getprogrambudgetbyfac);
+app.get('/api/v1/programbudgetbyprog',  aierpcontroller.programbudgetbyprog);
+app.get('/api/v1/updateprogrambudgetbyfac',  aierpcontroller.updateprogrambudgetbyfac);
+app.get('/api/v1/updateprogrambudgetcomments',  aierpcontroller.updateprogrambudgetcomments);
+app.get('/api/v1/programbudgetlinks',  aierpcontroller.programbudgetlinks);
+app.get('/api/v1/programbudgetdocs',  aierpcontroller.programbudgetdocs);
+app.get('/api/v1/deleteprogrambudgetbyfac',  aierpcontroller.deleteprogrambudgetbyfac);
+app.get('/api/v1/createprogrambudgetbyfac',  aierpcontroller.createprogrambudgetbyfac);
+app.get('/api/v1/getinternetbyfac',  aierpcontroller.getinternetbyfac);
+app.get('/api/v1/internetbyprog',  aierpcontroller.internetbyprog);
+app.get('/api/v1/updateinternetbyfac',  aierpcontroller.updateinternetbyfac);
+app.get('/api/v1/updateinternetcomments',  aierpcontroller.updateinternetcomments);
+app.get('/api/v1/internetlinks',  aierpcontroller.internetlinks);
+app.get('/api/v1/internetdocs',  aierpcontroller.internetdocs);
+app.get('/api/v1/deleteinternetbyfac',  aierpcontroller.deleteinternetbyfac);
+app.get('/api/v1/createinternetbyfac',  aierpcontroller.createinternetbyfac);
+app.get('/api/v1/getemfacultybyfac',  aierpcontroller.getemfacultybyfac);
+app.get('/api/v1/emfacultybyprog',  aierpcontroller.emfacultybyprog);
+app.get('/api/v1/updateemfacultybyfac',  aierpcontroller.updateemfacultybyfac);
+app.get('/api/v1/updateemfacultycomments',  aierpcontroller.updateemfacultycomments);
+app.get('/api/v1/emfacultylinks',  aierpcontroller.emfacultylinks);
+app.get('/api/v1/emfacultydocs',  aierpcontroller.emfacultydocs);
+app.get('/api/v1/deleteemfacultybyfac',  aierpcontroller.deleteemfacultybyfac);
+app.get('/api/v1/createemfacultybyfac',  aierpcontroller.createemfacultybyfac);
+app.get('/api/v1/getstudentpubsbyfac',  aierpcontroller.getstudentpubsbyfac);
+app.get('/api/v1/studentpubsbyprog',  aierpcontroller.studentpubsbyprog);
+app.get('/api/v1/updatestudentpubsbyfac',  aierpcontroller.updatestudentpubsbyfac);
+app.get('/api/v1/updatestudentpubscomments',  aierpcontroller.updatestudentpubscomments);
+app.get('/api/v1/studentpubslinks',  aierpcontroller.studentpubslinks);
+app.get('/api/v1/studentpubsdocs',  aierpcontroller.studentpubsdocs);
+app.get('/api/v1/deletestudentpubsbyfac',  aierpcontroller.deletestudentpubsbyfac);
+app.get('/api/v1/createstudentpubsbyfac',  aierpcontroller.createstudentpubsbyfac);
+app.get('/api/v1/getdeppublicationsbyfac',  aierpcontroller.getdeppublicationsbyfac);
+app.get('/api/v1/deppublicationsbyprog',  aierpcontroller.deppublicationsbyprog);
+app.get('/api/v1/updatedeppublicationsbyfac',  aierpcontroller.updatedeppublicationsbyfac);
+app.get('/api/v1/updatedeppublicationscomments',  aierpcontroller.updatedeppublicationscomments);
+app.get('/api/v1/deppublicationslinks',  aierpcontroller.deppublicationslinks);
+app.get('/api/v1/deppublicationsdocs',  aierpcontroller.deppublicationsdocs);
+app.get('/api/v1/deletedeppublicationsbyfac',  aierpcontroller.deletedeppublicationsbyfac);
+app.get('/api/v1/createdeppublicationsbyfac',  aierpcontroller.createdeppublicationsbyfac);
+app.get('/api/v1/getfacyearbyfac',  aierpcontroller.getfacyearbyfac);
+app.get('/api/v1/facyearbyprog',  aierpcontroller.facyearbyprog);
+app.get('/api/v1/updatefacyearbyfac',  aierpcontroller.updatefacyearbyfac);
+app.get('/api/v1/updatefacyearcomments',  aierpcontroller.updatefacyearcomments);
+app.get('/api/v1/facyearlinks',  aierpcontroller.facyearlinks);
+app.get('/api/v1/facyeardocs',  aierpcontroller.facyeardocs);
+app.get('/api/v1/deletefacyearbyfac',  aierpcontroller.deletefacyearbyfac);
+app.get('/api/v1/createfacyearbyfac',  aierpcontroller.createfacyearbyfac);
+app.get('/api/v1/getstudmasterbyfac',  aierpcontroller.getstudmasterbyfac);
+app.get('/api/v1/studmasterbyprog',  aierpcontroller.studmasterbyprog);
+app.get('/api/v1/updatestudmasterbyfac',  aierpcontroller.updatestudmasterbyfac);
+app.get('/api/v1/updatestudmastercomments',  aierpcontroller.updatestudmastercomments);
+app.get('/api/v1/studmasterlinks',  aierpcontroller.studmasterlinks);
+app.get('/api/v1/studmasterdocs',  aierpcontroller.studmasterdocs);
+app.get('/api/v1/deletestudmasterbyfac',  aierpcontroller.deletestudmasterbyfac);
+app.get('/api/v1/createstudmasterbyfac',  aierpcontroller.createstudmasterbyfac);
+app.get('/api/v1/getseedmbyfac',  aierpcontroller.getseedmbyfac);
+app.get('/api/v1/seedmbyprog',  aierpcontroller.seedmbyprog);
+app.get('/api/v1/updateseedmbyfac',  aierpcontroller.updateseedmbyfac);
+app.get('/api/v1/updateseedmcomments',  aierpcontroller.updateseedmcomments);
+app.get('/api/v1/seedmlinks',  aierpcontroller.seedmlinks);
+app.get('/api/v1/seedmdocs',  aierpcontroller.seedmdocs);
+app.get('/api/v1/deleteseedmbyfac',  aierpcontroller.deleteseedmbyfac);
+app.get('/api/v1/createseedmbyfac',  aierpcontroller.createseedmbyfac);
+app.get('/api/v1/getplacementbyfac',  aierpcontroller.getplacementbyfac);
+app.get('/api/v1/placementbyprog',  aierpcontroller.placementbyprog);
+app.get('/api/v1/updateplacementbyfac',  aierpcontroller.updateplacementbyfac);
+app.get('/api/v1/updateplacementcomments',  aierpcontroller.updateplacementcomments);
+app.get('/api/v1/placementlinks',  aierpcontroller.placementlinks);
+app.get('/api/v1/placementdocs',  aierpcontroller.placementdocs);
+app.get('/api/v1/deleteplacementbyfac',  aierpcontroller.deleteplacementbyfac);
+app.get('/api/v1/createplacementbyfac',  aierpcontroller.createplacementbyfac);
+
+
+
+app.get('/api/v1/getteacherfsbyfac',  aierpcontroller.getteacherfsbyfac);
+app.get('/api/v1/teacherfsbyprog',  aierpcontroller.teacherfsbyprog);
+app.get('/api/v1/updateteacherfsbyfac',  aierpcontroller.updateteacherfsbyfac);
+app.get('/api/v1/updateteacherfscomments',  aierpcontroller.updateteacherfscomments);
+app.get('/api/v1/teacherfslinks',  aierpcontroller.teacherfslinks);
+app.get('/api/v1/teacherfsdocs',  aierpcontroller.teacherfsdocs);
+app.get('/api/v1/deleteteacherfsbyfac',  aierpcontroller.deleteteacherfsbyfac);
+app.get('/api/v1/createteacherfsbyfac',  aierpcontroller.createteacherfsbyfac);
+
+
+app.get('/api/v1/getalumniconbyfac',  aierpcontroller.getalumniconbyfac);
+app.get('/api/v1/alumniconbyprog',  aierpcontroller.alumniconbyprog);
+app.get('/api/v1/updatealumniconbyfac',  aierpcontroller.updatealumniconbyfac);
+app.get('/api/v1/updatealumniconcomments',  aierpcontroller.updatealumniconcomments);
+app.get('/api/v1/alumniconlinks',  aierpcontroller.alumniconlinks);
+app.get('/api/v1/alumnicondocs',  aierpcontroller.alumnicondocs);
+app.get('/api/v1/deletealumniconbyfac',  aierpcontroller.deletealumniconbyfac);
+app.get('/api/v1/createalumniconbyfac',  aierpcontroller.createalumniconbyfac);
+app.get('/api/v1/geteventbyfac',  aierpcontroller.geteventbyfac);
+app.get('/api/v1/eventbyprog',  aierpcontroller.eventbyprog);
+app.get('/api/v1/updateeventbyfac',  aierpcontroller.updateeventbyfac);
+app.get('/api/v1/updateeventcomments',  aierpcontroller.updateeventcomments);
+app.get('/api/v1/eventlinks',  aierpcontroller.eventlinks);
+app.get('/api/v1/eventdocs',  aierpcontroller.eventdocs);
+app.get('/api/v1/deleteeventbyfac',  aierpcontroller.deleteeventbyfac);
+app.get('/api/v1/createeventbyfac',  aierpcontroller.createeventbyfac);
+
+
+app.get('/api/v1/getmenteesbyfac',  aierpcontroller.getmenteesbyfac);
+app.get('/api/v1/menteesbyprog',  aierpcontroller.menteesbyprog);
+app.get('/api/v1/updatementeesbyfac',  aierpcontroller.updatementeesbyfac);
+app.get('/api/v1/updatementeescomments',  aierpcontroller.updatementeescomments);
+app.get('/api/v1/menteeslinks',  aierpcontroller.menteeslinks);
+app.get('/api/v1/menteesdocs',  aierpcontroller.menteesdocs);
+app.get('/api/v1/deletementeesbyfac',  aierpcontroller.deletementeesbyfac);
+app.get('/api/v1/creatementeesbyfac',  aierpcontroller.creatementeesbyfac);
+
+
+app.get('/api/v1/getempexpensesbyfac',  aierpcontroller.getempexpensesbyfac);
+app.get('/api/v1/empexpensesbyprog',  aierpcontroller.empexpensesbyprog);
+app.get('/api/v1/updateempexpensesbyfac',  aierpcontroller.updateempexpensesbyfac);
+app.get('/api/v1/updateempexpensescomments',  aierpcontroller.updateempexpensescomments);
+app.get('/api/v1/empexpenseslinks',  aierpcontroller.empexpenseslinks);
+app.get('/api/v1/empexpensesdocs',  aierpcontroller.empexpensesdocs);
+app.get('/api/v1/deleteempexpensesbyfac',  aierpcontroller.deleteempexpensesbyfac);
+app.get('/api/v1/createempexpensesbyfac',  aierpcontroller.createempexpensesbyfac);
+app.get('/api/v1/geteventexpensesbyfac',  aierpcontroller.geteventexpensesbyfac);
+app.get('/api/v1/eventexpensesbyprog',  aierpcontroller.eventexpensesbyprog);
+app.get('/api/v1/updateeventexpensesbyfac',  aierpcontroller.updateeventexpensesbyfac);
+app.get('/api/v1/updateeventexpensescomments',  aierpcontroller.updateeventexpensescomments);
+app.get('/api/v1/eventexpenseslinks',  aierpcontroller.eventexpenseslinks);
+app.get('/api/v1/eventexpensesdocs',  aierpcontroller.eventexpensesdocs);
+app.get('/api/v1/deleteeventexpensesbyfac',  aierpcontroller.deleteeventexpensesbyfac);
+app.get('/api/v1/createeventexpensesbyfac',  aierpcontroller.createeventexpensesbyfac);
+
+
+app.get('/api/v1/getnmetricissuesbyfac',  aierpcontroller.getnmetricissuesbyfac);
+app.get('/api/v1/nmetricissuesbyprog',  aierpcontroller.nmetricissuesbyprog);
+app.get('/api/v1/updatenmetricissuesbyfac',  aierpcontroller.updatenmetricissuesbyfac);
+app.get('/api/v1/updatenmetricissuescomments',  aierpcontroller.updatenmetricissuescomments);
+app.get('/api/v1/nmetricissueslinks',  aierpcontroller.nmetricissueslinks);
+app.get('/api/v1/nmetricissuesdocs',  aierpcontroller.nmetricissuesdocs);
+app.get('/api/v1/deletenmetricissuesbyfac',  aierpcontroller.deletenmetricissuesbyfac);
+app.get('/api/v1/createnmetricissuesbyfac',  aierpcontroller.createnmetricissuesbyfac);
+
+
+app.get('/api/v1/getteacherdatabyfac',  aierpcontroller.getteacherdatabyfac);
+app.get('/api/v1/teacherdatabyprog',  aierpcontroller.teacherdatabyprog);
+app.get('/api/v1/updateteacherdatabyfac',  aierpcontroller.updateteacherdatabyfac);
+app.get('/api/v1/updateteacherdatacomments',  aierpcontroller.updateteacherdatacomments);
+app.get('/api/v1/teacherdatalinks',  aierpcontroller.teacherdatalinks);
+app.get('/api/v1/teacherdatadocs',  aierpcontroller.teacherdatadocs);
+app.get('/api/v1/deleteteacherdatabyfac',  aierpcontroller.deleteteacherdatabyfac);
+app.get('/api/v1/createteacherdatabyfac',  aierpcontroller.createteacherdatabyfac);
+app.get('/api/v1/getresultbyfac',  aierpcontroller.getresultbyfac);
+app.get('/api/v1/resultbyprog',  aierpcontroller.resultbyprog);
+app.get('/api/v1/updateresultbyfac',  aierpcontroller.updateresultbyfac);
+app.get('/api/v1/updateresultcomments',  aierpcontroller.updateresultcomments);
+app.get('/api/v1/resultlinks',  aierpcontroller.resultlinks);
+app.get('/api/v1/resultdocs',  aierpcontroller.resultdocs);
+app.get('/api/v1/deleteresultbyfac',  aierpcontroller.deleteresultbyfac);
+app.get('/api/v1/createresultbyfac',  aierpcontroller.createresultbyfac);
+app.get('/api/v1/getphdfacebyfac',  aierpcontroller.getphdfacebyfac);
+app.get('/api/v1/phdfacebyprog',  aierpcontroller.phdfacebyprog);
+app.get('/api/v1/updatephdfacebyfac',  aierpcontroller.updatephdfacebyfac);
+app.get('/api/v1/updatephdfacecomments',  aierpcontroller.updatephdfacecomments);
+app.get('/api/v1/phdfacelinks',  aierpcontroller.phdfacelinks);
+app.get('/api/v1/phdfacedocs',  aierpcontroller.phdfacedocs);
+app.get('/api/v1/deletephdfacebyfac',  aierpcontroller.deletephdfacebyfac);
+app.get('/api/v1/createphdfacebyfac',  aierpcontroller.createphdfacebyfac);
+
+
+
+
+
+
+
+
+app.get('/api/v1/getphdfacbyfac',  aierpcontroller.getphdfacbyfac);
+app.get('/api/v1/phdfacbyprog',  aierpcontroller.phdfacbyprog);
+app.get('/api/v1/updatephdfacbyfac',  aierpcontroller.updatephdfacbyfac);
+app.get('/api/v1/updatephdfaccomments',  aierpcontroller.updatephdfaccomments);
+app.get('/api/v1/phdfaclinks',  aierpcontroller.phdfaclinks);
+app.get('/api/v1/phdfacdocs',  aierpcontroller.phdfacdocs);
+app.get('/api/v1/deletephdfacbyfac',  aierpcontroller.deletephdfacbyfac);
+app.get('/api/v1/createphdfacbyfac',  aierpcontroller.createphdfacbyfac);
+
+
+app.get('/api/v1/getreservecatbyfac',  aierpcontroller.getreservecatbyfac);
+app.get('/api/v1/reservecatbyprog',  aierpcontroller.reservecatbyprog);
+app.get('/api/v1/updatereservecatbyfac',  aierpcontroller.updatereservecatbyfac);
+app.get('/api/v1/updatereservecatcomments',  aierpcontroller.updatereservecatcomments);
+app.get('/api/v1/reservecatlinks',  aierpcontroller.reservecatlinks);
+app.get('/api/v1/reservecatdocs',  aierpcontroller.reservecatdocs);
+app.get('/api/v1/deletereservecatbyfac',  aierpcontroller.deletereservecatbyfac);
+app.get('/api/v1/createreservecatbyfac',  aierpcontroller.createreservecatbyfac);
+
+
+
+app.get('/api/v1/gethigheredubyfac',  aierpcontroller.gethigheredubyfac);
+app.get('/api/v1/higheredubyprog',  aierpcontroller.higheredubyprog);
+app.get('/api/v1/updatehigheredubyfac',  aierpcontroller.updatehigheredubyfac);
+app.get('/api/v1/updatehighereducomments',  aierpcontroller.updatehighereducomments);
+app.get('/api/v1/higheredulinks',  aierpcontroller.higheredulinks);
+app.get('/api/v1/higheredudocs',  aierpcontroller.higheredudocs);
+app.get('/api/v1/deletehigheredubyfac',  aierpcontroller.deletehigheredubyfac);
+app.get('/api/v1/createhigheredubyfac',  aierpcontroller.createhigheredubyfac);
+app.get('/api/v1/gethigherexambyfac',  aierpcontroller.gethigherexambyfac);
+app.get('/api/v1/higherexambyprog',  aierpcontroller.higherexambyprog);
+app.get('/api/v1/updatehigherexambyfac',  aierpcontroller.updatehigherexambyfac);
+app.get('/api/v1/updatehigherexamcomments',  aierpcontroller.updatehigherexamcomments);
+app.get('/api/v1/higherexamlinks',  aierpcontroller.higherexamlinks);
+app.get('/api/v1/higherexamdocs',  aierpcontroller.higherexamdocs);
+app.get('/api/v1/deletehigherexambyfac',  aierpcontroller.deletehigherexambyfac);
+app.get('/api/v1/createhigherexambyfac',  aierpcontroller.createhigherexambyfac);
+
+
+app.get('/api/v1/getadmissionbyfac',  aierpcontroller.getadmissionbyfac);
+app.get('/api/v1/admissionbyprog',  aierpcontroller.admissionbyprog);
+app.get('/api/v1/updateadmissionbyfac',  aierpcontroller.updateadmissionbyfac);
+app.get('/api/v1/updateadmissioncomments',  aierpcontroller.updateadmissioncomments);
+app.get('/api/v1/admissionlinks',  aierpcontroller.admissionlinks);
+app.get('/api/v1/admissiondocs',  aierpcontroller.admissiondocs);
+app.get('/api/v1/deleteadmissionbyfac',  aierpcontroller.deleteadmissionbyfac);
+app.get('/api/v1/createadmissionbyfac',  aierpcontroller.createadmissionbyfac);
+app.get('/api/v1/getpassexambyfac',  aierpcontroller.getpassexambyfac);
+app.get('/api/v1/passexambyprog',  aierpcontroller.passexambyprog);
+app.get('/api/v1/updatepassexambyfac',  aierpcontroller.updatepassexambyfac);
+app.get('/api/v1/updatepassexamcomments',  aierpcontroller.updatepassexamcomments);
+app.get('/api/v1/passexamlinks',  aierpcontroller.passexamlinks);
+app.get('/api/v1/passexamdocs',  aierpcontroller.passexamdocs);
+app.get('/api/v1/deletepassexambyfac',  aierpcontroller.deletepassexambyfac);
+app.get('/api/v1/createpassexambyfac',  aierpcontroller.createpassexambyfac);
+app.get('/api/v1/getnbaug33resultbyfac',  aierpcontroller.getnbaug33resultbyfac);
+app.get('/api/v1/nbaug33resultbyprog',  aierpcontroller.nbaug33resultbyprog);
+app.get('/api/v1/updatenbaug33resultbyfac',  aierpcontroller.updatenbaug33resultbyfac);
+app.get('/api/v1/updatenbaug33resultcomments',  aierpcontroller.updatenbaug33resultcomments);
+app.get('/api/v1/nbaug33resultlinks',  aierpcontroller.nbaug33resultlinks);
+app.get('/api/v1/nbaug33resultdocs',  aierpcontroller.nbaug33resultdocs);
+app.get('/api/v1/deletenbaug33resultbyfac',  aierpcontroller.deletenbaug33resultbyfac);
+app.get('/api/v1/createnbaug33resultbyfac',  aierpcontroller.createnbaug33resultbyfac);
+// app.get('/api/v1/getplacementbyfac',  aierpcontroller.getplacementbyfac);
+// app.get('/api/v1/placementbyprog',  aierpcontroller.placementbyprog);
+// app.get('/api/v1/updateplacementbyfac',  aierpcontroller.updateplacementbyfac);
+// app.get('/api/v1/updateplacementcomments',  aierpcontroller.updateplacementcomments);
+// app.get('/api/v1/placementlinks',  aierpcontroller.placementlinks);
+// app.get('/api/v1/placementdocs',  aierpcontroller.placementdocs);
+// app.get('/api/v1/deleteplacementbyfac',  aierpcontroller.deleteplacementbyfac);
+// app.get('/api/v1/createplacementbyfac',  aierpcontroller.createplacementbyfac);
+app.get('/api/v1/getwriterdbbyfac',  aierpcontroller.getwriterdbbyfac);
+app.get('/api/v1/getwriterdbbytypecat',  aierpcontroller.getwriterdbbytypecat);
+app.get('/api/v1/writerdbbyprog',  aierpcontroller.writerdbbyprog);
+app.get('/api/v1/updatewriterdbbyfac',  aierpcontroller.updatewriterdbbyfac);
+app.get('/api/v1/updatewriterdbcomments',  aierpcontroller.updatewriterdbcomments);
+app.get('/api/v1/writerdblinks',  aierpcontroller.writerdblinks);
+app.get('/api/v1/writerdbdocs',  aierpcontroller.writerdbdocs);
+app.get('/api/v1/deletewriterdbbyfac',  aierpcontroller.deletewriterdbbyfac);
+app.get('/api/v1/createwriterdbbyfac',  aierpcontroller.createwriterdbbyfac);
+
+
+app.get('/api/v1/getndepmeetingsallbyfac',  aierpcontroller.getndepmeetingsallbyfac);
+app.get('/api/v1/updatendepmeetingsallbyfac',  aierpcontroller.updatendepmeetingsallbyfac);
+app.get('/api/v1/updatendepmeetingsallcomments',  aierpcontroller.updatendepmeetingsallcomments);
+app.get('/api/v1/ndepmeetingsalllinks',  aierpcontroller.ndepmeetingsalllinks);
+app.get('/api/v1/ndepmeetingsalldocs',  aierpcontroller.ndepmeetingsalldocs);
+app.get('/api/v1/deletendepmeetingsallbyfac',  aierpcontroller.deletendepmeetingsallbyfac);
+app.get('/api/v1/createndepmeetingsallbyfac',  aierpcontroller.createndepmeetingsallbyfac);
+app.get('/api/v1/getnmeetingtasksallbyfac',  aierpcontroller.getnmeetingtasksallbyfac);
+app.get('/api/v1/updatenmeetingtasksallbyfac',  aierpcontroller.updatenmeetingtasksallbyfac);
+app.get('/api/v1/updatenmeetingtasksallcomments',  aierpcontroller.updatenmeetingtasksallcomments);
+app.get('/api/v1/nmeetingtasksalllinks',  aierpcontroller.nmeetingtasksalllinks);
+app.get('/api/v1/nmeetingtasksallglobal',  aierpcontroller.nmeetingtasksallglobal);
+app.get('/api/v1/nmeetingtasksalldocs',  aierpcontroller.nmeetingtasksalldocs);
+app.get('/api/v1/deletenmeetingtasksallbyfac',  aierpcontroller.deletenmeetingtasksallbyfac);
+app.get('/api/v1/createnmeetingtasksallbyfac',  aierpcontroller.createnmeetingtasksallbyfac);
+
+
+app.get('/api/v1/getndepmeetingsbyfac',  aierpcontroller.getndepmeetingsbyfac);
+app.get('/api/v1/updatendepmeetingsbyfac',  aierpcontroller.updatendepmeetingsbyfac);
+app.get('/api/v1/updatendepmeetingscomments',  aierpcontroller.updatendepmeetingscomments);
+app.get('/api/v1/ndepmeetingslinks',  aierpcontroller.ndepmeetingslinks);
+app.get('/api/v1/ndepmeetingsdocs',  aierpcontroller.ndepmeetingsdocs);
+app.get('/api/v1/deletendepmeetingsbyfac',  aierpcontroller.deletendepmeetingsbyfac);
+app.get('/api/v1/createndepmeetingsbyfac',  aierpcontroller.createndepmeetingsbyfac);
+app.get('/api/v1/getnmeetingtasksbyfac',  aierpcontroller.getnmeetingtasksbyfac);
+app.get('/api/v1/updatenmeetingtasksbyfac',  aierpcontroller.updatenmeetingtasksbyfac);
+app.get('/api/v1/updatenmeetingtaskscomments',  aierpcontroller.updatenmeetingtaskscomments);
+app.get('/api/v1/nmeetingtaskslinks',  aierpcontroller.nmeetingtaskslinks);
+app.get('/api/v1/nmeetingtasksdocs',  aierpcontroller.nmeetingtasksdocs);
+app.get('/api/v1/deletenmeetingtasksbyfac',  aierpcontroller.deletenmeetingtasksbyfac);
+app.get('/api/v1/createnmeetingtasksbyfac',  aierpcontroller.createnmeetingtasksbyfac);
+
+app.get('/api/v1/sendmail2',  aierpcontroller.sendmail2);
+app.get('/api/v1/sendmail3',  aierpcontroller.sendmail3);
+// app.get('/api/v1/updateprogcode',  aierpcontroller.updateprogcode);
+app.get('/api/v1/usyllabusrevbyname',  aierpcontroller.usyllabusrevbyname);
+app.get('/api/v1/usyllabusrevbynamecode',  aierpcontroller.usyllabusrevbynamecode);
+
+app.get('/api/v1/changeyear',  aierpcontroller.changeyear);
+
+app.get('/api/v1/submitexplearning',  aierpcontroller.submitexplearning);
+app.get('/api/v1/submitpublications',  aierpcontroller.submitpublications);
+app.get('/api/v1/submitseminar',  aierpcontroller.submitseminar);
+app.get('/api/v1/submitevents',  aierpcontroller.submitevents);
+app.get('/api/v1/submitsupportingdocs',  aierpcontroller.submitsupportingdocs);
+
+app.get('/api/v1/changeallpassword',  aierpcontroller.changeallpassword);
+
+// app.get('/api/v1/getnallcoursesbyfac',  aierpcontroller.getnallcoursesbyfac);
+// app.get('/api/v1/nallcoursesbyprog',  aierpcontroller.nallcoursesbyprog);
+// app.get('/api/v1/updatenallcoursesbyfac',  aierpcontroller.updatenallcoursesbyfac);
+// app.get('/api/v1/updatenallcoursescomments',  aierpcontroller.updatenallcoursescomments);
+// app.get('/api/v1/nallcourseslinks',  aierpcontroller.nallcourseslinks);
+// app.get('/api/v1/nallcoursesdocs',  aierpcontroller.nallcoursesdocs);
+// app.get('/api/v1/deletenallcoursesbyfac',  aierpcontroller.deletenallcoursesbyfac);
+// app.get('/api/v1/createnallcoursesbyfac',  aierpcontroller.createnallcoursesbyfac);
+
+
+app.get('/api/v1/getverifystatusbyfac',  aierpcontroller.getverifystatusbyfac);
+app.get('/api/v1/verifystatusbyprog',  aierpcontroller.verifystatusbyprog);
+app.get('/api/v1/updateverifystatusbyfac',  aierpcontroller.updateverifystatusbyfac);
+app.get('/api/v1/updateverifystatuscomments',  aierpcontroller.updateverifystatuscomments);
+app.get('/api/v1/verifystatuslinks',  aierpcontroller.verifystatuslinks);
+app.get('/api/v1/verifystatusdocs',  aierpcontroller.verifystatusdocs);
+app.get('/api/v1/deleteverifystatusbyfac',  aierpcontroller.deleteverifystatusbyfac);
+app.get('/api/v1/createverifystatusbyfac',  aierpcontroller.createverifystatusbyfac);
+app.get('/api/v1/getnissuesallbyfac',  aierpcontroller.getnissuesallbyfac);
+app.get('/api/v1/nissuesallbyprog',  aierpcontroller.nissuesallbyprog);
+app.get('/api/v1/updatenissuesallbyfac',  aierpcontroller.updatenissuesallbyfac);
+app.get('/api/v1/updatenissuesallcomments',  aierpcontroller.updatenissuesallcomments);
+app.get('/api/v1/nissuesalllinks',  aierpcontroller.nissuesalllinks);
+app.get('/api/v1/nissuesalldocs',  aierpcontroller.nissuesalldocs);
+app.get('/api/v1/deletenissuesallbyfac',  aierpcontroller.deletenissuesallbyfac);
+app.get('/api/v1/createnissuesallbyfac',  aierpcontroller.createnissuesallbyfac);
+app.get('/api/v1/getnticketsbyfac',  aierpcontroller.getnticketsbyfac);
+app.get('/api/v1/getnticketsforme',  aierpcontroller.getnticketsforme);
+app.get('/api/v1/nticketsbyprog',  aierpcontroller.nticketsbyprog);
+app.get('/api/v1/updatenticketsbyfac',  aierpcontroller.updatenticketsbyfac);
+app.get('/api/v1/updatenticketscomments',  aierpcontroller.updatenticketscomments);
+app.get('/api/v1/updatenticketsstatus',  aierpcontroller.updatenticketsstatus);
+app.get('/api/v1/updatenticketsassign',  aierpcontroller.updatenticketsassign);
+app.get('/api/v1/nticketslinks',  aierpcontroller.nticketslinks);
+app.get('/api/v1/nticketsdocs',  aierpcontroller.nticketsdocs);
+app.get('/api/v1/nticketsdocsopen',  aierpcontroller.nticketsdocsopen);
+app.get('/api/v1/nticketsdocsclosed',  aierpcontroller.nticketsdocsclosed);
+app.get('/api/v1/nticketsdocstatus',  aierpcontroller.nticketsdocstatus);
+app.get('/api/v1/deletenticketsbyfac',  aierpcontroller.deletenticketsbyfac);
+app.get('/api/v1/createnticketsbyfac',  aierpcontroller.createnticketsbyfac);
+
+
+const aincontroller=require('./controllers/aincontroller');
+
+app.get('/getcertintern',  aincontroller.getcertintern);
+app.get('/thankyoucti',  aincontroller.getthankyoucti);
+
+app.get('/getcert',  aincontroller.getcert);
+app.get('/activateuser',  aincontroller.activateuser);
+
+app.get('/addgenderaudit',  aincontroller.getaddgenderaudit);
+app.post('/creategenderaudit',  aincontroller.creategenderaudit);
+
+app.get('/addevguests',  aincontroller.getaddevguests);
+app.post('/createevguests',  aincontroller.createevguests);
+app.get('/addcnewfeedback',  aincontroller.getaddcnewfeedback);
+app.post('/createcnewfeedback',  aincontroller.createcnewfeedback);
+app.get('/addsssstud',  aincontroller.getaddsssstud);
+app.post('/createsssstud',  aincontroller.createsssstud);
+app.get('/addadmusers',  aincontroller.getaddadmusers);
+app.post('/createadmusers',  aincontroller.createadmusers);
+app.get('/thankyou',  aincontroller.getthankyou);
+app.get('/thankyouau',  aincontroller.getthankyouau);
+app.get('/thankyouct',  aincontroller.getthankyouct);
+app.get('/thankyouctreg',  aincontroller.getextendreg);
+app.get('/thankyouaimentorreg',  aincontroller.getsubscription);
+app.get('/viewopencourse',  aincontroller.getviewopenclass);
+app.get('/loginnew',  aincontroller.getloginnew);
+app.get('/addalumniusers',  aincontroller.getaddalumniusers);
+app.post('/createalumniusers',  aincontroller.createalumniusers);
+app.get('/addalumniusers1',  aincontroller.getaddalumniusers1);
+app.post('/createalumniusers1',  aincontroller.createalumniusers1);
+
+
+
+
+const bulkupdatecontroller=require('./controllers/bulkupdatecontroller');
+
+
+app.get('/api/v1/updatesyllabusrevc',  bulkupdatecontroller.updatesyllabusrevc);
+app.get('/api/v1/updateemployabilityc',  bulkupdatecontroller.updateemployabilityc);
+app.get('/api/v1/updateaddonc',  bulkupdatecontroller.updateaddonc);
+app.get('/api/v1/updateexplearning',  bulkupdatecontroller.updateexplearning);
+app.get('/api/v1/updateadmissionc',  bulkupdatecontroller.updateadmissionc);
+app.get('/api/v1/updatereservcatc',  bulkupdatecontroller.updatereservcatc);
+app.get('/api/v1/updatehigherexamc',  bulkupdatecontroller.updatehigherexamc);
+app.get('/api/v1/updatehighereduc',  bulkupdatecontroller.updatehighereduc);
+app.get('/api/v1/updatepassexamc',  bulkupdatecontroller.updatepassexamc);
+app.get('/api/v1/updateexamdaysc',  bulkupdatecontroller.updateexamdaysc);
+app.get('/api/v1/updateprojectsc',  bulkupdatecontroller.updateprojectsc);
+app.get('/api/v1/updatemouc',  bulkupdatecontroller.updatemouc);
+app.get('/api/v1/updatecollabc',  bulkupdatecontroller.updatecollabc);
+app.get('/api/v1/updateeventc',  bulkupdatecontroller.updateeventc);
+app.get('/api/v1/updatescholarshipc',  bulkupdatecontroller.updatescholarshipc);
+app.get('/api/v1/updatecareercounselc',  bulkupdatecontroller.updatecareercounselc);
+app.get('/api/v1/updateseedmc',  bulkupdatecontroller.updateseedmc);
+app.get('/api/v1/updateteacherdatac',  bulkupdatecontroller.updateteacherdatac);
+app.get('/api/v1/updateictc',  bulkupdatecontroller.updateictc);
+app.get('/api/v1/updateextactivitiesc',  bulkupdatecontroller.updateextactivitiesc);
+
+const aicontentcontroller=require('./controllers/aicontentcontroller');
+
+app.get('/api/v1/getfirstparaext',  aicontentcontroller.getfirstparaext);
+
+const ailmscontroller=require('./controllers/ailmscontroller');
+
+
+app.get('/api/v1/getnnursing812byfac',  ailmscontroller.getnnursing812byfac);
+app.get('/api/v1/updatennursing812byfac',  ailmscontroller.updatennursing812byfac);
+app.get('/api/v1/updatennursing812comments',  ailmscontroller.updatennursing812comments);
+app.get('/api/v1/nnursing812links',  ailmscontroller.nnursing812links);
+app.get('/api/v1/nnursing812docs',  ailmscontroller.nnursing812docs);
+app.get('/api/v1/deletennursing812byfac',  ailmscontroller.deletennursing812byfac);
+app.get('/api/v1/creatennursing812byfac',  ailmscontroller.creatennursing812byfac);
+app.get('/api/v1/getnnursing814byfac',  ailmscontroller.getnnursing814byfac);
+app.get('/api/v1/updatennursing814byfac',  ailmscontroller.updatennursing814byfac);
+app.get('/api/v1/updatennursing814comments',  ailmscontroller.updatennursing814comments);
+app.get('/api/v1/nnursing814links',  ailmscontroller.nnursing814links);
+app.get('/api/v1/nnursing814docs',  ailmscontroller.nnursing814docs);
+app.get('/api/v1/deletennursing814byfac',  ailmscontroller.deletennursing814byfac);
+app.get('/api/v1/creatennursing814byfac',  ailmscontroller.creatennursing814byfac);
+app.get('/api/v1/getnnursing815byfac',  ailmscontroller.getnnursing815byfac);
+app.get('/api/v1/updatennursing815byfac',  ailmscontroller.updatennursing815byfac);
+app.get('/api/v1/updatennursing815comments',  ailmscontroller.updatennursing815comments);
+app.get('/api/v1/nnursing815links',  ailmscontroller.nnursing815links);
+app.get('/api/v1/nnursing815docs',  ailmscontroller.nnursing815docs);
+app.get('/api/v1/deletennursing815byfac',  ailmscontroller.deletennursing815byfac);
+app.get('/api/v1/creatennursing815byfac',  ailmscontroller.creatennursing815byfac);
+app.get('/api/v1/getnnursing818byfac',  ailmscontroller.getnnursing818byfac);
+app.get('/api/v1/updatennursing818byfac',  ailmscontroller.updatennursing818byfac);
+app.get('/api/v1/updatennursing818comments',  ailmscontroller.updatennursing818comments);
+app.get('/api/v1/nnursing818links',  ailmscontroller.nnursing818links);
+app.get('/api/v1/nnursing818docs',  ailmscontroller.nnursing818docs);
+app.get('/api/v1/deletennursing818byfac',  ailmscontroller.deletennursing818byfac);
+app.get('/api/v1/creatennursing818byfac',  ailmscontroller.creatennursing818byfac);
+app.get('/api/v1/getnnursing424byfac',  ailmscontroller.getnnursing424byfac);
+app.get('/api/v1/updatennursing424byfac',  ailmscontroller.updatennursing424byfac);
+app.get('/api/v1/updatennursing424comments',  ailmscontroller.updatennursing424comments);
+app.get('/api/v1/nnursing424links',  ailmscontroller.nnursing424links);
+app.get('/api/v1/nnursing424docs',  ailmscontroller.nnursing424docs);
+app.get('/api/v1/deletennursing424byfac',  ailmscontroller.deletennursing424byfac);
+app.get('/api/v1/creatennursing424byfac',  ailmscontroller.creatennursing424byfac);
+app.get('/api/v1/getncompetitivebyfac',  ailmscontroller.getncompetitivebyfac);
+app.get('/api/v1/updatencompetitivebyfac',  ailmscontroller.updatencompetitivebyfac);
+app.get('/api/v1/updatencompetitivecomments',  ailmscontroller.updatencompetitivecomments);
+app.get('/api/v1/ncompetitivelinks',  ailmscontroller.ncompetitivelinks);
+app.get('/api/v1/ncompetitivedocs',  ailmscontroller.ncompetitivedocs);
+app.get('/api/v1/deletencompetitivebyfac',  ailmscontroller.deletencompetitivebyfac);
+app.get('/api/v1/createncompetitivebyfac',  ailmscontroller.createncompetitivebyfac);
+app.get('/api/v1/getnnursing515byfac',  ailmscontroller.getnnursing515byfac);
+app.get('/api/v1/updatennursing515byfac',  ailmscontroller.updatennursing515byfac);
+app.get('/api/v1/updatennursing515comments',  ailmscontroller.updatennursing515comments);
+app.get('/api/v1/nnursing515links',  ailmscontroller.nnursing515links);
+app.get('/api/v1/nnursing515docs',  ailmscontroller.nnursing515docs);
+app.get('/api/v1/deletennursing515byfac',  ailmscontroller.deletennursing515byfac);
+app.get('/api/v1/creatennursing515byfac',  ailmscontroller.creatennursing515byfac);
+
+
+
+
+app.get('/api/v1/getsuperusers',  ailmscontroller.getsuperusers);
+app.get('/api/v1/getnledgersummarybydate',  ailmscontroller.getnledgersummarybydate);
+app.get('/api/v1/getnaccountheadsbyfac',  ailmscontroller.getnaccountheadsbyfac);
+app.get('/api/v1/getallnaccounts',  ailmscontroller.getallnaccounts);
+app.get('/api/v1/updatenaccountheadsbyfac',  ailmscontroller.updatenaccountheadsbyfac);
+app.get('/api/v1/updatenaccountheadscomments',  ailmscontroller.updatenaccountheadscomments);
+app.get('/api/v1/naccountheadslinks',  ailmscontroller.naccountheadslinks);
+app.get('/api/v1/naccountheadsdocs',  ailmscontroller.naccountheadsdocs);
+app.get('/api/v1/deletenaccountheadsbyfac',  ailmscontroller.deletenaccountheadsbyfac);
+app.get('/api/v1/createnaccountheadsbyfac',  ailmscontroller.createnaccountheadsbyfac);
+app.get('/api/v1/getntransactionsbyfac',  ailmscontroller.getntransactionsbyfac);
+app.get('/api/v1/updatentransactionsbyfac',  ailmscontroller.updatentransactionsbyfac);
+app.get('/api/v1/updatentransactionscomments',  ailmscontroller.updatentransactionscomments);
+app.get('/api/v1/ntransactionslinks',  ailmscontroller.ntransactionslinks);
+app.get('/api/v1/ntransactionsdocs',  ailmscontroller.ntransactionsdocs);
+app.get('/api/v1/ntransactionsdocsacc',  ailmscontroller.ntransactionsdocsacc);
+app.get('/api/v1/deletentransactionsbyfac',  ailmscontroller.deletentransactionsbyfac);
+app.get('/api/v1/createntransactionsbyfac',  ailmscontroller.createntransactionsbyfac);
+app.get('/api/v1/getntledgerbyfac',  ailmscontroller.getntledgerbyfac);
+app.get('/api/v1/updatentledgerbyfac',  ailmscontroller.updatentledgerbyfac);
+app.get('/api/v1/updatentledgercomments',  ailmscontroller.updatentledgercomments);
+app.get('/api/v1/ntledgerlinks',  ailmscontroller.ntledgerlinks);
+app.get('/api/v1/ntledgerdocs',  ailmscontroller.ntledgerdocs);
+app.get('/api/v1/deletentledgerbyfac',  ailmscontroller.deletentledgerbyfac);
+app.get('/api/v1/createntledgerbyfac',  ailmscontroller.createntledgerbyfac);
+
+
+app.get('/api/v1/getfeedbackbycolid',  ailmscontroller.getfeedbackbycolid);
+
+app.get('/api/v1/getprojectledgerbyfac',  ailmscontroller.getprojectledgerbyfac);
+app.get('/api/v1/updateprojectledgerbyfac',  ailmscontroller.updateprojectledgerbyfac);
+app.get('/api/v1/updateprojectledgercomments',  ailmscontroller.updateprojectledgercomments);
+app.get('/api/v1/projectledgerlinks',  ailmscontroller.projectledgerlinks);
+app.get('/api/v1/projectledgerdocs',  ailmscontroller.projectledgerdocs);
+app.get('/api/v1/deleteprojectledgerbyfac',  ailmscontroller.deleteprojectledgerbyfac);
+app.get('/api/v1/createprojectledgerbyfac',  ailmscontroller.createprojectledgerbyfac);
+app.get('/api/v1/getprojectcentralbyfac',  ailmscontroller.getprojectcentralbyfac);
+app.get('/api/v1/updateprojectcentralbyfac',  ailmscontroller.updateprojectcentralbyfac);
+app.get('/api/v1/updateprojectcentralcomments',  ailmscontroller.updateprojectcentralcomments);
+app.get('/api/v1/projectcentrallinks',  ailmscontroller.projectcentrallinks);
+app.get('/api/v1/projectcentraldocs',  ailmscontroller.projectcentraldocs);
+app.get('/api/v1/deleteprojectcentralbyfac',  ailmscontroller.deleteprojectcentralbyfac);
+app.get('/api/v1/createprojectcentralbyfac',  ailmscontroller.createprojectcentralbyfac);
+app.get('/api/v1/getmaintenancebyfac',  ailmscontroller.getmaintenancebyfac);
+app.get('/api/v1/updatemaintenancebyfac',  ailmscontroller.updatemaintenancebyfac);
+app.get('/api/v1/updatemaintenancecomments',  ailmscontroller.updatemaintenancecomments);
+app.get('/api/v1/maintenancelinks',  ailmscontroller.maintenancelinks);
+app.get('/api/v1/maintenancedocs',  ailmscontroller.maintenancedocs);
+app.get('/api/v1/deletemaintenancebyfac',  ailmscontroller.deletemaintenancebyfac);
+app.get('/api/v1/createmaintenancebyfac',  ailmscontroller.createmaintenancebyfac);
+app.get('/api/v1/getotherincomebyfac',  ailmscontroller.getotherincomebyfac);
+app.get('/api/v1/updateotherincomebyfac',  ailmscontroller.updateotherincomebyfac);
+app.get('/api/v1/updateotherincomecomments',  ailmscontroller.updateotherincomecomments);
+app.get('/api/v1/otherincomelinks',  ailmscontroller.otherincomelinks);
+app.get('/api/v1/otherincomedocs',  ailmscontroller.otherincomedocs);
+app.get('/api/v1/deleteotherincomebyfac',  ailmscontroller.deleteotherincomebyfac);
+app.get('/api/v1/createotherincomebyfac',  ailmscontroller.createotherincomebyfac);
+
+
+
+
+
+app.get('/api/v1/deleteclassbyfacyr',  ailmscontroller.deleteclassbyfacyr);
+app.get('/api/v1/getstudparentsbyfac',  ailmscontroller.getstudparentsbyfac);
+app.get('/api/v1/getparentphone',  ailmscontroller.getparentphone);
+app.get('/api/v1/updatestudparentsbyfac',  ailmscontroller.updatestudparentsbyfac);
+app.get('/api/v1/updatestudparentscomments',  ailmscontroller.updatestudparentscomments);
+app.get('/api/v1/studparentslinks',  ailmscontroller.studparentslinks);
+app.get('/api/v1/studparentsdocs',  ailmscontroller.studparentsdocs);
+app.get('/api/v1/deletestudparentsbyfac',  ailmscontroller.deletestudparentsbyfac);
+app.get('/api/v1/createstudparentsbyfac',  ailmscontroller.createstudparentsbyfac);
+
+
+app.get('/api/v1/getcurrenyearbyfac',  ailmscontroller.getcurrenyearbyfac);
+app.get('/api/v1/getcurrentyearbyprg',  ailmscontroller.getcurrentyearbyprg);
+app.get('/api/v1/updatecurrenyearbyfac',  ailmscontroller.updatecurrenyearbyfac);
+app.get('/api/v1/updatecurrenyearcomments',  ailmscontroller.updatecurrenyearcomments);
+app.get('/api/v1/currenyearlinks',  ailmscontroller.currenyearlinks);
+app.get('/api/v1/currenyeardocs',  ailmscontroller.currenyeardocs);
+app.get('/api/v1/deletecurrenyearbyfac',  ailmscontroller.deletecurrenyearbyfac);
+app.get('/api/v1/createcurrenyearbyfac',  ailmscontroller.createcurrenyearbyfac);
+
+
+app.get('/api/v1/getuserbyrole',  ailmscontroller.getuserbyrole);
+app.get('/api/v1/getuserbydep',  ailmscontroller.getuserbydep);
+app.get('/api/v1/getuserdetails',  ailmscontroller.getuserdetails);
+app.get('/api/v1/updatestudents',  ailmscontroller.updatestudents);
+app.get('/api/v1/updateothers',  ailmscontroller.updateothers);
+app.get('/api/v1/updateuserphoto',  ailmscontroller.updateuserphoto);
+app.get('/api/v1/updateusercomments',  ailmscontroller.updateusercomments);
+app.get('/api/v1/userlinks',  ailmscontroller.userlinks);
+app.get('/api/v1/userdocs',  ailmscontroller.userdocs);
+app.get('/api/v1/deleteuserbyfac',  ailmscontroller.deleteuserbyfac);
+app.get('/api/v1/createstudents',  ailmscontroller.createstudents);
+app.get('/api/v1/createothers',  ailmscontroller.createothers);
+
+
+app.get('/api/v1/getcobyfac',  ailmscontroller.getcobyfac);
+app.get('/api/v1/updatecobyfac',  ailmscontroller.updatecobyfac);
+app.get('/api/v1/updatecocomments',  ailmscontroller.updatecocomments);
+app.get('/api/v1/colinks',  ailmscontroller.colinks);
+app.get('/api/v1/codocs',  ailmscontroller.codocs);
+app.get('/api/v1/deletecobyfac',  ailmscontroller.deletecobyfac);
+app.get('/api/v1/createcobyfac',  ailmscontroller.createcobyfac);
+app.get('/api/v1/getlannouncementbyfac',  ailmscontroller.getlannouncementbyfac);
+app.get('/api/v1/updatelannouncementbyfac',  ailmscontroller.updatelannouncementbyfac);
+app.get('/api/v1/updatelannouncementcomments',  ailmscontroller.updatelannouncementcomments);
+app.get('/api/v1/lannouncementlinks',  ailmscontroller.lannouncementlinks);
+app.get('/api/v1/lannouncementdocs',  ailmscontroller.lannouncementdocs);
+app.get('/api/v1/deletelannouncementbyfac',  ailmscontroller.deletelannouncementbyfac);
+app.get('/api/v1/createlannouncementbyfac',  ailmscontroller.createlannouncementbyfac);
+app.get('/api/v1/getlsyllabusbyfac',  ailmscontroller.getlsyllabusbyfac);
+app.get('/api/v1/updatelsyllabusbyfac',  ailmscontroller.updatelsyllabusbyfac);
+app.get('/api/v1/updatelsyllabuscomments',  ailmscontroller.updatelsyllabuscomments);
+app.get('/api/v1/lsyllabuslinks',  ailmscontroller.lsyllabuslinks);
+app.get('/api/v1/lsyllabusdocs',  ailmscontroller.lsyllabusdocs);
+app.get('/api/v1/deletelsyllabusbyfac',  ailmscontroller.deletelsyllabusbyfac);
+app.get('/api/v1/createlsyllabusbyfac',  ailmscontroller.createlsyllabusbyfac);
+app.get('/api/v1/getlcalendarbyfac',  ailmscontroller.getlcalendarbyfac);
+app.get('/api/v1/updatelcalendarbyfac',  ailmscontroller.updatelcalendarbyfac);
+app.get('/api/v1/updatelcalendarcomments',  ailmscontroller.updatelcalendarcomments);
+app.get('/api/v1/lcalendarlinks',  ailmscontroller.lcalendarlinks);
+app.get('/api/v1/lcalendardocs',  ailmscontroller.lcalendardocs);
+app.get('/api/v1/deletelcalendarbyfac',  ailmscontroller.deletelcalendarbyfac);
+app.get('/api/v1/createlcalendarbyfac',  ailmscontroller.createlcalendarbyfac);
+
+
+
+
+// app.get('/api/v1/getcoursefilesbyfac',  ailmscontroller.getcoursefilesbyfac);
+app.get('/api/v1/getcoursefilesbyfacc',  ailmscontroller.getcoursefilesbyfacc);
+// app.get('/api/v1/updatecoursefilesbyfac',  ailmscontroller.updatecoursefilesbyfac);
+// app.get('/api/v1/updatecoursefilescomments',  ailmscontroller.updatecoursefilescomments);
+// app.get('/api/v1/coursefileslinks',  ailmscontroller.coursefileslinks);
+// app.get('/api/v1/coursefilesdocs',  ailmscontroller.coursefilesdocs);
+// app.get('/api/v1/deletecoursefilesbyfac',  ailmscontroller.deletecoursefilesbyfac);
+// app.get('/api/v1/createcoursefilesbyfac',  ailmscontroller.createcoursefilesbyfac);
+
+
+
+app.get('/api/v1/getworkloadbyfac',  ailmscontroller.getworkloadbyfac);
+app.get('/api/v1/getworkloadbyfacyr',  ailmscontroller.getworkloadbyfacyr);
+app.get('/api/v1/getworkloadbyfaca',  ailmscontroller.getworkloadbyfaca);
+app.get('/api/v1/updateworkloadbyfac',  ailmscontroller.updateworkloadbyfac);
+app.get('/api/v1/updateworkloadcomments',  ailmscontroller.updateworkloadcomments);
+app.get('/api/v1/updateworkloadcommentsfac',  ailmscontroller.updateworkloadcommentsfac);
+app.get('/api/v1/workloadlinks',  ailmscontroller.workloadlinks);
+app.get('/api/v1/workloaddocs',  ailmscontroller.workloaddocs);
+app.get('/api/v1/deleteworkloadbyfac',  ailmscontroller.deleteworkloadbyfac);
+app.get('/api/v1/deleteworkloadbycoursefac',  ailmscontroller.deleteworkloadbycoursefac);
+app.get('/api/v1/deleteworkloadbyprogramcode',  ailmscontroller.deleteworkloadbyprogramcode);
+app.get('/api/v1/createworkloadbyfac',  ailmscontroller.createworkloadbyfac);
+app.get('/api/v1/getlessonplanbyfac',  ailmscontroller.getlessonplanbyfac);
+app.get('/api/v1/getlessonplanbyfacd',  ailmscontroller.getlessonplanbyfacd);
+//app.get('/api/v1/updatelessonplanbyfac',  ailmscontroller.updatelessonplanbyfac);
+app.get('/api/v1/updatelessonplancomments',  ailmscontroller.updatelessonplancomments);
+app.get('/api/v1/lessonplanlinks',  ailmscontroller.lessonplanlinks);
+app.get('/api/v1/lessonplandocs',  ailmscontroller.lessonplandocs);
+app.get('/api/v1/deletelessonplanbyfac',  ailmscontroller.deletelessonplanbyfac);
+//app.get('/api/v1/createlessonplanbyfac',  ailmscontroller.createlessonplanbyfac);
+
+app.get('/api/v1/getClassbyfac',  ailmscontroller.getClassbyfac);
+app.get('/api/v1/getClassbyfacd',  ailmscontroller.getClassbyfacd);
+app.get('/api/v1/getClassbyprogd',  ailmscontroller.getClassbyprogd);
+app.get('/api/v1/updateClassbyfac',  ailmscontroller.updateClassbyfac);
+app.get('/api/v1/updateClassdate',  ailmscontroller.updateClassdate);
+app.get('/api/v1/updateClasscomments',  ailmscontroller.updateClasscomments);
+app.get('/api/v1/Classlinks',  ailmscontroller.Classlinks);
+app.get('/api/v1/Classdocs',  ailmscontroller.Classdocs);
+app.get('/api/v1/deleteClassbyfac',  ailmscontroller.deleteClassbyfac);
+app.get('/api/v1/createClassbyfac',  ailmscontroller.createClassbyfac);
+app.get('/api/v1/createClassbyfacweeks',  ailmscontroller.createClassbyfacweeks);
+
+
+
+
+
+
+
+
+const financecontroller=require('./controllers/financecontroller');
+
+
+app.get('/api/v1/getncommitteesbyfac',  financecontroller.getncommitteesbyfac);
+app.get('/api/v1/updatencommitteesbyfac',  financecontroller.updatencommitteesbyfac);
+app.get('/api/v1/updatencommitteescomments',  financecontroller.updatencommitteescomments);
+app.get('/api/v1/ncommitteeslinks',  financecontroller.ncommitteeslinks);
+app.get('/api/v1/ncommitteesdocs',  financecontroller.ncommitteesdocs);
+app.get('/api/v1/deletencommitteesbyfac',  financecontroller.deletencommitteesbyfac);
+app.get('/api/v1/createncommitteesbyfac',  financecontroller.createncommitteesbyfac);
+app.get('/api/v1/getncommembersbyfac',  financecontroller.getncommembersbyfac);
+app.get('/api/v1/updatencommembersbyfac',  financecontroller.updatencommembersbyfac);
+app.get('/api/v1/updatencommemberscomments',  financecontroller.updatencommemberscomments);
+app.get('/api/v1/ncommemberslinks',  financecontroller.ncommemberslinks);
+app.get('/api/v1/ncommembersdocs',  financecontroller.ncommembersdocs);
+app.get('/api/v1/deletencommembersbyfac',  financecontroller.deletencommembersbyfac);
+app.get('/api/v1/createncommembersbyfac',  financecontroller.createncommembersbyfac);
+app.get('/api/v1/getncomminutesbyfac',  financecontroller.getncomminutesbyfac);
+app.get('/api/v1/updatencomminutesbyfac',  financecontroller.updatencomminutesbyfac);
+app.get('/api/v1/updatencomminutescomments',  financecontroller.updatencomminutescomments);
+app.get('/api/v1/ncomminuteslinks',  financecontroller.ncomminuteslinks);
+app.get('/api/v1/ncomminutesdocs',  financecontroller.ncomminutesdocs);
+app.get('/api/v1/deletencomminutesbyfac',  financecontroller.deletencomminutesbyfac);
+app.get('/api/v1/createncomminutesbyfac',  financecontroller.createncomminutesbyfac);
+app.get('/api/v1/getncomtasksbyfac',  financecontroller.getncomtasksbyfac);
+app.get('/api/v1/updatencomtasksbyfac',  financecontroller.updatencomtasksbyfac);
+app.get('/api/v1/updatencomtaskscomments',  financecontroller.updatencomtaskscomments);
+app.get('/api/v1/ncomtaskslinks',  financecontroller.ncomtaskslinks);
+app.get('/api/v1/ncomtasksdocs',  financecontroller.ncomtasksdocs);
+app.get('/api/v1/deletencomtasksbyfac',  financecontroller.deletencomtasksbyfac);
+app.get('/api/v1/createncomtasksbyfac',  financecontroller.createncomtasksbyfac);
+
+
+
+app.get('/api/v1/getnoffcampusbyfac',  financecontroller.getnoffcampusbyfac);
+app.get('/api/v1/updatenoffcampusbyfac',  financecontroller.updatenoffcampusbyfac);
+app.get('/api/v1/updatenoffcampuscomments',  financecontroller.updatenoffcampuscomments);
+app.get('/api/v1/noffcampuslinks',  financecontroller.noffcampuslinks);
+app.get('/api/v1/noffcampusdocs',  financecontroller.noffcampusdocs);
+app.get('/api/v1/deletenoffcampusbyfac',  financecontroller.deletenoffcampusbyfac);
+app.get('/api/v1/createnoffcampusbyfac',  financecontroller.createnoffcampusbyfac);
+app.get('/api/v1/getnjobsapplybyfac',  financecontroller.getnjobsapplybyfac);
+app.get('/api/v1/updatenjobsapplybyfac',  financecontroller.updatenjobsapplybyfac);
+app.get('/api/v1/updatenjobsapplycomments',  financecontroller.updatenjobsapplycomments);
+app.get('/api/v1/njobsapplylinks',  financecontroller.njobsapplylinks);
+app.get('/api/v1/njobsapplydocs',  financecontroller.njobsapplydocs);
+app.get('/api/v1/deletenjobsapplybyfac',  financecontroller.deletenjobsapplybyfac);
+app.get('/api/v1/createnjobsapplybyfac',  financecontroller.createnjobsapplybyfac);
+app.get('/api/v1/getnhigheredurepbyfac',  financecontroller.getnhigheredurepbyfac);
+app.get('/api/v1/updatenhigheredurepbyfac',  financecontroller.updatenhigheredurepbyfac);
+app.get('/api/v1/updatenhigheredurepcomments',  financecontroller.updatenhigheredurepcomments);
+app.get('/api/v1/nhigheredureplinks',  financecontroller.nhigheredureplinks);
+app.get('/api/v1/nhigheredurepdocs',  financecontroller.nhigheredurepdocs);
+app.get('/api/v1/deletenhigheredurepbyfac',  financecontroller.deletenhigheredurepbyfac);
+app.get('/api/v1/createnhigheredurepbyfac',  financecontroller.createnhigheredurepbyfac);
+app.get('/api/v1/getnoffawardsbyfac',  financecontroller.getnoffawardsbyfac);
+app.get('/api/v1/updatenoffawardsbyfac',  financecontroller.updatenoffawardsbyfac);
+app.get('/api/v1/updatenoffawardscomments',  financecontroller.updatenoffawardscomments);
+app.get('/api/v1/noffawardslinks',  financecontroller.noffawardslinks);
+app.get('/api/v1/noffawardsdocs',  financecontroller.noffawardsdocs);
+app.get('/api/v1/deletenoffawardsbyfac',  financecontroller.deletenoffawardsbyfac);
+app.get('/api/v1/createnoffawardsbyfac',  financecontroller.createnoffawardsbyfac);
+app.get('/api/v1/getnoffscholarshipbyfac',  financecontroller.getnoffscholarshipbyfac);
+app.get('/api/v1/updatenoffscholarshipbyfac',  financecontroller.updatenoffscholarshipbyfac);
+app.get('/api/v1/updatenoffscholarshipcomments',  financecontroller.updatenoffscholarshipcomments);
+app.get('/api/v1/noffscholarshiplinks',  financecontroller.noffscholarshiplinks);
+app.get('/api/v1/noffscholarshipdocs',  financecontroller.noffscholarshipdocs);
+app.get('/api/v1/deletenoffscholarshipbyfac',  financecontroller.deletenoffscholarshipbyfac);
+app.get('/api/v1/createnoffscholarshipbyfac',  financecontroller.createnoffscholarshipbyfac);
+app.get('/api/v1/getnoffextensionbyfac',  financecontroller.getnoffextensionbyfac);
+app.get('/api/v1/updatenoffextensionbyfac',  financecontroller.updatenoffextensionbyfac);
+app.get('/api/v1/updatenoffextensioncomments',  financecontroller.updatenoffextensioncomments);
+app.get('/api/v1/noffextensionlinks',  financecontroller.noffextensionlinks);
+app.get('/api/v1/noffextensiondocs',  financecontroller.noffextensiondocs);
+app.get('/api/v1/deletenoffextensionbyfac',  financecontroller.deletenoffextensionbyfac);
+app.get('/api/v1/createnoffextensionbyfac',  financecontroller.createnoffextensionbyfac);
+app.get('/api/v1/getnoffcoursesbyfac',  financecontroller.getnoffcoursesbyfac);
+app.get('/api/v1/updatenoffcoursesbyfac',  financecontroller.updatenoffcoursesbyfac);
+app.get('/api/v1/updatenoffcoursescomments',  financecontroller.updatenoffcoursescomments);
+app.get('/api/v1/noffcourseslinks',  financecontroller.noffcourseslinks);
+app.get('/api/v1/noffcoursesdocs',  financecontroller.noffcoursesdocs);
+app.get('/api/v1/deletenoffcoursesbyfac',  financecontroller.deletenoffcoursesbyfac);
+app.get('/api/v1/createnoffcoursesbyfac',  financecontroller.createnoffcoursesbyfac);
+
+
+
+
+
+app.get('/api/v1/getncompaniesbyfac',  financecontroller.getncompaniesbyfac);
+app.get('/api/v1/updatencompaniesbyfac',  financecontroller.updatencompaniesbyfac);
+app.get('/api/v1/updatencompaniescomments',  financecontroller.updatencompaniescomments);
+app.get('/api/v1/ncompanieslinks',  financecontroller.ncompanieslinks);
+app.get('/api/v1/ncompaniesdocs',  financecontroller.ncompaniesdocs);
+app.get('/api/v1/deletencompaniesbyfac',  financecontroller.deletencompaniesbyfac);
+app.get('/api/v1/createncompaniesbyfac',  financecontroller.createncompaniesbyfac);
+app.get('/api/v1/getnjobsbyfac',  financecontroller.getnjobsbyfac);
+app.get('/api/v1/getnjobsbydate',  financecontroller.getnjobsbydate);
+app.get('/api/v1/updatenjobsbyfac',  financecontroller.updatenjobsbyfac);
+app.get('/api/v1/updatenjobscomments',  financecontroller.updatenjobscomments);
+app.get('/api/v1/njobslinks',  financecontroller.njobslinks);
+app.get('/api/v1/njobsdocs',  financecontroller.njobsdocs);
+app.get('/api/v1/deletenjobsbyfac',  financecontroller.deletenjobsbyfac);
+app.get('/api/v1/createnjobsbyfac',  financecontroller.createnjobsbyfac);
+app.get('/api/v1/getnjobstudentsbyfac',  financecontroller.getnjobstudentsbyfac);
+app.get('/api/v1/njobstudentsstat',  financecontroller.njobstudentsstat);
+app.get('/api/v1/updatenjobstudentsbyfac',  financecontroller.updatenjobstudentsbyfac);
+app.get('/api/v1/updatenjobstudentscomments',  financecontroller.updatenjobstudentscomments);
+app.get('/api/v1/njobstudentslinks',  financecontroller.njobstudentslinks);
+app.get('/api/v1/njobstudentsdocs',  financecontroller.njobstudentsdocs);
+app.get('/api/v1/deletenjobstudentsbyfac',  financecontroller.deletenjobstudentsbyfac);
+app.get('/api/v1/createnjobstudentsbyfac',  financecontroller.createnjobstudentsbyfac);
+app.get('/api/v1/getnhighereducationbyfac',  financecontroller.getnhighereducationbyfac);
+app.get('/api/v1/updatenhighereducationbyfac',  financecontroller.updatenhighereducationbyfac);
+app.get('/api/v1/updatenhighereducationcomments',  financecontroller.updatenhighereducationcomments);
+app.get('/api/v1/nhighereducationlinks',  financecontroller.nhighereducationlinks);
+app.get('/api/v1/nhighereducationdocs',  financecontroller.nhighereducationdocs);
+app.get('/api/v1/deletenhighereducationbyfac',  financecontroller.deletenhighereducationbyfac);
+app.get('/api/v1/createnhighereducationbyfac',  financecontroller.createnhighereducationbyfac);
+
+
+app.get('/api/v1/getnseedmoneybyfac',  financecontroller.getnseedmoneybyfac);
+app.get('/api/v1/updatenseedmoneybyfac',  financecontroller.updatenseedmoneybyfac);
+app.get('/api/v1/updatenseedmoneycomments',  financecontroller.updatenseedmoneycomments);
+app.get('/api/v1/nseedmoneylinks',  financecontroller.nseedmoneylinks);
+app.get('/api/v1/nseedmoneydocs',  financecontroller.nseedmoneydocs);
+app.get('/api/v1/deletenseedmoneybyfac',  financecontroller.deletenseedmoneybyfac);
+app.get('/api/v1/createnseedmoneybyfac',  financecontroller.createnseedmoneybyfac);
+app.get('/api/v1/getnbudgetreqbyfac',  financecontroller.getnbudgetreqbyfac);
+app.get('/api/v1/updatenbudgetreqbyfac',  financecontroller.updatenbudgetreqbyfac);
+app.get('/api/v1/updatenbudgetreqcomments',  financecontroller.updatenbudgetreqcomments);
+app.get('/api/v1/nbudgetreqlinks',  financecontroller.nbudgetreqlinks);
+app.get('/api/v1/nbudgetreqdocs',  financecontroller.nbudgetreqdocs);
+app.get('/api/v1/deletenbudgetreqbyfac',  financecontroller.deletenbudgetreqbyfac);
+app.get('/api/v1/createnbudgetreqbyfac',  financecontroller.createnbudgetreqbyfac);
+app.get('/api/v1/getnoodreqbyfac',  financecontroller.getnoodreqbyfac);
+app.get('/api/v1/updatenoodreqbyfac',  financecontroller.updatenoodreqbyfac);
+app.get('/api/v1/updatenoodreqcomments',  financecontroller.updatenoodreqcomments);
+app.get('/api/v1/noodreqlinks',  financecontroller.noodreqlinks);
+app.get('/api/v1/noodreqdocs',  financecontroller.noodreqdocs);
+app.get('/api/v1/deletenoodreqbyfac',  financecontroller.deletenoodreqbyfac);
+app.get('/api/v1/createnoodreqbyfac',  financecontroller.createnoodreqbyfac);
+app.get('/api/v1/getneventreqbyfac',  financecontroller.getneventreqbyfac);
+app.get('/api/v1/updateneventreqbyfac',  financecontroller.updateneventreqbyfac);
+app.get('/api/v1/updateneventreqcomments',  financecontroller.updateneventreqcomments);
+app.get('/api/v1/neventreqlinks',  financecontroller.neventreqlinks);
+app.get('/api/v1/neventreqdocs',  financecontroller.neventreqdocs);
+app.get('/api/v1/deleteneventreqbyfac',  financecontroller.deleteneventreqbyfac);
+app.get('/api/v1/createneventreqbyfac',  financecontroller.createneventreqbyfac);
+app.get('/api/v1/getnassistantreqbyfac',  financecontroller.getnassistantreqbyfac);
+app.get('/api/v1/updatenassistantreqbyfac',  financecontroller.updatenassistantreqbyfac);
+app.get('/api/v1/updatenassistantreqcomments',  financecontroller.updatenassistantreqcomments);
+app.get('/api/v1/nassistantreqlinks',  financecontroller.nassistantreqlinks);
+app.get('/api/v1/nassistantreqdocs',  financecontroller.nassistantreqdocs);
+app.get('/api/v1/deletenassistantreqbyfac',  financecontroller.deletenassistantreqbyfac);
+app.get('/api/v1/createnassistantreqbyfac',  financecontroller.createnassistantreqbyfac);
+app.get('/api/v1/getnhousingreqbyfac',  financecontroller.getnhousingreqbyfac);
+app.get('/api/v1/updatenhousingreqbyfac',  financecontroller.updatenhousingreqbyfac);
+app.get('/api/v1/updatenhousingreqcomments',  financecontroller.updatenhousingreqcomments);
+app.get('/api/v1/nhousingreqlinks',  financecontroller.nhousingreqlinks);
+app.get('/api/v1/nhousingreqdocs',  financecontroller.nhousingreqdocs);
+app.get('/api/v1/deletenhousingreqbyfac',  financecontroller.deletenhousingreqbyfac);
+app.get('/api/v1/createnhousingreqbyfac',  financecontroller.createnhousingreqbyfac);
+app.get('/api/v1/getntravelsupportbyfac',  financecontroller.getntravelsupportbyfac);
+app.get('/api/v1/updatentravelsupportbyfac',  financecontroller.updatentravelsupportbyfac);
+app.get('/api/v1/updatentravelsupportcomments',  financecontroller.updatentravelsupportcomments);
+app.get('/api/v1/ntravelsupportlinks',  financecontroller.ntravelsupportlinks);
+app.get('/api/v1/ntravelsupportdocs',  financecontroller.ntravelsupportdocs);
+app.get('/api/v1/deletentravelsupportbyfac',  financecontroller.deletentravelsupportbyfac);
+app.get('/api/v1/createntravelsupportbyfac',  financecontroller.createntravelsupportbyfac);
+
+
+
+
+app.get('/api/v1/getnclientbyfac',  financecontroller.getnclientbyfac);
+app.get('/api/v1/getnclientbyid',  financecontroller.getnclientbyid);
+app.get('/api/v1/updatenclientbyfac',  financecontroller.updatenclientbyfac);
+app.get('/api/v1/updatenclientcomments',  financecontroller.updatenclientcomments);
+app.get('/api/v1/nclientlinks',  financecontroller.nclientlinks);
+app.get('/api/v1/nclientdocs',  financecontroller.nclientdocs);
+app.get('/api/v1/deletenclientbyfac',  financecontroller.deletenclientbyfac);
+app.get('/api/v1/createnclientbyfac',  financecontroller.createnclientbyfac);
+app.get('/api/v1/getnmilestonebyfac',  financecontroller.getnmilestonebyfac);
+app.get('/api/v1/updatenmilestonebyfac',  financecontroller.updatenmilestonebyfac);
+app.get('/api/v1/updatenmilestonecomments',  financecontroller.updatenmilestonecomments);
+app.get('/api/v1/nmilestonelinks',  financecontroller.nmilestonelinks);
+app.get('/api/v1/nmilestonedocs',  financecontroller.nmilestonedocs);
+app.get('/api/v1/deletenmilestonebyfac',  financecontroller.deletenmilestonebyfac);
+app.get('/api/v1/createnmilestonebyfac',  financecontroller.createnmilestonebyfac);
+app.get('/api/v1/getninvoicebyfac',  financecontroller.getninvoicebyfac);
+app.get('/api/v1/updateninvoicebyfac',  financecontroller.updateninvoicebyfac);
+app.get('/api/v1/updateninvoicecomments',  financecontroller.updateninvoicecomments);
+app.get('/api/v1/ninvoicelinks',  financecontroller.ninvoicelinks);
+app.get('/api/v1/ninvoicedocs',  financecontroller.ninvoicedocs);
+app.get('/api/v1/deleteninvoicebyfac',  financecontroller.deleteninvoicebyfac);
+app.get('/api/v1/createninvoicebyfac',  financecontroller.createninvoicebyfac);
+app.get('/api/v1/getngstgainbyfac',  financecontroller.getngstgainbyfac);
+app.get('/api/v1/updatengstgainbyfac',  financecontroller.updatengstgainbyfac);
+app.get('/api/v1/updatengstgaincomments',  financecontroller.updatengstgaincomments);
+app.get('/api/v1/ngstgainlinks',  financecontroller.ngstgainlinks);
+app.get('/api/v1/ngstgaindocs',  financecontroller.ngstgaindocs);
+app.get('/api/v1/deletengstgainbyfac',  financecontroller.deletengstgainbyfac);
+app.get('/api/v1/createngstgainbyfac',  financecontroller.createngstgainbyfac);
+app.get('/api/v1/getnvendorbyfac',  financecontroller.getnvendorbyfac);
+app.get('/api/v1/updatenvendorbyfac',  financecontroller.updatenvendorbyfac);
+app.get('/api/v1/updatenvendorcomments',  financecontroller.updatenvendorcomments);
+app.get('/api/v1/nvendorlinks',  financecontroller.nvendorlinks);
+app.get('/api/v1/nvendordocs',  financecontroller.nvendordocs);
+app.get('/api/v1/deletenvendorbyfac',  financecontroller.deletenvendorbyfac);
+app.get('/api/v1/createnvendorbyfac',  financecontroller.createnvendorbyfac);
+app.get('/api/v1/getnvworkorderbyfac',  financecontroller.getnvworkorderbyfac);
+app.get('/api/v1/updatenvworkorderbyfac',  financecontroller.updatenvworkorderbyfac);
+app.get('/api/v1/updatenvworkordercomments',  financecontroller.updatenvworkordercomments);
+app.get('/api/v1/nvworkorderlinks',  financecontroller.nvworkorderlinks);
+app.get('/api/v1/nvworkorderdocs',  financecontroller.nvworkorderdocs);
+app.get('/api/v1/deletenvworkorderbyfac',  financecontroller.deletenvworkorderbyfac);
+app.get('/api/v1/createnvworkorderbyfac',  financecontroller.createnvworkorderbyfac);
+app.get('/api/v1/getnvinvoicebyfac',  financecontroller.getnvinvoicebyfac);
+app.get('/api/v1/updatenvinvoicebyfac',  financecontroller.updatenvinvoicebyfac);
+app.get('/api/v1/updatenvinvoicecomments',  financecontroller.updatenvinvoicecomments);
+app.get('/api/v1/nvinvoicelinks',  financecontroller.nvinvoicelinks);
+app.get('/api/v1/nvinvoicedocs',  financecontroller.nvinvoicedocs);
+app.get('/api/v1/deletenvinvoicebyfac',  financecontroller.deletenvinvoicebyfac);
+app.get('/api/v1/createnvinvoicebyfac',  financecontroller.createnvinvoicebyfac);
+app.get('/api/v1/getntrialbalancebyfac',  financecontroller.getntrialbalancebyfac);
+app.get('/api/v1/updatentrialbalancebyfac',  financecontroller.updatentrialbalancebyfac);
+app.get('/api/v1/updatentrialbalancecomments',  financecontroller.updatentrialbalancecomments);
+app.get('/api/v1/ntrialbalancelinks',  financecontroller.ntrialbalancelinks);
+app.get('/api/v1/ntrialbalancedocs',  financecontroller.ntrialbalancedocs);
+app.get('/api/v1/deletentrialbalancebyfac',  financecontroller.deletentrialbalancebyfac);
+app.get('/api/v1/createntrialbalancebyfac',  financecontroller.createntrialbalancebyfac);
+
+app.get('/api/v1/getnbudgetbyfac',  financecontroller.getnbudgetbyfac);
+app.get('/api/v1/updatenbudgetbyfac',  financecontroller.updatenbudgetbyfac);
+app.get('/api/v1/updatenbudgetcomments',  financecontroller.updatenbudgetcomments);
+app.get('/api/v1/nbudgetlinks',  financecontroller.nbudgetlinks);
+app.get('/api/v1/nbudgetdocs',  financecontroller.nbudgetdocs);
+app.get('/api/v1/deletenbudgetbyfac',  financecontroller.deletenbudgetbyfac);
+app.get('/api/v1/createnbudgetbyfac',  financecontroller.createnbudgetbyfac);
+app.get('/api/v1/getnledgerbyfac',  financecontroller.getnledgerbyfac);
+app.get('/api/v1/updatenledgerbyfac',  financecontroller.updatenledgerbyfac);
+app.get('/api/v1/updatenledgercomments',  financecontroller.updatenledgercomments);
+app.get('/api/v1/nledgerlinks',  financecontroller.nledgerlinks);
+app.get('/api/v1/nledgerdocs',  financecontroller.nledgerdocs);
+app.get('/api/v1/deletenledgerbyfac',  financecontroller.deletenledgerbyfac);
+app.get('/api/v1/createnledgerbyfac',  financecontroller.createnledgerbyfac);
+app.get('/api/v1/getnaccountsbyfac',  financecontroller.getnaccountsbyfac);
+app.get('/api/v1/updatenaccountsbyfac',  financecontroller.updatenaccountsbyfac);
+app.get('/api/v1/updatenaccountscomments',  financecontroller.updatenaccountscomments);
+app.get('/api/v1/naccountslinks',  financecontroller.naccountslinks);
+app.get('/api/v1/naccountsdocs',  financecontroller.naccountsdocs);
+app.get('/api/v1/deletenaccountsbyfac',  financecontroller.deletenaccountsbyfac);
+app.get('/api/v1/createnaccountsbyfac',  financecontroller.createnaccountsbyfac);
+
+
+
+const nodeapicontroller=require('./controllers/nodeapicontroller');
+
+
+app.get('/api/v1/getnecoursebyfac',  nodeapicontroller.getnecoursebyfac);
+app.get('/api/v1/updatenecoursebyfac',  nodeapicontroller.updatenecoursebyfac);
+app.get('/api/v1/updatenecoursecomments',  nodeapicontroller.updatenecoursecomments);
+app.get('/api/v1/necourselinks',  nodeapicontroller.necourselinks);
+app.get('/api/v1/necoursedocs',  nodeapicontroller.necoursedocs);
+app.get('/api/v1/deletenecoursebyfac',  nodeapicontroller.deletenecoursebyfac);
+app.get('/api/v1/createnecoursebyfac',  nodeapicontroller.createnecoursebyfac);
+app.get('/api/v1/getnnextensionbyfac',  nodeapicontroller.getnnextensionbyfac);
+app.get('/api/v1/updatennextensionbyfac',  nodeapicontroller.updatennextensionbyfac);
+app.get('/api/v1/updatennextensioncomments',  nodeapicontroller.updatennextensioncomments);
+app.get('/api/v1/nnextensionlinks',  nodeapicontroller.nnextensionlinks);
+app.get('/api/v1/nnextensiondocs',  nodeapicontroller.nnextensiondocs);
+app.get('/api/v1/deletennextensionbyfac',  nodeapicontroller.deletennextensionbyfac);
+app.get('/api/v1/creatennextensionbyfac',  nodeapicontroller.creatennextensionbyfac);
+app.get('/api/v1/getnncollabbyfac',  nodeapicontroller.getnncollabbyfac);
+app.get('/api/v1/updatenncollabbyfac',  nodeapicontroller.updatenncollabbyfac);
+app.get('/api/v1/updatenncollabcomments',  nodeapicontroller.updatenncollabcomments);
+app.get('/api/v1/nncollablinks',  nodeapicontroller.nncollablinks);
+app.get('/api/v1/nncollabdocs',  nodeapicontroller.nncollabdocs);
+app.get('/api/v1/deletenncollabbyfac',  nodeapicontroller.deletenncollabbyfac);
+app.get('/api/v1/createnncollabbyfac',  nodeapicontroller.createnncollabbyfac);
+app.get('/api/v1/getnnmoubyfac',  nodeapicontroller.getnnmoubyfac);
+app.get('/api/v1/updatennmoubyfac',  nodeapicontroller.updatennmoubyfac);
+app.get('/api/v1/updatennmoucomments',  nodeapicontroller.updatennmoucomments);
+app.get('/api/v1/nnmoulinks',  nodeapicontroller.nnmoulinks);
+app.get('/api/v1/nnmoudocs',  nodeapicontroller.nnmoudocs);
+app.get('/api/v1/deletennmoubyfac',  nodeapicontroller.deletennmoubyfac);
+app.get('/api/v1/creatennmoubyfac',  nodeapicontroller.creatennmoubyfac);
+app.get('/api/v1/getnnpatientsbyfac',  nodeapicontroller.getnnpatientsbyfac);
+app.get('/api/v1/updatennpatientsbyfac',  nodeapicontroller.updatennpatientsbyfac);
+app.get('/api/v1/updatennpatientscomments',  nodeapicontroller.updatennpatientscomments);
+app.get('/api/v1/nnpatientslinks',  nodeapicontroller.nnpatientslinks);
+app.get('/api/v1/nnpatientsdocs',  nodeapicontroller.nnpatientsdocs);
+app.get('/api/v1/deletennpatientsbyfac',  nodeapicontroller.deletennpatientsbyfac);
+app.get('/api/v1/creatennpatientsbyfac',  nodeapicontroller.creatennpatientsbyfac);
+app.get('/api/v1/getnnexposurebyfac',  nodeapicontroller.getnnexposurebyfac);
+app.get('/api/v1/updatennexposurebyfac',  nodeapicontroller.updatennexposurebyfac);
+app.get('/api/v1/updatennexposurecomments',  nodeapicontroller.updatennexposurecomments);
+app.get('/api/v1/nnexposurelinks',  nodeapicontroller.nnexposurelinks);
+app.get('/api/v1/nnexposuredocs',  nodeapicontroller.nnexposuredocs);
+app.get('/api/v1/deletennexposurebyfac',  nodeapicontroller.deletennexposurebyfac);
+app.get('/api/v1/creatennexposurebyfac',  nodeapicontroller.creatennexposurebyfac);
+
+
+
+
+
+
+app.get('/api/v1/getnnexpbyfac',  nodeapicontroller.getnnexpbyfac);
+app.get('/api/v1/updatennexpbyfac',  nodeapicontroller.updatennexpbyfac);
+app.get('/api/v1/updatennexpcomments',  nodeapicontroller.updatennexpcomments);
+app.get('/api/v1/nnexplinks',  nodeapicontroller.nnexplinks);
+app.get('/api/v1/nnexpdocs',  nodeapicontroller.nnexpdocs);
+app.get('/api/v1/deletennexpbyfac',  nodeapicontroller.deletennexpbyfac);
+app.get('/api/v1/creatennexpbyfac',  nodeapicontroller.creatennexpbyfac);
+app.get('/api/v1/getnnratiobyfac',  nodeapicontroller.getnnratiobyfac);
+app.get('/api/v1/updatennratiobyfac',  nodeapicontroller.updatennratiobyfac);
+app.get('/api/v1/updatennratiocomments',  nodeapicontroller.updatennratiocomments);
+app.get('/api/v1/nnratiolinks',  nodeapicontroller.nnratiolinks);
+app.get('/api/v1/nnratiodocs',  nodeapicontroller.nnratiodocs);
+app.get('/api/v1/deletennratiobyfac',  nodeapicontroller.deletennratiobyfac);
+app.get('/api/v1/creatennratiobyfac',  nodeapicontroller.creatennratiobyfac);
+app.get('/api/v1/getnnmentorbyfac',  nodeapicontroller.getnnmentorbyfac);
+app.get('/api/v1/updatennmentorbyfac',  nodeapicontroller.updatennmentorbyfac);
+app.get('/api/v1/updatennmentorcomments',  nodeapicontroller.updatennmentorcomments);
+app.get('/api/v1/nnmentorlinks',  nodeapicontroller.nnmentorlinks);
+app.get('/api/v1/nnmentordocs',  nodeapicontroller.nnmentordocs);
+app.get('/api/v1/deletennmentorbyfac',  nodeapicontroller.deletennmentorbyfac);
+app.get('/api/v1/creatennmentorbyfac',  nodeapicontroller.creatennmentorbyfac);
+app.get('/api/v1/getnnexambyfac',  nodeapicontroller.getnnexambyfac);
+app.get('/api/v1/updatennexambyfac',  nodeapicontroller.updatennexambyfac);
+app.get('/api/v1/updatennexamcomments',  nodeapicontroller.updatennexamcomments);
+app.get('/api/v1/nnexamlinks',  nodeapicontroller.nnexamlinks);
+app.get('/api/v1/nnexamdocs',  nodeapicontroller.nnexamdocs);
+app.get('/api/v1/deletennexambyfac',  nodeapicontroller.deletennexambyfac);
+app.get('/api/v1/creatennexambyfac',  nodeapicontroller.creatennexambyfac);
+
+
+
+
+
+app.get('/api/v1/getnnvacstudbyfac',  nodeapicontroller.getnnvacstudbyfac);
+app.get('/api/v1/updatennvacstudbyfac',  nodeapicontroller.updatennvacstudbyfac);
+app.get('/api/v1/updatennvacstudcomments',  nodeapicontroller.updatennvacstudcomments);
+app.get('/api/v1/nnvacstudlinks',  nodeapicontroller.nnvacstudlinks);
+app.get('/api/v1/nnvacstuddocs',  nodeapicontroller.nnvacstuddocs);
+app.get('/api/v1/deletennvacstudbyfac',  nodeapicontroller.deletennvacstudbyfac);
+app.get('/api/v1/creatennvacstudbyfac',  nodeapicontroller.creatennvacstudbyfac);
+app.get('/api/v1/getnnursinginterbyfac',  nodeapicontroller.getnnursinginterbyfac);
+app.get('/api/v1/updatennursinginterbyfac',  nodeapicontroller.updatennursinginterbyfac);
+app.get('/api/v1/updatennursingintercomments',  nodeapicontroller.updatennursingintercomments);
+app.get('/api/v1/nnursinginterlinks',  nodeapicontroller.nnursinginterlinks);
+app.get('/api/v1/nnursinginterdocs',  nodeapicontroller.nnursinginterdocs);
+app.get('/api/v1/deletennursinginterbyfac',  nodeapicontroller.deletennursinginterbyfac);
+app.get('/api/v1/creatennursinginterbyfac',  nodeapicontroller.creatennursinginterbyfac);
+
+
+app.get('/api/v1/getnprogcoursebyfac',  nodeapicontroller.getnprogcoursebyfac);
+app.get('/api/v1/updatenprogcoursebyfac',  nodeapicontroller.updatenprogcoursebyfac);
+app.get('/api/v1/updatenprogcoursecomments',  nodeapicontroller.updatenprogcoursecomments);
+app.get('/api/v1/nprogcourselinks',  nodeapicontroller.nprogcourselinks);
+app.get('/api/v1/nprogcoursedocs',  nodeapicontroller.nprogcoursedocs);
+app.get('/api/v1/deletenprogcoursebyfac',  nodeapicontroller.deletenprogcoursebyfac);
+app.get('/api/v1/createnprogcoursebyfac',  nodeapicontroller.createnprogcoursebyfac);
+
+
+app.get('/api/v1/getndepfundingbyfac',  nodeapicontroller.getndepfundingbyfac);
+app.get('/api/v1/updatendepfundingbyfac',  nodeapicontroller.updatendepfundingbyfac);
+app.get('/api/v1/updatendepfundingcomments',  nodeapicontroller.updatendepfundingcomments);
+app.get('/api/v1/ndepfundinglinks',  nodeapicontroller.ndepfundinglinks);
+app.get('/api/v1/ndepfundingdocs',  nodeapicontroller.ndepfundingdocs);
+app.get('/api/v1/deletendepfundingbyfac',  nodeapicontroller.deletendepfundingbyfac);
+app.get('/api/v1/createndepfundingbyfac',  nodeapicontroller.createndepfundingbyfac);
+
+
+
+app.get('/api/v1/getnfacilitiesbyfac',  nodeapicontroller.getnfacilitiesbyfac);
+app.get('/api/v1/updatenfacilitiesbyfac',  nodeapicontroller.updatenfacilitiesbyfac);
+app.get('/api/v1/updatenfacilitiescomments',  nodeapicontroller.updatenfacilitiescomments);
+app.get('/api/v1/nfacilitieslinks',  nodeapicontroller.nfacilitieslinks);
+app.get('/api/v1/nfacilitiesdocs',  nodeapicontroller.nfacilitiesdocs);
+app.get('/api/v1/deletenfacilitiesbyfac',  nodeapicontroller.deletenfacilitiesbyfac);
+app.get('/api/v1/createnfacilitiesbyfac',  nodeapicontroller.createnfacilitiesbyfac);
+
+
+app.get('/api/v1/getnrevalbyfac',  nodeapicontroller.getnrevalbyfac);
+app.get('/api/v1/updatenrevalbyfac',  nodeapicontroller.updatenrevalbyfac);
+app.get('/api/v1/updatenrevalcomments',  nodeapicontroller.updatenrevalcomments);
+app.get('/api/v1/nrevallinks',  nodeapicontroller.nrevallinks);
+app.get('/api/v1/nrevaldocs',  nodeapicontroller.nrevaldocs);
+app.get('/api/v1/deletenrevalbyfac',  nodeapicontroller.deletenrevalbyfac);
+app.get('/api/v1/createnrevalbyfac',  nodeapicontroller.createnrevalbyfac);
+
+
+
+
+
+app.get('/api/v1/gethnewprogbyfac',  nodeapicontroller.gethnewprogbyfac);
+app.get('/api/v1/updatehnewprogbyfac',  nodeapicontroller.updatehnewprogbyfac);
+app.get('/api/v1/updatehnewprogcomments',  nodeapicontroller.updatehnewprogcomments);
+app.get('/api/v1/hnewproglinks',  nodeapicontroller.hnewproglinks);
+app.get('/api/v1/hnewprogdocs',  nodeapicontroller.hnewprogdocs);
+app.get('/api/v1/deletehnewprogbyfac',  nodeapicontroller.deletehnewprogbyfac);
+app.get('/api/v1/createhnewprogbyfac',  nodeapicontroller.createhnewprogbyfac);
+
+app.get('/api/v1/getntimesheetbyfac',  nodeapicontroller.getntimesheetbyfac);
+app.get('/api/v1/updatentimesheetbyfac',  nodeapicontroller.updatentimesheetbyfac);
+app.get('/api/v1/updatentimesheetcomments',  nodeapicontroller.updatentimesheetcomments);
+app.get('/api/v1/ntimesheetlinks',  nodeapicontroller.ntimesheetlinks);
+app.get('/api/v1/ntimesheetdocs',  nodeapicontroller.ntimesheetdocs);
+app.get('/api/v1/deletentimesheetbyfac',  nodeapicontroller.deletentimesheetbyfac);
+app.get('/api/v1/createntimesheetbyfac',  nodeapicontroller.createntimesheetbyfac);
+
+
+app.get('/api/v1/getnsopbyfac',  nodeapicontroller.getnsopbyfac);
+app.get('/api/v1/updatensopbyfac',  nodeapicontroller.updatensopbyfac);
+app.get('/api/v1/updatensopcomments',  nodeapicontroller.updatensopcomments);
+app.get('/api/v1/nsoplinks',  nodeapicontroller.nsoplinks);
+app.get('/api/v1/nsopdocs',  nodeapicontroller.nsopdocs);
+app.get('/api/v1/nsopdocsforall',  nodeapicontroller.nsopdocsforall);
+app.get('/api/v1/deletensopbyfac',  nodeapicontroller.deletensopbyfac);
+app.get('/api/v1/creatensopbyfac',  nodeapicontroller.creatensopbyfac);
+
+app.get('/api/v1/getnacademicbyfac',  nodeapicontroller.getnacademicbyfac);
+app.get('/api/v1/updatenacademicbyfac',  nodeapicontroller.updatenacademicbyfac);
+app.get('/api/v1/updatenacademiccomments',  nodeapicontroller.updatenacademiccomments);
+app.get('/api/v1/nacademiclinks',  nodeapicontroller.nacademiclinks);
+app.get('/api/v1/nacademicdocs',  nodeapicontroller.nacademicdocs);
+app.get('/api/v1/deletenacademicbyfac',  nodeapicontroller.deletenacademicbyfac);
+app.get('/api/v1/createnacademicbyfac',  nodeapicontroller.createnacademicbyfac);
+
+app.get('/api/v1/getnworkbookbyfac',  nodeapicontroller.getnworkbookbyfac);
+app.get('/api/v1/updatenworkbookbyfac',  nodeapicontroller.updatenworkbookbyfac);
+app.get('/api/v1/updatenworkbookcomments',  nodeapicontroller.updatenworkbookcomments);
+app.get('/api/v1/nworkbooklinks',  nodeapicontroller.nworkbooklinks);
+app.get('/api/v1/nworkbookdocs',  nodeapicontroller.nworkbookdocs);
+app.get('/api/v1/deletenworkbookbyfac',  nodeapicontroller.deletenworkbookbyfac);
+app.get('/api/v1/createnworkbookbyfac',  nodeapicontroller.createnworkbookbyfac);
+
+
+app.get('/api/v1/getnenrollmentbyfac',  nodeapicontroller.getnenrollmentbyfac);
+app.get('/api/v1/updatenenrollmentbyfac',  nodeapicontroller.updatenenrollmentbyfac);
+app.get('/api/v1/updatenenrollmentcomments',  nodeapicontroller.updatenenrollmentcomments);
+app.get('/api/v1/nenrollmentlinks',  nodeapicontroller.nenrollmentlinks);
+app.get('/api/v1/nenrollmentdocs',  nodeapicontroller.nenrollmentdocs);
+app.get('/api/v1/deletenenrollmentbyfac',  nodeapicontroller.deletenenrollmentbyfac);
+app.get('/api/v1/createnenrollmentbyfac',  nodeapicontroller.createnenrollmentbyfac);
+
+app.get('/api/v1/getncourseplanbyfac',  nodeapicontroller.getncourseplanbyfac);
+app.get('/api/v1/updatencourseplanbyfac',  nodeapicontroller.updatencourseplanbyfac);
+app.get('/api/v1/updatencourseplancomments',  nodeapicontroller.updatencourseplancomments);
+app.get('/api/v1/ncourseplanlinks',  nodeapicontroller.ncourseplanlinks);
+app.get('/api/v1/ncourseplandocs',  nodeapicontroller.ncourseplandocs);
+app.get('/api/v1/deletencourseplanbyfac',  nodeapicontroller.deletencourseplanbyfac);
+app.get('/api/v1/createncourseplanbyfac',  nodeapicontroller.createncourseplanbyfac);
+
+app.get('/api/v1/getninterbyfac',  nodeapicontroller.getninterbyfac);
+app.get('/api/v1/updateninterbyfac',  nodeapicontroller.updateninterbyfac);
+app.get('/api/v1/updatenintercomments',  nodeapicontroller.updatenintercomments);
+app.get('/api/v1/ninterlinks',  nodeapicontroller.ninterlinks);
+app.get('/api/v1/ninterdocs',  nodeapicontroller.ninterdocs);
+app.get('/api/v1/deleteninterbyfac',  nodeapicontroller.deleteninterbyfac);
+app.get('/api/v1/createninterbyfac',  nodeapicontroller.createninterbyfac);
+
+app.get('/api/v1/getnclinicskillsbyfac',  nodeapicontroller.getnclinicskillsbyfac);
+app.get('/api/v1/updatenclinicskillsbyfac',  nodeapicontroller.updatenclinicskillsbyfac);
+app.get('/api/v1/updatenclinicskillscomments',  nodeapicontroller.updatenclinicskillscomments);
+app.get('/api/v1/nclinicskillslinks',  nodeapicontroller.nclinicskillslinks);
+app.get('/api/v1/nclinicskillsdocs',  nodeapicontroller.nclinicskillsdocs);
+app.get('/api/v1/deletenclinicskillsbyfac',  nodeapicontroller.deletenclinicskillsbyfac);
+app.get('/api/v1/createnclinicskillsbyfac',  nodeapicontroller.createnclinicskillsbyfac);
+
+
+app.get('/api/v1/getnhlearnerbyfac',  nodeapicontroller.getnhlearnerbyfac);
+app.get('/api/v1/updatenhlearnerbyfac',  nodeapicontroller.updatenhlearnerbyfac);
+app.get('/api/v1/updatenhlearnercomments',  nodeapicontroller.updatenhlearnercomments);
+app.get('/api/v1/nhlearnerlinks',  nodeapicontroller.nhlearnerlinks);
+app.get('/api/v1/nhlearnerdocs',  nodeapicontroller.nhlearnerdocs);
+app.get('/api/v1/deletenhlearnerbyfac',  nodeapicontroller.deletenhlearnerbyfac);
+app.get('/api/v1/createnhlearnerbyfac',  nodeapicontroller.createnhlearnerbyfac);
+
+
+app.get('/api/v1/getnotherstudbyfac',  nodeapicontroller.getnotherstudbyfac);
+app.get('/api/v1/updatenotherstudbyfac',  nodeapicontroller.updatenotherstudbyfac);
+app.get('/api/v1/updatenotherstudcomments',  nodeapicontroller.updatenotherstudcomments);
+app.get('/api/v1/notherstudlinks',  nodeapicontroller.notherstudlinks);
+app.get('/api/v1/notherstuddocs',  nodeapicontroller.notherstuddocs);
+app.get('/api/v1/deletenotherstudbyfac',  nodeapicontroller.deletenotherstudbyfac);
+app.get('/api/v1/createnotherstudbyfac',  nodeapicontroller.createnotherstudbyfac);
+
+
+
+
+
+
+const kupdateusercol=require('./controllers/kupdateusercol');
+app.get('/api/v1/updateadmission',  kupdateusercol.updateadmission);
+app.get('/api/v1/updateteacherdata',  kupdateusercol.updateteacherdata);
+app.get('/api/v1/updatescholarship',  kupdateusercol.updatescholarship);
+
+// comments api
+const commentsapicontroller=require('./controllers/commentsapicontroller');
+app.get('/api/v1/depcbcslist',  commentsapicontroller.depcbcslist);
+app.get('/api/v1/depboslist',  commentsapicontroller.depboslist);
+app.get('/api/v1/depeventlist',  commentsapicontroller.depeventlist);
+app.get('/api/v1/depadmissionlist',  commentsapicontroller.depadmissionlist);
+app.get('/api/v1/depreservecatlist',  commentsapicontroller.depreservecatlist);
+app.get('/api/v1/depteacherdatalist',  commentsapicontroller.depteacherdatalist);
+app.get('/api/v1/deppassexamlist',  commentsapicontroller.deppassexamlist);
+app.get('/api/v1/depawardslist',  commentsapicontroller.depawardslist);
+app.get('/api/v1/depextactlist',  commentsapicontroller.depextactlist);
+app.get('/api/v1/depcollablist',  commentsapicontroller.depcollablist);
+app.get('/api/v1/depmoulist',  commentsapicontroller.depmoulist);
+app.get('/api/v1/depictlist',  commentsapicontroller.depictlist);
+app.get('/api/v1/depexpenditurelist',  commentsapicontroller.depexpenditurelist);
+app.get('/api/v1/depscholarshiplist',  commentsapicontroller.depscholarshiplist);
+app.get('/api/v1/deplibrarylist',  commentsapicontroller.deplibrarylist);
+app.get('/api/v1/depfundslist',  commentsapicontroller.depfundslist);
+app.get('/api/v1/depqualitylist',  commentsapicontroller.depqualitylist);
+app.get('/api/v1/depskilldevlist',  commentsapicontroller.depskilldevlist);
+app.get('/api/v1/depcareercounsellist',  commentsapicontroller.depcareercounsellist);
+app.get('/api/v1/depplacementlist',  commentsapicontroller.depplacementlist);
+// app.get('/api/v1/depteacherfslist',  commentsapicontroller.depteacherfslist);
+app.get('/api/v1/depegovernlist',  commentsapicontroller.depegovernlist);
+app.get('/api/v1/depextawardslist',  commentsapicontroller.depextawardslist);
+app.get('/api/v1/depresultlist',  commentsapicontroller.depresultlist);
+app.get('/api/v1/depecontentlist',  commentsapicontroller.depecontentlist);
+app.get('/api/v1/depseedmlist',  commentsapicontroller.depseedmlist);
+// app.get('/api/v1/depphdguidelist',  commentsapicontroller.depphdguidelist);
+app.get('/api/v1/depteacherawardlist',  commentsapicontroller.depteacherawardlist);
+app.get('/api/v1/depexamautomationlist',  commentsapicontroller.depexamautomationlist);
+app.get('/api/v1/depteacherfellowlist',  commentsapicontroller.depteacherfellowlist);
+app.get('/api/v1/depresearchfellowlist',  commentsapicontroller.depresearchfellowlist);
+app.get('/api/v1/depalumniconlist',  commentsapicontroller.depalumniconlist);
+app.get('/api/v1/depmenteeslist',  commentsapicontroller.depmenteeslist);
+app.get('/api/v1/depinnovationlist',  commentsapicontroller.depinnovationlist);
+app.get('/api/v1/updateincubationcomments',  commentsapicontroller.updateincubationcomments);
+app.get('/api/v1/updatesportsactcomments',  commentsapicontroller.updatesportsactcomments);
+app.get('/api/v1/updatefdpcomments',  commentsapicontroller.updatefdpcomments);
+app.get('/api/v1/updatefieldprojcomments',  commentsapicontroller.updatefieldprojcomments);
+app.get('/api/v1/updatefundscomments',  commentsapicontroller.updatefundscomments);
+app.get('/api/v1/updatequalityinitcomments',  commentsapicontroller.updatequalityinitcomments);
+app.get('/api/v1/updateexplearnprojcomments',  commentsapicontroller.updateexplearnprojcomments);
+
+
+app.get('/api/v1/updatecbcscomments',  commentsapicontroller.updatecbcscomments);
+app.get('/api/v1/updateboscomments',  commentsapicontroller.updateboscomments);
+app.get('/api/v1/updateeventcomments',  commentsapicontroller.updateeventcomments);
+app.get('/api/v1/updateadmissioncomments',  commentsapicontroller.updateadmissioncomments);
+app.get('/api/v1/updatereservecatcomments',  commentsapicontroller.updatereservecatcomments);
+app.get('/api/v1/updateteacherdatacomments',  commentsapicontroller.updateteacherdatacomments);
+app.get('/api/v1/updatepassexamcomments',  commentsapicontroller.updatepassexamcomments);
+app.get('/api/v1/updateawardscomments',  commentsapicontroller.updateawardscomments);
+app.get('/api/v1/updateextactcomments',  commentsapicontroller.updateextactcomments);
+app.get('/api/v1/updatecollabcomments',  commentsapicontroller.updatecollabcomments);
+app.get('/api/v1/updatemoucomments',  commentsapicontroller.updatemoucomments);
+app.get('/api/v1/updateictcomments',  commentsapicontroller.updateictcomments);
+app.get('/api/v1/updateexpenditurecomments',  commentsapicontroller.updateexpenditurecomments);
+app.get('/api/v1/updatescholarshipcomments',  commentsapicontroller.updatescholarshipcomments);
+app.get('/api/v1/updatelibrarycomments',  commentsapicontroller.updatelibrarycomments);
+app.get('/api/v1/updatefundscomments',  commentsapicontroller.updatefundscomments);
+app.get('/api/v1/updatequalitycomments',  commentsapicontroller.updatequalitycomments);
+app.get('/api/v1/updateskilldevcomments',  commentsapicontroller.updateskilldevcomments);
+app.get('/api/v1/updatecareercounselcomments',  commentsapicontroller.updatecareercounselcomments);
+app.get('/api/v1/updateplacementcomments',  commentsapicontroller.updateplacementcomments);
+app.get('/api/v1/updateteacherfscomments',  commentsapicontroller.updateteacherfscomments);
+app.get('/api/v1/updateegoverncomments',  commentsapicontroller.updateegoverncomments);
+app.get('/api/v1/updateextawardscomments',  commentsapicontroller.updateextawardscomments);
+app.get('/api/v1/updatephdguidecomments',  commentsapicontroller.updatephdguidecomments);
+app.get('/api/v1/updateinnovationcomments',  commentsapicontroller.updateinnovationcomments);
+app.get('/api/v1/updateresultcomments',  commentsapicontroller.updateresultcomments);
+app.get('/api/v1/updateecontentcomments',  commentsapicontroller.updateecontentcomments);
+app.get('/api/v1/updateseedmcomments',  commentsapicontroller.updateseedmcomments);
+app.get('/api/v1/updateteacherawardcomments',  commentsapicontroller.updateteacherawardcomments);
+app.get('/api/v1/updateexamautomationcomments',  commentsapicontroller.updateexamautomationcomments);
+app.get('/api/v1/updateteacherfellowcomments',  commentsapicontroller.updateteacherfellowcomments);
+app.get('/api/v1/updateresearchfellowcomments',  commentsapicontroller.updateresearchfellowcomments);
+app.get('/api/v1/updatealumniconcomments',  commentsapicontroller.updatealumniconcomments);
+app.get('/api/v1/updatementeescomments',  commentsapicontroller.updatementeescomments);
+app.get('/api/v1/updateawardscomments',  commentsapicontroller.updateawardscomments);
+
+
+// end
+
+// sep 23
+
+const projectstatusapicontroller=require('./controllers/projectstatusapicontroller');
+app.get('/api/v1/getprojectstatus',  projectstatusapicontroller.getprojectstatus);
+app.get('/api/v1/getprojectstatusbytask',  projectstatusapicontroller.getprojectstatusbytask);
+app.get('/api/v1/getprojectstatusbytaskdep',  projectstatusapicontroller.getprojectstatusbytaskdep);
+app.get('/api/v1/getallprojectstatusbydate',  projectstatusapicontroller.getallprojectstatusbydate);
+app.get('/api/v1/createprojectstatus',  projectstatusapicontroller.createprojectstatus);
+app.get('/api/v1/updateprojectstatus',  projectstatusapicontroller.updateprojectstatus);
+app.get('/api/v1/deleteprojectstatus',  projectstatusapicontroller.deleteprojectstatus);
+app.get('/api/v1/getprojectstatusbydate',  projectstatusapicontroller.getprojectstatusbydate);
+
+// end
+
+// sep 22
+
+const impactcontroller=require('./controllers/impactcontroller');
+app.get('/api/v1/getsdg3',  impactcontroller.getsdg3);
+app.get('/api/v1/createsdg3',  impactcontroller.createsdg3);
+app.get('/api/v1/updatesdg3',  impactcontroller.updatesdg3);
+app.get('/api/v1/deletesdg3',  impactcontroller.deletesdg3);
+app.get('/api/v1/getsdg4',  impactcontroller.getsdg4);
+app.get('/api/v1/createsdg4',  impactcontroller.createsdg4);
+app.get('/api/v1/updatesdg4',  impactcontroller.updatesdg4);
+app.get('/api/v1/deletesdg4',  impactcontroller.deletesdg4);
+app.get('/api/v1/getsdg5',  impactcontroller.getsdg5);
+app.get('/api/v1/createsdg5',  impactcontroller.createsdg5);
+app.get('/api/v1/updatesdg5',  impactcontroller.updatesdg5);
+app.get('/api/v1/deletesdg5',  impactcontroller.deletesdg5);
+app.get('/api/v1/getsdg8',  impactcontroller.getsdg8);
+app.get('/api/v1/createsdg8',  impactcontroller.createsdg8);
+app.get('/api/v1/updatesdg8',  impactcontroller.updatesdg8);
+app.get('/api/v1/deletesdg8',  impactcontroller.deletesdg8);
+app.get('/api/v1/getsdg9',  impactcontroller.getsdg9);
+app.get('/api/v1/createsdg9',  impactcontroller.createsdg9);
+app.get('/api/v1/updatesdg9',  impactcontroller.updatesdg9);
+app.get('/api/v1/deletesdg9',  impactcontroller.deletesdg9);
+app.get('/api/v1/getsdg10',  impactcontroller.getsdg10);
+app.get('/api/v1/createsdg10',  impactcontroller.createsdg10);
+app.get('/api/v1/updatesdg10',  impactcontroller.updatesdg10);
+app.get('/api/v1/deletesdg10',  impactcontroller.deletesdg10);
+app.get('/api/v1/getsdg11',  impactcontroller.getsdg11);
+app.get('/api/v1/createsdg11',  impactcontroller.createsdg11);
+app.get('/api/v1/updatesdg11',  impactcontroller.updatesdg11);
+app.get('/api/v1/deletesdg11',  impactcontroller.deletesdg11);
+app.get('/api/v1/getsdg12',  impactcontroller.getsdg12);
+app.get('/api/v1/createsdg12',  impactcontroller.createsdg12);
+app.get('/api/v1/updatesdg12',  impactcontroller.updatesdg12);
+app.get('/api/v1/deletesdg12',  impactcontroller.deletesdg12);
+app.get('/api/v1/getsdg13',  impactcontroller.getsdg13);
+app.get('/api/v1/createsdg13',  impactcontroller.createsdg13);
+app.get('/api/v1/updatesdg13',  impactcontroller.updatesdg13);
+app.get('/api/v1/deletesdg13',  impactcontroller.deletesdg13);
+app.get('/api/v1/getsdg16',  impactcontroller.getsdg16);
+app.get('/api/v1/createsdg16',  impactcontroller.createsdg16);
+app.get('/api/v1/updatesdg16',  impactcontroller.updatesdg16);
+app.get('/api/v1/deletesdg16',  impactcontroller.deletesdg16);
+app.get('/api/v1/getsdg17',  impactcontroller.getsdg17);
+app.get('/api/v1/createsdg17',  impactcontroller.createsdg17);
+app.get('/api/v1/updatesdg17',  impactcontroller.updatesdg17);
+app.get('/api/v1/deletesdg17',  impactcontroller.deletesdg17);
+app.get('/api/v1/getsdg',  impactcontroller.getsdg);
+
+app.get('/api/v1/getsdg1',  impactcontroller.getsdg1);
+app.get('/api/v1/createsdg1',  impactcontroller.createsdg1);
+app.get('/api/v1/updatesdg1',  impactcontroller.updatesdg1);
+app.get('/api/v1/deletesdg1',  impactcontroller.deletesdg1);
+app.get('/api/v1/getsdg2',  impactcontroller.getsdg2);
+app.get('/api/v1/createsdg2',  impactcontroller.createsdg2);
+app.get('/api/v1/updatesdg2',  impactcontroller.updatesdg2);
+app.get('/api/v1/deletesdg2',  impactcontroller.deletesdg2);
+app.get('/api/v1/getsdg6',  impactcontroller.getsdg6);
+app.get('/api/v1/createsdg6',  impactcontroller.createsdg6);
+app.get('/api/v1/updatesdg6',  impactcontroller.updatesdg6);
+app.get('/api/v1/deletesdg6',  impactcontroller.deletesdg6);
+app.get('/api/v1/getsdg7',  impactcontroller.getsdg7);
+app.get('/api/v1/createsdg7',  impactcontroller.createsdg7);
+app.get('/api/v1/updatesdg7',  impactcontroller.updatesdg7);
+app.get('/api/v1/deletesdg7',  impactcontroller.deletesdg7);
+app.get('/api/v1/getsdg14',  impactcontroller.getsdg14);
+app.get('/api/v1/createsdg14',  impactcontroller.createsdg14);
+app.get('/api/v1/updatesdg14',  impactcontroller.updatesdg14);
+app.get('/api/v1/deletesdg14',  impactcontroller.deletesdg14);
+app.get('/api/v1/getsdg15',  impactcontroller.getsdg15);
+app.get('/api/v1/createsdg15',  impactcontroller.createsdg15);
+app.get('/api/v1/updatesdg15',  impactcontroller.updatesdg15);
+app.get('/api/v1/deletesdg15',  impactcontroller.deletesdg15);
+
+app.get('/api/v1/getqualitativebyfac',  impactcontroller.getqualitativebyfac);
+app.get('/api/v1/getqualitativebyadmin',  impactcontroller.getqualitativebyadmin);
+app.get('/api/v1/getqualitativebyadmindoc',  impactcontroller.getqualitativebyadmindoc);
+app.get('/api/v1/createqualitative',  impactcontroller.createqualitative);
+app.get('/api/v1/updatequalitative',  impactcontroller.updatequalitative);
+app.get('/api/v1/deletequalitative',  impactcontroller.deletequalitative);
+
+// end
+
+// sep 17
+
+app.use("/editrural", express.static(path.join(__dirname, 'public')));
+app.use("/editpwd", express.static(path.join(__dirname, 'public')));
+app.use("/editgender", express.static(path.join(__dirname, 'public')));
+app.use("/editemployed", express.static(path.join(__dirname, 'public')));
+app.use("/editprisoner", express.static(path.join(__dirname, 'public')));
+app.use("/editdefence", express.static(path.join(__dirname, 'public')));
+app.use("/editcounsellor", express.static(path.join(__dirname, 'public')));
+app.use("/editmedia", express.static(path.join(__dirname, 'public')));
+app.use("/editquerymode", express.static(path.join(__dirname, 'public')));
+app.use("/editautomation", express.static(path.join(__dirname, 'public')));
+app.use("/editextevaluation", express.static(path.join(__dirname, 'public')));
+app.use("/editassignmentsub", express.static(path.join(__dirname, 'public')));
+app.use("/editalumni", express.static(path.join(__dirname, 'public')));
+app.use("/editinnovation", express.static(path.join(__dirname, 'public')));
+app.use("/editconsultancy", express.static(path.join(__dirname, 'public')));
+app.use("/editphdguide", express.static(path.join(__dirname, 'public')));
+
+
+const rmediaadd=require('./router/addmediarouter.js');
+const rmediaview=require('./router/viewmediarouter.js');
+const rmediaedit=require('./router/editmediarouter.js');
+const rmediadel=require('./router/deletemediarouter.js');
+
+app.use('/addmedia',rmediaadd);
+app.use('/viewmedia',rmediaview);
+app.use('/editmedia',rmediaedit);
+app.use('/deletemedia',rmediadel);
+
+const ralumniadd=require('./router/addalumnirouter.js');
+const ralumniview=require('./router/viewalumnirouter.js');
+const ralumniedit=require('./router/editalumnirouter.js');
+const ralumnidel=require('./router/deletealumnirouter.js');
+
+app.use('/addalumni',ralumniadd);
+app.use('/viewalumni',ralumniview);
+app.use('/editalumni',ralumniedit);
+app.use('/deletealumni',ralumnidel);
+
+const rassignmentsubadd=require('./router/addassignmentsubrouter.js');
+const rassignmentsubview=require('./router/viewassignmentsubrouter.js');
+const rassignmentsubedit=require('./router/editassignmentsubrouter.js');
+const rassignmentsubdel=require('./router/deleteassignmentsubrouter.js');
+
+app.use('/addassignmentsub',rassignmentsubadd);
+app.use('/viewassignmentsub',rassignmentsubview);
+app.use('/editassignmentsub',rassignmentsubedit);
+app.use('/deleteassignmentsub',rassignmentsubdel);
+
+const rquerymodeadd=require('./router/addquerymoderouter.js');
+const rquerymodeview=require('./router/viewquerymoderouter.js');
+const rquerymodeedit=require('./router/editquerymoderouter.js');
+const rquerymodedel=require('./router/deletequerymoderouter.js');
+
+app.use('/addquerymode',rquerymodeadd);
+app.use('/viewquerymode',rquerymodeview);
+app.use('/editquerymode',rquerymodeedit);
+app.use('/deletequerymode',rquerymodedel);
+
+const rruraladd=require('./router/addruralrouter.js');
+const rruralview=require('./router/viewruralrouter.js');
+const rruraledit=require('./router/editruralrouter.js');
+const rruraldel=require('./router/deleteruralrouter.js');
+
+app.use('/addrural',rruraladd);
+app.use('/viewrural',rruralview);
+app.use('/editrural',rruraledit);
+app.use('/deleterural',rruraldel);
+
+const rpwdadd=require('./router/addpwdrouter.js');
+const rpwdview=require('./router/viewpwdrouter.js');
+const rpwdedit=require('./router/editpwdrouter.js');
+const rpwddel=require('./router/deletepwdrouter.js');
+
+app.use('/addpwd',rpwdadd);
+app.use('/viewpwd',rpwdview);
+app.use('/editpwd',rpwdedit);
+app.use('/deletepwd',rpwddel);
+
+const rgenderadd=require('./router/addgenderrouter.js');
+const rgenderview=require('./router/viewgenderrouter.js');
+const rgenderedit=require('./router/editgenderrouter.js');
+const rgenderdel=require('./router/deletegenderrouter.js');
+
+app.use('/addgender',rgenderadd);
+app.use('/viewgender',rgenderview);
+app.use('/editgender',rgenderedit);
+app.use('/deletegender',rgenderdel);
+
+const remployedadd=require('./router/addemployedrouter.js');
+const remployedview=require('./router/viewemployedrouter.js');
+const remployededit=require('./router/editemployedrouter.js');
+const remployeddel=require('./router/deleteemployedrouter.js');
+
+app.use('/addemployed',remployedadd);
+app.use('/viewemployed',remployedview);
+app.use('/editemployed',remployededit);
+app.use('/deleteemployed',remployeddel);
+
+const rprisonadd=require('./router/addprisonerrouter.js');
+const rprisonview=require('./router/viewprisonerrouter.js');
+const rprisonedit=require('./router/editprisonerrouter.js');
+const rprisondel=require('./router/deleteprisonerrouter.js');
+
+app.use('/addprisoner',rprisonadd);
+app.use('/viewprisoner',rprisonview);
+app.use('/editprisoner',rprisonedit);
+app.use('/deleteprisoner',rprisondel);
+
+const rdefenceadd=require('./router/adddefencerouter.js');
+const rdefenceview=require('./router/viewdefencerouter.js');
+const rdefenceedit=require('./router/editdefencerouter.js');
+const rdefencedel=require('./router/deletedefencerouter.js');
+
+app.use('/adddefence',rdefenceadd);
+app.use('/viewdefence',rdefenceview);
+app.use('/editdefence',rdefenceedit);
+app.use('/deletedefence',rdefencedel);
+
+const rcounselloradd=require('./router/addcounsellorrouter.js');
+const rcounsellorview=require('./router/viewcounsellorrouter.js');
+const rcounselloredit=require('./router/editcounsellorrouter.js');
+const rcounsellordel=require('./router/deletecounsellorrouter.js');
+
+app.use('/addcounsellor',rcounselloradd);
+app.use('/viewcounsellor',rcounsellorview);
+app.use('/editcounsellor',rcounselloredit);
+app.use('/deletecounsellor',rcounsellordel);
+
+const rautomationadd=require('./router/addautomationrouter.js');
+const rautomationview=require('./router/viewautomationrouter.js');
+const rautomationedit=require('./router/editautomationrouter.js');
+const rautomationdel=require('./router/deleteautomationrouter.js');
+
+app.use('/addautomation',rautomationadd);
+app.use('/viewautomation',rautomationview);
+app.use('/editautomation',rautomationedit);
+app.use('/deleteautomation',rautomationdel);
+
+const rextevaluationadd=require('./router/addextevaluationrouter.js');
+const rextevaluationview=require('./router/viewextevaluationrouter.js');
+const rextevaluationedit=require('./router/editextevaluationrouter.js');
+const rextevaluationdel=require('./router/deleteextevaluationrouter.js');
+
+app.use('/addextevaluation',rextevaluationadd);
+app.use('/viewextevaluation',rextevaluationview);
+app.use('/editextevaluation',rextevaluationedit);
+app.use('/deleteextevaluation',rextevaluationdel);
+
+const rconsultancyadd=require('./router/addconsultancyrouter.js');
+const rconsultancyview=require('./router/viewconsultancyrouter.js');
+const rconsultancyedit=require('./router/editconsultancyrouter.js');
+const rconsultancydel=require('./router/deleteconsultancyrouter.js');
+const rbulkconsultancyadd=require('./router/addbulkconsultancyrouter.js');
+
+app.use('/addconsultancy',rconsultancyadd);
+app.use('/viewconsultancy',rconsultancyview);
+app.use('/editconsultancy',rconsultancyedit);
+app.use('/deleteconsultancy',rconsultancydel);
+app.use('/addbulkconsultancy',rbulkconsultancyadd);
+
+const rinnovationadd=require('./router/addinnovationrouter.js');
+const rinnovationview=require('./router/viewinnovationrouter.js');
+const rinnovationedit=require('./router/editinnovationrouter.js');
+const rinnovationdel=require('./router/deleteinnovationrouter.js');
+const rbulkinnovationadd=require('./router/addbulkinnovationrouter.js');
+
+
+app.use('/addinnovation',rinnovationadd);
+app.use('/viewinnovation',rinnovationview);
+app.use('/editinnovation',rinnovationedit);
+app.use('/deleteinnovation',rinnovationdel);
+app.use('/addbulkinnovation',rbulkinnovationadd);
+
+const rphdguideadd=require('./router/addphdguiderouter.js');
+const rphdguideview=require('./router/viewphdguiderouter.js');
+const rphdguideedit=require('./router/editphdguiderouter.js');
+const rphdguidedel=require('./router/deletephdguiderouter.js');
+const rbulkphdguideadd=require('./router/addbulkphdguiderouter.js');
+
+app.use('/addphdguide',rphdguideadd);
+app.use('/viewphdguide',rphdguideview);
+app.use('/editphdguide',rphdguideedit);
+app.use('/deletephdguide',rphdguidedel);
+app.use('/addbulkphdguide',rbulkphdguideadd);
+
+const ropenuni=require('./router/viewopenunirouter.js');
+
+app.use('/viewopenuni',ropenuni);
+
+app.use("/editsyllabusprog", express.static(path.join(__dirname, 'public')));
+
+const rsyllabusprogadd=require('./router/addsyllabusprogrouter.js');
+const rsyllabusprogview=require('./router/viewsyllabusprogrouter.js');
+const rsyllabusprogedit=require('./router/editsyllabusprogrouter.js');
+const rsyllabusprogdel=require('./router/deletesyllabusprogrouter.js');
+const rbulksyllabusprogadd=require('./router/addbulksyllabusprogrouter.js');
+
+app.use('/addsyllabusprog',rsyllabusprogadd);
+app.use('/viewsyllabusprog',rsyllabusprogview);
+app.use('/editsyllabusprog',rsyllabusprogedit);
+app.use('/deletesyllabusprog',rsyllabusprogdel);
+app.use('/addbulksyllabusprog',rbulksyllabusprogadd);
+
+
+
+// end
+
+// sep 16
+
+app.use("/addstafffeedback", express.static(path.join(__dirname, 'public')));
+
+const rstafffeedbackadd=require('./router/addstafffeedbackrouter.js');
+const rstafffexport=require('./router/exportstafffeedbackrouter.js');
+
+app.use('/addstafffeedback',rstafffeedbackadd);
+app.use('/exportstafffeedback',rstafffexport);
+
+// end
+
+// sep 2
+
+const remailregform=require('./router/emailregformrouter.js');
+const remailregformview=require('./router/viewemailregformrouter.js');
+
+app.use('/viewemailregform',remailregformview);
+app.use('/emailregform',remailregform);
+
+// end
+
+// sep 1
+
+const rapplicationpg=require('./router/applicationpgrouter.js');
+const rexportapplicationpg=require('./router/exportapplicationpgrouter.js');
+
+app.use('/applicationpg',rapplicationpg);
+app.use('/exportapplicationpg',rexportapplicationpg);
+
+// end
+
+//aug 28
+
+const rfinalscoreexport=require('./router/exportfinalscorerouter.js');
+
+app.use('/exportfinalscore',rfinalscoreexport);
+
+// end
+
+//aug 10
+
+const nnaacupdate=require('./controllers/nnaacupdate.js');
+app.get('/api/v1/updateaddoncount',  nnaacupdate.updateaddonccount);
+
+const newnaaccontroller=require('./controllers/nnaac.js');
+app.get('/api/v1/getaddoncount',  newnaaccontroller.getaddonccount);
+app.get('/api/v1/getadmissioncount',  newnaaccontroller.getadmissioncount);
+app.get('/api/v1/getawardscount',  newnaaccontroller.getawardscount);
+app.get('/api/v1/getboscount',  newnaaccontroller.getboscount);
+app.get('/api/v1/getcareercount',  newnaaccontroller.getcareercount);
+app.get('/api/v1/getcbcscount',  newnaaccontroller.getcbcscount);
+app.get('/api/v1/getcollabcount',  newnaaccontroller.getcollabcount);
+app.get('/api/v1/getecontentcount',  newnaaccontroller.getecontentcount);
+app.get('/api/v1/getegoverncount',  newnaaccontroller.getegoverncount);
+app.get('/api/v1/getexpcount',  newnaaccontroller.getexpcount);
+app.get('/api/v1/getbudgetcount',  newnaaccontroller.getbudgetcount);
+app.get('/api/v1/getextactcount',  newnaaccontroller.getextactcount);
+app.get('/api/v1/getfundscount',  newnaaccontroller.getfundscount);
+app.get('/api/v1/getextawardscount',  newnaaccontroller.getextawardscount);
+app.get('/api/v1/gethigheducount',  newnaaccontroller.gethigheducount);
+app.get('/api/v1/gethighexamcount',  newnaaccontroller.gethighexamcount);
+app.get('/api/v1/getlibcount',  newnaaccontroller.getlibcount);
+app.get('/api/v1/getmoucount',  newnaaccontroller.getmoucount);
+app.get('/api/v1/getpasscount',  newnaaccontroller.getpasscount);
+app.get('/api/v1/getplacecount',  newnaaccontroller.getplacecount);
+app.get('/api/v1/getqualitycount',  newnaaccontroller.getqualitycount);
+app.get('/api/v1/getreservecount',  newnaaccontroller.getreservecount);
+app.get('/api/v1/getresultcount',  newnaaccontroller.getresultcount);
+app.get('/api/v1/getseedmcount',  newnaaccontroller.getseedmcount);
+app.get('/api/v1/getscholarcount',  newnaaccontroller.getscholarcount);
+app.get('/api/v1/getsyllabuscount',  newnaaccontroller.getsyllabuscount);
+app.get('/api/v1/gettdatacount',  newnaaccontroller.gettdatacount);
+app.get('/api/v1/gettfscount',  newnaaccontroller.gettfscount);
+
+app.get('/api/v1/updatepassword',  newnaaccontroller.updatepassword);
+
+// end
+
+// aug 9
+
+const rnaacauto=require('./router/viewnaacautonomousrouter.js');
+app.use('/viewnaacautonomous',rnaacauto);
+
+const radminexportautonomous=require('./router/viewadminexportautonomous.js');
+app.use('/viewadminexportautonomous',radminexportautonomous);
+
+const rapplication3=require('./router/application3router.js');
+const rexportapplication3=require('./router/exportapplication3router.js');
+
+app.use('/application3',rapplication3);
+app.use('/exportapplication3',rexportapplication3);
+
+// end
+
+//aug 4
+
+const rexportapplication=require('./router/exportapplication2router.js');
+
+app.use('/exportapplication2',rexportapplication);
+
+// end
+
+// aug 2
+
+const mydetailsapicontroller=require('./controllers/mydetailsapicontroller');
+//app.get('/api/v1/loginapi',  mydetailsapicontroller.loginapi);
+
+app.get('/api/v1/getbookbyfaculty',  mydetailsapicontroller.getbookbyfaculty);
+app.get('/api/v1/createbookbyfaculty',  mydetailsapicontroller.createbookbyfaculty);
+app.get('/api/v1/updatebookbyfaculty',  mydetailsapicontroller.updatebookbyfaculty);
+app.get('/api/v1/deletebookbyfaculty',  mydetailsapicontroller.deletebookbyfaculty);
+
+app.get('/api/v1/getpubaqarbyfaculty',  mydetailsapicontroller.getpubaqarbyfaculty);
+app.get('/api/v1/createpubaqarbyfaculty',  mydetailsapicontroller.createpubaqarbyfaculty);
+app.get('/api/v1/updatepubaqarbyfaculty',  mydetailsapicontroller.updatepubaqarbyfaculty);
+app.get('/api/v1/deletepubaqarbyfaculty',  mydetailsapicontroller.deletepubaqarbyfaculty);
+
+app.get('/api/v1/getpatentbyfaculty',  mydetailsapicontroller.getpatentbyfaculty);
+app.get('/api/v1/createpatentbyfaculty',  mydetailsapicontroller.createpatentbyfaculty);
+app.get('/api/v1/updatepatentbyfaculty',  mydetailsapicontroller.updatepatentbyfaculty);
+app.get('/api/v1/deletepatentbyfaculty',  mydetailsapicontroller.deletepatentbyfaculty);
+app.get('/api/v1/getprojectbyfaculty',  mydetailsapicontroller.getprojectbyfaculty);
+app.get('/api/v1/createprojectbyfaculty',  mydetailsapicontroller.createprojectbyfaculty);
+app.get('/api/v1/updateprojectbyfaculty',  mydetailsapicontroller.updateprojectbyfaculty);
+app.get('/api/v1/deleteprojectbyfaculty',  mydetailsapicontroller.deleteprojectbyfaculty);
+app.get('/api/v1/getseminarbyfaculty',  mydetailsapicontroller.getseminarbyfaculty);
+app.get('/api/v1/createseminarbyfac',  mydetailsapicontroller.createseminarbyfac);
+app.get('/api/v1/updateseminarbyfac',  mydetailsapicontroller.updateseminarbyfac);
+app.get('/api/v1/deleteseminarbyfac',  mydetailsapicontroller.deleteseminarbyfac);
+app.get('/api/v1/getviewpubbyfac',  mydetailsapicontroller.getviewpubbyfac);
+app.get('/api/v1/createpubbyfac',  mydetailsapicontroller.createpubbyfac);
+app.get('/api/v1/updatepubbyfac',  mydetailsapicontroller.updatepubbyfac);
+app.get('/api/v1/deletepubbyfac',  mydetailsapicontroller.deletepubbyfac);
+
+app.get('/api/v1/getallbooks',  mydetailsapicontroller.getallbooks);
+app.get('/api/v1/getallpatents',  mydetailsapicontroller.getallpatents);
+app.get('/api/v1/getallprojects',  mydetailsapicontroller.getallprojects);
+app.get('/api/v1/getallseminars',  mydetailsapicontroller.getallseminars);
+app.get('/api/v1/getallpubs',  mydetailsapicontroller.getallpubs);
+
+
+// end
+
+//jul 30
+
+
+const raddoncadminview=require('./router/viewaddoncadmin.js');
+const raddoncadminexport=require('./router/exportaddoncadmin.js');
+
+const rawardsadminview=require('./router/viewawardsadmin.js');
+const rawardsadminexport=require('./router/exportawardsadmin.js');
+
+const radmissionadminview=require('./router/viewadmissionadmin.js');
+const radmissionadminexport=require('./router/exportadmissionadmin.js');
+
+const rbookadminview=require('./router/viewbookadmin.js');
+const rbookadminexport=require('./router/exportbookadmin.js');
+
+const rbosadminview=require('./router/viewbosadmin.js');
+const rbosadminexport=require('./router/exportbosadmin.js');
+
+const rcareercounseladminview=require('./router/viewcareercounseladmin.js');
+const rcareercounseladminexport=require('./router/exportcareercounseladmin.js');
+
+const rcbcsadminview=require('./router/viewcbcsadmin.js');
+const rcbcsadminexport=require('./router/exportcbcsadmin.js');
+
+const rcollabadminview=require('./router/viewcollabadmin.js');
+const rcollabadminexport=require('./router/exportcollabadmin.js');
+
+const recontentadminview=require('./router/viewecontentadmin.js');
+const recontentadminexport=require('./router/exportecontentadmin.js');
+
+const regovernadminview=require('./router/viewegovernadmin.js');
+const regovernadminexport=require('./router/exportegovernadmin.js');
+
+const reventadminview=require('./router/vieweventadmin.js');
+const reventadminexport=require('./router/exporteventadmin.js');
+
+const rexpadminview=require('./router/viewexpadmin.js');
+const rexpadminexport=require('./router/exportexpadmin.js');
+
+const rextactadminview=require('./router/viewextactadmin.js');
+const rextactadminexport=require('./router/exportextactadmin.js');
+
+const rextawardsadminview=require('./router/viewextawardsadmin.js');
+const rextawardsadminexport=require('./router/exportextawardsadmin.js');
+
+const rfundsadminview=require('./router/viewfundsadmin.js');
+const rfundsadminexport=require('./router/exportfundsadmin.js');
+
+const rhighereduadminview=require('./router/viewhighereduadmin.js');
+const rhighereduadminexport=require('./router/exporthighereduadmin.js');
+
+const rhigherexamadminview=require('./router/viewhigherexamadmin.js');
+const rhigherexamadminexport=require('./router/exporthigherexamadmin.js');
+
+const rictadminview=require('./router/viewictadmin.js');
+const rictadminexport=require('./router/exportictadmin.js');
+
+const rlibraryadminview=require('./router/viewlibraryadmin.js');
+const rlibraryadminexport=require('./router/exportlibraryadmin.js');
+
+const rmouadminview=require('./router/viewmouadmin.js');
+const rmouadminexport=require('./router/exportmouadmin.js');
+
+const rpassexamadminview=require('./router/viewpassexamadmin.js');
+const rpassexamadminexport=require('./router/exportpassexamadmin.js');
+
+const rpatentadminview=require('./router/viewpatentadmin.js');
+const rpatentadminexport=require('./router/exportpatentadmin.js');
+
+const rplacementadminview=require('./router/viewplacementadmin.js');
+const rplacementadminexport=require('./router/exportplacementadmin.js');
+
+const rprojectadminview=require('./router/viewprojectadmin.js');
+const rprojectadminexport=require('./router/exportprojectadmin.js');
+
+const rpubadminview=require('./router/viewpubadmin.js');
+const rpubadminexport=require('./router/exportpubadmin.js');
+
+const rqualityadminview=require('./router/viewqualityadmin.js');
+const rqualityadminexport=require('./router/exportqualityadmin.js');
+
+const rreservecatadminview=require('./router/viewreservecatadmin.js');
+const rreservecatadminexport=require('./router/exportreservecatadmin.js');
+
+const rresultadminview=require('./router/viewresultadmin.js');
+const rresultadminexport=require('./router/exportresultadmin.js');
+
+const rseedmadminview=require('./router/viewseedmadmin.js');
+const rseedmadminexport=require('./router/exportseedmadmin.js');
+
+const rseminaradminview=require('./router/viewseminaradmin.js');
+const rseminaradminexport=require('./router/exportseminaradmin.js');
+
+const rskilldevadminview=require('./router/viewskilldevadmin.js');
+const rskilldevadminexport=require('./router/exportskilldevadmin.js');
+
+const rstudschspadminview=require('./router/viewstudschspadmin.js');
+const rstudschspadminexport=require('./router/exportstudschspadmin.js');
+
+const rsyllabusrevadminview=require('./router/viewsyllabusrevadmin.js');
+const rsyllabusrevadminexport=require('./router/exportsyllabusrevadmin.js');
+
+const rteacherdataadminview=require('./router/viewteacherdataadmin.js');
+const rteacherdataadminexport=require('./router/exportteacherdataadmin.js');
+
+const rteacherfsadminview=require('./router/viewteacherfsadmin.js');
+const rteacherfsadminexport=require('./router/exportteacherfsadmin.js');
+
+const radminexportinst=require('./router/viewadminexportinst.js');
+
+const radminexportuni=require('./router/viewadminexportuni.js');
+
+
+app.use('/viewaddoncourseadmin',raddoncadminview);
+app.use('/exportaddonc',raddoncadminexport);
+
+app.use('/viewawardsadmin',rawardsadminview);
+app.use('/exportawards',rawardsadminexport);
+
+app.use('/viewadmissionadmin',radmissionadminview);
+app.use('/exportadmission',radmissionadminexport);
+
+app.use('/viewbookadmin',rbookadminview);
+app.use('/exportbook',rbookadminexport);
+
+app.use('/viewbosadmin',rbosadminview);
+app.use('/exportbos',rbosadminexport);
+
+app.use('/viewcareercounseladmin',rcareercounseladminview);
+app.use('/exportcareercounsel',rcareercounseladminexport);
+
+app.use('/viewcbcsadmin',rcbcsadminview);
+app.use('/exportcbcsprogram',rcbcsadminexport);
+
+app.use('/viewcollabadmin',rcollabadminview);
+app.use('/exportcollab',rcollabadminexport);
+
+app.use('/viewecontentadmin',recontentadminview);
+app.use('/exportecontent',recontentadminexport);
+
+app.use('/viewegovernadmin',regovernadminview);
+app.use('/exportegovern',regovernadminexport);
+
+app.use('/vieweventadmin',reventadminview);
+app.use('/exportevent',reventadminexport);
+
+app.use('/viewexpadmin',rexpadminview);
+app.use('/exportexp',rexpadminexport);
+
+app.use('/viewextactadmin',rextactadminview);
+app.use('/exportextact',rextactadminexport);
+
+app.use('/viewextawardsadmin',rextawardsadminview);
+app.use('/exportextawards',rextawardsadminexport);
+
+app.use('/viewfundsadmin',rfundsadminview);
+app.use('/exportfunds',rfundsadminexport);
+
+app.use('/viewhighereduadmin',rhighereduadminview);
+app.use('/exporthigheredu',rhighereduadminexport);
+
+app.use('/viewhigherexamadmin',rhigherexamadminview);
+app.use('/exporthigherexam',rhigherexamadminexport);
+
+app.use('/viewictadmin',rictadminview);
+app.use('/exportict',rictadminexport);
+
+app.use('/viewlibraryadmin',rlibraryadminview);
+app.use('/exportlibrary',rlibraryadminexport);
+
+app.use('/viewmouadmin',rmouadminview);
+app.use('/exportmou',rmouadminexport);
+
+app.use('/viewpassexamadmin',rpassexamadminview);
+app.use('/exportpassexam',rpassexamadminexport);
+
+app.use('/viewpatentadmin',rpatentadminview);
+app.use('/exportpatent',rpatentadminexport);
+
+app.use('/viewplacementadmin',rplacementadminview);
+app.use('/exportplacement',rplacementadminexport);
+
+app.use('/viewprojectadmin',rprojectadminview);
+app.use('/exportproject',rprojectadminexport);
+
+app.use('/viewpubadmin',rpubadminview);
+app.use('/exportpub',rpubadminexport);
+
+app.use('/viewqualityadmin',rqualityadminview);
+app.use('/exportquality',rqualityadminexport);
+
+app.use('/viewreservecatadmin',rreservecatadminview);
+app.use('/exportreservecat',rreservecatadminexport);
+
+app.use('/viewresultadmin',rresultadminview);
+app.use('/exportresult',rresultadminexport);
+
+app.use('/viewseedmadmin',rseedmadminview);
+app.use('/exportseedm',rseedmadminexport);
+
+app.use('/viewseminaradmin',rseminaradminview);
+app.use('/exportseminar',rseminaradminexport);
+
+app.use('/viewskilldevadmin',rskilldevadminview);
+app.use('/exportskilldev',rskilldevadminexport);
+
+app.use('/viewstudschspadmin',rstudschspadminview);
+app.use('/exportscholarship',rstudschspadminexport);
+
+app.use('/viewsyllabusrevadmin',rsyllabusrevadminview);
+app.use('/exportsyllabusrev',rsyllabusrevadminexport);
+
+app.use('/viewteacherdataadmin',rteacherdataadminview);
+app.use('/exportteacherdata',rteacherdataadminexport);
+
+app.use('/viewteacherfsadmin',rteacherfsadminview);
+app.use('/exportteacherfs',rteacherfsadminexport);
+
+app.use('/viewadminexportinst',radminexportinst);
+
+app.use('/viewadminexportuni',radminexportuni);
+
+// end
+
+//jul 25
+
+const rbulkactadd=require('./router/addbulkactrouter.js');
+const rfacultyseedmadd=require('./router/addfacultyseedmrouter.js');
+const rbulkbosadd=require('./router/addbulkbosrouter.js');
+const rbulkcbcsadd=require('./router/addbulkcbcsrouter.js');
+const rbulkawardsadd=require('./router/addbulkawardsrouter.js');
+const rbulkfundsadd=require('./router/addbulkfundsrouter.js');
+const rbulkcounseladd=require('./router/addbulkcounselrouter.js');
+const rbulkecontentadd=require('./router/addbulkecontentrouter.js');
+const rbulkskilldevadd=require('./router/addbulkskilldevrouter.js');
+const rbulkcollabadd=require('./router/addbulkcollabrouter.js');
+const rbulkteacherdataadd=require('./router/addbulkteacherdatarouter.js');
+const rbulkteacherfsadd=require('./router/addbulkteacherfsrouter.js');
+const rbulkresultadd=require('./router/addbulkresultrouter.js');
+const rbulkhighereduadd=require('./router/addbulkhigheredurouter.js');
+const rbulkhigherexamadd=require('./router/addbulkhigherexamrouter.js');
+const rbulkqualityadd=require('./router/addbulkqualityrouter.js');
+const rbulklibraryadd=require('./router/addbulklibraryrouter.js');
+const rbulkictadd=require('./router/addbulkictrouter.js');
+const rbulkexpadd=require('./router/addbulkexprouter.js');
+const rbulkextactadd=require('./router/addbulkextactrouter.js');
+const rbulkextawardsadd=require('./router/addbulkextawardsrouter.js');
+const rbulkmouadd=require('./router/addbulkmourouter.js');
+const rbulkadmissionadd=require('./router/addbulkadmissionrouter.js');
+const rbulkpassexamadd=require('./router/addbulkpassexamrouter.js');
+const rbulksyllabusrevadd=require('./router/addbulksyllabusrevrouter.js');
+const rbulkbookadd=require('./router/addbulkbookrouter.js');
+const rbulkpatentadd=require('./router/addbulkpatentrouter.js');
+const rbulkpubadd=require('./router/addbulkpubrouter.js');
+const rbulkprojectadd=require('./router/addbulkprojectrouter.js');
+const rbulkseminaradd=require('./router/addbulkseminarrouter.js');
+const rstudentadd=require('./router/addstudentprouter.js');
+const rscholarshipadd=require('./router/addstudentschrouter.js');
+
+app.use('/addbulkact',rbulkactadd);
+app.use('/addbulkbos',rbulkbosadd);
+app.use('/addbulkcbcs',rbulkcbcsadd);
+app.use('/addbulkawards',rbulkawardsadd);
+app.use('/addbulkfunds',rbulkfundsadd);
+app.use('/addbulkcounsel',rbulkcounseladd);
+app.use('/addbulkecontent',rbulkecontentadd);
+app.use('/addbulkskilldev',rbulkskilldevadd);
+app.use('/addbulkcollab',rbulkcollabadd);
+app.use('/addbulkteacherdata',rbulkteacherdataadd);
+app.use('/addbulkteacherfs',rbulkteacherfsadd);
+app.use('/addbulkresult',rbulkresultadd);
+app.use('/addbulkhigheredu',rbulkhighereduadd);
+app.use('/addbulkhigherexam',rbulkhigherexamadd);
+app.use('/addbulklibrary',rbulklibraryadd);
+app.use('/addbulkquality',rbulkqualityadd);
+app.use('/addbulkict',rbulkictadd);
+app.use('/addbulkextact',rbulkextactadd);
+app.use('/addbulkextawards',rbulkextawardsadd);
+app.use('/addbulkexp',rbulkexpadd);
+app.use('/addbulkmou',rbulkmouadd);
+app.use('/addbulkadmission',rbulkadmissionadd);
+app.use('/addbulkpassexam',rbulkpassexamadd);
+app.use('/addbulksyllabusrev',rbulksyllabusrevadd);
+app.use('/addbulkbook',rbulkbookadd);
+app.use('/addbulkpatent',rbulkpatentadd);
+app.use('/addbulkproject',rbulkprojectadd);
+app.use('/addbulkpub',rbulkpubadd);
+app.use('/addbulkseminar',rbulkseminaradd);
+app.use('/addfacultyseedm',rfacultyseedmadd);
+app.use('/addstudentsch',rscholarshipadd);
+app.use('/addstudentp',rstudentadd);
+
+app.use("/editseedm", express.static(path.join(__dirname, 'public')));
+
+const rseedmadd=require('./router/addseedmrouter.js');
+const rseedmview=require('./router/viewseedmrouter.js');
+const rseedmedit=require('./router/editseedmrouter.js');
+const rseedmdel=require('./router/deleteseedmrouter.js');
+const rseedmexport=require('./router/exportseedmrouter.js');
+
+
+
+// end
+
+//jul 11
+
+app.use("/alumnifeedback", express.static(path.join(__dirname, 'public')));
+app.use("/employerfeedback", express.static(path.join(__dirname, 'public')));
+
+const ralumnifeedback=require('./router/alumnifeedbackrouter.js');
+const remployerfeedback=require('./router/employerfeedbackrouter.js');
+
+app.use('/alumnifeedback',ralumnifeedback);
+app.use('/employerfeedback',remployerfeedback);
+
+//end
+
+//jun 28
+app.use("/addparentfeedback", express.static(path.join(__dirname, 'public')));
+const rparentfeedbackadd=require('./router/addparentfeedbackrouter.js');
+app.use('/addparentfeedback',rparentfeedbackadd);
+
+//end
+
+// mar 7
+
+const kpialertcontroller1=require('./controllers/kpialertcontroller1');
+app.get('/api/v1/getidemandratioalert',  kpialertcontroller1.getdemandratioalert);
+app.get('/api/v1/getireservedcatalert',  kpialertcontroller1.getreservedcatalert);
+app.get('/api/v1/getifulltimeteacheralert',  kpialertcontroller1.getfulltimeteacheralert);
+app.get('/api/v1/getipasspercentagealert',  kpialertcontroller1.getpasspercentagealert);
+app.get('/api/v1/getiexamdaysalert',  kpialertcontroller1.getexamdaysalert);
+app.get('/api/v1/getifacultyawardalert',  kpialertcontroller1.getfacultyawardalert);
+app.get('/api/v1/getiexamautomationalert',  kpialertcontroller1.getexamautomationalert);
+app.get('/api/v1/getimentoralert',  kpialertcontroller1.getmentoralert);
+app.get('/api/v1/getiseedmoneyalert',  kpialertcontroller1.getseedmoneyalert);
+app.get('/api/v1/getiteacherfellowalert',  kpialertcontroller1.getteacherfellowalert);
+app.get('/api/v1/getiresearchfellowalert',  kpialertcontroller1.getresearchfellowalert);
+app.get('/api/v1/getiipralert',  kpialertcontroller1.getipralert);
+app.get('/api/v1/getiresearchawardsalert',  kpialertcontroller1.getresearchawardsalert);
+app.get('/api/v1/getiawardsalert',  kpialertcontroller1.getawardsalert);
+app.get('/api/v1/getiecontentalert',  kpialertcontroller1.getecontentalert);
+app.get('/api/v1/geticonsultancyalert',  kpialertcontroller1.getconsultancyalert);
+app.get('/api/v1/getiextensionawardsalert',  kpialertcontroller1.getextensionawardsalert);
+app.get('/api/v1/getiextensionalert',  kpialertcontroller1.getextensionalert);
+app.get('/api/v1/getiextensionstudentsalert',  kpialertcontroller1.getextensionstudentsalert);
+app.get('/api/v1/geticollaborationalert',  kpialertcontroller1.getcollaborationalert);
+app.get('/api/v1/getimoualert',  kpialertcontroller1.getmoualert);
+app.get('/api/v1/getilibrarybooksalert',  kpialertcontroller1.getlibrarybooksalert);
+app.get('/api/v1/getilibraryexpalert',  kpialertcontroller1.getlibraryexpalert);
+app.get('/api/v1/getiictalert',  kpialertcontroller1.getictalert);
+app.get('/api/v1/getiecontentresourcealert',  kpialertcontroller1.getecontentresourcealert);
+app.get('/api/v1/getiexpenditurealert',  kpialertcontroller1.getexpenditurealert);
+app.get('/api/v1/getiinfrastructurealert',  kpialertcontroller1.getinfrastructurealert);
+app.get('/api/v1/getischolarshipalert',  kpialertcontroller1.getscholarshipalert);
+app.get('/api/v1/geticareercounselalert',  kpialertcontroller1.getcareercounselalert);
+app.get('/api/v1/getiskilldevelopmentalert',  kpialertcontroller1.getskilldevelopmentalert);
+app.get('/api/v1/getihigherexamalert',  kpialertcontroller1.gethigherexamalert);
+app.get('/api/v1/getiplacementalert',  kpialertcontroller1.getplacementalert);
+app.get('/api/v1/getihighereducationalert',  kpialertcontroller1.gethighereducationalert);
+app.get('/api/v1/getistudentawardsalert',  kpialertcontroller1.getstudentawardsalert);
+app.get('/api/v1/getisportsculturalalert',  kpialertcontroller1.getsportsculturalalert);
+app.get('/api/v1/getialumnicontributionalert',  kpialertcontroller1.getalumnicontributionalert);
+app.get('/api/v1/getiegovernancealert',  kpialertcontroller1.getegovernancealert);
+app.get('/api/v1/getiteachersupportalert',  kpialertcontroller1.getteachersupportalert);
+app.get('/api/v1/getitrainingalert',  kpialertcontroller1.gettrainingalert);
+app.get('/api/v1/getitfdpalert',  kpialertcontroller1.gettfdpalert);
+app.get('/api/v1/getifdpalert',  kpialertcontroller1.getfdpalert);
+app.get('/api/v1/getigfundsalert',  kpialertcontroller1.getgfundsalert);
+app.get('/api/v1/getingfundsalert',  kpialertcontroller1.getngfundsalert);
+app.get('/api/v1/getiqualityinitalert',  kpialertcontroller1.getqualityinitalert);
+
+// end
+
+//jun 24
+
+app.use("/viewenrollfaculty", express.static(path.join(__dirname, 'public')));
+app.use("/addfacultyenrol", express.static(path.join(__dirname, 'public')));
+
+const rmyallocationview=require('./router/viewmyallocationrouter.js');
+const rfacultyenradd=require('./router/addfacultyenrrouter.js');
+const rfacultyenrlist=require('./router/viewfacultyenrolrouter.js');
+const rfacultyenrdelete=require('./router/deletefacultyenrrouter.js');
+
+app.use('/addfacultyenrol',rfacultyenradd);
+app.use('/viewenrollfaculty',rfacultyenrlist);
+app.use('/deletefacultyenrol',rfacultyenrdelete);
+app.use('/viewmyallocation',rmyallocationview);
+
+
+
+//end
+
+//jun 13 2021
+const rjitsi=require('./router/jitsirouter.js');
+app.use('/viewjitsi',rjitsi);
+app.use('/viewjitsi',rjitsi);
+
+//end
+
+
+//jun 10 2021
+
+app.use("/editclub", express.static(path.join(__dirname, 'public')));
+app.use("/editcircular", express.static(path.join(__dirname, 'public')));
+
+const rclubadd=require('./router/addclubrouter.js');
+const rclubview=require('./router/viewclubrouter.js');
+const rclubedit=require('./router/editclubrouter.js');
+const rclubdel=require('./router/deleteclubrouter.js');
+
+const rcircularadd=require('./router/addcircularrouter.js');
+const rcircularview=require('./router/viewcircularrouter.js');
+const rcircularedit=require('./router/editcircularrouter.js');
+const rcirculardel=require('./router/deletecircularrouter.js');
+
+app.use('/addclub',rclubadd);
+app.use('/viewclub',rclubview);
+app.use('/editclub',rclubedit);
+app.use('/deleteclub',rclubdel);
+
+
+
+app.use('/addcircular',rcircularadd);
+app.use('/viewcircular',rcircularview);
+app.use('/editcircular',rcircularedit);
+app.use('/deletecircular',rcirculardel);
+
+
+//end
+
+const rbulkadd=require('./router/addbulkrouter.js');
+app.use('/addbulk',rbulkadd);
+
+
+//vac class
+app.use("/editvacclass", express.static(path.join(__dirname, 'public')));
+app.use("/viewvacclass", express.static(path.join(__dirname, 'public')));
+app.use("/addvacclass", express.static(path.join(__dirname, 'public')));
+const rvacclassadd=require('./router/addvacclassrouter.js');
+const rvacclassview=require('./router/viewvacclassrouter.js');
+const rvacclassedit=require('./router/editvacclassrouter.js');
+const rvacclassdel=require('./router/deletevacclassrouter.js');
+app.use('/addvacclass',rvacclassadd);
+app.use('/viewvacclass',rvacclassview);
+app.use('/editvacclass',rvacclassedit);
+app.use('/deletevacclass',rvacclassdel);
+
+
+//vac course
+app.use("/editaddoncourse", express.static(path.join(__dirname, 'public')));
+const raddoncadd=require('./router/addaddoncrouter.js');
+const raddoncview=require('./router/viewaddoncrouter.js');
+const raddoncedit=require('./router/editaddoncrouter.js');
+const raddoncdel=require('./router/deleteaddoncrouter.js');
+app.use('/createaddoncourse',raddoncadd);
+app.use('/viewaddoncourse',raddoncview);
+app.use('/editaddoncourse',raddoncedit);
+app.use('/deleteaddoncourse',raddoncdel);
+
+
+//po
+app.use("/editpo", express.static(path.join(__dirname, 'public')));
+const rpoadd=require('./router/addporouter.js');
+const rpoview=require('./router/viewporouter.js');
+const rpoedit=require('./router/editporouter.js');
+const rpodel=require('./router/deleteporouter.js');
+app.use('/createpo',rpoadd);
+app.use('/viewpo',rpoview);
+app.use('/editpo',rpoedit);
+app.use('/deletepo',rpodel);
+
+//co
+app.use("/editco", express.static(path.join(__dirname, 'public')));
+const rcoadd=require('./router/addcorouter.js');
+const rcoview=require('./router/viewcorouter.js');
+const rcoedit=require('./router/editcorouter.js');
+const rcodel=require('./router/deletecorouter.js');
+app.use('/createco',rcoadd);
+app.use('/viewco',rcoview);
+app.use('/editco',rcoedit);
+app.use('/deleteco',rcodel);
+
+//events
+app.use("/editevent", express.static(path.join(__dirname, 'public')));
+const reventadd=require('./router/addeventrouter.js');
+const reventview=require('./router/vieweventrouter.js');
+const reventedit=require('./router/editeventrouter.js');
+const reventdel=require('./router/deleteeventrouter.js');
+const reventexport=require('./router/exporteventrouter.js');
+
+app.use('/addevent',reventadd);
+app.use('/viewevent',reventview);
+app.use('/editevent',reventedit);
+app.use('/deleteevent',reventdel);
+app.use('/exportevent',reventexport);
+
+//collaboration
+app.use("/editcollaboration", express.static(path.join(__dirname, 'public')));
+const rcollabadd=require('./router/addcollabrouter.js');
+const rcollabview=require('./router/viewcollabrouter.js');
+const rcollabedit=require('./router/editcollabrouter.js');
+const rcollabdel=require('./router/deletecollabrouter.js');
+const rcollabexport=require('./router/exportcollabrouter.js');
+
+app.use('/createcollaboration',rcollabadd);
+app.use('/viewcollaboration',rcollabview);
+app.use('/editcollaboration',rcollabedit);
+app.use('/deletecollaboration',rcollabdel);
+app.use('/exportcollaboration',rcollabexport);
+
+
+//vacenroll
+app.use("/viewvacclassenroll", express.static(path.join(__dirname, 'public')));
+app.use("/addvacclassenroll", express.static(path.join(__dirname, 'public')));
+app.use("/editvacclassenroll", express.static(path.join(__dirname, 'public')));
+const rvacclassenradd=require('./router/addvacclassenrrouter.js');
+const rvacclassenrview=require('./router/viewvacclassenrrouter.js');
+const rvacclassenredit=require('./router/editvacclassenrrouter.js');
+const rvacclassenrdel=require('./router/deletevacclassenrrouter.js');
+app.use('/addvacclassenroll',rvacclassenradd);
+app.use('/viewvacclassenroll',rvacclassenrview);
+app.use('/editvacclassenroll',rvacclassenredit);
+app.use('/deletevacclassenroll',rvacclassenrdel);
+
+//cbcs
+app.use("/editcbcsprogram", express.static(path.join(__dirname, 'public')));
+const rcbcsadd=require('./router/addcbcsrouter.js');
+const rcbcsview=require('./router/viewcbcsrouter.js');
+const rcbcsedit=require('./router/editcbcsrouter.js');
+const rcbcsdel=require('./router/deletecbcsrouter.js');
+const rcbcsexport=require('./router/exportcbcsrouter.js');
+
+app.use('/createcbcsprogram',rcbcsadd);
+app.use('/viewcbcsprogram',rcbcsview);
+app.use('/editcbcsprogram',rcbcsedit);
+app.use('/deletecbcsprogram',rcbcsdel);
+app.use('/exportcbcsprograms',rcbcsexport);
+
+
+//pratiti june 04 2021 start
+
+
+app.use("/editcollaboration", express.static(path.join(__dirname, 'public')));
+app.use("/editcbcsprogram", express.static(path.join(__dirname, 'public')));
+app.use("/editextact", express.static(path.join(__dirname, 'public')));
+app.use("/editict", express.static(path.join(__dirname, 'public')));
+app.use("/editscholarship", express.static(path.join(__dirname, 'public')));
+app.use("/editskilldev", express.static(path.join(__dirname, 'public')));
+app.use("/editcareercounsel", express.static(path.join(__dirname, 'public')));
+app.use("/editplacement", express.static(path.join(__dirname, 'public')));
+app.use("/edithigheredu", express.static(path.join(__dirname, 'public')));
+app.use("/editawards", express.static(path.join(__dirname, 'public')));
+app.use("/edithigherexam", express.static(path.join(__dirname, 'public')));
+app.use("/editegovern", express.static(path.join(__dirname, 'public')));
+app.use("/editteacherfs", express.static(path.join(__dirname, 'public')));
+app.use("/editfunds", express.static(path.join(__dirname, 'public')));
+app.use("/editbos", express.static(path.join(__dirname, 'public')));
+app.use("/editadmission", express.static(path.join(__dirname, 'public')));
+app.use("/editreservecat", express.static(path.join(__dirname, 'public')));
+app.use("/editteacherdata", express.static(path.join(__dirname, 'public')));
+app.use("/editpassexam", express.static(path.join(__dirname, 'public')));
+app.use("/editextawards", express.static(path.join(__dirname, 'public')));
+app.use("/editmou", express.static(path.join(__dirname, 'public')));
+app.use("/editexpenditure", express.static(path.join(__dirname, 'public')));
+app.use("/editlibrary", express.static(path.join(__dirname, 'public')));
+app.use("/editsyllabusrev", express.static(path.join(__dirname, 'public')));
+app.use("/editresult", express.static(path.join(__dirname, 'public')));
+app.use("/editecontent", express.static(path.join(__dirname, 'public')));
+app.use("/editquality", express.static(path.join(__dirname, 'public')));
+
+// const rcollabadd=require('./router/addcollabrouter.js');
+// const rcollabview=require('./router/viewcollabrouter.js');
+// const rcollabedit=require('./router/editcollabrouter.js');
+// const rcollabdel=require('./router/deletecollabrouter.js');
+
+// const rcbcsadd=require('./router/addcbcsrouter.js');
+// const rcbcsview=require('./router/viewcbcsrouter.js');
+// const rcbcsedit=require('./router/editcbcsrouter.js');
+// const rcbcsdel=require('./router/deletecbcsrouter.js');
+
+const rextactadd=require('./router/addextactrouter.js');
+const rextactview=require('./router/viewextactrouter.js');
+const rextactedit=require('./router/editextactrouter.js');
+const rextactdel=require('./router/deleteextactrouter.js');
+const rextactexport=require('./router/exportextactrouter.js');
+
+const rictadd=require('./router/addictrouter.js');
+const rictview=require('./router/viewictrouter.js');
+const rictedit=require('./router/editictrouter.js');
+const rictdel=require('./router/deleteictrouter.js');
+const rictexport=require('./router/exportictrouter.js');
+
+const rstudschspadd=require('./router/addstudschsprouter.js');
+const rstudschspview=require('./router/viewstudschsprouter.js');
+const rstudschspedit=require('./router/editstudschsprouter.js');
+const rstudschspdel=require('./router/deletestudschsprouter.js');
+const rstudschspexport=require('./router/exportstudschsprouter.js');
+
+const rskilldevadd=require('./router/addskilldevrouter.js');
+const rskilldevview=require('./router/viewskilldevrouter.js');
+const rskilldevedit=require('./router/editskilldevrouter.js');
+const rskilldevdel=require('./router/deleteskilldevrouter.js');
+const rskilldevexport=require('./router/exportskilldevrouter.js');
+
+const rcareercounseladd=require('./router/addcareercounselrouter.js');
+const rcareercounselview=require('./router/viewcareercounselrouter.js');
+const rcareercounseledit=require('./router/editcareercounselrouter.js');
+const rcareercounseldel=require('./router/deletecareercounselrouter.js');
+const rcareercounselexport=require('./router/exportcareercounselrouter.js');
+
+const rplacementadd=require('./router/addplacementrouter.js');
+const rplacementview=require('./router/viewplacementrouter.js');
+const rplacementedit=require('./router/editplacementrouter.js');
+const rplacementdel=require('./router/deleteplacementrouter.js');
+const rplacementexport=require('./router/exportplacementrouter.js');
+
+const rhighereduadd=require('./router/addhigheredurouter.js');
+const rhighereduview=require('./router/viewhigheredurouter.js');
+const rhighereduedit=require('./router/edithigheredurouter.js');
+const rhigheredudel=require('./router/deletehigheredurouter.js');
+const rhighereduexport=require('./router/exporthigheredurouter.js');
+
+const rawardsadd=require('./router/addawardsrouter.js');
+const rawardsview=require('./router/viewawardsrouter.js');
+const rawardsedit=require('./router/editawardsrouter.js');
+const rawardsdel=require('./router/deleteawardsrouter.js');
+const rawardsexport=require('./router/exportawardsrouter.js');
+
+const rhigherexamadd=require('./router/addhigherexamrouter.js');
+const rhigherexamview=require('./router/viewhigherexamrouter.js');
+const rhigherexamedit=require('./router/edithigherexamrouter.js');
+const rhigherexamdel=require('./router/deletehigherexamrouter.js');
+const rhigherexamexport=require('./router/exporthigherexamrouter.js');
+
+const regovernadd=require('./router/addegovernrouter.js');
+const regovernview=require('./router/viewegovernrouter.js');
+const regovernedit=require('./router/editegovernrouter.js');
+const regoverndel=require('./router/deleteegovernrouter.js');
+const regovernexport=require('./router/exportegovernrouter.js');
+
+
+const rteacherfsadd=require('./router/addteacherfsrouter.js');
+const rteacherfsview=require('./router/viewteacherfsrouter.js');
+const rteacherfsedit=require('./router/editteacherfsrouter.js');
+const rteacherfsdel=require('./router/deleteteacherfsrouter.js');
+const rteacherfsexport=require('./router/exportteacherfsrouter.js');
+
+const rfundsadd=require('./router/addfundsrouter.js');
+const rfundsview=require('./router/viewfundsrouter.js');
+const rfundsedit=require('./router/editfundsrouter.js');
+const rfundsdel=require('./router/deletefundsrouter.js');
+const rfundsexport=require('./router/exportfundsrouter.js');
+
+const rbosadd=require('./router/addbosrouter.js');
+const rbosview=require('./router/viewbosrouter.js');
+const rbosedit=require('./router/editbosrouter.js');
+const rbosdel=require('./router/deletebosrouter.js');
+const rbosexport=require('./router/exportbosrouter.js');
+
+const radmissionadd=require('./router/addadmissionrouter.js');
+const radmissionview=require('./router/viewadmissionrouter.js');
+const radmissionedit=require('./router/editadmissionrouter.js');
+const radmissiondel=require('./router/deleteadmissionrouter.js');
+const radmissionexport=require('./router/exportadmissionrouter.js');
+
+const rreservecatadd=require('./router/addreservecatrouter.js');
+const rreservecatview=require('./router/viewreservecatrouter.js');
+const rreservecatedit=require('./router/editreservecatrouter.js');
+const rreservecatdel=require('./router/deletereservecatrouter.js');
+const rreservecatexport=require('./router/exportreservecatrouter.js');
+
+const rteacherdataadd=require('./router/addteacherdatarouter.js');
+const rteacherdataview=require('./router/viewteacherdatarouter.js');
+const rteacherdataedit=require('./router/editteacherdatarouter.js');
+const rteacherdatadel=require('./router/deleteteacherdatarouter.js');
+const rteacherdataexport=require('./router/exportteacherdatarouter.js');
+
+const rpassexamadd=require('./router/addpassexamrouter.js');
+const rpassexamview=require('./router/viewpassexamrouter.js');
+const rpassexamedit=require('./router/editpassexamrouter.js');
+const rpassexamdel=require('./router/deletepassexamrouter.js');
+const rpassexamexport=require('./router/exportpassexamrouter.js');
+
+const rextawardsadd=require('./router/addextawardsrouter.js');
+const rextawardsview=require('./router/viewextawardsrouter.js');
+const rextawardsedit=require('./router/editextawardsrouter.js');
+const rextawardsdel=require('./router/deleteextawardsrouter.js');
+const rextawardsexport=require('./router/exportextawardsrouter.js');
+
+const rmouadd=require('./router/addmourouter.js');
+const rmouview=require('./router/viewmourouter.js');
+const rmouedit=require('./router/editmourouter.js');
+const rmoudel=require('./router/deletemourouter.js');
+const rmouexport=require('./router/exportmourouter.js');
+
+const rexpenditureadd=require('./router/addexpenditurerouter.js');
+const rexpenditureview=require('./router/viewexpenditurerouter.js');
+const rexpenditureedit=require('./router/editexpenditurerouter.js');
+const rexpendituredel=require('./router/deleteexpenditurerouter.js');
+const rexpenditureexport=require('./router/exportexpenditurerouter.js');
+
+const rlibraryadd=require('./router/addlibraryrouter.js');
+const rlibraryview=require('./router/viewlibraryrouter.js');
+const rlibraryedit=require('./router/editlibraryrouter.js');
+const rlibrarydel=require('./router/deletelibraryrouter.js');
+const rlibraryexport=require('./router/exportlibraryrouter.js');
+
+const rsyllabusrevadd=require('./router/addsyllabusrevrouter.js');
+const rsyllabusrevview=require('./router/viewsyllabusrevrouter.js');
+const rsyllabusrevedit=require('./router/editsyllabusrevrouter.js');
+const rsyllabusrevdel=require('./router/deletesyllabusrevrouter.js');
+const rsyllabusrevexport=require('./router/exportsyllabusrevrouter.js');
+
+const rresultadd=require('./router/addresultrouter.js');
+const rresultview=require('./router/viewresultrouter.js');
+const rresultedit=require('./router/editresultrouter.js');
+const rresultdel=require('./router/deleteresultrouter.js');
+//const rresultexport=require('./router/exportresultrouter.js');
+
+const recontentadd=require('./router/addecontentrouter.js');
+const recontentview=require('./router/viewecontentrouter.js');
+const recontentedit=require('./router/editecontentrouter.js');
+const recontentdel=require('./router/deleteecontentrouter.js');
+const recontentexport=require('./router/exportecontentrouter.js');
+
+const rqualityadd=require('./router/addqualityrouter.js');
+const rqualityview=require('./router/viewqualityrouter.js');
+const rqualityedit=require('./router/editqualityrouter.js');
+const rqualitydel=require('./router/deletequalityrouter.js');
+const rqualityexport=require('./router/exportqualityrouter.js');
+
+
+const rnaac=require('./router/viewnaacrouter.js');
+const rnaacuni=require('./router/viewnaacunirouter.js');
+
+
+app.use('/addextact',rextactadd);
+app.use('/viewextact',rextactview);
+app.use('/editextact',rextactedit);
+app.use('/deleteextact',rextactdel);
+app.use('/exportextact',rextactexport);
+
+app.use('/addict',rictadd);
+app.use('/viewict',rictview);
+app.use('/editict',rictedit);
+app.use('/deleteict',rictdel);
+app.use('/exportict',rictexport);
+
+app.use('/addscholarship',rstudschspadd);
+app.use('/viewscholarship',rstudschspview);
+app.use('/editscholarship',rstudschspedit);
+app.use('/deletescholarship',rstudschspdel);
+app.use('/exportscholarship',rstudschspexport);
+
+app.use('/addskilldev',rskilldevadd);
+app.use('/viewskilldev',rskilldevview);
+app.use('/editskilldev',rskilldevedit);
+app.use('/deleteskilldev',rskilldevdel);
+app.use('/exportskilldev',rskilldevexport);
+
+app.use('/addcareercounsel',rcareercounseladd);
+app.use('/viewcareercounsel',rcareercounselview);
+app.use('/editcareercounsel',rcareercounseledit);
+app.use('/deletecareercounsel',rcareercounseldel);
+app.use('/exportcareercounsel',rcareercounselexport);
+
+app.use('/addplacement',rplacementadd);
+app.use('/viewplacement',rplacementview);
+app.use('/editplacement',rplacementedit);
+app.use('/deleteplacement',rplacementdel);
+app.use('/exportplacement',rplacementexport);
+
+app.use('/addhigheredu',rhighereduadd);
+app.use('/viewhigheredu',rhighereduview);
+app.use('/edithigheredu',rhighereduedit);
+app.use('/deletehigheredu',rhigheredudel);
+app.use('/exporthigheredu',rhighereduexport);
+
+app.use('/addawards',rawardsadd);
+app.use('/viewawards',rawardsview);
+app.use('/editawards',rawardsedit);
+app.use('/deleteawards',rawardsdel);
+app.use('/exportawards',rawardsexport);
+
+app.use('/addhigherexam',rhigherexamadd);
+app.use('/viewhigherexam',rhigherexamview);
+app.use('/edithigherexam',rhigherexamedit);
+app.use('/deletehigherexam',rhigherexamdel);
+app.use('/exporthigherexam',rhigherexamexport);
+
+app.use('/addegovern',regovernadd);
+app.use('/viewegovern',regovernview);
+app.use('/editegovern',regovernedit);
+app.use('/deleteegovern',regoverndel);
+app.use('/exportegovern',regovernexport);
+
+app.use('/addteacherfs',rteacherfsadd);
+app.use('/viewteacherfs',rteacherfsview);
+app.use('/editteacherfs',rteacherfsedit);
+app.use('/deleteteacherfs',rteacherfsdel);
+app.use('/exportteacherfs',rteacherfsexport);
+
+app.use('/addfunds',rfundsadd);
+app.use('/viewfunds',rfundsview);
+app.use('/editfunds',rfundsedit);
+app.use('/deletefunds',rfundsdel);
+app.use('/exportfunds',rfundsexport);
+
+app.use('/addbos',rbosadd);
+app.use('/viewbos',rbosview);
+app.use('/editbos',rbosedit);
+app.use('/deletebos',rbosdel);
+app.use('/exportbos',rbosexport);
+
+app.use('/addadmission',radmissionadd);
+app.use('/viewadmission',radmissionview);
+app.use('/editadmission',radmissionedit);
+app.use('/deleteadmission',radmissiondel);
+app.use('/exportadmission',radmissionexport);
+
+app.use('/addreservecat',rreservecatadd);
+app.use('/viewreservecat',rreservecatview);
+app.use('/editreservecat',rreservecatedit);
+app.use('/deletereservecat',rreservecatdel);
+app.use('/exportreservecat',rreservecatexport);
+
+app.use('/addteacherdata',rteacherdataadd);
+app.use('/viewteacherdata',rteacherdataview);
+app.use('/editteacherdata',rteacherdataedit);
+app.use('/deleteteacherdata',rteacherdatadel);
+app.use('/exportteacherdata',rteacherdataexport);
+
+app.use('/addpassexam',rpassexamadd);
+app.use('/viewpassexam',rpassexamview);
+app.use('/editpassexam',rpassexamedit);
+app.use('/deletepassexam',rpassexamdel);
+app.use('/exportpassexam',rpassexamexport);
+
+app.use('/addextawards',rextawardsadd);
+app.use('/viewextawards',rextawardsview);
+app.use('/editextawards',rextawardsedit);
+app.use('/deleteextawards',rextawardsdel);
+app.use('/exportextawards',rextawardsexport);
+
+app.use('/addmou',rmouadd);
+app.use('/viewmou',rmouview);
+app.use('/editmou',rmouedit);
+app.use('/deletemou',rmoudel);
+app.use('/exportmou',rmouexport);
+
+app.use('/addexpenditure',rexpenditureadd);
+app.use('/viewexpenditure',rexpenditureview);
+app.use('/editexpenditure',rexpenditureedit);
+app.use('/deleteexpenditure',rexpendituredel);
+app.use('/exportexpenditure',rexpenditureexport);
+
+app.use('/addlibrary',rlibraryadd);
+app.use('/viewlibrary',rlibraryview);
+app.use('/editlibrary',rlibraryedit);
+app.use('/deletelibrary',rlibrarydel);
+app.use('/exportlibrary',rlibraryexport);
+
+app.use('/addsyllabusrev',rsyllabusrevadd);
+app.use('/viewsyllabusrev',rsyllabusrevview);
+app.use('/editsyllabusrev',rsyllabusrevedit);
+app.use('/deletesyllabusrev',rsyllabusrevdel);
+app.use('/exportsyllabusrev',rsyllabusrevexport);
+
+app.use('/addresult',rresultadd);
+app.use('/viewresult',rresultview);
+app.use('/editresult',rresultedit);
+app.use('/deleteresult',rresultdel);
+//app.use('/exportresult',rresultexport);
+
+app.use('/addecontent',recontentadd);
+app.use('/viewecontent',recontentview);
+app.use('/editecontent',recontentedit);
+app.use('/deleteecontent',recontentdel);
+app.use('/exportecontent',recontentexport);
+
+app.use('/addquality',rqualityadd);
+app.use('/viewquality',rqualityview);
+app.use('/editquality',rqualityedit);
+app.use('/deletequality',rqualitydel);
+app.use('/exportquality',rqualityexport);
+
+app.use('/addseedm',rseedmadd);
+app.use('/viewseedm',rseedmview);
+app.use('/editseedm',rseedmedit);
+app.use('/deleteseedm',rseedmdel);
+app.use('/exportseedm',rseedmexport);
+
+app.use('/viewnaac',rnaac);
+app.use('/viewnaacuni',rnaacuni);
+
+
+app.use('/createcollaboration',rcollabadd);
+app.use('/viewcollaboration',rcollabview);
+app.use('/editcollaboration',rcollabedit);
+app.use('/deletecollaboration',rcollabdel);
+
+app.use('/createcbcsprogram',rcbcsadd);
+app.use('/viewcbcsprogram',rcbcsview);
+app.use('/editcbcsprogram',rcbcsedit);
+app.use('/deletecbcsprogram',rcbcsdel);
+
+//pratiti june 04 2021 end
+
+
+
+
+//app.route('/api/v1/tours').get(getalltours);
+//app.route('/api/v1/tours/:id/:x').get(gettour);
+
+
+
+// start express
+const port=process.env.PORT || 3001;
+// app.listen(port, () => {
+//     console.log(`App running in port ${port}`);
+// });
+
+
+var connectionId;
+var _userConnections = [];
+
+const server= app.listen(port, () => {
+    //console.log(`App running in port ${port}`);
+});
+
+const io = require('socket.io')(server);
+
+
+io.on('connection', (socket) => {
+    console.log('a user connected');
+    var un="";
+    var room="";
+
+    socket.on('new user', function(data, callback){
+        //console.log(data);
+        var res = data.split("-");
+        un=res[0];
+        room=res[1];
+        //console.log("un " + un + " room " + room)
+        //socket.join(room);
+        //socket.username = un;
+        callback(true);
+            socket.join(room);
+            socket.username = data;
+            ////usernames.push(socket.username);
+            updateUsernames();
+        // if(usernames.indexOf(data) != -1){
+        // 	callback(false);
+        // } else {
+        // 	callback(true);
+        //     socket.join(room);
+        // 	socket.username = data;
+        // 	usernames.push(socket.username);
+        // 	updateUsernames();
+        // }
+    });
+
+    // Update Usernames
+    function updateUsernames(){
+        //io.sockets.emit('usernames', usernames);
+        io.sockets.emit('usernames', 'hello');
+    }
+
+    // Send Message
+    socket.on('send message', function(data){
+        //io.sockets.emit('new message', {msg: data, user:socket.username});
+        io.sockets.in(room).emit('new message', {msg: data, user:socket.username});
+    });
+
+  // Send Message
+    socket.on('drawing', function(data){
+        //io.sockets.emit('new message', {msg: data, user:socket.username});
+        io.sockets.in(room).emit('drawing', data);
+    });
+
+  socket.on('lock', function(data){
+        //io.sockets.emit('new message', {msg: data, user:socket.username});
+        io.sockets.in(room).emit('lock', data);
+    });
+
+  socket.on('lockc', function(data){
+        //io.sockets.emit('new message', {msg: data, user:socket.username});
+        io.sockets.in(room).emit('lockc', data);
+    });
+
+  socket.on('addProduct', function(data){
+        //io.sockets.emit('new message', {msg: data, user:socket.username});
+        //io.sockets.in(room).emit('lockc', data);
+        console.log(data);
+        console.log(data.price);
+        var price=parseInt(data.price) -1;
+        io.sockets.emit('getmessage', {message: price, item :'test'});
+
+
+    });
+
+
+  socket.on('users_info_to_signaling_server', (data) => {
+    //console.log('userconnect', data.current_user_name, data.meetingid);
+    var other_users = _userConnections.filter(p => p.meeting_id == data.meetingid);
+    _userConnections.push({
+        connectionId: socket.id,
+        user_id: data.current_user_name,
+        meeting_id: data.meetingid
+    });
+    //console.log(`all users: ${_userConnections.map(a => a.connectionId)}`);
+    //        console.log(_userConnections);
+    //console.log(`other users: ${other_users.map(a => a.connectionId)}`);
+    //console.log(`connection id: ${connectionId} socket id:${socket.id}`);
+
+    other_users.forEach(v => {
+        socket.to(v.connectionId).emit('newConnectionInformation', {
+            other_user_id: data.current_user_name,
+            connId: socket.id
+        });
+    });
+
+    socket.emit('other_users_to_inform', other_users);
+
+
+
+    //        _userConnections[0].meeting_id
+})
+
+socket.on('exchangeSDP', (data) => {
+
+    socket.to(data.to_connid).emit('exchangeSDP', {
+        message: data.message,
+        from_connid: socket.id
+    });
+
+}); //end of exchangeSDP
+socket.on('reset', (data) => {
+    var userObj = _userConnections.find(p => p.connectionId == socket.id);
+    if (userObj) {
+        var meetingid = userObj.meeting_id;
+        var list = _userConnections.filter(p => p.meeting_id == meetingid);
+        _userConnections = _userConnections.filter(p => p.meeting_id != meetingid);
+
+        list.forEach(v => {
+            socket.to(v.connectionId).emit('reset');
+        });
+
+        socket.emit('reset');
+    }
+
+}); //end of reset
+
+
+    // Disconnect
+    socket.on('disconnect', function(data){
+    var userObj = _userConnections.find(p => p.connectionId == socket.id);
+        if (userObj) {
+            var meetingid = userObj.meeting_id;
+
+            _userConnections = _userConnections.filter(p => p.connectionId != socket.id);
+            var list = _userConnections.filter(p => p.meeting_id == meetingid);
+            //console.log(`disconnected socket id   ${socket.id}`);
+            //console.log(`connection id: ${connectionId} socket id:${socket.id}`);
+            list.forEach(v => {
+                socket.to(v.connectionId).emit('informAboutConnectionEnd', socket.id);
+            });
+        }
+        if(!socket.username){
+            return;
+        }
+
+        usernames.splice(usernames.indexOf(socket.username), 1);
+        updateUsernames();
+    });
+});
+
+

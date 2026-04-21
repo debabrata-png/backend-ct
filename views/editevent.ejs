@@ -1,0 +1,131 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit Event</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Edit </li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit </h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editevent/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Event Name</label>
+                                        <input required value="<%= pub.eventname %>" type="text" class="form-control" placeholder="Enter name of the event" name="eventname">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Event Description</label>
+                                        <input required value="<%= pub.description %>" type="text" class="form-control" placeholder="Enter description of the event" name="description">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Event Department</label>
+                                        <input required value="<%= pub.department %>" type="text" class="form-control" placeholder="Enter department" name="department">
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Brochure Link</label>
+                                        <input required value="<%= pub.brochurelink %>" type="text" class="form-control" placeholder="Enter link of the brochure" name="brochurelink">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Event date</label>
+                                        <input required value="<%= (pub.date.getMonth() + 1) + '/' + pub.date.getDate() + '/' + pub.date.getFullYear() %>" type="date" class="form-control" placeholder="Enter date of event" name="date">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Event time</label>
+                                        <input required value="<%= pub.time %>" type="text" class="form-control" placeholder="Enter time of event" name="time">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Event Co-ordinator</label>
+                                        <input required value="<%= pub.coordinator %>" type="text" class="form-control" placeholder="Enter name of event coordinator" name="coordinator">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Event Type</label>
+                                        <select class="form-control" name="type">
+                                            <option <% if(pub.type == 'Field Trip'){ %>  selected <% } %> value="Field Trip">Field Trip</option>
+                                            <option <% if(pub.type == 'Research/IPR'){ %> selected <%  }  %> value="Research/IPR">Research/IPR</option>
+                                            <option <% if(pub.type == 'Cultural'){ %> selected <%  }  %> value="Cultural">Cultural</option>
+                                            <option <% if(pub.type == 'Extension Activity'){ %> selected <%  }  %> value="Extension Activity">Extension Activit</option>
+                                            <option <% if(pub.type == 'Extension Lecture'){ %> selected <%  }  %> value="Extension Lecture">Extension Lecture</option>
+                                            <option <% if(pub.type == 'FDP'){ %> selected <%  }  %> value="FDP">FDP</option>
+                                            <option <% if(pub.type == 'Skill Development Workshop'){ %> selected <%  }  %> value="Skill Development Workshop">Skill Development Workshop</option>
+                                            <option <% if(pub.type == 'Career Counselling'){ %> selected <%  }  %> value="Career Counselling">Career Counselling</option>
+                                            <option <% if(pub.type == 'Green Initiative'){ %> selected <%  }  %> value="Green Initiative">Green Initiative</option>
+                                            <option <% if(pub.type == 'Commemorate Day'){ %> selected <%  }  %> value="Commemorate Day">Commemorate Day</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Event Link</label>
+                                        <input required value="<%= pub.eventlink %>" type="text" class="form-control" placeholder="Enter link of the event" name="eventlink">
+                                    </div>
+                                </div>
+                                
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

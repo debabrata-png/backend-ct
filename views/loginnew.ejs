@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>LogIn Page</title>
+</head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+
+
+
+
+
+</style>
+
+<body>
+	<nav class="navbar navbar-light bg-white">
+  <div class="container">
+    <a class="navbar-brand" href="#">
+      <img src="img/campus.jpg" alt="" width="160" height="55px">
+      <div style="margin-top: 15px;">
+      <center><p style="font-size:18px;">Sign In to <b>Campus</b>Canvas</p></center> 
+      </div> 
+    </a>
+  </div>
+</nav>
+<% if(messages.success){} if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>
+  <% } %>
+<div class="container">
+    <form action="/login" method="post" id="frm-admin-login">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4">
+    
+    <div class="col"> 
+      
+  <div class="mb-3">
+    <label for="exampleInputEmail1" class="form-label">Email address</label>
+  <!--  <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" style="background-color:lavender;">-->
+  <div class="input-group mb-2">
+        
+        <input type="text" name="email" class="form-control" id="exampleInputEmail1" style="background-color:lavender;" >
+        <div class="input-group-prepend">
+          <div class=input-group-text><i class="fa fa-envelope" aria-hidden="true"></i></div>
+        </div>
+      </div>
+   
+  </div>
+  <div>
+     <label for="exampleInputPassword1" class="form-label">Password</label>
+   <!-- <input type="password" class="form-control" id="exampleInputPassword1" style="background-color:lavender;">-->
+   <div class="input-group mb-2">
+        
+        <input type="password" name="password" class="form-control" id="exampleInputPassword1" style="background-color:lavender;" >
+        <div class="input-group-prepend">
+          <div class=input-group-text><i class="fa fa-lock" aria-hidden="true"></i></div>
+        </div>
+      </div>
+  </div><br>
+  <div>
+<input type="checkbox" onclick="myFunction()" id="exampleInputPassword1"> Show Password
+
+</div><br>
+ <center> <button type="submit" class="btn btn-primary" style="border-radius: 20px 20px 20px 20px ;width: 400px;height: 50px;">Sign In</button></center><br>
+ </form>
+  
+  <!-- <center> <a  href="/auth/google"  class="btn btn-outline-dark" style="border-radius: 20px 20px 20px 20px ;width: 400px;height: 50px;" ><i class="fa fa-google"></i> Signin with Google</a></center><br>
+  <center><a href="/auth/facebook" class="btn btn-outline-secondary" style="border-radius: 20px 20px 20px 20px ;width: 400px;height: 50px;"><i class="fa fa-facebook-f"></i> Signin with Facebook</a></center><br> -->
+
+</div>
+    <!-- <div class="col"> <img src="img/li19.jpg"style="height: 400px ;width:500px;
+    right: 10px;position: absolute;top:-80px;"></div> -->
+   
+  </div>
+
+
+</body>
+<script>
+function myFunction() {
+  var x = document.getElementById("exampleInputPassword1");
+  if (x.type === "password") {
+    x.type = "text";
+  } else {
+    x.type = "password";
+  }
+}
+</script>
+
+</html>
+
+
+

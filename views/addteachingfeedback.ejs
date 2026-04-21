@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Student Feedback Form on Teaching</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width: 1000px; margin: 20px;">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br>
+    Student's Feedback on Teaching/Course
+  </div>
+  <br>
+  Instructions: Please fill in all details. All questions are mandatory.
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/addteachingfeedback/<%= colid %>">
+       
+        <div class="row">
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Name of Student</label>
+                    <input required type="text" class="form-control" placeholder="Enter name" name="fsname">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Email</label>
+                    <input required type="text" class="form-control" placeholder="Enter email" name="email">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Roll Number</label>
+                    <input required type="text" class="form-control" placeholder="Enter roll no" name="regno">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Department/School</label>
+                    <input required type="text" class="form-control" placeholder="Enter department/school name" name="department">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Year-Semester-Section (e.g.- 1st Year-2nd Semester-Section A)</label>
+                    <input required type="text" class="form-control" placeholder="Enter year-semester-section" name="sem">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                <label>Academic Year</label>
+                <select class="form-control" name="year">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+
+                </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Program Level</label>
+                    <select class="form-control" name="degree">
+                        <option value="UG">UG</option>
+                        <option value="PG">PG</option>
+                        <option value="M.Phil">M.Phil</option>
+                        
+    
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Program Name (e.g - B.Sc in Physics)</label>
+                    <input required type="text" class="form-control" placeholder="Enter program name" name="program">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Course Name </label>
+                    <input required type="text" class="form-control" placeholder="Enter course name" name="course">
+                </div>
+            </div>
+            
+        </div>
+
+         
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sl. No.</th>
+                    <th>Question</th>
+                    <th>5</th>
+                    <th>4</th>
+                    <th>3</th>
+                    <th>2</th>
+                    <th>1</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1.</td>
+                    <td>Interest generated by the teacher on the subject.</td>
+                    <td><input type="radio" id="1a" name="one" value="5" required></td>
+                    <td><input type="radio" id="1b" name="one" value="4"></td>
+                    <td><input type="radio" id="1c" name="one" value="3"></td>
+                    <td><input type="radio" id="1d" name="one" value="2"></td>
+                    <td><input type="radio" id="1e" name="one" value="1"></td>
+                </tr>
+                <tr>
+                    <td>2.</td>
+                    <td>Clarity of exposition of the teacher in the classroom.</td>
+                    <td><input type="radio" id="2a" name="two" value="5" required></td>
+                    <td><input type="radio" id="2b" name="two" value="4"></td>
+                    <td><input type="radio" id="2c" name="two" value="3"></td>
+                    <td><input type="radio" id="2d" name="two" value="2"></td>
+                    <td><input type="radio" id="2e" name="two" value="1"></td>
+                </tr>
+                <tr>
+                    <td>3.</td>
+                    <td>Communication skill of the teacher.</td>
+                    <td><input type="radio" id="3a" name="three" value="5" required></td>
+                    <td><input type="radio" id="3b" name="three" value="4"></td>
+                    <td><input type="radio" id="3c" name="three" value="3"></td>
+                    <td><input type="radio" id="3d" name="three" value="2"></td>
+                    <td><input type="radio" id="3e" name="three" value="1"></td>
+                </tr>
+                <tr>
+                    <td>4.</td>
+                    <td>Coverage of the syllabus by the teacher.</td>
+                    <td><input type="radio" id="4a" name="four" value="5" required></td>
+                    <td><input type="radio" id="4b" name="four" value="4"></td>
+                    <td><input type="radio" id="4c" name="four" value="3"></td>
+                    <td><input type="radio" id="4d" name="four" value="2"></td>
+                    <td><input type="radio" id="4e" name="four" value="1"></td>
+                </tr>
+                <tr>
+                    <td>5.</td>
+                    <td>Encouraging students participation in the classroom.</td>
+                    <td><input type="radio" id="5a" name="five" value="5" required></td>
+                    <td><input type="radio" id="5b" name="five" value="4"></td>
+                    <td><input type="radio" id="5c" name="five" value="3"></td>
+                    <td><input type="radio" id="5d" name="five" value="2"></td>
+                    <td><input type="radio" id="5e" name="five" value="1"></td>
+                </tr>
+                <tr>
+                    <td>6.</td>
+                    <td>Regularity and punctuality of the teacher in taking classes.</td>
+                    <td><input type="radio" id="6a" name="six" value="5" required></td>
+                    <td><input type="radio" id="6b" name="six" value="4"></td>
+                    <td><input type="radio" id="6c" name="six" value="3"></td>
+                    <td><input type="radio" id="6d" name="six" value="2"></td>
+                    <td><input type="radio" id="6e" name="six" value="1"></td>
+                </tr>
+                <tr>
+                    <td>7.</td>
+                    <td>Willingness of the teacher to clear doubts of students.</td>
+                    <td><input type="radio" id="7a" name="seven" value="5" required></td>
+                    <td><input type="radio" id="7b" name="seven" value="4"></td>
+                    <td><input type="radio" id="7c" name="seven" value="3"></td>
+                    <td><input type="radio" id="7d" name="seven" value="2"></td>
+                    <td><input type="radio" id="7e" name="seven" value="1"></td>
+                </tr>
+                <tr>
+                    <td>8.</td>
+                    <td>Overall experience regarding teaching skill, method and learning.</td>
+                    <td><input type="radio" id="8a" name="eight" value="5" required></td>
+                    <td><input type="radio" id="8b" name="eight" value="4"></td>
+                    <td><input type="radio" id="8c" name="eight" value="3"></td>
+                    <td><input type="radio" id="8d" name="eight" value="2"></td>
+                    <td><input type="radio" id="8e" name="eight" value="1"></td>
+                </tr>
+                
+            </tbody>
+            </table>    
+        <br>
+        
+        <input type="hidden" value="<%= colid %>" name="colid"/>
+
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

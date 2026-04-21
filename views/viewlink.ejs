@@ -1,0 +1,200 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View Links</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">List Links</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">List Links</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <h5>Feedback links</h5>
+                        <hr />
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Item</th>
+                                <th>Link</th>
+                            </tr>
+                            <tr>
+                                <td>Parent feedback</td>
+                                <td>
+                                    https://ctnodeapps2.azurewebsites.net/addparentfeedback/<%= colid %>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Alumni feedback</td>
+                                <td>
+                                    https://ctnodeapps2.azurewebsites.net/alumnifeedback/<%= colid %>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Employer feedback</td>
+                                <td>
+                                    https://ctnodeapps2.azurewebsites.net/employerfeedback/<%= colid %>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Non-teaching staff feedback</td>
+                                <td>
+                                    https://ctnodeapps2.azurewebsites.net/addstafffeedback/<%= colid %>
+                                </td>
+                            </tr>
+                        </table>
+                       
+                        
+                        <br><br>
+                        <h5>Admission form links</h5>
+                        <hr />
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Item</th>
+                                <th>Link</th>
+                            </tr>
+                            <tr>
+                                <td>Admission form (template 1) link</td>
+                                <td>
+                                    https://ctnodeapps2.azurewebsites.net/selectprogram?colid=<%= colid %>&source=Web&destination=application1
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Admission form (template 2) link</td>
+                                <td>
+                                    https://ctnodeapps2.azurewebsites.net/selectprogram?colid=<%= colid %>&source=Web&destination=application2
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Admission form (template 3) link</td>
+                                <td>
+                                    https://ctnodeapps2.azurewebsites.net/selectprogram?colid=<%= colid %>&source=Web&destination=application3
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Admission form PG (template 4) link</td>
+                                <td>
+                                    https://ctnodeapps2.azurewebsites.net/selectprograminst?colid=<%= colid %>&source=Web&destination=applicationpg&instname=instname&inststate=inststate&instdistrict=instdistrict
+                                    <br />
+                                    Replace instname, inststate and instdistrict with Institution name, Institution State and Institution District
+                                </td>
+                            </tr>
+                        </table>
+
+                        
+<br><br>
+<h4>Export PG Application Form (Template 4) </h4>
+<br>
+
+<form method="post" action="/exportapplicationpg" id="frm-export-categoryapplpg">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+
+</form>
+
+
+                        
+                        <br><br>
+                        
+                        <h5>View registration links</h5>
+                        <hr />
+
+                        <a href="https://ctnodeapps2.azurewebsites.net/emailregform?colid=<%= colid %>&source=Web" target="_blank">https://ctnodeapps2.azurewebsites.net/emailregform?colid=<%= colid %>&source=Web</a>
+
+                        <br><br>
+                        <br><br>
+
+                        <h5>Accreditation document links</h5>
+                        <hr />
+                           
+
+                        <a class="btn btn-dark" href="/addlink">+ Add Accreditation Document Upload Link</a>
+                        <br><br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Criteria</th>
+                                    <th>Upload Link</th>
+                                    <th>Downnload / View Link</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <td><%= data.criteria %></td>
+                                    <td><%= data.uploadlink %></td>
+                                    <td><%= data.viewlink %></td>
+                                    <td>
+                                        <% if(data.status == '1'){ %>
+                                        <button class="btn btn-success">Active</button>
+                                        <% }else{ %>
+                                        <button class="btn btn-danger">Inctive</button>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <a href="/editlink/<%= data.id %>" class="btn btn-primary"><i class="fa fa-edit"></i></a>
+                                        
+                                        <form method="post" action="/deletelink" id="frm-delete-category-<%= data.id %>">
+                                        
+                                            <input type="hidden" value="<%= data.id %>" name="category_id"/>
+
+                                        </form>
+
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to delete ? ')){  $('#frm-delete-category-<%= data.id %>').submit()  }" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                           
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

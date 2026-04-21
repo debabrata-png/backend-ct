@@ -1,0 +1,92 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Collaboration Activity</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/createcollaboration">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Title of Collaborative Activity</label>
+                <input required type="text" class="form-control" placeholder="Enter title" name="title">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of Collaborative Agency </label>
+                <input required type="text" class="form-control" placeholder="Enter name of collaborative agency" name="agency">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of Participant</label>
+                <input required type="text" class="form-control" placeholder="Enter name of the participant" name="participantname">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Year of Collaboration</label>
+                <select class="form-control" name="year">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+
+                </select>
+            </div>
+        </div>
+        
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Duration</label>
+                <input required type="text" class="form-control" placeholder="Enter the duration" name="duration">
+            </div>
+        </div>
+      
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Nature of Activity</label>
+                <select class="form-control" name="activitynature">
+                    <option value="Research">Research</option>
+                    <option value="Faculty Exchange">Faculty Exchange</option>
+                    <option value="Student Exchange">Student Exchange</option>
+                    <option value="Internship">Internship</option>
+                    
+
+                </select>
+            </div>
+        </div>  
+
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Status</label>
+                <input required type="text" class="form-control" placeholder="Enter the Status" name="status1">
+            </div>
+        </div>
+
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+            </div>
+        </div>
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

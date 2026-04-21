@@ -1,0 +1,58 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Data</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addseminar">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Title</label>
+                <input required type="text" class="form-control" placeholder="Enter title" name="title">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Duration</label>
+                <input required type="text" class="form-control" placeholder="Enter duration" name="duration">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Amount received from institution as financial support (number only)</label>
+                <input required type="number" class="form-control" placeholder="Enter amount (number only)" name="amount">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Membership in any Professional Organization</label>
+                <input required type="text" class="form-control" placeholder="Enter membership details" name="membership">
+            </div>
+        </div>
+       
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Year</label>
+                <select class="form-control" name="yop">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+
+                </select>
+            </div>
+        </div>
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

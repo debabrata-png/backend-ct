@@ -1,0 +1,229 @@
+<%- include("headerstud") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<p>Student Satisfaction Survey</p>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/sss">
+<table class="table">
+    <thead>
+        <!-- <tr>
+            <th>Sl. No.</th>
+            <th>Question</th>
+            <th>Excellent</th>
+            <th>Very Good</th>
+            <th>Good</th>
+            <th>Average</th>
+            <th>Below Average</th>
+        </tr> -->
+    </thead>
+    <tbody>
+        <tr>
+            <td>1.</td>
+            <td>How much of the syllabus was covered in the class</td>
+            <td><input type="radio" id="1a" name="one" value="5" required>85 to 100%</td>
+            <td><input type="radio" id="1b" name="one" value="4">70 to 84%</td>
+            <td><input type="radio" id="1c" name="one" value="3">55 to 69%</td>
+            <td><input type="radio" id="1d" name="one" value="2">30 to 54%</td>
+            <td><input type="radio" id="1e" name="one" value="1">Below 30%</td>
+        </tr>
+        <tr>
+            <td>2.</td>
+            <td>How well did the teachers prepare for the classes</td>
+            <td><input type="radio" id="2a" name="two" value="5" required>Thoroughly</td>
+            <td><input type="radio" id="2b" name="two" value="4">Satisfactorily</td>
+            <td><input type="radio" id="2c" name="two" value="3">Poorly</td>
+            <td><input type="radio" id="2d" name="two" value="2">Indifferently</td>
+            <td><input type="radio" id="2e" name="two" value="1">Won’t teach at all</td>
+        </tr>
+        <tr>
+            <td>3.</td>
+            <td>How well were the teachers able to communicate</td>
+            <td><input type="radio" id="3a" name="three" value="5" required>Always effective</td>
+            <td><input type="radio" id="3b" name="three" value="4">Sometimes effective</td>
+            <td><input type="radio" id="3c" name="three" value="3">Just satisfactorily</td>
+            <td><input type="radio" id="3d" name="three" value="2">Generally ineffective</td>
+            <td><input type="radio" id="3e" name="three" value="1">Very poor communication</td>
+        </tr>
+        <tr>
+            <td>4.</td>
+            <td>The teacher’s approach to teaching can best be described as</td>
+            <td><input type="radio" id="4a" name="four" value="5" required>Excellent</td>
+            <td><input type="radio" id="4b" name="four" value="4">Very Good</td>
+            <td><input type="radio" id="4c" name="four" value="3">Good</td>
+            <td><input type="radio" id="4d" name="four" value="2">Fair</td>
+            <td><input type="radio" id="4e" name="four" value="1">Poor</td>
+        </tr>
+        <tr>
+            <td>5.</td>
+            <td>Fairness of the internal evaluation process by the teachers</td>
+            <td><input type="radio" id="5a" name="five" value="5" required>Always fair</td>
+            <td><input type="radio" id="5b" name="five" value="4">Usually fair</td>
+            <td><input type="radio" id="5c" name="five" value="3">Sometimes unfair</td>
+            <td><input type="radio" id="5d" name="five" value="2">Usually unfair</td>
+            <td><input type="radio" id="5e" name="five" value="1">Unfair</td>
+        </tr>
+        <tr>
+            <td>6.</td>
+            <td>Was your performance in assignment discussed with you</td>
+            <td><input type="radio" id="6a" name="six" value="5" required>Every time</td>
+            <td><input type="radio" id="6b" name="six" value="4">Usually</td>
+            <td><input type="radio" id="6c" name="six" value="3">Occassionally</td>
+            <td><input type="radio" id="6d" name="six" value="2">Rarely</td>
+            <td><input type="radio" id="6e" name="six" value="1">Never</td>
+        </tr>
+        <tr>
+            <td>7.</td>
+            <td>The institute takes active interest in promoting internship, student exchange, field visit for students</td>
+            <td><input type="radio" id="7a" name="seven" value="5" required>Regularly</td>
+            <td><input type="radio" id="7b" name="seven" value="4">Often</td>
+            <td><input type="radio" id="7c" name="seven" value="3">Sometimes</td>
+            <td><input type="radio" id="7d" name="seven" value="2">Rarely</td>
+            <td><input type="radio" id="7e" name="seven" value="1">Never</td>
+        </tr>
+        <tr>
+            <td>8.</td>
+            <td>The teaching and mentoring process in your institution facilitates you in cognitive, social and emotional growth</td>
+            <td><input type="radio" id="8a" name="eight" value="5" required>Significantly</td>
+            <td><input type="radio" id="8b" name="eight" value="4">Very well</td>
+            <td><input type="radio" id="8c" name="eight" value="3">Moderately</td>
+            <td><input type="radio" id="8d" name="eight" value="2">Marginally</td>
+            <td><input type="radio" id="8e" name="eight" value="1">Not at all</td>
+        </tr>
+        <tr>
+            <td>9.</td>
+            <td>The institution provides multiple opportunities to learn and grow</td>
+            <td><input type="radio" id="9a" name="nine" value="5" required>Strongly agree</td>
+            <td><input type="radio" id="9b" name="nine" value="4">Agree</td>
+            <td><input type="radio" id="9c" name="nine" value="3">Neutral</td>
+            <td><input type="radio" id="9d" name="nine" value="2">Disagree</td>
+            <td><input type="radio" id="9e" name="nine" value="1">Strongly disagree</td>
+        </tr>
+        <tr>
+            <td>10.</td>
+            <td>Teachers inform you about your expected competencies, course outcomes and programme outcomes.</td>
+            <td><input type="radio" id="10a" name="ten" value="5" required>Every time</td>
+            <td><input type="radio" id="10b" name="ten" value="4">Usually</td>
+            <td><input type="radio" id="10c" name="ten" value="3">Occasionally / Sometimes</td>
+            <td><input type="radio" id="10d" name="ten" value="2">Rarely</td>
+            <td><input type="radio" id="10e" name="ten" value="1">Never</td>
+        </tr>
+        <tr>
+            <td>11.</td>
+            <td>Your mentor does a necessary follow-up with an assigned task to you.</td>
+            <td><input type="radio" id="11a" name="eleven" value="5" required>Every time</td>
+            <td><input type="radio" id="11b" name="eleven" value="4">Usually</td>
+            <td><input type="radio" id="11c" name="eleven" value="3">Occasionally</td>
+            <td><input type="radio" id="11d" name="eleven" value="2">Rarely</td>
+            <td><input type="radio" id="11e" name="eleven" value="1">I don't have a mentor</td>
+        </tr>
+        <tr>
+            <td>12.</td>
+            <td>The teachers illustrate the concepts through examples and applications.</td>
+            <td><input type="radio" id="12a" name="twelve" value="5" required>Every time</td>
+            <td><input type="radio" id="12b" name="twelve" value="4">Usually</td>
+            <td><input type="radio" id="12c" name="twelve" value="3">Occasionally</td>
+            <td><input type="radio" id="12d" name="twelve" value="2">Rarely</td>
+            <td><input type="radio" id="12e" name="twelve" value="1">Never</td>
+        </tr>
+        <tr>
+            <td>13.</td>
+            <td>The teachers identify your strengths and encourage you with providing right level of challenges.</td>
+            <td><input type="radio" id="13a" name="thirteen" value="5" required>Fully</td>
+            <td><input type="radio" id="13b" name="thirteen" value="4">Reasonably</td>
+            <td><input type="radio" id="13c" name="thirteen" value="3">Partially</td>
+            <td><input type="radio" id="13d" name="thirteen" value="2">Slightly</td>
+            <td><input type="radio" id="13e" name="thirteen" value="1">Unable to</td>
+        </tr>
+        <tr>
+            <td>14.</td>
+            <td>Teachers are able to identify your weaknesses and help you to overcome them.</td>
+            <td><input type="radio" id="14a" name="fourteen" value="5" required>Every time</td>
+            <td><input type="radio" id="14b" name="fourteen" value="4">Usually</td>
+            <td><input type="radio" id="14c" name="fourteen" value="3">Occasionally</td>
+            <td><input type="radio" id="14d" name="fourteen" value="2">Rarely</td>
+            <td><input type="radio" id="14e" name="fourteen" value="1">Never</td>
+        </tr>
+        <tr>
+            <td>15.</td>
+            <td>The institution makes effort to engage students in the monitoring, review and continuous quality improvement of the teaching learning process</td>
+            <td><input type="radio" id="15a" name="fifteen" value="5" required>Strongly agree</td>
+            <td><input type="radio" id="15b" name="fifteen" value="4">Agree</td>
+            <td><input type="radio" id="15c" name="fifteen" value="3">Neutral</td>
+            <td><input type="radio" id="15d" name="fifteen" value="2">Disagree</td>
+            <td><input type="radio" id="15e" name="fifteen" value="1">Strongly disagree</td>
+        </tr>
+        <tr>
+            <td>16.</td>
+            <td>The institute/ teachers use student centric methods, such as experiential learning, participative learning and problem solving methodologies for enhancing learning experiences.</td>
+            <td><input type="radio" id="16a" name="sixteen" value="5" required>To a great extent</td>
+            <td><input type="radio" id="16b" name="sixteen" value="4">Moderate</td>
+            <td><input type="radio" id="16c" name="sixteen" value="3">Some what</td>
+            <td><input type="radio" id="16d" name="sixteen" value="2">Very little</td>
+            <td><input type="radio" id="16e" name="sixteen" value="1">Not at all</td>
+        </tr>
+        <tr>
+            <td>17.</td>
+            <td>Teachers encourage you to participate in extracurricular activities.</td>
+            <td><input type="radio" id="17a" name="seventeen" value="5" required>Strongly agree</td>
+            <td><input type="radio" id="17b" name="seventeen" value="4">Agree</td>
+            <td><input type="radio" id="17c" name="seventeen" value="3">Neutral</td>
+            <td><input type="radio" id="17d" name="seventeen" value="2">Disagree</td>
+            <td><input type="radio" id="17e" name="seventeen" value="1">Strongly disagree</td>
+        </tr>
+        <tr>
+            <td>18.</td>
+            <td>Efforts are made by the institute/ teachers to inculcate soft skills, life skills and employability skills to make you ready for the world of work.</td>
+            <td><input type="radio" id="18a" name="eighteen" value="5" required>To a great extent</td>
+            <td><input type="radio" id="18b" name="eighteen" value="4">Moderate</td>
+            <td><input type="radio" id="18c" name="eighteen" value="3">Some what</td>
+            <td><input type="radio" id="18d" name="eighteen" value="2">Very little</td>
+            <td><input type="radio" id="18e" name="eighteen" value="1">Not at all</td>
+        </tr>
+        <tr>
+            <td>19.</td>
+            <td>What percentage of teachers use ICT tools such as LCD projector, Multimedia, etc. while teaching.</td>
+            <td><input type="radio" id="19a" name="nineteen" value="5" required>Above 90%</td>
+            <td><input type="radio" id="19b" name="nineteen" value="4">70-89%</td>
+            <td><input type="radio" id="19c" name="nineteen" value="3">50-69%</td>
+            <td><input type="radio" id="19d" name="nineteen" value="2">30-49%</td>
+            <td><input type="radio" id="19e" name="nineteen" value="1">Below 29%</td>
+        </tr>
+        <tr>
+            <td>20.</td>
+            <td>The overall teaching learning process is very good.</td>
+            <td><input type="radio" id="20a" name="twenty" value="5" required>Strongly agree</td>
+            <td><input type="radio" id="20b" name="twenty" value="4">Agree</td>
+            <td><input type="radio" id="20c" name="twenty" value="3">Neutral</td>
+            <td><input type="radio" id="20d" name="twenty" value="2">Disagree</td>
+            <td><input type="radio" id="20e" name="twenty" value="1">Strongly disagree</td>
+        </tr>
+    </tbody>
+    </table>    
+<br><br>
+Please provide three observations / suggestions.
+<br><br>
+<div class="form-group">
+    <label>1. Institution / Faculties should</label>
+    <input required type="text" class="form-control" placeholder="Enter suggestion" name="sug1">
+</div>
+
+<div class="form-group">
+    <label>2. Institution / Faculties should</label>
+    <input required type="text" class="form-control" placeholder="Enter suggestion" name="sug2">
+</div>
+
+<div class="form-group">
+    <label>3. Institution / Faculties should</label>
+    <input required type="text" class="form-control" placeholder="Enter suggestion" name="sug3">
+</div>
+
+
+<button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+
+
+
+
+
+<%- include("footer") %> 

@@ -1,0 +1,122 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Full time Teacher</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addteacherdata">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Academic Year</label>
+                <select class="form-control" name="year">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of Faculty</label>
+                <input required type="text" class="form-control" placeholder="Enter name of the faculty" name="name">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Department</label>
+                <input required type="text" class="form-control" placeholder="Enter department of the faculty" name="department">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>PAN details</label>
+                <input required type="text" class="form-control" placeholder="Enter PAN details of the faculty" name="pan">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Designation</label>
+                <input required type="text" class="form-control" placeholder="Enter designation of the faculty" name="designation">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Year of Appointmnet</label>
+                <input required type="text" class="form-control" placeholder="Enter year of appointmnet of the faculty" name="yoa">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Nature of Appointment</label>
+                <select class="form-control" name="type">
+                    <option value="Sanctioned Post">Sanctioned Post</option>
+                    <option value="Temporary">Temporary</option>
+                    <option value="Permanent">Permanent</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Total years of Experience in same Institution</label>
+                <input required type="text" class="form-control" placeholder="Enter total years of experience of the faculty in same institution" name="yoe">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Is the faculty still serving the institution</label>
+                <select class="form-control" name="status">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    
+
+                </select>
+            </div>
+        </div>
+        
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Last year of service(if service status is'No',otherwise type NA)</label>
+                <input required type="text" class="form-control" placeholder="Enter last year of service of the faculty in same institution" name="lastyear">
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Status</label>
+                <input required type="text" class="form-control" placeholder="Enter the Status" name="status1">
+            </div>
+        </div>
+
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+            </div>
+        </div>
+  
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

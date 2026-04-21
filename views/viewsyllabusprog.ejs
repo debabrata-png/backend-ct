@@ -1,0 +1,125 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View Programs</h1>
+            </div>/.col -->
+            <div class="col-sm-14">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewnaac">Criteria 1-Curricular Aspects</a></li>
+                    <li class="breadcrumb-item"><a href="/viewsyllabusrev">Syllabus revision</a></li>
+                    <li class="breadcrumb-item active">List Syllabus Revision</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-14">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">View Syllabus Revision Programwise</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <!-- <form method="post" action="/exportsyllabusrev" id="frm-export-category"></form> -->
+                        <table>
+                            <tr>
+                                <td>
+                                    <a class="btn btn-dark" href="/addsyllabusprog">+ Add New</a>
+                                </td>
+                                <td width="20px"></td>
+                                <td>
+                                    <a class="btn btn-dark" href="/addbulksyllabusprog">+ Bulk Upload</a>
+                                </td>
+                                <!-- <td width="20px"></td>
+                                <td>
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category').submit()  }" class="btn btn-dark">Export to excel</a>
+                                </td> -->
+                            </tr>
+                        </table>
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    
+                                    <th>Program Code</th>
+                                    <th>Program Name</th>
+                                    <th>Department</th>
+                                    <th>Year of Introduction</th>
+                                    <th>If Syllabus Revision carried out in last five years</th>
+                                    <th>Year of Syllabus Revision</th>
+                                    <th>Document Link</th>
+                                    <th>Status</th>
+                                    <th>Comments</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    <td><%= data.programcode %></td>
+                                    <td><%= data.programname %></td>
+                                    <td><%= data.department %></td>
+                                    <td><%= data.yearofintro %></td>
+                                    <td><%= data.status %></td>
+                                    <td><%= data.yearofrevision %></td>
+                                    <td><%= data.link %></td>
+                                    <td><%= data.status1 %></td>
+                                    <td><%= data.comments %></td>
+                                    
+                                    <td>
+                                        <a href="/editsyllabusprog/<%= data.id %>" class="btn btn-primary"><i class="fa fa-edit"title="Edit"></i></a>
+                                        
+                                        <!-- <a href="http://naac2021.jdvu.ac.in/?criteria=1&Subsection=ValueAddedCourse&field1=<%= data.id %>" class="btn btn-primary" target="_blank"><i class="fas fa-upload"></i></a> -->
+                                        <% link.forEach(function(data1){ %>
+                                            <a href="<%= data1.uploadlink %>?criteria=1&Section=1.1.2&Subsection=SyllabusRevisionProgramwise&field1=<%= data.id %>&Year=<%= data.yop %>" class="btn btn-primary" target="_blank"><i class="fas fa-upload"></i></a>
+
+
+                                            <% }) %>
+                                        <form method="post" action="/deletesyllabusprog" id="frm-delete-category-<%= data.id %>">
+                                        
+                                            <input type="hidden" value="<%= data.id %>" name="category_id"/>
+
+                                        </form>
+
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure you want to delete ? ')){  $('#frm-delete-category-<%= data.id %>').submit()  }" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

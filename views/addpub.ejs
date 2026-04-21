@@ -1,0 +1,72 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Publications</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addpub">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Title of paper</label>
+                <input required type="text" class="form-control" placeholder="Enter title" name="title">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Journal name</label>
+                <input required type="text" class="form-control" placeholder="Enter journal name" name="journal">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>ISSN number</label>
+                <input required type="text" class="form-control" placeholder="Enter ISSN" name="issn">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Journal link</label>
+                <input required type="text" class="form-control" placeholder="Enter journal link" name="journallink">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Article link</label>
+                <input required type="text" class="form-control" placeholder="Enter article link" name="articlelink">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Year of publication</label>
+                <select class="form-control" name="yop">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Is listed in UGC</label>
+                <select class="form-control" name="ugclisted">
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

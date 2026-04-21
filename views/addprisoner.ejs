@@ -1,0 +1,68 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Prisoner Category Learners</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addprisoner">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Academic Year</label>
+                <select class="form-control" name="year">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>No.of prisoners category learners</label>
+                <input required type="number" class="form-control" placeholder="Enter no.of prisoners learners" name="prisoners">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Total No.of learners enrolled</label>
+                <input required type="number" class="form-control" placeholder="Enter total no.of learners enrolled" name="total">
+            </div>
+        </div>
+        
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" name="status1">
+                    <option value="Submitted">Submitted</option>
+                    <option value="In Process">In Process</option>
+                    <option value="Incomplete Documentation">Incomplete Documentation</option>
+                    <option value="Reviewed">Reviewed</option>
+                    
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+            </div>
+        </div>
+  
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

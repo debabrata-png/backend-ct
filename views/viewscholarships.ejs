@@ -1,0 +1,109 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View scholarships templates</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Scholarships templates</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Scholarships templates</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table>
+                            <tr>
+                                <td>
+                                    <a class="btn btn-dark" href="/addscholarships">+ Add New</a>
+                                </td>
+                                <td width="20px"></td>
+                                <td>
+                                    <a class="btn btn-dark" href="/deleteallscholarships">Delete all templates</a>
+                                </td>
+                                <td width="20px"></td>
+                                
+                            </tr>
+                        </table>
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Programcode</th>
+                                    <th>Scholarship group</th>
+                                    <th>Fee item</th>
+                                    <th>Fee amount</th>
+                                    <th>Semester</th>
+                                    <th>Admission year</th>
+                                    <th>Scholarship template</th>
+                                    <th>Due date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    <td><%= data.programcode %></td>
+                                    <td><%= data.feegroup %></td>
+                                    <td><%= data.feeeitem %></td>
+                                    <td><%= data.amount %></td>
+                                    <td><%= data.semester %></td>
+                                    <td><%= data.academicyear %></td>
+                                    <td><%= data.feecategory %></td>
+                                    <td><%= data.classdate %></td>
+                                    <td>
+                                        <a href="/editscholarships/<%= data.id %>" class="btn btn-primary"><i class="fa fa-edit" title='Edit'></i></a>
+                                        <form method="post" action="/deletescholarships" id="frm-delete-category-<%= data.id %>">
+                                        
+                                            <input type="hidden" value="<%= data.id %>" name="category_id"/>
+
+                                        </form>
+
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to delete ? ')){  $('#frm-delete-category-<%= data.id %>').submit()  }" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

@@ -1,0 +1,30 @@
+<%- include("headerstud") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Join upcoming class through course code and faculty email</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/joinclasswithcode">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Course Code</label>
+                <input required type="text" class="form-control" placeholder="Enter course code" name="coursecode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Faculty Email</label>
+                <input required type="text" class="form-control" placeholder="Enter faculty email" name="email">
+            </div>
+        </div>
+       
+      
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

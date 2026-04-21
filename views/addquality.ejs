@@ -1,0 +1,110 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Institutional Quality Initiatives</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addquality">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Academic Year</label>
+                <select class="form-control" name="year">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Type of Quality Initiatives</label>
+                <select class="form-control" name="type">
+                    <option value="Academic Administrative Audit">Academic Administrative Audit</option>
+                    <option value="Conferences/Seminars/Workshops">Conferences/Seminars/Workshops</option>
+                    <option value="Collaborations">Collaborations</option>
+                    <option value="Orientation Programs">Orientation Programs</option>
+                    <option value="Participation in NIRF">Participation in NIRF</option>
+                    <option value="Other quality audit recognised by state/national/international agencies">Other quality audit recognised by state/national/international agencies</option>
+                    
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Follow up Action</label>
+                <input required type="text" class="form-control" placeholder="Enter follow up actions taken in academic administartive audit" name="action">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of Collaborating Institution </label>
+                <input required type="text" class="form-control" placeholder="Enter name of collaborating institution" name="instname">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of Collaborative Activity </label>
+                <input required type="text" class="form-control" placeholder="Enter name of collaborative activity" name="activity">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Start date</label>
+                <input required type="date" class="form-control" placeholder="Enter start date of activity/orientation program" name="startdate">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>End date</label>
+                <input required type="date" class="form-control" placeholder="Enter end date of activityorientation program" name="enddate">
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Status of Participation in NIRF</label>
+                <input required type="text" class="form-control" placeholder="Enter participation in NIRF" name="partstatus">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of any other quality audit</label>
+                <input required type="text" class="form-control" placeholder="Enter name of any other quality audit adopted(ISO certification/NBA)" name="other">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Status</label>
+                <input required type="text" class="form-control" placeholder="Enter the Status" name="status1">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+            </div>
+        </div>
+
+
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

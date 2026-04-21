@@ -1,0 +1,311 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Welcome to Campus Canvas User Data Management Portal</h3>
+<br><br>
+<h4>Export all data for your institution</h4>
+<br><br>
+<form method="post" action="/exportprojectadm" id="frm-export-category">
+</form>
+<form method="post" action="/exportpatentadm" id="frm-export-category1">
+</form>
+<form method="post" action="/exportpubadm" id="frm-export-category2">
+</form>
+<form method="post" action="/exportbookadm" id="frm-export-category3">
+</form>
+<form method="post" action="/exportseminar" id="frm-export-category4">
+</form>
+<table>
+    <tr>
+        
+        <td>
+            <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category').submit()  }" class="btn btn-dark">Export Projects Data</a>
+        </td>
+        <td width="20px"></td>
+        <td>
+            <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category1').submit()  }" class="btn btn-dark">Export Patents Data</a>
+        </td>
+        <td width="20px"></td>
+        <td>
+            <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category2').submit()  }" class="btn btn-dark">Export Publications Data</a>
+        </td>
+        <td width="20px"></td>
+        <td>
+            <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category3').submit()  }" class="btn btn-dark">Export Books Data</a>
+        </td>
+        <td width="20px"></td>
+        <td>
+            <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Seminar Data</a>
+        </td>
+        <td width="20px"></td>
+    </tr>
+</table>
+
+<br><br>
+
+<h4>Export Application Form(Template 3) </h4>
+<br>
+</form>
+<form method="post" action="/exportapplication3" id="frm-export-categoryappl3">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+
+<br><br>
+<h4>Export Faculty Feedback Data</h4>
+<br>
+<form method="post" action="/exportfacultyfeedback" id="frm-export-category4">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+
+
+<br><br>
+<h4>Export Student Satisfaction Survey Data</h4>
+<br>
+<form method="post" action="/sssexport" id="frm-export-category4">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+
+<br><br>
+<h4>Export Curriculum Feedback Data</h4>
+<br>
+<form method="post" action="/exportcurriculum" id="frm-export-category4">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+
+
+<br><br>
+<h4>Export Curriculum Feedback Data(with logo)</h4>
+<br>
+<form method="post" action="/exportcurriculumstphilos" id="frm-export-category4">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+
+
+<br><br>
+<h4>Export Parent Feedback Data</h4>
+<br>
+<form method="post" action="/exportparent" id="frm-export-category4">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+
+
+<br><br>
+<h4>Export Employer Feedback Data</h4>
+<br>
+<form method="post" action="/exportemployer" id="frm-export-category4">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+
+
+<br><br>
+<h4>Export Alumni Feedback Data</h4>
+<br>
+<form method="post" action="/exportalumni" id="frm-export-category4">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+<br /><br />
+
+<h4>Export Student's Feedback Data on Curriculum & Department</h4>
+<br>
+<form method="post" action="/exportdeptfeedback" id="frm-export-categorydf">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+
+
+<br><br>
+
+<h4>Export Non-teaching Staff Feedback Data</h4>
+<br>
+<form method="post" action="/exportstafffeedback" id="frm-export-categorypf">
+    <table class="table">
+        <tr>
+            <td>
+                <div class="form-group">
+                    <label>Start date</label>
+                    <input required type="date" class="form-control" placeholder="Enter start date" name="ldate">
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <label>End date</label>
+                    <input required type="date" class="form-control" placeholder="Enter end date" name="gdate">
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <button class="btn btn-dark" type="submit">Submit</button>
+    <!-- <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category4').submit()  }" class="btn btn-dark">Export Faculty Feedback</a> -->
+</form>
+
+<br><br>
+
+</div>
+
+
+
+
+
+<%- include("footer") %> 

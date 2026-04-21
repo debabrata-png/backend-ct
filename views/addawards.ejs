@@ -1,0 +1,94 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Student awards/Medals</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addawards">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Academic Year</label>
+                <select class="form-control" name="year">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of the award/medal</label>
+                <input required type="text" class="form-control" placeholder="Enter name of the award/medal achieved by student" name="awardname">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Type of Participation</label>
+                <select class="form-control" name="engagementtype">
+                    <option value="Team">Team</option>
+                    <option value="Individual">Individual</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Type of level</label>
+                <select class="form-control" name="level">
+                    <option value="University">University</option>
+                    <option value="State">State</option>
+                    <option value="National">National</option>
+                    <option value="International">International</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Type of activity</label>
+                <select class="form-control" name="activitytype">
+                    <option value="Sports">Sports</option>
+                    <option value="Cultural">Cultural</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of student</label>
+                <input required type="text" class="form-control" placeholder="Enter name of the student" name="studentname">
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Status</label>
+                <input required type="text" class="form-control" placeholder="Enter the Status" name="status1">
+            </div>
+        </div>
+
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+            </div>
+        </div>
+  
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

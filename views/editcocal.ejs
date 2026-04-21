@@ -1,0 +1,159 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit Course Outcome(CO)</h1>
+            </div> -->
+            <!-- /.col -->
+            <div class="col-sm-8">
+                <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+ 
+                    <li class="breadcrumb-item active">Edit Course Outcome Calculation</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Course Outcome Calculation</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editcocal/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Course Code</label>
+                                        <input required value="<%= pub.coursecode %>" type="text" class="form-control" placeholder="Enter course code" name="coursecode">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Course Name</label>
+                                        <input required value="<%= pub.course %>" type="text" class="form-control" placeholder="Enter Course Name" name="course">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Program Code</label>
+                                        <input required value="<%= pub.programcode %>" type="text" class="form-control" placeholder="Enter the Program code" name="programcode">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Program</label>
+                                        <input required value="<%= pub.program %>" type="text" class="form-control" placeholder="Enter the Program" name="program">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Exam Code</label>
+                                        <input required value="<%= pub.examcode %>" type="text" class="form-control" placeholder="Enter the Exam Code" name="examcode">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Exam Name</label>
+                                        <input required value="<%= pub.examname %>" type="text" class="form-control" placeholder="Enter the Exam Name" name="examname">
+                                    </div>
+                                </div> 
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Semester</label>
+                                        <input required value="<%= pub.semester %>" type="text" class="form-control" placeholder="Enter the Semester" name="semester">
+                                    </div>
+                                </div> 
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>IA Marks</label>
+                                        <input required value="<%= pub.iamarks %>" type="text" class="form-control" placeholder="Enter the IA Marks" name="iamarks">
+                                    </div>
+                                </div> 
+
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>External Marks</label>
+                                        <input required value="<%= pub.extmarks %>" type="text" class="form-control" placeholder="Enter the External Marks" name="extmarks">
+                                    </div>
+                                </div> 
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Total Marks</label>
+                                        <input required value="<%= pub.totalmarks %>" type="text" class="form-control" placeholder="Enter the Total Marks" name="totalmarks">
+                                    </div>
+                                </div> 
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>CO1</label>
+                                        <input required value="<%= pub.co1 %>" type="number" class="form-control" placeholder="Enter the CO1" name="co1">
+                                    </div>
+                                </div> 
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>CO2</label>
+                                        <input required value="<%= pub.co2 %>" type="number" class="form-control" placeholder="Enter the CO2" name="co2">
+                                    </div>
+                                </div> 
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>CO3</label>
+                                        <input required value="<%= pub.co3 %>" type="number" class="form-control" placeholder="Enter the CO3" name="co3">
+                                    </div>
+                                </div> 
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

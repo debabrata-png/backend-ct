@@ -1,0 +1,165 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit faculty</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewteacherdata">Criteria 2-Teaching-Learning-Evaluation</a></li>
+                    <li class="breadcrumb-item"><a href="/viewteacherdata">Full Time Teachers</a></li>
+                    <li class="breadcrumb-item active">Edit Faculty</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Full Time Teachers</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editteacherdata/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Academic Year</label>
+                                        <select class="form-control" name="year">
+                                            <option <% if(pub.year == '2015-16'){ %>  selected <% } %> value="2015-16">2015-16</option>
+                                            <option <% if(pub.year == '2016-17'){ %> selected <%  }  %> value="2016-17">2016-17</option>
+                                            <option <% if(pub.year == '2017-18'){ %> selected <%  }  %> value="2017-18">2017-18</option>
+                                            <option <% if(pub.year == '2018-19'){ %> selected <%  }  %> value="2018-19">2018-19</option>
+                                            <option <% if(pub.year == '2019-20'){ %> selected <%  }  %> value="2019-20">2019-20</option>
+                                            <option <% if(pub.year == '2020-21'){ %> selected <%  }  %> value="2020-21">2020-21</option>
+                                            <option <% if(pub.year == '2021-22'){ %> selected <%  }  %> value="2021-22">2021-22</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name of Faculty</label>
+                                        <input required value="<%= pub.name %>" type="text" class="form-control" placeholder="Enter the number of seats sanctioned for reserved " name="name">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Department</label>
+                                        <input required value="<%= pub.department %>" type="text" class="form-control" placeholder="Enter department of the faculty" name="department">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>PAN details</label>
+                                        <input required value="<%= pub.pan %>" type="text" class="form-control" placeholder="Enter PAN details of the faculty" name="pan">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Designation</label>
+                                        <input required value="<%= pub.designation %>" type="text" class="form-control" placeholder="Enter designation of the faculty" name="designation">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Year of Appointmnet</label>
+                                        <input required value="<%= pub.yoa %>" type="text" class="form-control" placeholder="Enter year of appointmnet of the faculty" name="yoa">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Nature of Appointment</label>
+                                        <select class="form-control" name="type">
+                                            <option <% if(pub.type == 'Sanctioned Post'){ %>  selected <% } %> value="Sanctioned Post">Sanctioned Post</option>
+                                            <option <% if(pub.type == 'Temporary'){ %> selected <%  }  %> value="Temporary">Temporary</option>
+                                            <option <% if(pub.type == 'Permanent'){ %> selected <%  }  %> value="Permanent">Permanent</option>
+                                            
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Total years of Experience in same Institution</label>
+                                        <input required value="<%= pub.yoe %>" type="text" class="form-control" placeholder="Enter total years of experience of the faculty in same institution" name="yoe">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Is the faculty still serving the institution</label>
+                                        <select class="form-control" name="status">
+                                            <option <% if(pub.status == 'Yes'){ %>  selected <% } %> value="Yes">Yes</option>
+                                            <option <% if(pub.status == 'No'){ %> selected <%  }  %> value="No">No</option>
+                                            
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Last year of service(if service status is'No',otherwise type NA)</label>
+                                        <input required value="<%= pub.lastyear %>" type="text" class="form-control" placeholder="Enter last year of service of the faculty in same institution" name="lastyear">
+                                    </div>
+                                </div>
+                                
+                                
+
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <input required value="<%= pub.status1 %>" type="text" class="form-control" placeholder="Enter the Status" name="status1">
+                                    </div>
+                                </div>
+
+
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Comments</label>
+                                        <input required value="<%= pub.comments %>" type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

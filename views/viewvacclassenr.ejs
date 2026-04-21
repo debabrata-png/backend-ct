@@ -1,0 +1,133 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View Enrollment dashboard</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">List Enrollments</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">List Enrollments</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table>
+                            <tr>
+                                <td>
+                                    <a class="btn btn-dark" href="/addvacclassenroll/<%= vacid %>">+ Enroll New Students</a>
+                                </td>
+                               
+                            </tr>
+                        </table>
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <!-- <th>Coursecode</th> -->
+                                    <th>Course Code</th> 
+                                    <th>Student Registration No.</th>
+                                    <th>Student Name</th>
+                                    <th>Student Email</th>
+                                    <th>Course</th>
+                                    <th>Program</th>
+                                    <th>Academic Year</th>
+                                   
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    
+                                    <td><%= data.coursecode %> </td>
+                                    <td><%= data.regno %> Institution ID <%= data.colid %> </td>
+                                    <td><%= data.student %> </td>
+                                    <td><%= data.studentemail %> </td>
+                                    <td><%= data.course %> </td>
+                                    <td><%= data.program %> </td>
+                                    <td><%= data.academicyear %> </td>
+                                    
+                                    <!-- <td><%= data.course %> </td> -->
+                                    <!-- <td><%= data.classdate %></td> -->
+                                    <!-- <td><%= data.classtime %></td> -->
+                                    <!-- <td>Section <%= data.section %> Semester <%= data.semester %></td> -->
+                                    <!-- <td><%= data.semester %></td> -->
+                                    <!-- <td><%= data.link %></td> -->
+                                    <td>
+                                        
+                                        <% if(data.status == 1){ %>
+                                            <form method="post" action="/editvacclassenroll" id="frm-edit-1-<%= data.id %>">
+                                        
+                                                <input type="hidden" value="<%= data.id %>" name="category_id"/>
+                                                <input type="hidden" value="<%= vacid %>" name="vacid"/>
+                                                <input type="hidden" value="1" name="type"/>
+                                        </form>
+
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure you want to suspend user ? ')){  $('#frm-edit-1-<%= data.id %>').submit()  }" class="btn btn-primary"><i class="fas fa-check-circle" title="Suspend User"></i></a>
+                                            <% }else{ %>
+                                                <form method="post" action="/editvacclassenroll" id="frm-edit-2-<%= data.id %>">
+                                        
+                                                    <input type="hidden" value="<%= data.id %>" name="category_id"/>
+                                                    <input type="hidden" value="<%= vacid %>" name="vacid"/>
+                                                    <input type="hidden" value="0" name="type"/>
+                                        </form>
+
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure you want to activate user ? ')){  $('#frm-edit-2-<%= data.id %>').submit()  }" class="btn btn-danger"><i class="fas fa-times-circle" title="Activate User"></i></a>
+                                            <% } %>
+                                        
+                                        
+                                        <form method="post" action="/deletevacclassenroll/<%= vacid %>" id="frm-delete-category-<%= data.id %>">
+                                        
+                                            <input type="hidden" value="<%= data.id %>" name="category_id"/>
+
+                                        </form>
+
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to delete ? ')){  $('#frm-delete-category-<%= data.id %>').submit()  }" class="btn btn-danger"><i class="fa fa-trash" title="delete class"></i></a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

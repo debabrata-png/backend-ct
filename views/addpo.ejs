@@ -1,0 +1,44 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Program Outcome(PO)</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/createpo">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Program Code</label>
+                <input required type="text" class="form-control" placeholder="Enter program code" name="programcode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Program Name </label>
+                <input required type="text" class="form-control" placeholder="Enter program name" name="programname">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>PO Code</label>
+                <input required type="text" class="form-control" placeholder="Enter PO code" name="pocode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>PO</label>
+                <input required type="text" class="form-control" placeholder="Enter PO" name="po">
+            </div>
+        </div>
+  
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

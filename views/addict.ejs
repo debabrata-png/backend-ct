@@ -1,0 +1,62 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add ICT enabled Classrooms and Seminar Halls</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addict">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label> Room number/Name of Classroom</label>
+                <input required type="text" class="form-control" placeholder="Enter room no./name of classroom" name="classroom">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label> Room number/Name of Seminar Hall </label>
+                <input required type="text" class="form-control" placeholder="Enter room no./name of seminar hall" name="seminarhall">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Type of ICT Facility</label>
+                <input required type="text" class="form-control" placeholder="Enter type of ICT facility" name="facitype">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Link to geo tagged photos</label>
+                <input required type="text" class="form-control" placeholder="Enter link to geo tagged photos" name="link">
+            </div>
+        </div>
+
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Status</label>
+                <input required type="text" class="form-control" placeholder="Enter the Status" name="status1">
+            </div>
+        </div>
+
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+            </div>
+        </div>
+  
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

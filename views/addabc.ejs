@@ -1,0 +1,133 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Academic Bank of Credit</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addabc">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Student name</label>
+                <input required type="text" class="form-control" placeholder="Enter student name" name="name">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Reg no</label>
+                <input required type="text" class="form-control" placeholder="Enter reg no" name="regno">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Current program</label>
+                <input required type="text" class="form-control" placeholder="Enter current program" name="program">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Current program code</label>
+                <input required type="text" class="form-control" placeholder="Enter current programcode" name="programcode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Other institution</label>
+                <input required type="text" class="form-control" placeholder="Enter other institution" name="institution">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Other program code</label>
+                <input required type="text" class="form-control" placeholder="Enter other programcode" name="otherprogramcode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Other program</label>
+                <input required type="text" class="form-control" placeholder="Enter other program" name="otherprogram">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Other course</label>
+                <input required type="text" class="form-control" placeholder="Enter other course" name="othercourse">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Other coursecode</label>
+                <input required type="text" class="form-control" placeholder="Enter course code" name="coursecode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Credits earned</label>
+                <input required type="number" class="form-control" placeholder="Enter credits earned" name="credit">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Duration in months</label>
+                <input required type="number" class="form-control" placeholder="Enter duration of the course in month" name="duration">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Document link</label>
+                <input required type="text" class="form-control" placeholder="Enter online link" name="link">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Date completed</label>
+                <input required type="date" class="form-control" placeholder="Enter class date" name="classdate">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Semester</label>
+                <select class="form-control" name="semester">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+        </div>
+    
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" name="status">
+                    <option value="Active">Active</option>
+                    <option value="Not active">Not active</option>
+                </select>
+            </div>
+        </div>
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

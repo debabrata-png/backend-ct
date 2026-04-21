@@ -1,0 +1,90 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Library Expenditures</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addlibrary">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Academic Year</label>
+                <select class="form-control" name="year">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of Library Resource</label>
+                <input required type="text" class="form-control" placeholder="Enter name of the library resource" name="resource">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Details of Memberships/Subscriptions</label>
+                <input required type="text" class="form-control" placeholder="Enter details of memberships/subcriptions" name="details">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Expenditure on subscription to e-journals/e-books(INR in Lakhs)</label>
+                <input required type="number" class="form-control" placeholder="Enter expenditure on subscription to e-journals/e-books" name="bookexp">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Expenditure on subscription to other e-resources(INR in Lakhs)</label>
+                <input required type="number" class="form-control" placeholder="Enter expenditure on subscription to other e-resources" name="otherexp">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Total Library Expenditure(INR in Lakhs)</label>
+                <input required type="number" class="form-control" placeholder="Enter total library expenditure" name="totalexp">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Document Link</label>
+                <input required type="text" class="form-control" placeholder="Enter link to the documents" name="link">
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Status</label>
+                <input required type="text" class="form-control" placeholder="Enter the Status" name="status1">
+            </div>
+        </div>
+
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter the Comments" name="comments">
+            </div>
+        </div>
+
+
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

@@ -1,0 +1,48 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Task</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addtaskassign">
+    <div class="row">
+       
+       
+        
+       
+       
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Instructions</label>
+                <input required type="text" class="form-control" placeholder="Enter instructions" name="instructions">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Due Date</label>
+                <input required type="date" class="form-control" placeholder="Enter due date" name="classdate">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Due by Time (HH:MM) for eg, 14:30</label>
+                <input required type="text" class="form-control" placeholder="Enter due time" name="classtime">
+            </div>
+        </div>
+       
+    
+        
+     
+        
+       
+      
+       
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

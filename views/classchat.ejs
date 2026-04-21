@@ -1,0 +1,179 @@
+<%- include("header") %> 
+<style>
+    
+    #container{
+        width:900px;
+        margin:0 auto;
+    }
+
+    #chatWindow{
+        height:400px;
+        width: 800px;
+        overflow: auto;
+        padding-bottom: 20px;
+    }
+
+    #users{
+        height:300px;
+        overflow: auto;
+    }
+
+    #mainWrapper{
+        display:none;
+    }
+
+    #chatWrapper{
+        /* float:left; */
+        border:1px #ccc solid;
+        border-radius: 10px;
+        background:#f4f4f4;
+        padding:10px;
+    }
+
+    #userWrapper{
+        /* float:left; */
+        border:1px #ccc solid;
+        border-radius: 10px;
+        background:#f4f4f4;
+        padding:10px;
+        display: none;
+        margin-left:20px;
+        width:150px;
+        max-height:400px;
+    }
+
+    #namesWrapper{
+        /* float:left; */
+        border:1px #ccc solid;
+        border-radius: 10px;
+        background:#f4f4f4;
+        padding:10px;
+        margin-left:20px;
+    }
+
+    input{
+        height:30px;
+        border:solid 1px #ccc;
+    }
+</style>
+
+<div style="margin: 0px; padding: 40px;">
+    
+    
+        <a href="#" id="lock">Lock Chat</a>
+    <br><br>
+
+    <div id="container">
+		<div id="namesWrapper">
+			<h2>ChatIO</h2>
+			<p>Create Username</p>
+			<div id="error"></div>
+			<form id="usernameForm">
+                
+				    <input type="text" value="<%= user1 + '-' + classid %>" readonly size="35" id="username">
+              
+                  
+				<input type="submit" value="Submit">
+			</form>
+		</div>
+
+		<div id="mainWrapper">
+		
+			<div id="chatWrapper">
+				<div id="chatWindow"></div>
+				<form id="messageForm">
+					<input type="text" size="35" id="message" placeholder="Say Something...">
+					<input type="submit" value="Submit">
+				</form>
+			</div>
+
+			<div id="userWrapper">
+				<div id="users"></div>
+			</div>
+		</div>
+	</div>
+
+
+
+
+
+
+
+
+</div>
+
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+$(function(){
+    var socket = io.connect();
+    var $messageForm = $('#messageForm');
+    var $message = $('#message');
+    var $chat = $('#chatWindow');
+    var $usernameForm = $('#usernameForm');
+    var $users = $('#users');
+    var $username = $('#username');
+    var $lock = $('#lock');
+    var lock1=1;
+    //var $colid = $('#colid');
+    var $error = $('#error');
+    socket.emit('new user', $username.val(), function(data){
+            $('#namesWrapper').hide();
+            $('#mainWrapper').show();
+    });
+
+    $usernameForm.submit(function(e){
+        e.preventDefault();
+        socket.emit('new user', $username.val(), function(data){
+            $('#namesWrapper').hide();
+                $('#mainWrapper').show();
+            // if(data){
+            //     $('#namesWrapper').hide();
+            //     $('#mainWrapper').show();
+            // } else{
+            //     $error.html('Username is taken');
+            // }
+        });
+    });
+
+    socket.on('usernames', function(data){
+        var html = '';
+        // for(i = 0;i < data.length;i++){
+        //     html += data[i] + '<br>';
+        // }
+        $users.html(html);
+    });
+
+    $messageForm.submit(function(e){
+        e.preventDefault();
+        socket.emit('send message', $message.val());
+        $message.val('');
+    });
+
+    $lock.click(function() {
+        //alert('clicked');
+        socket.emit('lockc', lock1);
+        if(lock1==1) {
+            lock1=0;
+            $lock.text('Unlock chat');
+        } else {
+            lock1=1;
+            $lock.text('Lock chat');
+        }
+        
+    });
+
+    socket.on('new message', function(data){
+        $chat.append('<strong>'+data.user+'</strong>: '+data.msg+'<br>');
+        $chat.animate({ scrollTop: $chat.height() }, "fast");
+    });
+
+});
+</script>
+
+
+
+
+
+
+<%- include("footer") %> 

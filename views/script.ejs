@@ -1,0 +1,151 @@
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- jQuery UI 1.11.4 -->
+<script src="plugins/jquery-ui/jquery-ui.min.js"></script>
+<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+<script>
+  $.widget.bridge("uibutton", $.ui.button);
+</script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- ChartJS -->
+<script src="plugins/chart.js/Chart.min.js"></script>
+<!-- Sparkline -->
+<script src="plugins/sparklines/sparkline.js"></script>
+<!-- JQVMap -->
+<script src="plugins/jqvmap/jquery.vmap.min.js"></script>
+<script src="plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+<!-- jQuery Knob Chart -->
+<script src="plugins/jquery-knob/jquery.knob.min.js"></script>
+<!-- daterangepicker -->
+<script src="plugins/moment/moment.min.js"></script>
+<script src="plugins/daterangepicker/daterangepicker.js"></script>
+<!-- Tempusdominus Bootstrap 4 -->
+<script src="plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+<!-- Summernote -->
+<script src="plugins/summernote/summernote-bs4.min.js"></script>
+<!-- overlayScrollbars -->
+<script src="plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.js"></script>
+<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+<script src="dist/js/pages/dashboard.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="dist/js/demo.js"></script>
+
+<!-- DataTables -->
+<script src="plugins/datatables/jquery.dataTables.js"></script>
+<script src="plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+
+<script src="plugins/jquery-validation/jquery.validate.min.js"></script>
+<!-- <script src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.7.0/js/dataTables.buttons.min.js"></script> -->
+
+<script>
+  $(function () {
+    if ($("#tbl-list-category").length > 0) {
+      $("#tbl-list-category").DataTable();
+    }
+
+    // if ($("#tbl-list-category").length > 0) {
+    //   $("#tbl-list-category").DataTable({
+    //     buttons: [
+    //     {
+    //             extend: 'colvis',
+    //             columns: ':not(.noVis)'
+    //         }
+    //     ]
+    //   });
+    // }
+
+    if ($("#tbl-list-book").length > 0) {
+      $("#tbl-list-book").DataTable();
+    }
+
+    if ($("#tbl-list-user").length > 0) {
+      $("#tbl-list-user").DataTable();
+    }
+
+    if ($("#tbl-list-issue-books").length > 0) {
+      $("#tbl-list-issue-books").DataTable();
+    }
+
+    if ($("#tbl-list-issue-books").length > 0) {
+      $("#tbl-list-issue-books").DataTable();
+    }
+
+    if ($("#tbl-list-return-books").length > 0) {
+      $("#tbl-list-return-books").DataTable();
+    }
+
+    if ($("#tbl-list-day-settings").length > 0) {
+      $("#tbl-list-day-settings").DataTable();
+    }
+
+    if ($("#frm-add-category").length > 0) {
+      $("#frm-add-category").validate();
+    }
+
+    if ($("#frm-add-book").length > 0) {
+      $("#frm-add-book").validate();
+    }
+
+    if ($("#frm-add-user").length > 0) {
+      $("#frm-add-user").validate();
+    }
+
+    if ($("#frm-issue-book").length > 0) {
+      $("#frm-issue-book").validate();
+    }
+
+    if ($("#frm-return-book").length > 0) {
+      $("#frm-return-book").validate();
+    }
+
+    if ($("#frm-add-days-settings").length > 0) {
+      $("#frm-add-days-settings").validate();
+    }
+
+    // add ajax requests
+
+    var app_url = "http://localhost:3000";
+
+    $("#dd_category").on("change", function () {
+      var category_id = $(this).val();
+
+      var postdata = "cat_id=" + category_id;
+
+      $.post(app_url + "/admin/category-list-book", postdata, function (
+        response
+      ) {
+        var booksHtml = "<option value=''>Choose Book</option>";
+
+        $.each(response.books, function (index, item) {
+          booksHtml +=
+            '<option value="' + item.id + '">' + item.name + "</option>";
+        });
+
+        $("#dd_book_list").html(booksHtml);
+      });
+    });
+
+    $("#return-dd-user").on("change", function () {
+      var user_id = $(this).val();
+
+      var postdata = "user_id=" + user_id;
+
+      $.post(app_url + "/admin/user-list-book", postdata, function (
+        response
+      ) {
+        var booksHtml = "<option value=''>Choose Book</option>";
+
+        $.each(response.books, function (index, item) {
+          booksHtml +=
+            '<option value="' + item.bookId + '">' + item.Book.name + "</option>";
+        });
+
+        $("#return_dd_book").html(booksHtml);
+      });
+    });
+  });
+</script>

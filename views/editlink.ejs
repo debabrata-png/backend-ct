@@ -1,0 +1,136 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit Link</h1>
+            </div> -->
+            <!-- /.col -->
+            <div class="col-sm-8">
+                <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewlink">Admin</a></li>
+                    <li class="breadcrumb-item"><a href="/viewlink">Manage Links</a></li>
+                    <li class="breadcrumb-item active">Edit Link</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Link</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editlink/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Criteria</label>
+                                        <select class="form-control" name="criteria">
+                                            <option <% if(pub.criteria == 'Faculty Engagement in Academic Bodies'){ %>  selected <% } %> value="Faculty Engagement in Academic Bodies">Faculty Engagement in Academic Bodies</option>
+                                            <option <% if(pub.criteria == 'Syllabus Revision'){ %> selected <%  }  %> value="Syllabus Revision">Syllabus Revision</option>
+                                            <option <% if(pub.criteria == 'CBCS Programs'){ %>  selected <% } %> value="CBCS Programs">CBCS Programs</option>
+                                            <option <% if(pub.criteria == 'Value Added Courses'){ %> selected <%  }  %> value="Value Added Courses">Value Added Courses</option>
+                                            <option <% if(pub.criteria == 'Activities'){ %>  selected <% } %> value="Activities">Activities</option>
+                                            <option <% if(pub.criteria == 'Feedback'){ %> selected <%  }  %> value="Feedback">Feedback</option>
+                                            <option <% if(pub.criteria == 'Seed Money'){ %> selected <%  }  %> value="Seed Money">Seed Money</option>
+                                            <option <% if(pub.criteria == 'JRFs/SRFs/Phd Fellows/Research Associates'){ %> selected <%  }  %> value="JRFs/SRFs/Phd Fellows/Research Associates">JRFs/SRFs/Phd Fellows/Research Associates</option>
+                                            <option <% if(pub.criteria == 'Awards/Recognitions for research/innovations'){ %> selected <%  }  %> value="Awards/Recognitions for research/innovations">Awards/Recognitions for research/innovations</option>
+                                            <option <% if(pub.criteria == 'Revenue generated from Consultancy'){ %> selected <%  }  %> value="Revenue generated from Consultancy">Revenue generated from Consultancy</option>
+                                            <option <% if(pub.criteria == 'Student Enrollment for Admission'){ %>  selected <% } %> value="Student Enrollment for Admission">Student Enrollment for Admission</option>
+                                            <option <% if(pub.criteria == 'Student Seats against Reserved Category'){ %> selected <%  }  %> value="Student Seats against Reserved Category">Student Seats against Reserved Category</option>
+                                            <option <% if(pub.criteria == 'Full Time Teachers'){ %>  selected <% } %> value="Full Time Teachers">Full Time Teachers</option>
+                                            <option <% if(pub.criteria == 'Result Publication'){ %> selected <%  }  %> value="Result Publication">Result Publication</option>
+                                            <option <% if(pub.criteria == 'Student Pass Percentage'){ %>  selected <% } %> value="Student Pass Percentage">Student Pass Percentage</option>
+                                            <option <% if(pub.criteria == 'Published Patents'){ %> selected <%  }  %> value="Published Patents">Published Patents</option>
+                                            <option <% if(pub.criteria == 'Research Projects'){ %> selected <%  }  %> value="Research Projects">Research Projects</option>
+                                            <option <% if(pub.criteria == 'Research Papers'){ %>  selected <% } %> value="Research Papers">Research Papers</option>
+                                            <option <% if(pub.criteria == 'Books & Chapters'){ %> selected <%  }  %> value="Books & Chapters">Books & Chapters</option>
+                                            <option <% if(pub.criteria == 'E-content developed by Teachers'){ %>  selected <% } %> value="E-content developed by Teachers">E-content developed by Teachers</option>
+                                            <option <% if(pub.criteria == 'Institutional Awards'){ %> selected <%  }  %> value="Institutional Awards">Institutional Awards</option>
+                                            <option <% if(pub.criteria == 'Extension Activities'){ %>  selected <% } %> value="Extension Activities">Extension Activities</option>
+                                            <option <% if(pub.criteria == 'Collaboration Activities'){ %> selected <%  }  %> value="Collaboration Activities">Collaboration Activities</option>
+                                            <option <% if(pub.criteria == 'MoU Activities'){ %>  selected <% } %> value="MoU Activities">MoU Activities</option>
+                                            <option <% if(pub.criteria == 'ICT Enabled Classrooms & Seminar Halls'){ %> selected <%  }  %> value="ICT Enabled Classrooms & Seminar Halls">ICT Enabled Classrooms & Seminar Halls</option>
+                                            <option <% if(pub.criteria == 'Infrastructure Augmentation'){ %>  selected <% } %> value="Infrastructure Augmentation">Infrastructure Augmentation</option>
+                                            <option <% if(pub.criteria == 'Library Expenditures'){ %> selected <%  }  %> value="Library Expenditures">Library Expenditures</option>
+                                            <option <% if(pub.criteria == 'Student Scholarships'){ %>  selected <% } %> value="Student Scholarships">Student Scholarships</option>
+                                            <option <% if(pub.criteria == 'Skill Development Programs'){ %> selected <%  }  %> value="Skill Development Programs">Skill Development Programs</option>
+                                            <option <% if(pub.criteria == 'Career Counselling Activities'){ %> selected <%  }  %> value="Career Counselling Activities">Career Counselling Activities</option>
+                                            <option <% if(pub.criteria == 'Outgoing Student Placement'){ %> selected <%  }  %> value="Outgoing Student Placement">Outgoing Student Placement</option>
+                                            <option <% if(pub.criteria == 'Student Progression to Higher Education'){ %> selected <%  }  %> value="Student Progression to Higher Education">Student Progression to Higher Education</option>
+                                            <option <% if(pub.criteria == 'Student Qualifying in Higher Examination'){ %> selected <%  }  %> value="Student Qualifying in Higher Examination">Student Qualifying in Higher Examination</option>
+                                            <option <% if(pub.criteria == 'Student Awards/Medals'){ %> selected <%  }  %> value="Student Awards/Medals">Student Awards/Medals</option>
+                                            <option <% if(pub.criteria == 'Implementation of E Governance'){ %> selected <%  }  %> value="Implementation of E Governance">Implementation of E Governance</option>
+                                            <option <% if(pub.criteria == 'Financial Support provided for Faculty'){ %> selected <%  }  %> value="Financial Support provided for Faculty">Financial Support provided for Faculty</option>
+                                            <option <% if(pub.criteria == 'Gov./Non-government Funds'){ %> selected <%  }  %> value="Gov./Non-government Funds">Gov./Non-government Funds</option>
+                                            <option <% if(pub.criteria == 'Institutional Quality Initiatives'){ %> selected <%  }  %> value="Institutional Quality Initiatives">Institutional Quality Initiatives</option>
+                                            <option <% if(pub.criteria == '346'){ %> selected <%  }  %> value="346">Books & Chapters (Old)</option>
+                                            <option <% if(pub.criteria == '343'){ %> selected <%  }  %> value="343">Patent (Old)</option>
+                                            <option <% if(pub.criteria == '316'){ %> selected <%  }  %> value="316">Research Projects (Old)</option>
+                                            <option <% if(pub.criteria == '345'){ %> selected <%  }  %> value="345">Publications (Old)</option>
+                                            <option <% if(pub.criteria == '632'){ %> selected <%  }  %> value="632">Seminar (Old)</option>
+                                        
+
+                                         
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Upload link</label>
+                                        <input required value="<%= pub.uploadlink %>" type="text" class="form-control" placeholder="Enter upload link" name="uploadlink">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Download link</label>
+                                        <input required value="<%= pub.viewlink %>" type="text" class="form-control" placeholder="Enter download link" name="viewlink">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Select Status</label>
+                                        <select class="form-control" name="status">
+                                            <option <% if(pub.status == '1'){ %>  selected <% } %> value="1">Active</option>
+                                            <option <% if(pub.status == '0'){ %> selected <%  }  %> value="0">Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

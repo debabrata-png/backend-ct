@@ -1,0 +1,81 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Employer</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addcompany">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Academic Year</label>
+                <select class="form-control" name="year">
+                    <option value="2015-16">2015-16</option>
+                    <option value="2016-17">2016-17</option>
+                    <option value="2017-18">2017-18</option>
+                    <option value="2018-19">2018-19</option>
+                    <option value="2019-20">2019-20</option>
+                    <option value="2020-21">2020-21</option>
+                    <option value="2021-22">2021-22</option>
+
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Name of Contact</label>
+                <input required type="text" class="form-control" placeholder="Enter the name of contact" name="contactname">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Contact details of the contact person</label>
+                <input required class="form-control" placeholder="Enter contact details" name="contactdetails">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Employer (Company) Name</label>
+                <input required type="text" class="form-control" placeholder="Enter the name of the employer" name="employername">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Profile</label>
+                <input required type="text" class="form-control" placeholder="Enter profile of the employer" name="profile">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Website</label>
+                <input required type="text" class="form-control" placeholder="Enter website of the employer" name="website">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Contact details of the employer</label>
+                <input required class="form-control" placeholder="Enter contact details of the employer" name="empcontactdetails">
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter Comments" name="comments">
+            </div>
+        </div>
+  
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

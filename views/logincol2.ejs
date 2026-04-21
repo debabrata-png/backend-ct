@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Admin Log in</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+ 
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+  </div>
+  <!-- /.login-logo -->
+  <div class="card">
+    <div class="card-body login-card-body">
+
+      <% if(messages.success){} if(messages.error){ %>
+        <div class="alert alert-danger">
+          <%= messages.error %>
+        </div>
+      <% } %>
+
+      
+
+      <form action="/logincol" method="post" id="frm-admin-login">
+        <div id="studdiv1">
+            <p>Please enter institution code given by your institution</p>
+        <div class="input-group mb-3">
+          <input type="text" required class="form-control" name="colid" id="colid" placeholder="Institution Code *">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-envelope"></span>
+            </div>
+          </div>
+        </div>
+        <a href="#" class="btn btn-primary" id="button1">Next</a>
+        </div>
+
+        <div id="studdiv2" style="display:none;">
+        <p>Set password for app access</p>
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" required name="password" id="password" placeholder="Password">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <a href="#" class="btn btn-primary" id="button2">Next</a>
+        </div>
+        
+        <div id="studdiv3" style="display:none;">
+        <p>Type of User</p>
+        <div class="input-group mb-3">
+            
+            <select class="form-control" id="dd_role" name="role">
+                <option value="Faculty">Faculty</option>
+                <option value="Student">Student</option>
+            </select>
+        </div>
+        <div id="studdiv" style="display:none;">
+        <p>If you are a student please select the following</p>
+        <div class="input-group mb-3">
+          <input type="text" required class="form-control" name="regno" placeholder="Registration No" value="RegNo">
+          <!-- <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div> -->
+        </div>
+        <div class="input-group mb-3">
+            <input type="text" required class="form-control" name="programcode" placeholder="Program Code" value="ProgramCode">
+        </div>
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" name="admissionyear" placeholder="Admission year" required value="Admission Year e.g. 2020-21">
+        </div>
+        <p>Semester</p>
+        <div class="input-group mb-3">
+            
+            <select class="form-control" name="semester">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+            </select>
+        </div>
+        <p>Section</p>
+        <div class="input-group mb-3">
+            
+            <select class="form-control" name="section">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+                <option value="F">F</option>
+                <option value="G">G</option>
+                <option value="H">H</option>
+                <option value="I">I</option>
+            </select>
+        </div>
+      </div>
+        <div class="row">
+          <!-- /.col -->
+          <div class="col-4">
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          </div>
+          <!-- /.col -->
+        </div>
+        </div>
+      </form>
+    </div>
+    <!-- /.login-card-body -->
+  </div>
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+<script>
+  $(function () {
+
+    $("#dd_role").on("change", function () {
+      var category = $(this).val();
+      if(category == "Student") {
+        $("#studdiv").show();
+      } else {
+        $("#studdiv").hide();
+      }
+    });
+
+    $("#button1").click(function () {
+      var category = $("#colid").val();
+      if(!category) {
+        alert("Please enter institution code");
+      } else {
+        const col1=category.split("-");
+        //alert(col1.length);
+        if(col1.length<3) {
+            alert("Invalie Institution code format");
+        } else {
+            $("#studdiv1").hide();
+            $("#studdiv2").show();
+        }  
+      }
+    });
+    $("#button2").click(function () {
+      var category1 = $("#password").val();
+      if(!category1) {
+        alert("Please enter password");
+      } else {
+        $("#studdiv2").hide();
+        $("#studdiv3").show();
+      }
+    });
+
+  });
+  </script>
+
+
+</body>
+</html>

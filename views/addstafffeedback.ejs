@@ -1,0 +1,257 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Non Teaching Appraisal Form</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width: 1000px; margin: 20px;">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br>
+    Non Teaching Staff Feedback
+  </div>
+  <br>
+  Instructions: Please fill in all details. All questions are mandatory.
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/addstafffeedback/<%= colid %>">
+       
+        <div class="row">
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Name of Faculty/Student</label>
+                    <input required type="text" class="form-control" placeholder="Enter name" name="fsname">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Email</label>
+                    <input required type="text" class="form-control" placeholder="Enter email" name="email">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Student Reg no</label>
+                    <input required type="text" class="form-control" placeholder="Enter reg number" name="regno">
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Department</label>
+                    <input required type="text" class="form-control" placeholder="Enter department name" name="department">
+                </div>
+            </div>
+            
+            
+            
+        </div>
+
+         
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sl. No.</th>
+                    <th>Question</th>
+                    <th>Strongly agree</th>
+                    <th>Agree</th>
+                    <th>Neutral</th>
+                    <th>Disagree</th>
+                    <th>Strongly Disagree</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1.</td>
+                    <td>Shares relevant and pertinent information with appropriate individuals ensuring that the Institution s’ mission is supported.</td>
+                    <td><input type="radio" id="1a" name="one" value="5" required></td>
+                    <td><input type="radio" id="1b" name="one" value="4"></td>
+                    <td><input type="radio" id="1c" name="one" value="3"></td>
+                    <td><input type="radio" id="1d" name="one" value="2"></td>
+                    <td><input type="radio" id="1e" name="one" value="1"></td>
+                </tr>
+                <tr>
+                    <td>2.</td>
+                    <td>Communicates in a manner that is in keeping with professionalism and appropriate for members of the Institution.</td>
+                    <td><input type="radio" id="2a" name="two" value="5" required></td>
+                    <td><input type="radio" id="2b" name="two" value="4"></td>
+                    <td><input type="radio" id="2c" name="two" value="3"></td>
+                    <td><input type="radio" id="2d" name="two" value="2"></td>
+                    <td><input type="radio" id="2e" name="two" value="1"></td>
+                </tr>
+                <tr>
+                    <td>3.</td>
+                    <td>Listens to determine the most effective way to address stakeholder’s needs and concerns. Asks questions and briefs what the speaker is saying to confirm understanding and avoid miscommunications.</td>
+                    <td><input type="radio" id="3a" name="three" value="5" required></td>
+                    <td><input type="radio" id="3b" name="three" value="4"></td>
+                    <td><input type="radio" id="3c" name="three" value="3"></td>
+                    <td><input type="radio" id="3d" name="three" value="2"></td>
+                    <td><input type="radio" id="3e" name="three" value="1"></td>
+                </tr>
+                <tr>
+                    <td>4.</td>
+                    <td>Clearly and accurately conveys relevant and factual information to inform the stakeholders effectively.</td>
+                    <td><input type="radio" id="4a" name="four" value="5" required></td>
+                    <td><input type="radio" id="4b" name="four" value="4"></td>
+                    <td><input type="radio" id="4c" name="four" value="3"></td>
+                    <td><input type="radio" id="4d" name="four" value="2"></td>
+                    <td><input type="radio" id="4e" name="four" value="1"></td>
+                </tr>
+                <tr>
+                    <td>5.</td>
+                    <td>Adapts to the needs of audiences to ensure messages are understood.</td>
+                    <td><input type="radio" id="5a" name="five" value="5" required></td>
+                    <td><input type="radio" id="5b" name="five" value="4"></td>
+                    <td><input type="radio" id="5c" name="five" value="3"></td>
+                    <td><input type="radio" id="5d" name="five" value="2"></td>
+                    <td><input type="radio" id="5e" name="five" value="1"></td>
+                </tr>
+                <tr>
+                    <td>6.</td>
+                    <td>Shares knowledge and resources to reach common goals. Provides feedback and healthy dialogue on performance and operational issues, as requested. Willingly adapts to change and adheres to decided actions.</td>
+                    <td><input type="radio" id="6a" name="six" value="5" required></td>
+                    <td><input type="radio" id="6b" name="six" value="4"></td>
+                    <td><input type="radio" id="6c" name="six" value="3"></td>
+                    <td><input type="radio" id="6d" name="six" value="2"></td>
+                    <td><input type="radio" id="6e" name="six" value="1"></td>
+                </tr>
+                <tr>
+                    <td>7.</td>
+                    <td>Communicates and engages directly, clearly, and tactfully with colleagues and demonstrates respect for diversity and differing points of view among colleagues.</td>
+                    <td><input type="radio" id="7a" name="seven" value="5" required></td>
+                    <td><input type="radio" id="7b" name="seven" value="4"></td>
+                    <td><input type="radio" id="7c" name="seven" value="3"></td>
+                    <td><input type="radio" id="7d" name="seven" value="2"></td>
+                    <td><input type="radio" id="7e" name="seven" value="1"></td>
+                </tr>
+                <tr>
+                    <td>8.</td>
+                    <td>Provides feedback and healthy dialogue on performance and operational issues, as requested. Willingly adapts to change and adheres to decided actions.</td>
+                    <td><input type="radio" id="8a" name="eight" value="5" required></td>
+                    <td><input type="radio" id="8b" name="eight" value="4"></td>
+                    <td><input type="radio" id="8c" name="eight" value="3"></td>
+                    <td><input type="radio" id="8d" name="eight" value="2"></td>
+                    <td><input type="radio" id="8e" name="eight" value="1"></td>
+                </tr>
+                <tr>
+                    <td>9.</td>
+                    <td>Works willingly with others to accomplish goals. Engages with and considers the views of others when analyzing a situation or developing a solution to achieve team goals. Provides knowledge and resources to achieve common goals.</td>
+                    <td><input type="radio" id="9a" name="nine" value="5" required></td>
+                    <td><input type="radio" id="9b" name="nine" value="4"></td>
+                    <td><input type="radio" id="9c" name="nine" value="3"></td>
+                    <td><input type="radio" id="9d" name="nine" value="2"></td>
+                    <td><input type="radio" id="9e" name="nine" value="1"></td>
+                </tr>
+                <tr>
+                    <td>10.</td>
+                    <td>Takes ownership of their contribution to the team’s overall success and understands how successful execution of their responsibilities contributes to public expectations for quality, service, and professionalism.</td>
+                    <td><input type="radio" id="10a" name="ten" value="5" required></td>
+                    <td><input type="radio" id="10b" name="ten" value="4"></td>
+                    <td><input type="radio" id="10c" name="ten" value="3"></td>
+                    <td><input type="radio" id="10d" name="ten" value="2"></td>
+                    <td><input type="radio" id="10e" name="ten" value="1"></td>
+                </tr>
+                <tr>
+                    <td>11.</td>
+                    <td>Maintains a professional and respectful tone and exhibits diplomacy when dealing with sensitive or confrontational situations.</td>
+                    <td><input type="radio" id="11a" name="eleven" value="5" required></td>
+                    <td><input type="radio" id="11b" name="eleven" value="4"></td>
+                    <td><input type="radio" id="11c" name="eleven" value="3"></td>
+                    <td><input type="radio" id="11d" name="eleven" value="2"></td>
+                    <td><input type="radio" id="11e" name="eleven" value="1"></td>
+                </tr>
+                <tr>
+                    <td>12.</td>
+                    <td>Behavior, gestures, and speech present a positive image of the Institution to customers.</td>
+                    <td><input type="radio" id="12a" name="twelve" value="5" required></td>
+                    <td><input type="radio" id="12b" name="twelve" value="4"></td>
+                    <td><input type="radio" id="12c" name="twelve" value="3"></td>
+                    <td><input type="radio" id="12d" name="twelve" value="2"></td>
+                    <td><input type="radio" id="12e" name="twelve" value="1"></td>
+                </tr>
+                <tr>
+                    <td>13.</td>
+                    <td>Chooses ethical action, even under pressure, avoids situations that are inappropriate or present a conflict of interest, and holds self/others accountable for ethical decisions.</td>
+                    <td><input type="radio" id="13a" name="thirteen" value="5" required></td>
+                    <td><input type="radio" id="13b" name="thirteen" value="4"></td>
+                    <td><input type="radio" id="13c" name="thirteen" value="3"></td>
+                    <td><input type="radio" id="13d" name="thirteen" value="2"></td>
+                    <td><input type="radio" id="13e" name="thirteen" value="1"></td>
+                </tr>
+                <tr>
+                    <td>14.</td>
+                    <td>Is authentic, takes action consistent with stated intentions, and provides truthful explanations for actions.</td>
+                    <td><input type="radio" id="14a" name="fourteen" value="5" required></td>
+                    <td><input type="radio" id="14b" name="fourteen" value="4"></td>
+                    <td><input type="radio" id="14c" name="fourteen" value="3"></td>
+                    <td><input type="radio" id="14d" name="fourteen" value="2"></td>
+                    <td><input type="radio" id="14e" name="fourteen" value="1"></td>
+                </tr>
+                <tr>
+                    <td>15.</td>
+                    <td>Takes responsibility for decisions without placing blame on others.</td>
+                    <td><input type="radio" id="15a" name="fifteen" value="5" required></td>
+                    <td><input type="radio" id="15b" name="fifteen" value="4"></td>
+                    <td><input type="radio" id="15c" name="fifteen" value="3"></td>
+                    <td><input type="radio" id="15d" name="fifteen" value="2"></td>
+                    <td><input type="radio" id="15e" name="fifteen" value="1"></td>
+                </tr>
+            </tbody>
+            </table>    
+        <br>
+        
+        <input type="hidden" value="<%= colid %>" name="colid"/>
+
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

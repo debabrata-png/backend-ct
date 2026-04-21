@@ -1,0 +1,97 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View students</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewnaac">Criteria 5-Student Support-Progression</a></li>
+                    <li class="breadcrumb-item"><a href="/viewhigheredu">Student Progression to Higher Education</a></li>
+                    <li class="breadcrumb-item active">List of Students</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">View Students Progression to Higher Education</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form method="post" action="/exporthigheredu" id="frm-export-category"></form>
+                        <table>
+                            <tr>
+                               
+                                <td>
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category').submit()  }" class="btn btn-dark">Export to excel</a>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Academic Year</th>
+                                    <th>Name of Student</th>
+                                    <th>Name of Program Student Graduating from</th>
+                                    <th>Name of Institution joined by student</th>
+                                    <th>Name of Program Student Admitted to</th>
+                                    <th>Status</th>
+                                    <th>Comments</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    <td><%= data.year %></td>
+                                    <td><%= data.studentname %></td>
+                                    <td><%= data.programgrad %></td>
+                                    <td><%= data.institution %></td>
+                                    <td><%= data.programadm %></td>
+                                    <td><%= data.status1 %></td>
+                                    <td><%= data.comments %></td>
+                                    
+                                    
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

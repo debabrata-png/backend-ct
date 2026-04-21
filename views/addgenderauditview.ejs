@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Admin Log in</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width:100%; margin: 20px; padding: 20px;">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br>
+    Gender Audit Form
+  </div>
+  <br>
+  Instructions: Please fill in all details. All questions are mandatory. 
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/creategenderaudit">
+       
+     
+
+    Enter Student Name<br /><br />
+
+<input type="String" required style="width:100%;" className="form-control" placeholder="Enter Student" id="student" name="student" />
+<br /><br />
+
+Enter Reg no<br /><br />
+
+<input type="String" required style="width:100%;" className="form-control" placeholder="Enter Reg no" id="regno" name="regno" />
+<br /><br />
+
+<!-- Enter Fill date<br /><br />
+
+<input type="Date" required style="width:100%;" className="form-control" placeholder="Enter Fill date" id="filldate" name="filldate" />
+<br /><br /> -->
+
+Security is adequate in campus<br />
+
+<input type="radio" id="security" name="security" value="5" required>5<br />
+<input type="radio" id="security" name="security" value="4" required>4<br />
+<input type="radio" id="security" name="security" value="3" required>3<br />
+<input type="radio" id="security" name="security" value="2" required>2<br />
+<input type="radio" id="security" name="security" value="1" required>1<br />
+<br /><br />
+
+Common room is available in campus for girls<br />
+
+<input type="radio" id="common" name="common" value="5" required>5<br />
+<input type="radio" id="common" name="common" value="4" required>4<br />
+<input type="radio" id="common" name="common" value="3" required>3<br />
+<input type="radio" id="common" name="common" value="2" required>2<br />
+<input type="radio" id="common" name="common" value="1" required>1<br />
+<br /><br />
+
+Adequate sanitation facility is available in campus for girls<br />
+
+<input type="radio" id="sanitation" name="sanitation" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="sanitation" name="sanitation" value="Agree" required>Agree<br />
+<input type="radio" id="sanitation" name="sanitation" value="No opinion" required>No opinion<br />
+<input type="radio" id="sanitation" name="sanitation" value="Disagree" required>Disagree<br />
+<input type="radio" id="sanitation" name="sanitation" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+CCTV is installed<br />
+
+<input type="radio" id="cctv" name="cctv" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="cctv" name="cctv" value="Agree" required>Agree<br />
+<input type="radio" id="cctv" name="cctv" value="No opinion" required>No opinion<br />
+<input type="radio" id="cctv" name="cctv" value="Disagree" required>Disagree<br />
+<input type="radio" id="cctv" name="cctv" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+Do you feel safe in classroom<br />
+
+<input type="radio" id="classroom" name="classroom" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="classroom" name="classroom" value="Agree" required>Agree<br />
+<input type="radio" id="classroom" name="classroom" value="No opinion" required>No opinion<br />
+<input type="radio" id="classroom" name="classroom" value="Disagree" required>Disagree<br />
+<input type="radio" id="classroom" name="classroom" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+Do you feel safe in library during and after class hours<br />
+
+<input type="radio" id="library" name="library" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="library" name="library" value="Agree" required>Agree<br />
+<input type="radio" id="library" name="library" value="No opinion" required>No opinion<br />
+<input type="radio" id="library" name="library" value="Disagree" required>Disagree<br />
+<input type="radio" id="library" name="library" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+Classes are arranged during day time<br />
+
+<input type="radio" id="timing" name="timing" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="timing" name="timing" value="Agree" required>Agree<br />
+<input type="radio" id="timing" name="timing" value="No opinion" required>No opinion<br />
+<input type="radio" id="timing" name="timing" value="Disagree" required>Disagree<br />
+<input type="radio" id="timing" name="timing" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+Daycare facility is available<br />
+
+<input type="radio" id="daycare" name="daycare" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="daycare" name="daycare" value="Agree" required>Agree<br />
+<input type="radio" id="daycare" name="daycare" value="No opinion" required>No opinion<br />
+<input type="radio" id="daycare" name="daycare" value="Disagree" required>Disagree<br />
+<input type="radio" id="daycare" name="daycare" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+Medical facility is available separately for girls<br />
+
+<input type="radio" id="medical" name="medical" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="medical" name="medical" value="Agree" required>Agree<br />
+<input type="radio" id="medical" name="medical" value="No opinion" required>No opinion<br />
+<input type="radio" id="medical" name="medical" value="Disagree" required>Disagree<br />
+<input type="radio" id="medical" name="medical" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+Hostel is available for girls<br />
+
+<input type="radio" id="hostel" name="hostel" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="hostel" name="hostel" value="Agree" required>Agree<br />
+<input type="radio" id="hostel" name="hostel" value="No opinion" required>No opinion<br />
+<input type="radio" id="hostel" name="hostel" value="Disagree" required>Disagree<br />
+<input type="radio" id="hostel" name="hostel" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+You are aware about ICC<br />
+
+<input type="radio" id="icc" name="icc" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="icc" name="icc" value="Agree" required>Agree<br />
+<input type="radio" id="icc" name="icc" value="No opinion" required>No opinion<br />
+<input type="radio" id="icc" name="icc" value="Disagree" required>Disagree<br />
+<input type="radio" id="icc" name="icc" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+Regular workshops are conducted for gender awareness<br />
+
+<input type="radio" id="seminar" name="seminar" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="seminar" name="seminar" value="Agree" required>Agree<br />
+<input type="radio" id="seminar" name="seminar" value="No opinion" required>No opinion<br />
+<input type="radio" id="seminar" name="seminar" value="Disagree" required>Disagree<br />
+<input type="radio" id="seminar" name="seminar" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+There are courses for gender sensitization<br />
+
+<input type="radio" id="course" name="course" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="course" name="course" value="Agree" required>Agree<br />
+<input type="radio" id="course" name="course" value="No opinion" required>No opinion<br />
+<input type="radio" id="course" name="course" value="Disagree" required>Disagree<br />
+<input type="radio" id="course" name="course" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+I am aware on how to contact ICC<br />
+
+<input type="radio" id="icccom" name="icccom" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="icccom" name="icccom" value="Agree" required>Agree<br />
+<input type="radio" id="icccom" name="icccom" value="No opinion" required>No opinion<br />
+<input type="radio" id="icccom" name="icccom" value="Disagree" required>Disagree<br />
+<input type="radio" id="icccom" name="icccom" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+I have never felt discriminated<br />
+
+<input type="radio" id="discriminated" name="discriminated" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="discriminated" name="discriminated" value="Agree" required>Agree<br />
+<input type="radio" id="discriminated" name="discriminated" value="No opinion" required>No opinion<br />
+<input type="radio" id="discriminated" name="discriminated" value="Disagree" required>Disagree<br />
+<input type="radio" id="discriminated" name="discriminated" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+Equal opportunity exists in campus for all gender<br />
+
+<input type="radio" id="equal" name="equal" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="equal" name="equal" value="Agree" required>Agree<br />
+<input type="radio" id="equal" name="equal" value="No opinion" required>No opinion<br />
+<input type="radio" id="equal" name="equal" value="Disagree" required>Disagree<br />
+<input type="radio" id="equal" name="equal" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+I am aware about grievance redressal committee and how to contact them<br />
+
+<input type="radio" id="grievance" name="grievance" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="grievance" name="grievance" value="Agree" required>Agree<br />
+<input type="radio" id="grievance" name="grievance" value="No opinion" required>No opinion<br />
+<input type="radio" id="grievance" name="grievance" value="Disagree" required>Disagree<br />
+<input type="radio" id="grievance" name="grievance" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+The campus is safe for all gender all the time<br />
+
+<input type="radio" id="safe" name="safe" value="Strongly agree" required>Strongly agree<br />
+<input type="radio" id="safe" name="safe" value="Agree" required>Agree<br />
+<input type="radio" id="safe" name="safe" value="No opinion" required>No opinion<br />
+<input type="radio" id="safe" name="safe" value="Disagree" required>Disagree<br />
+<input type="radio" id="safe" name="safe" value="Strongly disagree" required>Strongly disagree<br />
+<br /><br />
+
+
+
+
+
+              
+             
+             
+              
+             
+               
+        <br>
+        <input type="hidden" value="<%= colid %>" name="colid"/>
+        <input type="hidden" value="<%= name %>" name="name"/>
+        <input type="hidden" value="<%= user %>" name="user"/>
+      
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

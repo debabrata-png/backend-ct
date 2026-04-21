@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Registration Link</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width: 100%; margin: 20px;">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br>
+    Registration Form
+  </div>
+  <br>
+  Instructions: Please fill in all details. All fields are mandatory.
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/emailregform?colid=<%= colid %>&source<%= source %>">
+        <!-- <h5 class="login-box-msg">All DETAILS</h5> -->
+        Name <br />
+        <input required type="text" placeholder="Enter your name" name="name">
+        <br /><br />
+        Email <br />
+        <input required type="text" placeholder="Enter your email" name="email">
+        <br /><br />
+        Phone <br />
+        <input required type="text" placeholder="Enter your phone" name="phone">
+        <br /><br />
+        Name of Institution / Organization <br />
+        <input type="text" required placeholder="Enter institution name" name="instname">
+        <br /><br />
+        State <br />
+        <input required type="text" placeholder="Enter state" name="state">
+        <br /><br />
+        Preferred time to contact <br />
+        <select name="time">
+            <option value="09:00A.M - 10:00A.M">09:00A.M - 10:00A.M</option>
+            <option value="10:00A.M - 11:00A.M">10:00A.M - 11:00A.M</option>
+            <option value="11:00A.M - 12:00P.M">11:00A.M - 12:00P.M</option>
+            <option value="12:00P.M - 01:00P.M">12:00P.M - 01:00P.M</option>
+            <option value="01:00P.M - 02:00P.M">01:00P.M - 02:00P.M</option>
+            <option value="02:00P.M - 03:00P.M">02:00P.M - 03:00P.M</option>
+            <option value="03:00P.M - 04:00P.M">03:00P.M - 04:00P.M</option>
+            <option value="04:00P.M - 05:00P.M">04:00P.M - 05:00P.M</option>
+            <option value="05:00P.M - 06:00P.M">05:00P.M - 06:00P.M</option>
+            <option value="06:00P.M - 07:00P.M">06:00P.M - 07:00P.M</option>
+            <option value="07:00P.M - 08:00P.M">07:00P.M - 08:00P.M</option>
+        </select>
+        <br /><br />
+        Tell us about yourself <br />
+        <input required type="textarea" placeholder="Enter something about yourself" name="details">
+        <br /><br />
+
+       
+
+
+        <!-- <div class="row">       
+        <div class="col-sm-6">
+        <div class="form-group">
+            <label>The information entered is true to my knowledge</label>
+            <input type="checkbox" class="form-control" name="checkbox">
+            
+        </div>
+    </div>
+    </div> -->
+        
+        <br>
+        <input type="hidden" value="<%= colid %>" name="colid"/>
+        <input type="hidden" value="<%= source %>" name="source"/>
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

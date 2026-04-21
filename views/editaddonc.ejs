@@ -1,0 +1,172 @@
+<%- include("header") %>
+
+<style>
+    #frm-add-category label.error{
+        color:red;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Edit Add on Course</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Edit </li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+<br>
+Activation code is required to publish your course. Please send an email to support@campus.technology with you rcourse details, institution name and username to receive your free activation code.
+<br>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit </h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form id="frm-add-category" name="frm-add-category" method="post" action="/editaddoncourse/<%= pub._id %>">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Title of Add on Course</label>
+                                        <input required value="<%= pub.coursetitle %>" type="text" class="form-control" placeholder="Enter title" name="coursetitle">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Activation code</label>
+                                        <input required type="text" class="form-control" placeholder="Enter code" name="code">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Course Code</label>
+                                        <input required value="<%= pub.coursecode %>" type="text" class="form-control" placeholder="Enter course code" name="coursecode">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Course Type</label>
+                                        <select class="form-control" name="coursetype">
+                                            <option <% if(pub.coursetype == 'Programming'){ %>  selected <% } %> value="Programming">Programming</option>
+                                            <option <% if(pub.coursetype == 'Testing'){ %> selected <%  }  %> value="Testing">Testing</option>
+                                            <option <% if(pub.coursetype == 'Skill Development'){ %> selected <%  }  %> value="Skill Development">Skill Development</option>
+                                            <option <% if(pub.coursetype == 'Hobby Classes'){ %> selected <%  }  %> value="Hobby Classes">Hobby Classes</option>
+                                            <option <% if(pub.coursetype == 'Language'){ %> selected <%  }  %> value="Language">Language</option>
+                                            
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Category</label>
+                                        <select class="form-control" name="category">
+                                            <option <% if(pub.category == 'Free'){ %>  selected <% } %> value="Free">Free</option>
+                                            <option <% if(pub.category == 'Advanced'){ %> selected <%  }  %> value="Advanced">Advanced</option>
+                                            <option <% if(pub.category == 'Masterclass'){ %> selected <%  }  %> value="Masterclass">Masterclass</option>
+                                            <option <% if(pub.category == 'Workshop'){ %> selected <%  }  %> value="Workshop">Workshop</option>
+                                            <option <% if(pub.category == 'Meetup'){ %> selected <%  }  %> value="Meetup">Meetup</option>
+                                            
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Year of Offering</label>
+                                        <select class="form-control" name="year">
+                                            <option <% if(pub.year == '2015-16'){ %>  selected <% } %> value="2015-16">2015-16</option>
+                                            <option <% if(pub.year == '2016-17'){ %> selected <%  }  %> value="2016-17">2016-17</option>
+                                            <option <% if(pub.year == '2017-18'){ %> selected <%  }  %> value="2017-18">2017-18</option>
+                                            <option <% if(pub.year == '2018-19'){ %> selected <%  }  %> value="2018-19">2018-19</option>
+                                            <option <% if(pub.year == '2019-20'){ %> selected <%  }  %> value="2019-20">2019-20</option>
+                                            <option <% if(pub.year == '2020-21'){ %> selected <%  }  %> value="2020-21">2020-21</option>
+                                            <option <% if(pub.year == '2021-22'){ %> selected <%  }  %> value="2021-22">2021-22</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Link</label>
+                                        <input required value="<%= pub.imagelink %>" type="text" class="form-control" placeholder="Enter image link" name="imagelink">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Price</label>
+                                        <input required value="<%= pub.price %>" type="number" class="form-control" placeholder="Enter price" name="price">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>No.of times course offered</label>
+                                        <input required value="<%= pub.offeredtimes %>" type="text" class="form-control" placeholder="Enter the no.of times course offered" name="offeredtimes">
+                                    </div>
+                                </div>
+                              
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Duration</label>
+                                        <input required value="<%= pub.duration %>" type="text" class="form-control" placeholder="Enter the duration" name="duration">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>No.of students enrolled</label>
+                                        <input required value="<%= pub.studentsenrolled %>" type="text" class="form-control" placeholder="Enter the no.of students enrolled" name="studentsenrolled">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>No.of students completed the course</label>
+                                        <input required value="<%= pub.studentscompleted %>" type="text" class="form-control" placeholder="Enter the no.of students completing the course" name="studentscompleted">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Select Status</label>
+                                        <select class="form-control" name="status">
+                                            <option <% if(pub.status == '1'){ %>  selected <% } %> value="1">Active</option>
+                                            <option <% if(pub.status == '0'){ %> selected <%  }  %> value="0">Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-dark" type="submit">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %>

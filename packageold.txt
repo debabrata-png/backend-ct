@@ -1,0 +1,42 @@
+{
+  "name": "natours",
+  "version": "1.0.0",
+  "description": "Learning node",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js"
+  },
+  "author": "Suman",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.897.0",
+    "cookie-parser": "^1.4.5",
+    "dotenv": "^8.2.0",
+    "ejs": "^3.1.6",
+    "exceljs": "^4.2.1",
+    "express": "^4.17.1",
+    "express-flash": "0.0.2",
+    "express-session": "^1.17.1",
+    "helmet": "^4.5.0",
+    "html-to-text": "^8.0.0",
+    "http-errors": "^1.8.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.12.2",
+    "multer": "^1.4.2",
+    "multer-s3": "^2.9.0",
+    "nocache": "^2.1.0",
+    "nodemailer": "^6.6.5",
+    "openai": "^5.6.0",
+    "passport": "^0.4.1",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
+    "pdf-parse": "^1.1.1",
+    "pug": "^3.0.2",
+    "read-excel-file": "^5.1.0",
+    "socket.io": "^4.0.1",
+    "strip": "^3.0.0",
+    "stripe": "^8.149.0",
+    "tempfile": "^3.0.0"
+  }
+}

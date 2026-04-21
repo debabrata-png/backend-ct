@@ -1,0 +1,95 @@
+<%- include("header") %> 
+
+
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <!-- <div class="col-sm-6">
+                <h1 class="m-0 text-dark">View ICT enabled Classrooms and Seminar Halls</h1>
+            </div>/.col -->
+            <div class="col-sm-8">
+                <!-- <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/viewnaac">Criteria 4-Infrastructure-Learning Resources</a></li>
+                    <li class="breadcrumb-item"><a href="/viewict">ICT enabled Classrooms and Seminar Halls</a></li>
+                    <li class="breadcrumb-item active">List of Classrooms and Seminar Halls</li>
+                </ol> -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements disabled -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">View ICT enabled Classrooms and Seminar Halls</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <form method="post" action="/exportict" id="frm-export-category"></form>
+                        <table>
+                            <tr>
+                                
+                                <td>
+                                    <a href="javascript:void(0)" onclick="if(confirm('Are you sure want to export ? ')){  $('#frm-export-category').submit()  }" class="btn btn-dark">Export to excel</a>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <br><br>
+                        <table id="tbl-list-category" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Room number/Name of Classroom</th>
+                                    <th>Room number/Name of Seminar Hall</th>
+                                    <th>Type of ICT Facility</th>
+                                    <th>Link to geo tagged photos</th>
+                                    <th>Status</th>
+                                    <th>Comments</th>
+                            
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% categories.forEach(function(data){ %>
+                                <tr>
+                                    <!-- <td><%= data.id %></td> -->
+                                    <td><%= data.classroom %></td>
+                                    <td><%= data.seminarhall %></td>
+                                    <td><%= data.facitype %></td>
+                                    <td><%= data.link %></td>
+                                    <td><%= data.status1 %></td>
+                                    <td><%= data.comments %></td>
+                                    
+                                    
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<%- include("footer") %> 

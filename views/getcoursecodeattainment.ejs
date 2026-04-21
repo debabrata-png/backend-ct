@@ -1,0 +1,30 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Enter course code</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/getcoursecodeattainment">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Course code</label>
+                <input required type="text" class="form-control" placeholder="Enter course code" name="coursecode">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Exam code</label>
+                <input required type="text" class="form-control" placeholder="Enter exam code" name="examcode">
+            </div>
+        </div>
+        
+        
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

@@ -1,0 +1,371 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>LMS | Admin Log in</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width: 1000px; margin: 20px;">
+  <div class="login-logo">
+    <a href="javascript:void(0)"><b>Campus</b>Canvas</a>
+    <br>
+    Application form
+  </div>
+  <br>
+  Instructions: Please fill in all details. All questions are mandatory.
+  <br><br>
+
+  <% if(messages.success){ %>
+    <div class="alert alert-success">
+      <%= messages.success %>
+    </div>  
+  <% } %>
+
+  <% if(messages.error){ %>
+    <div class="alert alert-danger">
+      <%= messages.error %>
+    </div>  
+  <% } %>
+
+     
+
+      
+
+
+      <form id="frm-add-category" name="frm-add-category" method="post" action="/application1?colid=<%= colid %>&source<%= source %>&programcode=<%= programcode %>">
+       
+        <div class="row">
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Name</label>
+                    <input required type="text" class="form-control" placeholder="Enter name" name="name">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Email</label>
+                    <input required type="text" class="form-control" placeholder="Enter email" name="email">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input required type="text" class="form-control" placeholder="Enter phone" name="phone">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" required class="form-control" placeholder="Enter password" name="password">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Address</label>
+                    <input required type="text" class="form-control" placeholder="Enter address" name="address">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Previous qualifying exam reg no</label>
+                    <input required type="text" class="form-control" placeholder="Enter previous qualifying exam reg no" name="previousregno">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Program code</label>
+                    <input type="text" value="<%= programcode %>" required class="form-control" placeholder="Enter program code" name="programcode">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Parent name</label>
+                    <input type="text" class="form-control" required placeholder="Enter parent name" name="parent">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Parent occupation</label>
+                    <input type="text" class="form-control" required placeholder="Enter parent occupation" name="occupation">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Parent phone</label>
+                    <input type="text" class="form-control" required placeholder="Enter parent phone" name="parentphone">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Parent annual income</label>
+                    <input type="number" class="form-control" required placeholder="Enter annual income" name="annualincome">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Guardian</label>
+                    <input type="text" class="form-control" required placeholder="Enter guardian name" name="guardian">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Guardian phone</label>
+                    <input type="text" class="form-control" required placeholder="Enter guardian phone" name="guardianphone">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Select marrital status</label>
+                    <select class="form-control" name="marrital">
+                        <option value="Single">Single</option>
+                        <option value="Married">Married</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Hostel required</label>
+                    <select class="form-control" name="hostelrequired">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Transportation required</label>
+                    <select class="form-control" name="transportation">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Select religion</label>
+                    <select class="form-control" name="religion">
+                        <option value="Hindu">Hindu</option>
+                        <option value="Muslim">Muslim</option> 
+                        <option value="Christian">Christian</option> 
+                        <option value="Others">Others</option> 
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Select category</label>
+                    <select class="form-control" name="category">
+                        <option value="General">General</option>
+                        <option value="SC">SC</option> 
+                        <option value="ST">ST</option> 
+                        <option value="OBC">OBC</option>
+                        <option value="OBC-A">OBC-A</option>
+                        <option value="OBC-B">OBC-B</option> 
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Caste</label>
+                    <input type="text" required class="form-control" placeholder="Enter caste" name="caste">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Last exam name</label>
+                    <input type="text" class="form-control" required placeholder="Last exam name" name="lastexam">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Last exam board</label>
+                    <select class="form-control" name="board">
+                        <option value="CBSE">CBSE</option>
+                        <option value="ICSE">ICSE</option> 
+                        <option value="VHSE">VHSE</option> 
+                        <option value="KHSE">KHSE</option> 
+                        <option value="NIOS">NIOS</option>
+                        <option value="WBCHE">WBCHE</option> 
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Percentage marks</label>
+                    <input type="number" class="form-control" placeholder="Percentage marks" name="percentagemarks">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Date of birth</label>
+                    <input type="date" class="form-control" required placeholder="Date of birth" name="dateofbirth">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Reserved category</label>
+                    <select class="form-control" name="reservedcategory">
+                        <option value="NCC">NCC</option>
+                        <option value="NSS">NSS</option> 
+                        <option value="Ex-Servicemen">Ex-Servicemen</option> 
+                        <option value="Sports">Sports</option> 
+                        <option value="Illiteracy Eradiction Programme">Illiteracy Eradiction Programme</option>
+                        <option value="Arts">Arts</option> 
+                        <option value="Physically Handicapped">Physically Handicapped</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 1</label>
+                    <input type="text" class="form-control" required placeholder="Subject 1 name" name="subject1">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 1 marks</label>
+                    <input type="number" class="form-control" required placeholder="Subject 1 marks" name="sub1marks">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 2</label>
+                    <input type="text" class="form-control" required placeholder="Subject 2 name" name="subject2">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 2 marks</label>
+                    <input type="number" class="form-control" required placeholder="Subject 2 marks" name="sub2marks">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 3</label>
+                    <input type="text" class="form-control" required placeholder="Subject 3 name" name="subject3">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 3 marks</label>
+                    <input type="number" class="form-control" required placeholder="Subject 3 marks" name="sub3marks">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 4</label>
+                    <input type="text" class="form-control" required placeholder="Subject 4 name" name="subject4">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 4 marks</label>
+                    <input type="number" class="form-control" required placeholder="Subject 4 marks" name="sub4marks">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 5</label>
+                    <input type="text" class="form-control" required placeholder="Subject 5 name" name="subject5">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 5 marks</label>
+                    <input type="number" class="form-control" required placeholder="Subject 5 marks" name="sub5marks">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 6</label>
+                    <input type="text" class="form-control" required placeholder="Subject 6 name" name="subject6">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Subject 6 marks</label>
+                    <input type="number" class="form-control" required placeholder="Subject 6 marks" name="sub6marks">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Bloodgroup</label>
+                    <input type="text" class="form-control" required placeholder="Blood group" name="bloodgroup">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>CAP ID</label>
+                    <input type="text" class="form-control" placeholder="Enter CAP ID if available" name="capid">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Ref no</label>
+                    <input type="text" class="form-control" placeholder="Enter ref no if available" name="refno">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Language 1</label>
+                    <input type="text" class="form-control" required placeholder="Select language 1" name="language1">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Language 2</label>
+                    <input type="text" class="form-control" required placeholder="Select language 2 (Tyupe NA if not applicable)" name="language2">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Aadhar (type NA if not available)</label>
+                    <input type="text" required class="form-control" placeholder="Select aadhar" name="aadhar">
+                </div>
+            </div>
+        </div>
+
+         
+
+        
+        <br>
+        <input type="hidden" value="<%= colid %>" name="colid"/>
+        <input type="hidden" value="<%= source %>" name="source"/>
+        <button class="btn btn-dark" type="submit">Submit</button>
+        </form>
+<br><br>
+  
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

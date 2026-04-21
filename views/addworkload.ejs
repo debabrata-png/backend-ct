@@ -1,0 +1,95 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add Workload</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addworkload/<%= user %>?name=<%= name %>">
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Course Code</label>
+                <input required type="text" class="form-control" placeholder="Enter course code" name="coursecode">
+            </div>
+        </div>
+       
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Program Code</label>
+                <input required type="text" class="form-control" placeholder="Enter program code" name="program">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Module</label>
+                <input required type="text" class="form-control" placeholder="Enter module" name="module">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Weekly hours</label>
+                <input required type="number" class="form-control" placeholder="Enter weekly hours" name="hours">
+            </div>
+        </div>
+       
+      
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Course</label>
+                <input required type="text" class="form-control" placeholder="Enter course" name="course">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Semester</label>
+                <select class="form-control" name="semester">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Section (Select I for combined / interdisciplinary)</label>
+                <select class="form-control" name="section">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="G">G</option>
+                    <option value="H">H</option>
+                    <option value="I">I</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" name="status">
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+        </div>
+      
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 

@@ -1,0 +1,65 @@
+<%- include("header") %> 
+
+<div style="margin: 0px; padding: 40px;">
+<h3>Add KPI</h1>
+<br>
+<br>
+<form id="frm-add-category" name="frm-add-category" method="post" action="/addkpi">
+    <div class="row">
+       
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Comments</label>
+                <input required type="text" class="form-control" placeholder="Enter comments" name="comments">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Current value</label>
+                <input required type="number" class="form-control" placeholder="Enter current value" name="currentvalue">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>First year target</label>
+                <input required type="number" class="form-control" placeholder="Enter target for first year" name="firstkpi">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Three year target</label>
+                <input required type="number" class="form-control" placeholder="Enter target for three years" name="threekpi">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Five year target</label>
+                <input required type="number" class="form-control" placeholder="Enter target for five years" name="fivekpi">
+            </div>
+        </div>
+       
+        <div class="col-sm-6">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Supporting documents link (type NA if not applicable)</label>
+                <input required type="text" class="form-control" placeholder="Enter link" name="link">
+            </div>
+        </div>
+       
+     
+        
+     
+        
+      
+       
+    </div>
+
+    <button class="btn btn-dark" type="submit">Submit</button>
+</form>
+</div>
+<%- include("footer") %> 
