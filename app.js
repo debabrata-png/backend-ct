@@ -5961,6 +5961,23 @@ app.post('/rbell/config/get', rconfig.bellGetConfig);
 app.post('/rbell/config/auto', rconfig.bellAutoBands);
 app.post('/rbell/config/percentile/auto', rconfig.bellAutoPercentile);
 
+const rvcomparectrl=require('./controllers/rvcomparectrl');
+
+app.get('/vcomparison/byrfp', rvcomparectrl.vcomparisonGetByRFP);
+
+const mbusercontroller = require('./controllers/mbusercontroller');
+
+// routes
+app.post('/mbusers', mbusercontroller.mbCreateUser);
+app.post('/mbusers/bulk', mbusercontroller.mbBulkCreateUsers);
+app.get('/mbusers', mbusercontroller.mbGetUsers);
+app.post('/mbusers/:id', mbusercontroller.mbUpdateUser);
+app.post('/mbusersdel/:id', mbusercontroller.mbDeleteUser);
+
+const rvcomparecreatctrl = require('./controllers/rvcomparecreatctrl');
+
+
+app.post('/vcomparison/createpo', rvcomparecreatctrl.vcomparisonCreatePO);
 
 
 const aimatcontroller=require('./controllers/aimatcontroller');
