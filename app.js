@@ -5978,6 +5978,21 @@ const rvcomparecreatctrl = require('./controllers/rvcomparecreatctrl');
 
 
 app.post('/vcomparison/createpo', rvcomparecreatctrl.vcomparisonCreatePO);
+app.get('/vcomparison/full', rvcomparecreatctrl.vcomparisonGetFull);
+app.post('/vcomparison/createpo-per-item', rvcomparecreatctrl.vcomparisonCreatePOPerItem);
+/* View PO */
+app.get('/vpo', rvcomparecreatctrl.vpoGet);
+/* RFP */
+app.get('/vrfp', rvcomparecreatctrl.vrfpGet);
+
+app.post('/vcomparison/createpo-all-l1', rvcomparecreatctrl.vcomparisonCreateAllL1PO);
+
+app.post('/vcomparison/createpo-grouped', rvcomparecreatctrl.vcomparisonCreateVendorGroupedPO);
+
+const rpodetails=require('./controllers/rpodetails');
+app.get('/po/vpo', rpodetails.vpoGet);
+app.get('/po/vpo/full', rpodetails.vpoGetFull);
+
 
 
 const aimatcontroller=require('./controllers/aimatcontroller');
