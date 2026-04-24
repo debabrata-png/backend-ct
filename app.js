@@ -5994,6 +5994,14 @@ app.get('/po/vpo', rpodetails.vpoGet);
 app.get('/po/vpo/full', rpodetails.vpoGetFull);
 
 
+const { instCreate, instGetAll, instGetOne, instUpdate, instDelete, vinsGet } = require('./controllers/insdetailscontroller');
+app.post('/api/institution', instCreate);
+app.get('/api/institution', instGetAll);
+app.get('/api/institution/:id', instGetOne);
+app.post('/api/institutionup/:id', instUpdate);
+app.post('/api/institutiondel/:id', instDelete);
+app.get('/vins', vinsGet);
+
 
 const aimatcontroller=require('./controllers/aimatcontroller');
 
