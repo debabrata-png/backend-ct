@@ -4,84 +4,13 @@ const RFP = require('./../Models/prfp');
 
 const Budget = require('./../Models/pbudget');
 
-
-function calculatePOTotal({ items, transport, loadingfees, pandffees, gst }) {
-
-  //console.log(items);
-
-
-  const itemTotal = items.reduce(
-    (sum, i) => sum + (i.price * i.quantity),
-    0
-  );
-
-  const gst1=gst/100;
-
-  const gstAmount = (itemTotal * (gst || 0)) / 100;
-  // const gstAmount = itemTotal * gst1;
-
-const finalTotal =
-  itemTotal +
-  gstAmount +
-  (transport || 0) +
-  (loadingfees || 0) +
-  (pandffees || 0);
-
-  //console.log(itemTotal + ',' + gstAmount + ',' + finalTotal);
-
-  // const finalTotal =
-  //   itemTotal +
-  //   (transport || 0) +
-  //   (loadingfees || 0) +
-  //   (pandffees || 0) +
-  //   (gst || 0);
-
-  return finalTotal;
-}
-
-async function updateBudgetPriceItemwise({ colid, categoryid, items }) {
-
-  for (let it of items) {
-
-    /* 🔥 find budget for SAME item */
-    const budget = await Budget.findOne({
-      colid,
-      categoryid,
-      itemname: it.itemname
-    });
-
-    if (!budget) {
-      throw new Error(`Budget not found for item: ${it.itemname}`);
-    }
-
-    const remaining = budget.priceremaining || 0;
-
-    const amount = (it.price || 0) * (it.quantity || 0);
-
-    /* ❌ prevent overspend */
-    // if (remaining < amount) {
-    //   throw new Error(
-    //     `Insufficient budget for ${it.itemname}. Remaining: ${remaining}, Required: ${amount}`
-    //   );
-    // }
-
-    /* ✅ deduct item-wise */
-    budget.priceremaining = remaining - amount;
-
-    await budget.save();
-  }
-}
-
 /* 🔥 UPDATE PRICE REMAINING */
-async function updateBudgetPrice({ colid, categoryid, item, amount }) {
+async function updateBudgetPrice({ colid, categoryid, amount }) {
 
   const budget = await Budget.findOne({
     colid,
-    categoryid,
-    item
+    categoryid
   });
-
-  console.log(budget);
 
   if (!budget) {
     throw new Error('Budget not found for category');
@@ -130,16 +59,10 @@ exports.vcomparisonCreatePO = async (req, res) => {
 
     //console.log(po);
 
-//     await updateBudgetPrice({
-//   colid: colid,
-//   categoryid: rfp.categoryid,
-//   amount: po.total
-// });
-
-await updateBudgetPriceItemwise({
+    await updateBudgetPrice({
   colid: colid,
   categoryid: rfp.categoryid,
-  items: po.items
+  amount: po.total
 });
 
     res.json(po);
@@ -184,12 +107,6 @@ exports.vcomparisonCreatePOPerItem = async (req, res) => {
 
      const rfp = await RFP.findById(rfpid);
 
-     var total1=item.quantity + item.price + vendor.transport + vendor.loadingfees + vendor.pandffees;
-     var gst=(100 + vendor.gst)/100;
-     var total2=total1 * gst;
-
-
-
     /* 🔥 CREATE ONE PO PER ITEM */
     const po = await PO.create({
 
@@ -217,24 +134,16 @@ exports.vcomparisonCreatePOPerItem = async (req, res) => {
       loadingfees: vendor.loadingfees,
       pandffees: vendor.pandffees,
       gst: vendor.gst,
-      // total: vendor.total,
-      total: total2,
+      total: vendor.total,
       remark: vendor.remark,
 
       status: 'REGISTRAR_PENDING'
     });
 
-//     await updateBudgetPrice({
-//   colid: colid,
-//   categoryid: rfp.categoryid,
-//   item:item.itemname,
-//   amount: po.total
-// });
-
-await updateBudgetPriceItemwise({
+    await updateBudgetPrice({
   colid: colid,
   categoryid: rfp.categoryid,
-  items: po.items
+  amount: po.total
 });
 
     //console.log(po);
@@ -279,21 +188,6 @@ exports.vcomparisonCreateAllL1PO = async (req, res) => {
 
       const vendor = row.vendorPrices[row.selectedVendor];
 
-      const items = [{
-  itemname: row.itemname,
-  quantity: row.quantity,
-  price: vendor.price,
-  description: row.description
-}];
-
-const total = calculatePOTotal({
-  items,
-  transport: vendor.transport,
-  loadingfees: vendor.loadingfees,
-  pandffees: vendor.pandffees,
-  gst: vendor.gst
-});
-
       const po = await PO.create({
 
         colid: colid,
@@ -305,50 +199,29 @@ const total = calculatePOTotal({
         vendorid: vendor.vendorid,
         vendorname: vendor.vendorname,
 
-        items,
-
-        // items: [
-        //   {
-        //     itemname: row.itemname,
-        //     quantity: row.quantity,
-        //     price: vendor.price,
-        //     description: row.description
-        //   }
-        // ],
+        items: [
+          {
+            itemname: row.itemname,
+            quantity: row.quantity,
+            price: vendor.price,
+            description: row.description
+          }
+        ],
 
         transport: vendor.transport,
         loadingfees: vendor.loadingfees,
         pandffees: vendor.pandffees,
         gst: vendor.gst,
-        // total: vendor.total,
-        total,
+        total: vendor.total,
         remark: vendor.remark,
 
         status: 'REGISTRAR_PENDING'
       });
 
-      const itemTotal = po.items.reduce(
-  (sum, i) => sum + (i.price * i.quantity),
-  0
-);
-
-const finalTotal =
-  itemTotal +
-  (po.transport || 0) +
-  (po.loadingfees || 0) +
-  (po.pandffees || 0) +
-  (po.gst || 0);
-
-//       await updateBudgetPrice({
-//   colid: colid,
-//   categoryid: rfp.categoryid,
-//   amount: total
-// });
-
-await updateBudgetPriceItemwise({
+      await updateBudgetPrice({
   colid: colid,
   categoryid: rfp.categoryid,
-  items: po.items
+  amount: po.total
 });
 
       //console.log(po);
@@ -369,8 +242,6 @@ exports.vcomparisonCreateVendorGroupedPO = async (req, res) => {
   try {
 
     const { rfpid, items, colid } = req.body;
-
-    const rfp = await RFP.findById(rfpid);
 
     let vendorMap = {};
 
@@ -410,18 +281,9 @@ exports.vcomparisonCreateVendorGroupedPO = async (req, res) => {
 
       const v = vendorMap[key];
 
-      const total = calculatePOTotal({
-  items: v.items,
-  transport: v.transport,
-  loadingfees: v.loadingfees,
-  pandffees: v.pandffees,
-  gst: v.gst
-});
-
       const po = await PO.create({
         colid: colid,
         rfpid,
-        categoryid: rfp.categoryid,
         vendorid: v.vendorid,
         vendorname: v.vendorname,
         items: v.items,
@@ -429,35 +291,10 @@ exports.vcomparisonCreateVendorGroupedPO = async (req, res) => {
         loadingfees: v.loadingfees,
         pandffees: v.pandffees,
         gst: v.gst,
-        // total: v.total,
-        total,
+        total: v.total,
         remark: v.remark,
         status: 'REGISTRAR_PENDING'
       });
-
-       const itemTotal = po.items.reduce(
-  (sum, i) => sum + (i.price * i.quantity),
-  0
-);
-
-const finalTotal =
-  itemTotal +
-  (po.transport || 0) +
-  (po.loadingfees || 0) +
-  (po.pandffees || 0) +
-  (po.gst || 0);
-
-  await updateBudgetPriceItemwise({
-  colid: colid,
-  categoryid: rfp.categoryid,
-  items: po.items
-});
-
-//       await updateBudgetPrice({
-//   colid: colid,
-//   categoryid: rfp.categoryid,
-//   amount: finalTotal
-// });
 
       created.push(po);
     }

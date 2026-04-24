@@ -39,39 +39,6 @@ const finalTotal =
   return finalTotal;
 }
 
-async function updateBudgetPriceItemwise({ colid, categoryid, items }) {
-
-  for (let it of items) {
-
-    /* 🔥 find budget for SAME item */
-    const budget = await Budget.findOne({
-      colid,
-      categoryid,
-      itemname: it.itemname
-    });
-
-    if (!budget) {
-      throw new Error(`Budget not found for item: ${it.itemname}`);
-    }
-
-    const remaining = budget.priceremaining || 0;
-
-    const amount = (it.price || 0) * (it.quantity || 0);
-
-    /* ❌ prevent overspend */
-    // if (remaining < amount) {
-    //   throw new Error(
-    //     `Insufficient budget for ${it.itemname}. Remaining: ${remaining}, Required: ${amount}`
-    //   );
-    // }
-
-    /* ✅ deduct item-wise */
-    budget.priceremaining = remaining - amount;
-
-    await budget.save();
-  }
-}
-
 /* 🔥 UPDATE PRICE REMAINING */
 async function updateBudgetPrice({ colid, categoryid, item, amount }) {
 
@@ -135,12 +102,6 @@ exports.vcomparisonCreatePO = async (req, res) => {
 //   categoryid: rfp.categoryid,
 //   amount: po.total
 // });
-
-await updateBudgetPriceItemwise({
-  colid: colid,
-  categoryid: rfp.categoryid,
-  items: po.items
-});
 
     res.json(po);
 
@@ -224,17 +185,11 @@ exports.vcomparisonCreatePOPerItem = async (req, res) => {
       status: 'REGISTRAR_PENDING'
     });
 
-//     await updateBudgetPrice({
-//   colid: colid,
-//   categoryid: rfp.categoryid,
-//   item:item.itemname,
-//   amount: po.total
-// });
-
-await updateBudgetPriceItemwise({
+    await updateBudgetPrice({
   colid: colid,
   categoryid: rfp.categoryid,
-  items: po.items
+  item:item.itemname,
+  amount: po.total
 });
 
     //console.log(po);
@@ -345,12 +300,6 @@ const finalTotal =
 //   amount: total
 // });
 
-await updateBudgetPriceItemwise({
-  colid: colid,
-  categoryid: rfp.categoryid,
-  items: po.items
-});
-
       //console.log(po);
 
       created.push(po);
@@ -446,12 +395,6 @@ const finalTotal =
   (po.loadingfees || 0) +
   (po.pandffees || 0) +
   (po.gst || 0);
-
-  await updateBudgetPriceItemwise({
-  colid: colid,
-  categoryid: rfp.categoryid,
-  items: po.items
-});
 
 //       await updateBudgetPrice({
 //   colid: colid,

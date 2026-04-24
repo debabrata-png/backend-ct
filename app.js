@@ -6002,6 +6002,8 @@ app.post('/api/institutionup/:id', instUpdate);
 app.post('/api/institutiondel/:id', instDelete);
 app.get('/vins', vinsGet);
 
+const indentapprover=require('./controllers/indentapprover');
+app.get('/vindent/withbudget', indentapprover.vindentGetWithBudget);
 
 const aimatcontroller=require('./controllers/aimatcontroller');
 
