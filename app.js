@@ -4280,6 +4280,7 @@ app.get("/api/v2/getSummaryReport", subgroupreportctlr.getSummaryReport);
 app.get("/api/v2/exportReport", subgroupreportctlr.exportReport);
 
 const ds1userctlr = require("./controllers/ds1userctlr");
+const adminuserpasswordctlrds = require("./controllers/adminuserpasswordctlrds");
 const ds1profileeditconfigctlr = require("./controllers/ds1profileeditconfigctlr");
 const ds1profileeditlogctlr = require("./controllers/ds1profileeditlogctlr");
 const ds1datareportctlr = require("./controllers/ds1datareportctlr");
@@ -4299,6 +4300,9 @@ app.get("/api/v2/ds1deleteuser", ds1userctlr.ds1deleteuser);
 app.get("/api/v2/ds1bulkdeleteuser", ds1userctlr.ds1bulkdeleteuser);
 app.get("/api/v2/ds1getuserstats", ds1userctlr.ds1getuserstats);
 app.get("/api/v2/ds1getfilteroptions", ds1userctlr.ds1getfilteroptions);
+app.get("/api/v2/adminpasswordusersds", adminuserpasswordctlrds.getAdminUsersForPasswordds);
+app.get("/api/v2/adminpassworduserds", adminuserpasswordctlrds.getAdminUserPasswordds);
+app.post("/api/v2/adminpasswordupdateds", adminuserpasswordctlrds.updateAdminUserPasswordds);
 
 // ==========================================
 // STUDENT PROFILE ROUTES - ds1 prefix
@@ -4800,6 +4804,7 @@ app.get("/api/v2/getstudentadditionalinfods", answersheetevaluationctlrds.getstu
 // Import controllers
 const categoryctlrds = require('./controllers/categoryctlrds.js');
 const crmh1ctlrds = require('./controllers/crmh1ctlrds.js');
+const leadtouserctlrds = require('./controllers/leadtouserctlrds.js');
 const leadactivityctlrds = require('./controllers/leadactivityctlrds.js');
 const programmasterctlrds = require('./controllers/programmasterctlrds.js');
 const dripcampaignctlrds = require('./controllers/dripcampaignctlrds.js');
@@ -4813,6 +4818,9 @@ const settingsctlrds = require('./controllers/settingsctlrds.js');
 
 // ==================== USER ROUTES ====================
 app.get('/api/v2/searchusersds', crmh1ctlrds.searchusersds);
+app.get('/api/v2/searchcrmleadsforuserds', leadtouserctlrds.searchCrmLeadsForUserds);
+app.get('/api/v2/getleaduserprefillds', leadtouserctlrds.getLeadUserPrefillds);
+app.post('/api/v2/createuserfromleadds', leadtouserctlrds.createUserFromLeadds);
 
 // ==================== CATEGORY ROUTES ====================
 app.post('/api/v2/createcategoryds', categoryctlrds.createcategoryds);
@@ -5739,6 +5747,9 @@ app.post('/indent', indentController1.indentCreate);
 app.get('/indent', indentController1.indentGet);
 app.post('/indent/approve/:id', indentController1.indentApprove);
 
+const pindentprintcontroller = require('./controllers/pindentprintcontroller');
+app.get('/indent/print/users', pindentprintcontroller.getIndentUsersForPrint);
+app.get('/indent/print/byuser', pindentprintcontroller.getIndentsByUserForPrint);
 
 const rfpcontroller = require('./controllers/rfpcontroller');
 
@@ -5893,6 +5904,10 @@ const prfpviewcontroller=require('./controllers/prfpviewcontroller');
 app.get('/rfp/rfp', prfpviewcontroller.getRFPList);
 app.get('/rfp/rfp/byid', prfpviewcontroller.getRFPById);
 
+const prfpprintcontroller=require('./controllers/prfpprintcontroller');
+app.get('/rfp/print/list', prfpprintcontroller.getPrintableRFPList);
+app.get('/rfp/print/byid', prfpprintcontroller.getPrintableRFPById);
+
 const prfpvendorcontroller=require('./controllers/prfpvendorcontroller');
 
 app.get('/vendormapp/rfp', prfpvendorcontroller.vendormappGetRFPList);
@@ -6003,7 +6018,22 @@ app.post('/api/institutiondel/:id', instDelete);
 app.get('/vins', vinsGet);
 
 const indentapprover=require('./controllers/indentapprover');
-app.get('/vindent/withbudget', indentapprover.vindentGetWithBudget);
+app.get('/vindent/withbudgetold', indentapprover.vindentGetWithBudget);
+
+const indentapprover1=require('./controllers/indentapprover1');
+app.get('/vindent/withbudget', indentapprover1.vindentGetWithBudget);
+
+
+const prfpselectcontroller1=require('./controllers/prfpselectcontroller1');
+
+app.get('/rfp/vrfp/approved-indents', prfpselectcontroller1.vrfpGetApprovedIndentsByCategory);
+app.post('/rfp/vrfp/create', prfpselectcontroller1.vrfpCreate);
+
+const prfpcreatenew=require('./controllers/prfpcreatenew');
+app.get('/v/vrfp/approved-indents', prfpcreatenew.vrfpGetApprovedIndentsByCategory);
+app.post('/v/vrfp/create', prfpcreatenew.vrfpCreate);
+app.get('/vstore', prfpcreatenew.vstoreGetAll);
+
 
 const aimatcontroller=require('./controllers/aimatcontroller');
 
@@ -15873,5 +15903,3 @@ var _userConnections = [];
 // 		updateUsernames();
 // 	});
 // });
-
-

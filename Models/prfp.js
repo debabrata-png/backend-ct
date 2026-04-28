@@ -6,6 +6,18 @@ const RfpSchema = new mongoose.Schema({
   storeid: { type: mongoose.Schema.Types.ObjectId, ref: 'pstore' },
   categoryid: { type: mongoose.Schema.Types.ObjectId, ref: 'pcategory' },
 
+   title: String,
+  expirydate: Date,
+  prequalification: String,
+
+  creatorname: String,
+  creatoremail: String,
+
+  terms: String,
+  costterms: String,
+  deliveryterms: String,
+  paymentterms: String,
+
   // multiple items from indent
   items: [
     {

@@ -12,6 +12,18 @@ const IndentSchema = new mongoose.Schema({
 
   budgetid: { type: mongoose.Schema.Types.ObjectId, ref: 'pbudget' },
 
+   department: String,
+  institution: String,
+  name: String,
+  user: String,
+
+   department: String,
+  institution: String,
+  name: String,
+  user: String,
+  description: String,
+  institution: String,
+
   status: {
     type: String,
     default: 'HOD_PENDING'
