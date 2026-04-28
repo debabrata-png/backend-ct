@@ -4281,6 +4281,8 @@ app.get("/api/v2/exportReport", subgroupreportctlr.exportReport);
 
 const ds1userctlr = require("./controllers/ds1userctlr");
 const adminuserpasswordctlrds = require("./controllers/adminuserpasswordctlrds");
+const meritlistcontroller = require("./controllers/meritlistcontroller");
+const meritListUpload = multer({ storage: multer.memoryStorage() });
 const ds1profileeditconfigctlr = require("./controllers/ds1profileeditconfigctlr");
 const ds1profileeditlogctlr = require("./controllers/ds1profileeditlogctlr");
 const ds1datareportctlr = require("./controllers/ds1datareportctlr");
@@ -4303,6 +4305,14 @@ app.get("/api/v2/ds1getfilteroptions", ds1userctlr.ds1getfilteroptions);
 app.get("/api/v2/adminpasswordusersds", adminuserpasswordctlrds.getAdminUsersForPasswordds);
 app.get("/api/v2/adminpassworduserds", adminuserpasswordctlrds.getAdminUserPasswordds);
 app.post("/api/v2/adminpasswordupdateds", adminuserpasswordctlrds.updateAdminUserPasswordds);
+app.post("/api/v2/meritlist", meritlistcontroller.createMeritList);
+app.get("/api/v2/meritlist", meritlistcontroller.getMeritLists);
+app.get("/api/v2/meritlist/applied", meritlistcontroller.getAppliedMeritLists);
+app.get("/api/v2/meritlist/byid", meritlistcontroller.getMeritListById);
+app.post("/api/v2/meritlist/update", meritlistcontroller.updateMeritList);
+app.post("/api/v2/meritlist/status", meritlistcontroller.updateMeritListStatus);
+app.post("/api/v2/meritlist/delete", meritlistcontroller.deleteMeritList);
+app.post("/api/v2/meritlist/bulkupload", meritListUpload.single("file"), meritlistcontroller.bulkUploadMeritList);
 
 // ==========================================
 // STUDENT PROFILE ROUTES - ds1 prefix
