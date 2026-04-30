@@ -5696,6 +5696,13 @@ const hrArrearController = require('./controllers/hrarrearcontroller');
 app.post('/hr/populate-arrear', hrArrearController.hrPopulateArrear);
 app.get('/hr/employee-arrears', hrArrearController.hrGetEmployeeArrears);
 
+const menuAccessController = require('./controllers/menuaccessctlrds');
+app.get('/api/v2/menu-access', menuAccessController.getMenuAccessRules);
+app.post('/api/v2/menu-access', menuAccessController.createMenuAccessRule);
+app.post('/api/v2/menu-access-update', menuAccessController.updateMenuAccessRule);
+app.post('/api/v2/menu-access-delete', menuAccessController.deleteMenuAccessRule);
+app.get('/api/v2/menu-access-roles', menuAccessController.getMenuAccessRoleOptions);
+
 const prController = require("./controllers/prcontroller");
 // Direct API bindings (NO router)
 app.post("/getTemplates", prController.getTemplates);
