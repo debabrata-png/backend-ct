@@ -108768,7 +108768,7 @@ exports.createhrstructuresalbyfac= async (req,res) => {
             name: req.query.name,
             colid: req.query.colid,
             user: req.query.user,
-            stuctureid:req.query.stuctureid,
+stuctureid:req.query.stuctureid,
 structure:req.query.structure,
 component:req.query.component,
 amount:req.query.amount,
@@ -109121,6 +109121,8 @@ component:req.query.component,
 amount:req.query.amount,
 type:req.query.type,
 level:req.query.level,
+effectivedate:req.query.effectivedate || undefined,
+applieddate:req.query.applieddate || undefined,
 status1: 'Submitted',
             comments: 'NA'
         });
@@ -109178,6 +109180,8 @@ component:req.query.component,
 amount:req.query.amount,
 type:req.query.type,
 level:req.query.level,
+effectivedate:req.query.effectivedate || undefined,
+applieddate:req.query.applieddate || undefined,
 status1: 'Submitted',
             comments: 'NA'
         });

@@ -4282,6 +4282,7 @@ app.get("/api/v2/exportReport", subgroupreportctlr.exportReport);
 const ds1userctlr = require("./controllers/ds1userctlr");
 const adminuserpasswordctlrds = require("./controllers/adminuserpasswordctlrds");
 const meritlistcontroller = require("./controllers/meritlistcontroller");
+const regulationmasterctlrds = require("./controllers/regulationmasterctlrds");
 const meritListUpload = multer({ storage: multer.memoryStorage() });
 const ds1profileeditconfigctlr = require("./controllers/ds1profileeditconfigctlr");
 const ds1profileeditlogctlr = require("./controllers/ds1profileeditlogctlr");
@@ -4313,6 +4314,11 @@ app.post("/api/v2/meritlist/update", meritlistcontroller.updateMeritList);
 app.post("/api/v2/meritlist/status", meritlistcontroller.updateMeritListStatus);
 app.post("/api/v2/meritlist/delete", meritlistcontroller.deleteMeritList);
 app.post("/api/v2/meritlist/bulkupload", meritListUpload.single("file"), meritlistcontroller.bulkUploadMeritList);
+app.post("/api/v2/regulationmaster", regulationmasterctlrds.createRegulationMaster);
+app.get("/api/v2/regulationmaster", regulationmasterctlrds.getRegulationMasters);
+app.get("/api/v2/regulationmaster/byid", regulationmasterctlrds.getRegulationMasterById);
+app.post("/api/v2/regulationmaster/update", regulationmasterctlrds.updateRegulationMaster);
+app.post("/api/v2/regulationmaster/delete", regulationmasterctlrds.deleteRegulationMaster);
 
 // ==========================================
 // STUDENT PROFILE ROUTES - ds1 prefix
@@ -5648,6 +5654,7 @@ const salController = require('./controllers/salcontroller');
 
 app.get('/sal/employees', salController.salGetEmployees);
 app.get('/sal/structures', salController.salGetStructures);
+app.get('/sal/employee-structure', salController.salGetEmployeeStructure);
 app.post('/sal/assign', salController.salAssignStructure);
 
 // ✅ Direct function mapping (no router)
@@ -5658,7 +5665,9 @@ const hrsalaryontroller = require('./controllers/hrsalarycontroller');
 // APIs
 app.get('/hr/users', hrsalaryontroller.hrGetUsers);
 app.get('/hr/structures', hrsalaryontroller.hrGetStructures);
+app.get('/hr/ugc-seventh-pay-templates', hrsalaryontroller.hrGetUgcSeventhPayTemplates);
 app.post('/hr/generate-salary', hrsalaryontroller.hrGenerateSalary);
+app.post('/hr/create-ugc-seventh-pay-structure', hrsalaryontroller.hrCreateUgcSeventhPayStructure);
 
 
 const hrController = require('./controllers/hrcontroller');
@@ -5667,6 +5676,8 @@ const hrController = require('./controllers/hrcontroller');
 app.get('/hrsalarypivot', hrController.hrGetSalaryPivot);
 // New Drilldown API
 app.get('/hr/salary-breakup', hrController.hrGetSalaryBreakup);
+app.get('/hr/salary-component-options', hrController.hrGetSalaryComponentOptions);
+app.get('/hr/salary-by-component', hrController.hrGetSalaryByComponent);
 
 const exexamController = require('./controllers/exexamController');
 // Direct call (NO router)
@@ -5680,6 +5691,10 @@ app.post('/ex/run', ctrl.exRunDay);
 const salaryTransfer = require('./controllers/hrsalaryTransfer');
 // Direct controller usage (NO ROUTER)
 app.post('/generate-salary', salaryTransfer.generateSalary);
+
+const hrArrearController = require('./controllers/hrarrearcontroller');
+app.post('/hr/populate-arrear', hrArrearController.hrPopulateArrear);
+app.get('/hr/employee-arrears', hrArrearController.hrGetEmployeeArrears);
 
 const prController = require("./controllers/prcontroller");
 // Direct API bindings (NO router)

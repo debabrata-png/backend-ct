@@ -38,6 +38,12 @@ type: String
 level: {
 type: String
 },
+effectivedate: {
+type: Date
+},
+applieddate: {
+type: Date
+},
 status1: {
         type: String
     },
@@ -49,4 +55,3 @@ status1: {
 const hrsalstructure=mongoose.model('hrsalstructure',hrsalstructureschema);
 
 module.exports=hrsalstructure;
-

@@ -37,11 +37,35 @@ exports.salGetStructures = async (req, res) => {
     }
 };
 
+exports.salGetEmployeeStructure = async (req, res) => {
+    try {
+        const { colid, employeeid } = req.query;
+
+        if (!colid || !employeeid) {
+            return res.status(400).json({ message: 'colid and employeeid are required' });
+        }
+
+        const emp = await User.findById(employeeid).select('name email');
+        if (!emp) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        const data = await hrsalstructure.find({
+            colid,
+            empid: emp.email
+        }).sort({ component: 1 });
+
+        res.json(data);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
 
 // ✅ Assign Salary Structure to Employee
 exports.salAssignStructure = async (req, res) => {
     try {
-        const { employeeid, structureid, colid } = req.body;
+        const { employeeid, structureid, colid, effectivedate, applieddate } = req.body;
 
         //console.log(req.body);
 
@@ -57,14 +81,18 @@ exports.salAssignStructure = async (req, res) => {
             colid
         });
 
-        // 4️⃣ Delete old salary (overwrite)
-        await hrsalstructure.deleteMany({
+        // 4️⃣ Archive old salary structure rows for this employee
+        await hrsalstructure.updateMany({
             // empid: employeeid,
             empid: emp.email,
             colid
+        }, {
+            $set: {
+                level: 'Archived'
+            }
         });
 
-        // 5️⃣ Insert employee salary
+        // 5️⃣ Insert new active employee salary structure
         const insertData = components.map(item => ({
             name: item.name || '',         // ignored as per your instruction
             user: item.user || '',
@@ -80,7 +108,9 @@ exports.salAssignStructure = async (req, res) => {
             component: item.component,
             amount: item.amount,
             type: item.type,
-            level: item.level,
+            level: 'Active',
+            effectivedate: effectivedate || undefined,
+            applieddate: applieddate || undefined,
             status1: item.status1,
             comments: item.comments
         }));

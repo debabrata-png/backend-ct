@@ -103,3 +103,97 @@ exports.hrGetSalaryBreakup = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.hrGetSalaryComponentOptions = async (req, res) => {
+  try {
+    const { colid } = req.query;
+    const matchStage = {};
+
+    if (colid) {
+      matchStage.colid = Number(colid);
+    }
+
+    const [years, months, components] = await Promise.all([
+      HrSalStructure.distinct("year", matchStage),
+      HrSalStructure.distinct("month", matchStage),
+      HrSalStructure.distinct("component", matchStage)
+    ]);
+
+    res.json({
+      years: years.filter(Boolean).sort(),
+      months: months.filter(Boolean).sort(),
+      components: components.filter(Boolean).sort()
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.hrGetSalaryByComponent = async (req, res) => {
+  try {
+    const { colid, month, year, component } = req.query;
+
+    if (!colid) {
+      return res.status(400).json({ error: "colid is required" });
+    }
+
+    const matchStage = {
+      colid: Number(colid)
+    };
+
+    if (month) matchStage.month = month;
+    if (year) matchStage.year = year;
+    if (component) matchStage.component = component;
+
+    const data = await HrSalStructure.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: {
+            empid: "$empid",
+            employee: "$employee",
+            year: "$year",
+            month: "$month",
+            component: "$component"
+          },
+          amount: { $sum: "$amount" },
+          structure: { $first: "$structure" },
+          type: { $first: "$type" },
+          level: { $first: "$level" },
+          paystatus: { $first: "$paystatus" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          id: {
+            $concat: [
+              { $ifNull: ["$_id.empid", ""] },
+              "-",
+              { $ifNull: ["$_id.year", ""] },
+              "-",
+              { $ifNull: ["$_id.month", ""] },
+              "-",
+              { $ifNull: ["$_id.component", ""] }
+            ]
+          },
+          empid: "$_id.empid",
+          employee: "$_id.employee",
+          year: "$_id.year",
+          month: "$_id.month",
+          component: "$_id.component",
+          amount: 1,
+          structure: 1,
+          type: 1,
+          level: 1,
+          paystatus: 1
+        }
+      },
+      { $sort: { employee: 1, empid: 1 } }
+    ]);
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
