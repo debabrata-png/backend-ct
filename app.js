@@ -5864,6 +5864,14 @@ app.get('/po/list', podeliverycontroller.poList);
 app.post('/schedule', podeliverycontroller.scheduleSave);
 app.get('/schedule', podeliverycontroller.scheduleGet);
 
+const pposhipmentbatchcontroller = require('./controllers/pposhipmentbatchcontroller');
+app.get('/po-shipment/approved-pos', pposhipmentbatchcontroller.approvedPOs);
+app.get('/po-shipment/bypo', pposhipmentbatchcontroller.getByPO);
+app.post('/po-shipment', pposhipmentbatchcontroller.createBatch);
+app.post('/po-shipment-receive', pposhipmentbatchcontroller.receiveBatch);
+app.post('/po-shipment-gatepass', pposhipmentbatchcontroller.createGatePass);
+app.post('/po-shipment-inspection', pposhipmentbatchcontroller.updateInspection);
+
 const pqualitycontroller=require('./controllers/pqualitycontroller');
 
 app.post('/quality', pqualitycontroller.qualityCreate);
