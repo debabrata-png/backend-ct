@@ -3,6 +3,7 @@ const VendorSubmission = require('./../Models/prfpvendor');
 const RFP = require('./../Models/prfp');
 
 const Budget = require('./../Models/pbudget');
+const { getInitialPOStatus } = require('./poapprovalworkflow');
 
 
 function calculatePOTotal({ items, transport, loadingfees, pandffees, gst }) {
@@ -125,7 +126,7 @@ exports.vcomparisonCreatePO = async (req, res) => {
 
       items: vendor.items,
       total: vendor.total,
-      status: 'REGISTRAR_PENDING'
+      status: await getInitialPOStatus(colid)
     });
 
     //console.log(po);
@@ -176,7 +177,7 @@ exports.vcomparisonCreatePOPerItem = async (req, res) => {
 
   try {
 
-    const { rfpid, item, vendor, colid } = req.body;
+    const { rfpid, item, vendor, colid, title } = req.body;
 
     if (!rfpid || !item || !vendor) {
       return res.status(400).json({ msg: 'Missing data' });
@@ -198,6 +199,7 @@ exports.vcomparisonCreatePOPerItem = async (req, res) => {
       rfpid,
 
       categoryid: rfp.categoryid,
+      title,
 
       
 
@@ -221,7 +223,7 @@ exports.vcomparisonCreatePOPerItem = async (req, res) => {
       total: total2,
       remark: vendor.remark,
 
-      status: 'REGISTRAR_PENDING'
+      status: await getInitialPOStatus(colid)
     });
 
 //     await updateBudgetPrice({
@@ -269,7 +271,7 @@ exports.vcomparisonCreateAllL1PO = async (req, res) => {
 
   try {
 
-    const { rfpid, items, colid } = req.body;
+    const { rfpid, items, colid, title } = req.body;
 
     let created = [];
 
@@ -301,6 +303,7 @@ const total = calculatePOTotal({
         rfpid,
 
          categoryid: rfp.categoryid,
+        title,
 
         vendorid: vendor.vendorid,
         vendorname: vendor.vendorname,
@@ -324,7 +327,7 @@ const total = calculatePOTotal({
         total,
         remark: vendor.remark,
 
-        status: 'REGISTRAR_PENDING'
+        status: await getInitialPOStatus(colid)
       });
 
       const itemTotal = po.items.reduce(
@@ -368,7 +371,7 @@ exports.vcomparisonCreateVendorGroupedPO = async (req, res) => {
 
   try {
 
-    const { rfpid, items, colid } = req.body;
+    const { rfpid, items, colid, title } = req.body;
 
     const rfp = await RFP.findById(rfpid);
 
@@ -422,6 +425,7 @@ exports.vcomparisonCreateVendorGroupedPO = async (req, res) => {
         colid: colid,
         rfpid,
         categoryid: rfp.categoryid,
+        title,
         vendorid: v.vendorid,
         vendorname: v.vendorname,
         items: v.items,
@@ -432,7 +436,7 @@ exports.vcomparisonCreateVendorGroupedPO = async (req, res) => {
         // total: v.total,
         total,
         remark: v.remark,
-        status: 'REGISTRAR_PENDING'
+        status: await getInitialPOStatus(colid)
       });
 
        const itemTotal = po.items.reduce(

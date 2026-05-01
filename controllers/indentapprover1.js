@@ -5,10 +5,11 @@ exports.vindentGetWithBudget = async (req, res) => {
 
   try {
 
-    const indents = await Indent.find({
-      colid: req.query.colid,
-      status: req.query.status
-    });
+    const filter = { colid: req.query.colid };
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.role) filter.status = `${String(req.query.role || '').trim()}_PENDING`;
+
+    const indents = await Indent.find(filter);
 
     const result = [];
 

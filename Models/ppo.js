@@ -6,6 +6,7 @@ const POSchema = new mongoose.Schema({
   rfpid: { type: mongoose.Schema.Types.ObjectId, ref: 'prfp' },
   vendorid: { type: mongoose.Schema.Types.ObjectId, ref: 'prfpvendor' },
   categoryid: { type: mongoose.Schema.Types.ObjectId, ref: 'pcategory' },
+  title: String,
 
    transport: Number,
   loadingfees: Number,

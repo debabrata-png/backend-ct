@@ -3,6 +3,7 @@ const FinalPrice = require('./../Models/pfinalprice');
 const Vendor = require('./../Models/prfpvendor');
 const RFP = require('./../Models/prfp');
 const PO = require('./../Models/ppo');
+const { approvePOByRole, getInitialPOStatus } = require('./poapprovalworkflow');
 
 /* ================= CATEGORY BY EMAIL ================= */
 exports.categoryByUser = async (req, res) => {
@@ -59,7 +60,8 @@ exports.poCreate = async (req, res) => {
 
   const po = await PO.create({
     ...req.body,
-    items
+    items,
+    status: await getInitialPOStatus(req.body.colid)
   });
 
   res.json(po);
@@ -67,26 +69,23 @@ exports.poCreate = async (req, res) => {
 
 /* ================= PO APPROVAL ================= */
 exports.poApprove = async (req, res) => {
-  const { role } = req.body;
+  try {
+    const po = await PO.findById(req.params.id);
+    if (!po) return res.status(404).json({ msg: 'PO not found' });
 
-  const po = await PO.findById(req.params.id);
-
-  if (role === 'REGISTRAR' && po.status === 'REGISTRAR_PENDING')
-    po.status = 'ACCOUNTS_PENDING';
-
-  else if (role === 'ACCOUNTS' && po.status === 'ACCOUNTS_PENDING')
-    po.status = 'MANAGEMENT_PENDING';
-
-  else if (role === 'MANAGEMENT' && po.status === 'MANAGEMENT_PENDING')
-    po.status = 'APPROVED';
-
-  await po.save();
-  res.json(po);
+    const data = await approvePOByRole(po, req.body.role);
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ msg: err.message });
+  }
 };
 
 /* ================= GET PO ================= */
 exports.poGet = async (req, res) => {
-  const data = await PO.find({ colid: req.query.colid })
+  const filter = { colid: req.query.colid };
+  if (req.query.role) filter.status = `${String(req.query.role || '').trim()}_PENDING`;
+
+  const data = await PO.find(filter)
     .populate('rfpid vendorid categoryid');
 
   res.json(data);

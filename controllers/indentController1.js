@@ -2,6 +2,24 @@ const Store = require('./../Models/pstore');
 const Category = require('./../Models/pcategory');
 const Budget = require('./../Models/pbudget');
 const Indent = require('./../Models/pindent');
+const IndIndentApprovalRole = require('./../Models/indindentapprovalrole');
+
+const fallbackApprovalRoles = ['HOD', 'REGISTRAR', 'ACCOUNTS', 'MANAGEMENT'];
+
+const normalizeRole = (value) => String(value || '').trim();
+
+const getApprovalRoles = async (colid) => {
+  const roles = await IndIndentApprovalRole.find({
+    colid: Number(colid),
+    isactive: { $ne: 'No' }
+  }).sort({ level: 1, role: 1 });
+
+  if (roles.length) {
+    return roles.map((item) => normalizeRole(item.role)).filter(Boolean);
+  }
+
+  return fallbackApprovalRoles;
+};
 
 /* ================= STORE ================= */
 exports.storeCreate = async (req, res) => {
@@ -47,43 +65,64 @@ exports.budgetAvailable = async (req, res) => {
 
 /* ================= INDENT ================= */
 exports.indentCreate = async (req, res) => {
-  const i = await Indent.create(req.body);
-  res.json(i);
+  try {
+    const roles = await getApprovalRoles(req.body.colid);
+    const firstRole = roles[0] || fallbackApprovalRoles[0];
+    const i = await Indent.create({
+      ...req.body,
+      status: `${firstRole}_PENDING`
+    });
+    res.json(i);
+  } catch (err) {
+    res.status(400).json({ msg: err.message });
+  }
 };
 
 exports.indentGet = async (req, res) => {
-  const data = await Indent.find({ colid: req.query.colid })
+  const filter = { colid: req.query.colid };
+  if (req.query.status) filter.status = req.query.status;
+  if (req.query.role) filter.status = `${normalizeRole(req.query.role)}_PENDING`;
+  if (req.query.user) filter.user = req.query.user;
+
+  const data = await Indent.find(filter)
     .populate('storeid categoryid');
 
   res.json(data);
 };
 
 exports.indentApprove = async (req, res) => {
-  const { role } = req.body;
-  const indent = await Indent.findById(req.params.id);
+  try {
+    const currentRole = normalizeRole(req.body.role);
+    const indent = await Indent.findById(req.params.id);
 
-  if (!indent) return res.status(404).json({ msg: 'Not found' });
+    if (!indent) return res.status(404).json({ msg: 'Not found' });
 
-  if (role === 'HOD' && indent.status === 'HOD_PENDING')
-    indent.status = 'REGISTRAR_PENDING';
+    const roles = await getApprovalRoles(indent.colid);
+    const currentIndex = roles.findIndex((role) => role.toLowerCase() === currentRole.toLowerCase());
 
-  else if (role === 'REGISTRAR' && indent.status === 'REGISTRAR_PENDING')
-    indent.status = 'ACCOUNTS_PENDING';
-
-  else if (role === 'ACCOUNTS' && indent.status === 'ACCOUNTS_PENDING')
-    indent.status = 'MANAGEMENT_PENDING';
-
-  else if (role === 'MANAGEMENT' && indent.status === 'MANAGEMENT_PENDING') {
-    indent.status = 'APPROVED';
-
-    // 🔥 reduce budget
-    const b = await Budget.findById(indent.budgetid);
-    if (b) {
-      b.quantityremaining -= indent.quantity;
-      await b.save();
+    if (currentIndex === -1) {
+      return res.status(400).json({ msg: 'Role is not configured for indent approval' });
     }
-  }
 
-  await indent.save();
-  res.json(indent);
+    const expectedStatus = `${roles[currentIndex]}_PENDING`;
+    if (indent.status !== expectedStatus) {
+      return res.status(400).json({ msg: `Indent is pending at ${indent.status}` });
+    }
+
+    const nextRole = roles[currentIndex + 1];
+    indent.status = nextRole ? `${nextRole}_PENDING` : 'APPROVED';
+
+    if (!nextRole) {
+      const b = await Budget.findById(indent.budgetid);
+      if (b) {
+        b.quantityremaining -= indent.quantity;
+        await b.save();
+      }
+    }
+
+    await indent.save();
+    res.json(indent);
+  } catch (err) {
+    res.status(400).json({ msg: err.message });
+  }
 };

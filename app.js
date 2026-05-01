@@ -5726,29 +5726,34 @@ const indcontroller1=require('./controllers/indcontroller1');
 // STORE ROUTES
 app.post('/indstore', indcontroller1.indCreateStore);
 app.get('/indstore', indcontroller1.indGetStores);
-app.post('/indstore/:id', indcontroller1.indUpdateStore);
-app.post('/indstore/:id', indcontroller1.indDeleteStore);
+app.post('/indstore-update/:id', indcontroller1.indUpdateStore);
+app.post('/indstore-delete/:id', indcontroller1.indDeleteStore);
 
 // CATEGORY ROUTES
 app.post('/indcategory', indcontroller1.indCreateCategory);
 app.get('/indcategory', indcontroller1.indGetCategories);
-app.post('/indcategory/:id', indcontroller1.indUpdateCategory);
-app.post('/indcategory/:id', indcontroller1.indDeleteCategory);
+app.post('/indcategory-update/:id', indcontroller1.indUpdateCategory);
+app.post('/indcategory-delete/:id', indcontroller1.indDeleteCategory);
 
 // STOCK ROUTES
 app.post('/indstock', indcontroller1.indCreateStock);
 app.get('/indstock', indcontroller1.indGetStock);
-app.post('/indstock/:id', indcontroller1.indUpdateStock);
-app.post('/indstock/:id', indcontroller1.indDeleteStock);
+app.post('/indstock-update/:id', indcontroller1.indUpdateStock);
+app.post('/indstock-delete/:id', indcontroller1.indDeleteStock);
 
 
 const budgetCtrl = require('./controllers/indbudgetcontroller');
+const indBudgetApprovalRoleCtrl = require('./controllers/indbudgetapprovalrolectlr');
 
 // BUDGET ROUTES
 app.post('/indbudget', budgetCtrl.indCreateBudget);
 app.get('/indbudget', budgetCtrl.indGetBudget);
 app.post('/indbudget/approve/:id', budgetCtrl.indApproveBudget);
 app.post('/indbudget/reject/:id', budgetCtrl.indRejectBudget);
+app.get('/indbudgetapprovalroles', indBudgetApprovalRoleCtrl.getIndBudgetApprovalRoles);
+app.post('/indbudgetapprovalroles', indBudgetApprovalRoleCtrl.createIndBudgetApprovalRole);
+app.post('/indbudgetapprovalroles-update', indBudgetApprovalRoleCtrl.updateIndBudgetApprovalRole);
+app.post('/indbudgetapprovalroles-delete', indBudgetApprovalRoleCtrl.deleteIndBudgetApprovalRole);
 
 
 // const indentCtrl = require('./controllers/indentController');
@@ -5762,6 +5767,7 @@ app.post('/indbudget/reject/:id', budgetCtrl.indRejectBudget);
 
 
 const indentController1 = require('./controllers/indentController1');
+const indIndentApprovalRoleCtrl = require('./controllers/indindentapprovalrolectlr');
 /* STORE */
 app.post('/store', indentController1.storeCreate);
 app.get('/store', indentController1.storeGet);
@@ -5778,6 +5784,10 @@ app.get('/budget/available', indentController1.budgetAvailable);
 app.post('/indent', indentController1.indentCreate);
 app.get('/indent', indentController1.indentGet);
 app.post('/indent/approve/:id', indentController1.indentApprove);
+app.get('/indindentapprovalroles', indIndentApprovalRoleCtrl.getIndIndentApprovalRoles);
+app.post('/indindentapprovalroles', indIndentApprovalRoleCtrl.createIndIndentApprovalRole);
+app.post('/indindentapprovalroles-update', indIndentApprovalRoleCtrl.updateIndIndentApprovalRole);
+app.post('/indindentapprovalroles-delete', indIndentApprovalRoleCtrl.deleteIndIndentApprovalRole);
 
 const pindentprintcontroller = require('./controllers/pindentprintcontroller');
 app.get('/indent/print/users', pindentprintcontroller.getIndentUsersForPrint);
@@ -5841,6 +5851,12 @@ app.get('/rfp/bycategory', ppocontroller.rfpByCategory);
 const poapprovalcontroller=require('./controllers/poapprovalcontroller');
 app.get('/poall', poapprovalcontroller.poGet);
 app.post('/po/approve/:id', poapprovalcontroller.poApprove);
+
+const poApprovalRoleCtrl = require('./controllers/poapprovalrolectlr');
+app.get('/poapprovalroles', poApprovalRoleCtrl.getPOApprovalRoles);
+app.post('/poapprovalroles', poApprovalRoleCtrl.createPOApprovalRole);
+app.post('/poapprovalroles-update', poApprovalRoleCtrl.updatePOApprovalRole);
+app.post('/poapprovalroles-delete', poApprovalRoleCtrl.deletePOApprovalRole);
 
 const podeliverycontroller=require('./controllers/podeliverycontroller');
 app.get('/po/list', podeliverycontroller.poList);
@@ -5950,6 +5966,7 @@ app.get('/vendormapp/vendors', prfpvendorcontroller.vendormappGetVendors);
 app.post('/vendormapp/save', prfpvendorcontroller.vendormappSave);
 
 app.get('/vendormapp/byrfp', prfpvendorcontroller.vendormappGetByRFP);
+app.get('/vendormapp/vendorpos', prfpvendorcontroller.vendormappGetPastPOByVendor);
 
 const prfpselectcontroller=require('./controllers/prfpselectcontroller');
 

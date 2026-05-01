@@ -41,7 +41,7 @@ exports.getIndentUsersForPrint = async (req, res) => {
 
 exports.getIndentsByUserForPrint = async (req, res) => {
   try {
-    const { colid, user, status } = req.query;
+    const { colid, user, status, approvalState } = req.query;
 
     if (!colid || !user) {
       return res.status(400).json({ message: "colid and user are required" });
@@ -54,6 +54,14 @@ exports.getIndentsByUserForPrint = async (req, res) => {
 
     if (status && status !== "ALL") {
       query.status = status;
+    }
+
+    if (approvalState === "approved") {
+      query.status = { $in: ["APPROVED", "RFP_CREATED"] };
+    }
+
+    if (approvalState === "notapproved") {
+      query.status = { $nin: ["APPROVED", "RFP_CREATED"] };
     }
 
     const data = await Indent.find(query)

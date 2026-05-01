@@ -1,10 +1,36 @@
 const Budget = require('./../Models/pbudget');
+const IndBudgetApprovalRole = require('./../Models/indbudgetapprovalrole');
+
+const fallbackApprovalRoles = ['HOD', 'REGISTRAR', 'ACCOUNTS', 'MANAGEMENT'];
+
+const normalizeRole = (value) => String(value || '').trim();
+
+const getApprovalRoles = async (colid) => {
+  const roles = await IndBudgetApprovalRole.find({
+    colid: Number(colid),
+    isactive: { $ne: 'No' }
+  }).sort({ level: 1, role: 1 });
+
+  if (roles.length) {
+    return roles.map((item) => normalizeRole(item.role)).filter(Boolean);
+  }
+
+  return fallbackApprovalRoles;
+};
 
 // CREATE
 exports.indCreateBudget = async (req, res) => {
-  console.log(req.body);
-  const data = await Budget.create(req.body);
-  res.json(data);
+  try {
+    const roles = await getApprovalRoles(req.body.colid);
+    const firstRole = roles[0] || fallbackApprovalRoles[0];
+    const data = await Budget.create({
+      ...req.body,
+      status: `${firstRole}_PENDING`
+    });
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ status: 'fail', message: err.message });
+  }
 };
 
 // GET (FILTER BY colid + status optional)
@@ -22,10 +48,12 @@ exports.indCreateBudget = async (req, res) => {
 // };
 
 exports.indGetBudget = async (req, res) => {
-    const { colid, status } = req.query;
+    const { colid, status, role, storeid } = req.query;
   
     let filter = { colid };
     if (status) filter.status = status;
+    if (role) filter.status = `${normalizeRole(role)}_PENDING`;
+    if (storeid) filter.storeid = storeid;
   
     const data = await Budget.find(filter)
       .populate('storeid')
@@ -36,22 +64,36 @@ exports.indGetBudget = async (req, res) => {
 
 // APPROVAL FLOW
 exports.indApproveBudget = async (req, res) => {
-  const { level } = req.body;
+  try {
+    const currentRole = normalizeRole(req.body.level || req.body.role);
+    const budget = await Budget.findById(req.params.id);
+    if (!budget) return res.status(404).json({ status: 'fail', message: 'Budget not found' });
 
-  let nextStatus = '';
+    const roles = await getApprovalRoles(budget.colid);
+    const currentIndex = roles.findIndex((role) => role.toLowerCase() === currentRole.toLowerCase());
 
-  if (level === 'HOD') nextStatus = 'REGISTRAR_PENDING';
-  else if (level === 'REGISTRAR') nextStatus = 'ACCOUNTS_PENDING';
-  else if (level === 'ACCOUNTS') nextStatus = 'MANAGEMENT_PENDING';
-  else if (level === 'MANAGEMENT') nextStatus = 'APPROVED';
+    if (currentIndex === -1) {
+      return res.status(400).json({ status: 'fail', message: 'Role is not configured for budget approval' });
+    }
 
-  const data = await Budget.findByIdAndUpdate(
-    req.params.id,
-    { status: nextStatus },
-    { new: true }
-  );
+    const expectedStatus = `${roles[currentIndex]}_PENDING`;
+    if (budget.status !== expectedStatus) {
+      return res.status(400).json({ status: 'fail', message: `Budget is pending at ${budget.status}` });
+    }
 
-  res.json(data);
+    const nextRole = roles[currentIndex + 1];
+    const nextStatus = nextRole ? `${nextRole}_PENDING` : 'APPROVED';
+
+    const data = await Budget.findByIdAndUpdate(
+      req.params.id,
+      { status: nextStatus },
+      { new: true }
+    );
+
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ status: 'fail', message: err.message });
+  }
 };
 
 // REJECT

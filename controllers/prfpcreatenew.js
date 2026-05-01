@@ -43,6 +43,10 @@ exports.vrfpGetApprovedIndentsByCategory = async (req, res) => {
 
 exports.vrfpCreate = async (req, res) => {
   try {
+    if (!req.body.items || req.body.items.length === 0) {
+      return res.status(400).json({ msg: 'No approved indents selected' });
+    }
+
     const data = await RFP.create({
       colid: req.body.colid,
       storeid: req.body.storeid,
@@ -69,6 +73,17 @@ exports.vrfpCreate = async (req, res) => {
 
       status: 'OPEN'
     });
+
+    const indentIds = req.body.items.map(i => i.indentid).filter(Boolean);
+
+    await Indent.updateMany(
+      {
+        _id: { $in: indentIds },
+        colid: req.body.colid,
+        status: 'APPROVED'
+      },
+      { status: 'RFP_CREATED' }
+    );
 
     res.json(data);
   } catch (e) {
