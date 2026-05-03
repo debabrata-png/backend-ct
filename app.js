@@ -109,6 +109,7 @@ const admissionDynamicController = require('./controllers/admissiondynamiccontro
 const studentDynamicFilterController = require('./controllers/studentdynamicfilterctlrds');
 const programEligibilityController = require('./controllers/programeligibilityctlrds');
 const dynamicAdmissionToUserController = require('./controllers/dynamicadmissiontouserctlrds');
+const provisionalAdmissionLetterController = require('./controllers/provisionaladmissionletterctlr');
 app.get('/admission-dynamic/programs', admissionDynamicController.getPrograms);
 app.get('/admission-dynamic/program-types', admissionDynamicController.getProgramTypes);
 app.get('/admission-dynamic/fields', admissionDynamicController.getFields);
@@ -133,6 +134,9 @@ app.get('/api/v2/dynamic-admission-to-user/regulations', dynamicAdmissionToUserC
 app.get('/api/v2/dynamic-admission-to-user/subjects', dynamicAdmissionToUserController.getAdmissionSubjectOptions);
 app.post('/api/v2/dynamic-admission-to-user/capacity', dynamicAdmissionToUserController.checkAdmissionMajorCapacity);
 app.post('/api/v2/dynamic-admission-to-user/admit', dynamicAdmissionToUserController.admitDynamicApplicantToUser);
+app.get('/api/v2/provisional-admission-letter/options', provisionalAdmissionLetterController.getProvisionalAdmissionLetterOptions);
+app.post('/api/v2/provisional-admission-letter/search', provisionalAdmissionLetterController.searchProvisionalAdmissionStudents);
+app.get('/api/v2/provisional-admission-letter', provisionalAdmissionLetterController.getProvisionalAdmissionLetter);
 
 
 const port=process.env.PORT || 3001;
@@ -4315,6 +4319,7 @@ const regulationmasterctlrds = require("./controllers/regulationmasterctlrds");
 const regulationsubjectctlrds = require("./controllers/regulationsubjectctlrds");
 const regulationseatctlrds = require("./controllers/regulationseatctlrds");
 const mfeesconfigctlrds = require("./controllers/mfeesconfigctlrds");
+const feesmodelreportctlr = require("./controllers/feesmodelreportctlr");
 const feeApprovalRoleCtrl = require("./controllers/feeapprovalrolectlr");
 const meritListUpload = multer({ storage: multer.memoryStorage() });
 const ds1profileeditconfigctlr = require("./controllers/ds1profileeditconfigctlr");
@@ -4372,6 +4377,7 @@ app.post("/api/v2/mfeesconfig/bulkupload", mfeesconfigctlrds.bulkCreateMFees);
 app.get("/api/v2/mfeesapproval", mfeesconfigctlrds.getMFeesForApproval);
 app.post("/api/v2/mfeesapproval/approve", mfeesconfigctlrds.approveMFees);
 app.post("/api/v2/mfeesapproval/reject", mfeesconfigctlrds.rejectMFees);
+app.get("/api/v2/feesmodelreport", feesmodelreportctlr.getFeesModelReport);
 app.get("/feeapprovalroles", feeApprovalRoleCtrl.getFeeApprovalRoles);
 app.post("/feeapprovalroles", feeApprovalRoleCtrl.createFeeApprovalRole);
 app.post("/feeapprovalroles-update", feeApprovalRoleCtrl.updateFeeApprovalRole);
@@ -4670,6 +4676,7 @@ const studentledgeradjustctlr = require("./controllers/studentledgeradjustctlr")
 const studentledgeranalyticsctlr = require("./controllers/studentledgeranalyticsctlr");
 const studentledgerpaidanalyticsctlr = require("./controllers/studentledgerpaidanalyticsctlr");
 const studentledgercounterpaymentctlr = require("./controllers/studentledgercounterpaymentctlr");
+const studentfeesreceiptctlr = require("./controllers/studentfeesreceiptctlr");
 // Ledger routes
 app.post("/api/v2/addledgerds", ledgerstuddsctlr.addledgerds);
 app.get("/api/v2/getledgersds", ledgerstuddsctlr.getledgersds);
@@ -4694,6 +4701,7 @@ app.get("/api/v2/studentledgeranalytics", studentledgeranalyticsctlr.getStudentL
 app.get("/api/v2/studentledgerpaidanalytics", studentledgerpaidanalyticsctlr.getStudentLedgerPaidAnalytics);
 app.get("/api/v2/studentledgercounterpayment", studentledgercounterpaymentctlr.getCounterPaymentLedger);
 app.post("/api/v2/studentledgercounterpayment/pay", studentledgercounterpaymentctlr.postCounterPayment);
+app.get("/api/v2/studentfeesreceipt", studentfeesreceiptctlr.getFeesReceiptRows);
 
 const ledgerinstallmentdsctlr = require("./controllers/ledgerinstallmentdsctlr.js");
 app.get("/api/v2/getallledgerentriesds", ledgerinstallmentdsctlr.getallledgerentriesds);
