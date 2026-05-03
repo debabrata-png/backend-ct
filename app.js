@@ -105,6 +105,35 @@ app.use(session({
 app.use(flash());
 app.use(cookieParser());
 
+const admissionDynamicController = require('./controllers/admissiondynamiccontroller');
+const studentDynamicFilterController = require('./controllers/studentdynamicfilterctlrds');
+const programEligibilityController = require('./controllers/programeligibilityctlrds');
+const dynamicAdmissionToUserController = require('./controllers/dynamicadmissiontouserctlrds');
+app.get('/admission-dynamic/programs', admissionDynamicController.getPrograms);
+app.get('/admission-dynamic/program-types', admissionDynamicController.getProgramTypes);
+app.get('/admission-dynamic/fields', admissionDynamicController.getFields);
+app.post('/admission-dynamic/fields', admissionDynamicController.createField);
+app.post('/admission-dynamic/fields-update', admissionDynamicController.updateField);
+app.post('/admission-dynamic/fields-delete', admissionDynamicController.deleteField);
+app.get('/admission-dynamic/applications', admissionDynamicController.getApplications);
+app.get('/admission-dynamic/application', admissionDynamicController.getApplicationById);
+app.get('/admission-dynamic/filter-options', admissionDynamicController.getFilterOptions);
+app.post('/admission-dynamic/applications', admissionDynamicController.createApplication);
+app.post('/admission-dynamic/applications-update', admissionDynamicController.updateApplication);
+app.post('/admission-dynamic/applications-bulk', admissionDynamicController.bulkCreateApplications);
+app.get('/api/v2/student-dynamic-filter/options', studentDynamicFilterController.getStudentFilterOptions);
+app.post('/api/v2/student-dynamic-filter/search', studentDynamicFilterController.searchStudentsDynamic);
+app.get('/api/v2/program-eligibility/options', programEligibilityController.getProgramEligibilityOptions);
+app.get('/api/v2/program-eligibility/rule', programEligibilityController.getProgramEligibilityRule);
+app.post('/api/v2/program-eligibility/rule', programEligibilityController.saveProgramEligibilityRule);
+app.post('/api/v2/program-eligibility/run', programEligibilityController.runProgramEligibilityCheck);
+app.get('/api/v2/dynamic-admission-to-user/options', dynamicAdmissionToUserController.getDynamicAdmissionToUserOptions);
+app.post('/api/v2/dynamic-admission-to-user/search', dynamicAdmissionToUserController.searchDynamicAdmissionApplicants);
+app.get('/api/v2/dynamic-admission-to-user/regulations', dynamicAdmissionToUserController.getRegulationsForAdmission);
+app.get('/api/v2/dynamic-admission-to-user/subjects', dynamicAdmissionToUserController.getAdmissionSubjectOptions);
+app.post('/api/v2/dynamic-admission-to-user/capacity', dynamicAdmissionToUserController.checkAdmissionMajorCapacity);
+app.post('/api/v2/dynamic-admission-to-user/admit', dynamicAdmissionToUserController.admitDynamicApplicantToUser);
+
 
 const port=process.env.PORT || 3001;
 
@@ -4283,6 +4312,8 @@ const ds1userctlr = require("./controllers/ds1userctlr");
 const adminuserpasswordctlrds = require("./controllers/adminuserpasswordctlrds");
 const meritlistcontroller = require("./controllers/meritlistcontroller");
 const regulationmasterctlrds = require("./controllers/regulationmasterctlrds");
+const regulationsubjectctlrds = require("./controllers/regulationsubjectctlrds");
+const regulationseatctlrds = require("./controllers/regulationseatctlrds");
 const meritListUpload = multer({ storage: multer.memoryStorage() });
 const ds1profileeditconfigctlr = require("./controllers/ds1profileeditconfigctlr");
 const ds1profileeditlogctlr = require("./controllers/ds1profileeditlogctlr");
@@ -4319,6 +4350,17 @@ app.get("/api/v2/regulationmaster", regulationmasterctlrds.getRegulationMasters)
 app.get("/api/v2/regulationmaster/byid", regulationmasterctlrds.getRegulationMasterById);
 app.post("/api/v2/regulationmaster/update", regulationmasterctlrds.updateRegulationMaster);
 app.post("/api/v2/regulationmaster/delete", regulationmasterctlrds.deleteRegulationMaster);
+app.get("/api/v2/regulationsubject/options", regulationsubjectctlrds.getRegulationSubjectOptions);
+app.post("/api/v2/regulationsubject", regulationsubjectctlrds.createRegulationSubject);
+app.get("/api/v2/regulationsubject", regulationsubjectctlrds.getRegulationSubjects);
+app.post("/api/v2/regulationsubject/update", regulationsubjectctlrds.updateRegulationSubject);
+app.post("/api/v2/regulationsubject/delete", regulationsubjectctlrds.deleteRegulationSubject);
+app.post("/api/v2/regulationsubject/bulkupload", regulationsubjectctlrds.bulkCreateRegulationSubjects);
+app.get("/api/v2/regulationseat/options", regulationseatctlrds.getRegulationSeatOptions);
+app.post("/api/v2/regulationseat", regulationseatctlrds.createRegulationSeat);
+app.get("/api/v2/regulationseat", regulationseatctlrds.getRegulationSeats);
+app.post("/api/v2/regulationseat/update", regulationseatctlrds.updateRegulationSeat);
+app.post("/api/v2/regulationseat/delete", regulationseatctlrds.deleteRegulationSeat);
 
 // ==========================================
 // STUDENT PROFILE ROUTES - ds1 prefix

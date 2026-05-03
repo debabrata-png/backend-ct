@@ -105,6 +105,33 @@ const userschema = new mongoose.Schema({
     degree: {
         type: String
     },
+    regulation: {
+        type: String
+    },
+    samestate: {
+        type: String
+    },
+    admissionapplicationid: {
+        type: String
+    },
+    Major: {
+        type: String
+    },
+    Minor: {
+        type: String
+    },
+    AEC: {
+        type: String
+    },
+    SEC: {
+        type: String
+    },
+    VAC: {
+        type: String
+    },
+    IDC: {
+        type: String
+    },
     minorsub: {
         type: String
     },
@@ -146,4 +173,3 @@ const userschema = new mongoose.Schema({
 const User=mongoose.model('Users',userschema);
 
 module.exports=User;
-
