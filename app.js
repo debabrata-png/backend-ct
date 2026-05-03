@@ -110,6 +110,7 @@ const studentDynamicFilterController = require('./controllers/studentdynamicfilt
 const programEligibilityController = require('./controllers/programeligibilityctlrds');
 const dynamicAdmissionToUserController = require('./controllers/dynamicadmissiontouserctlrds');
 const provisionalAdmissionLetterController = require('./controllers/provisionaladmissionletterctlr');
+const offerLetterController = require('./controllers/offerletterctlr');
 app.get('/admission-dynamic/programs', admissionDynamicController.getPrograms);
 app.get('/admission-dynamic/program-types', admissionDynamicController.getProgramTypes);
 app.get('/admission-dynamic/fields', admissionDynamicController.getFields);
@@ -137,6 +138,9 @@ app.post('/api/v2/dynamic-admission-to-user/admit', dynamicAdmissionToUserContro
 app.get('/api/v2/provisional-admission-letter/options', provisionalAdmissionLetterController.getProvisionalAdmissionLetterOptions);
 app.post('/api/v2/provisional-admission-letter/search', provisionalAdmissionLetterController.searchProvisionalAdmissionStudents);
 app.get('/api/v2/provisional-admission-letter', provisionalAdmissionLetterController.getProvisionalAdmissionLetter);
+app.get('/api/v2/offer-letter/options', offerLetterController.getOfferLetterOptions);
+app.post('/api/v2/offer-letter/search', offerLetterController.searchOfferLetterStudents);
+app.get('/api/v2/offer-letter', offerLetterController.getOfferLetter);
 
 
 const port=process.env.PORT || 3001;
@@ -4318,6 +4322,7 @@ const meritlistcontroller = require("./controllers/meritlistcontroller");
 const regulationmasterctlrds = require("./controllers/regulationmasterctlrds");
 const regulationsubjectctlrds = require("./controllers/regulationsubjectctlrds");
 const regulationseatctlrds = require("./controllers/regulationseatctlrds");
+const regulationcoursemapctlrds = require("./controllers/regulationcoursemapctlrds");
 const mfeesconfigctlrds = require("./controllers/mfeesconfigctlrds");
 const feesmodelreportctlr = require("./controllers/feesmodelreportctlr");
 const feeApprovalRoleCtrl = require("./controllers/feeapprovalrolectlr");
@@ -4363,6 +4368,12 @@ app.get("/api/v2/regulationsubject", regulationsubjectctlrds.getRegulationSubjec
 app.post("/api/v2/regulationsubject/update", regulationsubjectctlrds.updateRegulationSubject);
 app.post("/api/v2/regulationsubject/delete", regulationsubjectctlrds.deleteRegulationSubject);
 app.post("/api/v2/regulationsubject/bulkupload", regulationsubjectctlrds.bulkCreateRegulationSubjects);
+app.get("/api/v2/regulationcoursemap/options", regulationcoursemapctlrds.getRegulationCourseMapOptions);
+app.post("/api/v2/regulationcoursemap", regulationcoursemapctlrds.createRegulationCourseMap);
+app.get("/api/v2/regulationcoursemap", regulationcoursemapctlrds.getRegulationCourseMaps);
+app.post("/api/v2/regulationcoursemap/update", regulationcoursemapctlrds.updateRegulationCourseMap);
+app.post("/api/v2/regulationcoursemap/delete", regulationcoursemapctlrds.deleteRegulationCourseMap);
+app.post("/api/v2/regulationcoursemap/bulkupload", regulationcoursemapctlrds.bulkCreateRegulationCourseMaps);
 app.get("/api/v2/regulationseat/options", regulationseatctlrds.getRegulationSeatOptions);
 app.post("/api/v2/regulationseat", regulationseatctlrds.createRegulationSeat);
 app.get("/api/v2/regulationseat", regulationseatctlrds.getRegulationSeats);
