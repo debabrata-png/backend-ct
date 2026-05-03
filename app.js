@@ -4314,6 +4314,8 @@ const meritlistcontroller = require("./controllers/meritlistcontroller");
 const regulationmasterctlrds = require("./controllers/regulationmasterctlrds");
 const regulationsubjectctlrds = require("./controllers/regulationsubjectctlrds");
 const regulationseatctlrds = require("./controllers/regulationseatctlrds");
+const mfeesconfigctlrds = require("./controllers/mfeesconfigctlrds");
+const feeApprovalRoleCtrl = require("./controllers/feeapprovalrolectlr");
 const meritListUpload = multer({ storage: multer.memoryStorage() });
 const ds1profileeditconfigctlr = require("./controllers/ds1profileeditconfigctlr");
 const ds1profileeditlogctlr = require("./controllers/ds1profileeditlogctlr");
@@ -4361,6 +4363,19 @@ app.post("/api/v2/regulationseat", regulationseatctlrds.createRegulationSeat);
 app.get("/api/v2/regulationseat", regulationseatctlrds.getRegulationSeats);
 app.post("/api/v2/regulationseat/update", regulationseatctlrds.updateRegulationSeat);
 app.post("/api/v2/regulationseat/delete", regulationseatctlrds.deleteRegulationSeat);
+app.get("/api/v2/mfeesconfig/options", mfeesconfigctlrds.getMFeesOptions);
+app.post("/api/v2/mfeesconfig", mfeesconfigctlrds.createMFees);
+app.get("/api/v2/mfeesconfig", mfeesconfigctlrds.getMFees);
+app.post("/api/v2/mfeesconfig/update", mfeesconfigctlrds.updateMFees);
+app.post("/api/v2/mfeesconfig/delete", mfeesconfigctlrds.deleteMFees);
+app.post("/api/v2/mfeesconfig/bulkupload", mfeesconfigctlrds.bulkCreateMFees);
+app.get("/api/v2/mfeesapproval", mfeesconfigctlrds.getMFeesForApproval);
+app.post("/api/v2/mfeesapproval/approve", mfeesconfigctlrds.approveMFees);
+app.post("/api/v2/mfeesapproval/reject", mfeesconfigctlrds.rejectMFees);
+app.get("/feeapprovalroles", feeApprovalRoleCtrl.getFeeApprovalRoles);
+app.post("/feeapprovalroles", feeApprovalRoleCtrl.createFeeApprovalRole);
+app.post("/feeapprovalroles-update", feeApprovalRoleCtrl.updateFeeApprovalRole);
+app.post("/feeapprovalroles-delete", feeApprovalRoleCtrl.deleteFeeApprovalRole);
 
 // ==========================================
 // STUDENT PROFILE ROUTES - ds1 prefix
@@ -4648,6 +4663,13 @@ app.get("/api/v2/studentledgerreportds", studentledgerdsctlr.studentLedgerReport
 app.get("/api/v2/collegerepledgerreportds", collegerepotdsctlr.collegeStudentLedgerReportds);
 
 const ledgerstuddsctlr = require("./controllers/ledgerstuddsctlr");
+const studentfeeapplyctlrds = require("./controllers/studentfeeapplyctlrds");
+const studentledgerapprovalrolectlr = require("./controllers/studentledgerapprovalrolectlr");
+const studentledgerapprovalctlr = require("./controllers/studentledgerapprovalctlr");
+const studentledgeradjustctlr = require("./controllers/studentledgeradjustctlr");
+const studentledgeranalyticsctlr = require("./controllers/studentledgeranalyticsctlr");
+const studentledgerpaidanalyticsctlr = require("./controllers/studentledgerpaidanalyticsctlr");
+const studentledgercounterpaymentctlr = require("./controllers/studentledgercounterpaymentctlr");
 // Ledger routes
 app.post("/api/v2/addledgerds", ledgerstuddsctlr.addledgerds);
 app.get("/api/v2/getledgersds", ledgerstuddsctlr.getledgersds);
@@ -4655,6 +4677,23 @@ app.post("/api/v2/markaspaidds", ledgerstuddsctlr.markaspaidds);
 app.get("/api/v2/searchstudentsds1", ledgerstuddsctlr.searchstudentsds);
 app.get("/api/v2/getfilteroptionsds", ledgerstuddsctlr.getfilteroptionsds);
 app.get("/api/v2/getledgerbystudentds", ledgerstuddsctlr.getledgerbystudentds);
+app.get("/api/v2/studentfeeapply/options", studentfeeapplyctlrds.getStudentFeeApplyOptions);
+app.get("/api/v2/studentfeeapply/students", studentfeeapplyctlrds.searchStudentFeeApplyStudents);
+app.get("/api/v2/studentfeeapply/fees", studentfeeapplyctlrds.getStudentApplicableFees);
+app.post("/api/v2/studentfeeapply/apply", studentfeeapplyctlrds.applyStudentFees);
+app.get("/studentledgerapprovalroles", studentledgerapprovalrolectlr.getStudentLedgerApprovalRoles);
+app.post("/studentledgerapprovalroles", studentledgerapprovalrolectlr.createStudentLedgerApprovalRole);
+app.post("/studentledgerapprovalroles-update", studentledgerapprovalrolectlr.updateStudentLedgerApprovalRole);
+app.post("/studentledgerapprovalroles-delete", studentledgerapprovalrolectlr.deleteStudentLedgerApprovalRole);
+app.get("/api/v2/studentledgerapproval", studentledgerapprovalctlr.getStudentLedgerForApproval);
+app.post("/api/v2/studentledgerapproval/approve", studentledgerapprovalctlr.approveStudentLedger);
+app.post("/api/v2/studentledgerapproval/reject", studentledgerapprovalctlr.rejectStudentLedger);
+app.get("/api/v2/studentledgeradjust", studentledgeradjustctlr.getStudentLedgerAdjustRows);
+app.post("/api/v2/studentledgeradjust/concession", studentledgeradjustctlr.updateStudentLedgerConcession);
+app.get("/api/v2/studentledgeranalytics", studentledgeranalyticsctlr.getStudentLedgerAnalytics);
+app.get("/api/v2/studentledgerpaidanalytics", studentledgerpaidanalyticsctlr.getStudentLedgerPaidAnalytics);
+app.get("/api/v2/studentledgercounterpayment", studentledgercounterpaymentctlr.getCounterPaymentLedger);
+app.post("/api/v2/studentledgercounterpayment/pay", studentledgercounterpaymentctlr.postCounterPayment);
 
 const ledgerinstallmentdsctlr = require("./controllers/ledgerinstallmentdsctlr.js");
 app.get("/api/v2/getallledgerentriesds", ledgerinstallmentdsctlr.getallledgerentriesds);
@@ -6087,6 +6126,8 @@ app.post('/mbusers/bulk', mbusercontroller.mbBulkCreateUsers);
 app.get('/mbusers', mbusercontroller.mbGetUsers);
 app.post('/mbusers/:id', mbusercontroller.mbUpdateUser);
 app.post('/mbusersdel/:id', mbusercontroller.mbDeleteUser);
+app.post('/mbusers-update', mbusercontroller.mbUpdateUser);
+app.post('/mbusers-delete', mbusercontroller.mbDeleteUser);
 
 const rvcomparecreatctrl = require('./controllers/rvcomparecreatctrl');
 

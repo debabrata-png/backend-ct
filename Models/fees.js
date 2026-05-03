@@ -15,6 +15,30 @@ const feesschema = new mongoose.Schema({
         required: [true,'Please enter programcode'],
         unique: false
     },
+    program: {
+        type: String,
+        unique: false
+    },
+    regulation: {
+        type: String,
+        unique: false
+    },
+    major: {
+        type: String,
+        unique: false
+    },
+    minor: {
+        type: String,
+        unique: false
+    },
+    feebook: {
+        type: String,
+        unique: false
+    },
+    cashbook: {
+        type: String,
+        unique: false
+    },
     feegroup: {
         type: String,
         required: [true,'Please enter feegroup'],
@@ -67,10 +91,13 @@ const feesschema = new mongoose.Schema({
         type: String,
         required: [true,'Please enter status'],
         unique: false
+    },
+    approvalhistory: {
+        type: Array,
+        default: []
     }
 })
 //
 const Fees=mongoose.model('Fees',feesschema);
 
 module.exports=Fees;
-

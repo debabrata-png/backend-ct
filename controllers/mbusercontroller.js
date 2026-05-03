@@ -109,8 +109,19 @@ exports.mbGetUsers = async (req, res) => {
 // ✅ Update
 exports.mbUpdateUser = async (req, res) => {
     try {
-        const { id } = req.params;
-        const updated = await User.findByIdAndUpdate(id, req.body, { new: true });
+        const id = req.params.id || req.body.id;
+        const data = { ...req.body };
+        delete data.id;
+        delete data._id;
+
+        if (String(data.role || '').toLowerCase() === 'student') {
+            return res.status(400).json({ message: 'Not allowed' });
+        }
+
+        const updated = await User.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+        if (!updated) {
+            return res.status(404).json({ error: 'User not found' });
+        }
         res.json(updated);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -120,8 +131,11 @@ exports.mbUpdateUser = async (req, res) => {
 // ✅ Delete
 exports.mbDeleteUser = async (req, res) => {
     try {
-        const { id } = req.params;
-        await User.findByIdAndDelete(id);
+        const id = req.params.id || req.body.id;
+        const deleted = await User.findByIdAndDelete(id);
+        if (!deleted) {
+            return res.status(404).json({ error: 'User not found' });
+        }
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });

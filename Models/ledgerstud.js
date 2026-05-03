@@ -121,7 +121,23 @@ const ledgerstudschema = new mongoose.Schema({
         required: [true,'Please enter status'],
         unique: false
     },
+    approvalhistory: {
+        type: Array,
+        default: []
+    },
       programcode: {
+        type: String,
+    },
+    regulation: {
+        type: String,
+    },
+    major: {
+        type: String,
+    },
+    minor: {
+        type: String,
+    },
+    feeid: {
         type: String,
     },
     admissionyear: {
@@ -140,4 +156,3 @@ ledgerstudschema.index({ colid: 1, regno: 1 });
 const Ledgerstud=mongoose.model('Ledgerstud',ledgerstudschema);
 
 module.exports=Ledgerstud;
-
