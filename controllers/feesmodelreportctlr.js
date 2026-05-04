@@ -2,7 +2,9 @@ const Fees = require("../Models/fees");
 
 const filterFields = [
   "academicyear",
+  "program",
   "programcode",
+  "feecategory",
   "feegroup",
   "feeeitem",
   "feebook",

@@ -7,6 +7,10 @@ const SubjectMarksSchema = new mongoose.Schema({
 
 const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   colid: Number,
+  formid: {
+    type: String,
+    default: 'default'
+  },
   academicyear: String,
   name: String,
   email: String,

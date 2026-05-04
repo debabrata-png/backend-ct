@@ -1,5 +1,6 @@
 const AdmissionFormField = require('./../Models/admissionformfield');
 const AdmissionApplication = require('./../Models/admissionapplicationdynamic');
+const AdmissionDynamicForm = require('./../Models/admissiondynamicform');
 const MPrograms = require('./../Models/mprograms');
 
 const cleanFieldName = (value) => String(value || '')
@@ -11,6 +12,104 @@ const cleanFieldName = (value) => String(value || '')
 const normalizeOptions = (options) => {
   if (Array.isArray(options)) return options.map((item) => String(item).trim()).filter(Boolean);
   return String(options || '').split(',').map((item) => item.trim()).filter(Boolean);
+};
+
+const cleanFormId = (value) => cleanFieldName(value || 'default') || 'default';
+
+const ensureDefaultForm = async (colid) => {
+  let form = await AdmissionDynamicForm.findOne({ colid, formid: 'default' });
+  if (!form) {
+    form = await AdmissionDynamicForm.create({
+      colid,
+      formid: 'default',
+      title: 'Default Admission Form',
+      description: '',
+      isactive: 'Yes'
+    });
+  }
+  return form;
+};
+
+AdmissionFormField.collection.dropIndex('colid_1_fieldname_1').catch(() => {});
+
+exports.getForms = async (req, res) => {
+  try {
+    const colid = Number(req.query.colid);
+    await ensureDefaultForm(colid);
+    const data = await AdmissionDynamicForm.find({
+      colid,
+      ...(req.query.activeOnly === 'No' ? {} : { isactive: 'Yes' })
+    }).sort({ createdAt: -1, title: 1 });
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.getForm = async (req, res) => {
+  try {
+    const colid = Number(req.query.colid);
+    const formid = cleanFormId(req.query.formid);
+    if (formid === 'default') await ensureDefaultForm(colid);
+    const data = await AdmissionDynamicForm.findOne({ colid, formid, isactive: 'Yes' });
+    if (!data) return res.status(404).json({ msg: 'Admission form not found' });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.createForm = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    const title = String(req.body.title || '').trim();
+    if (!title) return res.status(400).json({ msg: 'Form title is required' });
+
+    const data = await AdmissionDynamicForm.create({
+      colid,
+      formid: cleanFormId(req.body.formid || title),
+      title,
+      description: req.body.description || '',
+      isactive: req.body.isactive || 'Yes',
+      user: req.body.user || ''
+    });
+
+    res.json(data);
+  } catch (err) {
+    if (err.code === 11000) return res.status(400).json({ msg: 'Form id already exists' });
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.updateForm = async (req, res) => {
+  try {
+    const data = await AdmissionDynamicForm.findOneAndUpdate(
+      { _id: req.body.id, colid: Number(req.body.colid) },
+      {
+        title: req.body.title,
+        description: req.body.description || '',
+        isactive: req.body.isactive || 'Yes'
+      },
+      { new: true }
+    );
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.deleteForm = async (req, res) => {
+  try {
+    await AdmissionDynamicForm.findOneAndUpdate(
+      { _id: req.body.id, colid: Number(req.body.colid) },
+      { isactive: 'No' },
+      { new: true }
+    );
+    res.json({ msg: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
 };
 
 exports.getPrograms = async (req, res) => {
@@ -41,8 +140,15 @@ exports.getProgramTypes = async (req, res) => {
 
 exports.getFields = async (req, res) => {
   try {
+    const colid = Number(req.query.colid);
+    const formid = cleanFormId(req.query.formid);
+    if (formid === 'default') await ensureDefaultForm(colid);
+    const formFilter = formid === 'default'
+      ? { $or: [{ formid }, { formid: { $exists: false } }] }
+      : { formid };
     const data = await AdmissionFormField.find({
-      colid: Number(req.query.colid),
+      colid,
+      ...formFilter,
       ...(req.query.activeOnly === 'No' ? {} : { isactive: 'Yes' })
     }).sort({ order: 1, label: 1 });
 
@@ -61,6 +167,7 @@ exports.createField = async (req, res) => {
 
     const data = await AdmissionFormField.create({
       colid: Number(req.body.colid),
+      formid: cleanFormId(req.body.formid),
       fieldname,
       label: req.body.label,
       type: req.body.type || 'text',
@@ -79,8 +186,12 @@ exports.createField = async (req, res) => {
 
 exports.updateField = async (req, res) => {
   try {
+    const formid = cleanFormId(req.body.formid);
+    const formFilter = formid === 'default'
+      ? { $or: [{ formid }, { formid: { $exists: false } }] }
+      : { formid };
     const data = await AdmissionFormField.findOneAndUpdate(
-      { _id: req.body.id, colid: Number(req.body.colid) },
+      { _id: req.body.id, colid: Number(req.body.colid), ...formFilter },
       {
         label: req.body.label,
         type: req.body.type,
@@ -100,8 +211,12 @@ exports.updateField = async (req, res) => {
 
 exports.deleteField = async (req, res) => {
   try {
+    const formid = cleanFormId(req.body.formid);
+    const formFilter = formid === 'default'
+      ? { $or: [{ formid }, { formid: { $exists: false } }] }
+      : { formid };
     await AdmissionFormField.findOneAndUpdate(
-      { _id: req.body.id, colid: Number(req.body.colid) },
+      { _id: req.body.id, colid: Number(req.body.colid), ...formFilter },
       { isactive: 'No' },
       { new: true }
     );
@@ -113,6 +228,7 @@ exports.deleteField = async (req, res) => {
 
 const applicationPayload = (body) => ({
   colid: Number(body.colid),
+  formid: cleanFormId(body.formid),
   academicyear: body.academicyear,
   name: body.name,
   email: String(body.email || '').trim().toLowerCase(),
@@ -176,7 +292,7 @@ exports.bulkCreateApplications = async (req, res) => {
 
     const payloads = items.map((item, index) => ({
       rowNumber: item.rowNumber || index + 2,
-      data: applicationPayload({ ...item, colid: req.body.colid || item.colid })
+      data: applicationPayload({ ...item, colid: req.body.colid || item.colid, formid: req.body.formid || item.formid })
     }));
 
     const errors = [];
@@ -268,6 +384,7 @@ exports.updateApplication = async (req, res) => {
 exports.getApplications = async (req, res) => {
   try {
     const filter = { colid: Number(req.query.colid) };
+    if (req.query.formid) filter.formid = cleanFormId(req.query.formid);
     if (req.query.academicyear) filter.academicyear = req.query.academicyear;
     if (req.query.programcode) filter.programcode = req.query.programcode;
     if (req.query.category) filter.category = req.query.category;
@@ -285,6 +402,7 @@ exports.getApplications = async (req, res) => {
 exports.getFilterOptions = async (req, res) => {
   try {
     const filter = { colid: Number(req.query.colid) };
+    if (req.query.formid) filter.formid = cleanFormId(req.query.formid);
     const data = await AdmissionApplication.find(filter)
       .select('programapplied programcode category')
       .lean();

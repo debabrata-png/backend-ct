@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 const AdmissionFormFieldSchema = new mongoose.Schema({
   colid: Number,
+  formid: {
+    type: String,
+    default: 'default'
+  },
   fieldname: String,
   label: String,
   type: {
@@ -23,6 +27,6 @@ const AdmissionFormFieldSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-AdmissionFormFieldSchema.index({ colid: 1, fieldname: 1 }, { unique: true });
+AdmissionFormFieldSchema.index({ colid: 1, formid: 1, fieldname: 1 }, { unique: true });
 
 module.exports = mongoose.model('admissionformfield', AdmissionFormFieldSchema);
