@@ -8,6 +8,14 @@ const AdmissionFormFieldSchema = new mongoose.Schema({
   },
   fieldname: String,
   label: String,
+  page: {
+    type: String,
+    default: 'Page 1'
+  },
+  section: {
+    type: String,
+    default: 'Additional Details'
+  },
   type: {
     type: String,
     default: 'text'

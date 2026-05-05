@@ -1,7 +1,9 @@
 const AdmissionFormField = require('./../Models/admissionformfield');
 const AdmissionApplication = require('./../Models/admissionapplicationdynamic');
 const AdmissionDynamicForm = require('./../Models/admissiondynamicform');
+const EmailConfiguration = require('./../Models/emailconfigurationds');
 const MPrograms = require('./../Models/mprograms');
+const nodemailer = require('nodemailer');
 
 const cleanFieldName = (value) => String(value || '')
   .trim()
@@ -31,6 +33,95 @@ const ensureDefaultForm = async (colid) => {
 };
 
 AdmissionFormField.collection.dropIndex('colid_1_fieldname_1').catch(() => {});
+
+const createAdmissionMailTransport = (config) => {
+  const smtpHost = config.smtp || config.smptp;
+  if (smtpHost) {
+    return nodemailer.createTransport({
+      host: smtpHost,
+      port: Number(config.port || 587),
+      secure: String(config.secure || '').toLowerCase() === 'yes',
+      auth: {
+        user: config.username,
+        pass: config.password
+      }
+    });
+  }
+
+  return nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: config.username,
+      pass: config.password
+    }
+  });
+};
+
+const sendAdmissionConfirmationMail = async (application) => {
+  try {
+    if (!application?.email) return { sent: false, reason: 'Applicant email missing' };
+
+    const mailConfig = await EmailConfiguration.findOne({
+      colid: application.colid,
+      provider: /^gmail$/i,
+      type: /^admission$/i,
+      isactive: 'Yes'
+    }).lean();
+
+    if (!mailConfig?.username || !mailConfig?.password) {
+      return { sent: false, reason: 'Admission Gmail configuration missing' };
+    }
+
+    const formDefinition = await AdmissionDynamicForm.findOne({
+      colid: application.colid,
+      formid: application.formid || 'default'
+    }).lean();
+
+    const transporter = createAdmissionMailTransport(mailConfig);
+    const subject = `Admission application received - ${application._id}`;
+    const text = [
+      `Dear ${application.name || 'Applicant'},`,
+      '',
+      'Thank you for submitting your admission application.',
+      `Application ID: ${application._id}`,
+      `Academic Year: ${application.academicyear || ''}`,
+      `Program: ${application.programapplied || application.programcode || ''}`,
+      `Form: ${formDefinition?.title || application.formid || 'Admission Application'}`,
+      '',
+      'Please keep the application acknowledgement for future reference.',
+      '',
+      'This is an automated confirmation email.'
+    ].join('\n');
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;line-height:1.55;color:#111827">
+        <p>Dear ${application.name || 'Applicant'},</p>
+        <p>Thank you for submitting your admission application.</p>
+        <table style="border-collapse:collapse;margin:12px 0">
+          <tr><td style="padding:6px 10px;border:1px solid #d1d5db"><b>Application ID</b></td><td style="padding:6px 10px;border:1px solid #d1d5db">${application._id}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #d1d5db"><b>Academic Year</b></td><td style="padding:6px 10px;border:1px solid #d1d5db">${application.academicyear || ''}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #d1d5db"><b>Program</b></td><td style="padding:6px 10px;border:1px solid #d1d5db">${application.programapplied || application.programcode || ''}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #d1d5db"><b>Form</b></td><td style="padding:6px 10px;border:1px solid #d1d5db">${formDefinition?.title || application.formid || 'Admission Application'}</td></tr>
+        </table>
+        <p>Please keep the application acknowledgement for future reference.</p>
+        <p style="font-size:12px;color:#6b7280">This is an automated confirmation email.</p>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: `${formDefinition?.title || 'Admissions'} <${mailConfig.username}>`,
+      to: application.email,
+      subject,
+      text,
+      html
+    });
+
+    return { sent: true };
+  } catch (err) {
+    console.error('Admission confirmation mail failed:', err.message);
+    return { sent: false, reason: err.message };
+  }
+};
 
 exports.getForms = async (req, res) => {
   try {
@@ -150,7 +241,7 @@ exports.getFields = async (req, res) => {
       colid,
       ...formFilter,
       ...(req.query.activeOnly === 'No' ? {} : { isactive: 'Yes' })
-    }).sort({ order: 1, label: 1 });
+    }).sort({ page: 1, section: 1, order: 1, label: 1 });
 
     res.json(data);
   } catch (err) {
@@ -170,6 +261,8 @@ exports.createField = async (req, res) => {
       formid: cleanFormId(req.body.formid),
       fieldname,
       label: req.body.label,
+      page: req.body.page || 'Page 1',
+      section: req.body.section || 'Additional Details',
       type: req.body.type || 'text',
       options: normalizeOptions(req.body.options),
       isrequired: req.body.isrequired || 'No',
@@ -194,6 +287,8 @@ exports.updateField = async (req, res) => {
       { _id: req.body.id, colid: Number(req.body.colid), ...formFilter },
       {
         label: req.body.label,
+        page: req.body.page || 'Page 1',
+        section: req.body.section || 'Additional Details',
         type: req.body.type,
         options: normalizeOptions(req.body.options),
         isrequired: req.body.isrequired,
@@ -276,7 +371,10 @@ exports.createApplication = async (req, res) => {
     }
 
     const data = await AdmissionApplication.create(payload);
-    res.json(data);
+    const mailStatus = await sendAdmissionConfirmationMail(data);
+    const response = data.toObject();
+    response.mailStatus = mailStatus;
+    res.json(response);
   } catch (err) {
     if (err.code === 11000) return res.status(400).json({ msg: 'Duplicate email or phone is not allowed' });
     res.status(500).json({ msg: err.message });

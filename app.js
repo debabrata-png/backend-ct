@@ -111,6 +111,7 @@ const programEligibilityController = require('./controllers/programeligibilityct
 const dynamicAdmissionToUserController = require('./controllers/dynamicadmissiontouserctlrds');
 const provisionalAdmissionLetterController = require('./controllers/provisionaladmissionletterctlr');
 const offerLetterController = require('./controllers/offerletterctlr');
+const emailConfigurationController = require('./controllers/emailconfigurationdsctlr');
 app.get('/admission-dynamic/programs', admissionDynamicController.getPrograms);
 app.get('/admission-dynamic/program-types', admissionDynamicController.getProgramTypes);
 app.get('/admission-dynamic/forms', admissionDynamicController.getForms);
@@ -146,6 +147,10 @@ app.get('/api/v2/provisional-admission-letter', provisionalAdmissionLetterContro
 app.get('/api/v2/offer-letter/options', offerLetterController.getOfferLetterOptions);
 app.post('/api/v2/offer-letter/search', offerLetterController.searchOfferLetterStudents);
 app.get('/api/v2/offer-letter', offerLetterController.getOfferLetter);
+app.get('/api/v2/email-configuration', emailConfigurationController.getEmailConfigurations);
+app.post('/api/v2/email-configuration', emailConfigurationController.createEmailConfiguration);
+app.post('/api/v2/email-configuration-update', emailConfigurationController.updateEmailConfiguration);
+app.post('/api/v2/email-configuration-delete', emailConfigurationController.deleteEmailConfiguration);
 
 
 const port=process.env.PORT || 3001;
