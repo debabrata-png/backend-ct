@@ -5,6 +5,20 @@ const SubjectMarksSchema = new mongoose.Schema({
   marks: Number
 }, { _id: false });
 
+const AdmissionDocumentSchema = new mongoose.Schema({
+  documenttype: String,
+  description: String,
+  filename: String,
+  originalname: String,
+  mimetype: String,
+  size: Number,
+  bucket: String,
+  region: String,
+  key: String,
+  url: String,
+  uploadedAt: Date
+}, { _id: false });
+
 const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   colid: Number,
   formid: {
@@ -30,7 +44,6 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   dateofapplication: String,
   age: Number,
   twelvesubjects: String,
-  photolink: String,
   programtype: String,
   programapplied: String,
   programcode: String,
@@ -40,6 +53,7 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   },
   tenthsubjectmarks: [SubjectMarksSchema],
   twelvesubjectmarks: [SubjectMarksSchema],
+  documents: [AdmissionDocumentSchema],
   extraFields: mongoose.Schema.Types.Mixed,
   user: String
 }, { timestamps: true });

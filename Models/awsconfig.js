@@ -25,6 +25,10 @@ const awsconfigschema = new mongoose.Schema({
     type: {
         type: String
     },
+    default: {
+        type: String,
+        default: 'No'
+    },
     colid: {
         type: Number,
         required: [true,'Please enter colid']
@@ -34,4 +38,3 @@ const awsconfigschema = new mongoose.Schema({
 const Awsconfig=mongoose.model('Awsconfig',awsconfigschema);
 
 module.exports=Awsconfig;
-

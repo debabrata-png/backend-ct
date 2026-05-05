@@ -3,7 +3,13 @@ const AdmissionApplication = require('./../Models/admissionapplicationdynamic');
 const AdmissionDynamicForm = require('./../Models/admissiondynamicform');
 const EmailConfiguration = require('./../Models/emailconfigurationds');
 const MPrograms = require('./../Models/mprograms');
+const Awsconfig = require('./../Models/awsconfig');
+const path = require('path');
+const multer = require('multer');
+const AWS = require('aws-sdk');
 const nodemailer = require('nodemailer');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const cleanFieldName = (value) => String(value || '')
   .trim()
@@ -17,6 +23,14 @@ const normalizeOptions = (options) => {
 };
 
 const cleanFormId = (value) => cleanFieldName(value || 'default') || 'default';
+
+const encodeS3Key = (key) => String(key || '').split('/').map(encodeURIComponent).join('/');
+
+const s3Url = (bucket, region, key) => {
+  const encodedKey = encodeS3Key(key);
+  if (region === 'us-east-1') return `https://${bucket}.s3.amazonaws.com/${encodedKey}`;
+  return `https://${bucket}.s3.${region}.amazonaws.com/${encodedKey}`;
+};
 
 const ensureDefaultForm = async (colid) => {
   let form = await AdmissionDynamicForm.findOne({ colid, formid: 'default' });
@@ -50,6 +64,9 @@ const createAdmissionMailTransport = (config) => {
 
   return nodemailer.createTransport({
     service: 'Gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Use true for port 465
     auth: {
       user: config.username,
       pass: config.password
@@ -277,6 +294,59 @@ exports.createField = async (req, res) => {
   }
 };
 
+exports.bulkCreateFields = async (req, res) => {
+  try {
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const colid = Number(req.body.colid);
+    const formid = cleanFormId(req.body.formid);
+
+    if (!colid) return res.status(400).json({ msg: 'College id is required' });
+    if (items.length === 0) return res.status(400).json({ msg: 'No rows received' });
+
+    const errors = [];
+    let saved = 0;
+
+    for (let index = 0; index < items.length; index += 1) {
+      const item = items[index];
+      const rowNumber = item.rowNumber || index + 2;
+      const label = String(item.label || item.Label || '').trim();
+      const fieldname = cleanFieldName(item.fieldname || item.fieldName || item['Field Key'] || label);
+
+      if (!label || !fieldname) {
+        errors.push({ rowNumber, msg: 'Label is required' });
+        continue;
+      }
+
+      try {
+        await AdmissionFormField.findOneAndUpdate(
+          { colid, formid, fieldname },
+          {
+            colid,
+            formid,
+            fieldname,
+            label,
+            page: item.page || item.Page || 'Page 1',
+            section: item.section || item.Section || 'Additional Details',
+            type: item.type || item.Type || 'text',
+            options: normalizeOptions(item.options || item.Options),
+            isrequired: item.isrequired || item.required || item.Required || 'No',
+            isactive: item.isactive || item.active || item.Active || 'Yes',
+            order: Number(item.order || item.Order || 0)
+          },
+          { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+        saved += 1;
+      } catch (err) {
+        errors.push({ rowNumber, msg: err.message });
+      }
+    }
+
+    res.json({ saved, errors });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
 exports.updateField = async (req, res) => {
   try {
     const formid = cleanFormId(req.body.formid);
@@ -343,16 +413,81 @@ const applicationPayload = (body) => ({
   dateofapplication: body.dateofapplication,
   age: Number(body.age || 0),
   twelvesubjects: body.twelvesubjects,
-  photolink: body.photolink,
   programtype: body.programtype,
   programapplied: body.programapplied,
   programcode: body.programcode,
   applicationstatus: body.applicationstatus || 'Applied',
   tenthsubjectmarks: body.tenthsubjectmarks || [],
   twelvesubjectmarks: body.twelvesubjectmarks || [],
+  documents: body.documents || [],
   extraFields: body.extraFields || {},
   user: body.user || ''
 });
+
+exports.uploadDocumentMiddleware = upload.single('file');
+
+exports.uploadApplicationDocument = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ msg: 'Select a file to upload' });
+
+    const colid = Number(req.body.colid);
+    const documenttype = String(req.body.documenttype || '').trim();
+    if (!colid) return res.status(400).json({ msg: 'College id is required' });
+    if (!documenttype) return res.status(400).json({ msg: 'Document type is required' });
+    if (/^photo$/i.test(documenttype)) {
+      const extension = path.extname(req.file.originalname || '').toLowerCase();
+      const allowedMime = ['image/jpeg', 'image/jpg', 'image/png'].includes(req.file.mimetype);
+      const allowedExtension = ['.jpg', '.jpeg', '.png'].includes(extension);
+      if (!allowedMime || !allowedExtension) {
+        return res.status(400).json({ msg: 'Photo must be a JPG, JPEG, or PNG file' });
+      }
+    }
+
+    const config = await Awsconfig.findOne({
+      colid,
+      type: /^aws$/i,
+      default: /^yes$/i
+    }).lean();
+
+    if (!config?.username || !config?.password || !config?.bucket || !config?.region) {
+      return res.status(400).json({ msg: 'Default AWS configuration is missing or incomplete' });
+    }
+
+    const formid = cleanFormId(req.body.formid);
+    const cleanName = path.basename(req.file.originalname).replace(/[^\w.\-() ]/g, '_');
+    const cleanType = cleanFieldName(documenttype) || 'document';
+    const key = `${colid}/admission-applications/${formid}/${cleanType}/${Date.now()}-${cleanName}`;
+
+    const s3 = new AWS.S3({
+      accessKeyId: config.username,
+      secretAccessKey: config.password,
+      region: config.region
+    });
+
+    await s3.putObject({
+      Bucket: config.bucket,
+      Key: key,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype
+    }).promise();
+
+    res.json({
+      documenttype,
+      description: req.body.description || '',
+      filename: cleanName,
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      bucket: config.bucket,
+      region: config.region,
+      key,
+      url: s3Url(config.bucket, config.region, key),
+      uploadedAt: new Date()
+    });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
 
 exports.createApplication = async (req, res) => {
   try {
@@ -475,6 +610,20 @@ exports.updateApplication = async (req, res) => {
     res.json(data);
   } catch (err) {
     if (err.code === 11000) return res.status(400).json({ msg: 'Duplicate email or phone is not allowed' });
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.deleteApplication = async (req, res) => {
+  try {
+    const data = await AdmissionApplication.findOneAndDelete({
+      _id: req.body.id,
+      colid: Number(req.body.colid)
+    });
+
+    if (!data) return res.status(404).json({ msg: 'Application not found' });
+    res.json({ msg: 'Deleted' });
+  } catch (err) {
     res.status(500).json({ msg: err.message });
   }
 };

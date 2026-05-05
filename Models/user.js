@@ -167,6 +167,11 @@ const userschema = new mongoose.Schema({
     },
     institution:{
         type: String
+    },
+    customFields: {
+        type: Map,
+        of: mongoose.Schema.Types.Mixed,
+        default: {}
     }
 })
 //
