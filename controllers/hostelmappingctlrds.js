@@ -289,3 +289,139 @@ exports.deleteAssignment = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.bulkCreateBuildings = async (req, res) => {
+  try {
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    if (!items.length) return res.status(400).json({ success: false, message: "No rows received" });
+
+    const errors = [];
+    const valid = [];
+    items.forEach((item, index) => {
+      const payload = cleanBuilding({ ...item, colid: req.body.colid || item.colid, user: req.body.user || item.user });
+      const error = validateBuilding(payload);
+      if (error) errors.push({ rowNumber: item.rowNumber || index + 2, message: error });
+      else valid.push(payload);
+    });
+
+    if (valid.length) await HostelBuilding.insertMany(valid, { ordered: false });
+    res.json({ success: true, inserted: valid.length, errors });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.bulkCreateRooms = async (req, res) => {
+  try {
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    if (!items.length) return res.status(400).json({ success: false, message: "No rows received" });
+
+    const colid = toNumber(req.body.colid);
+    const buildings = await HostelBuilding.find({ colid }).lean();
+    const buildingMap = new Map(buildings.map((building) => [String(building.buildingname).toLowerCase(), building]));
+    const errors = [];
+    const valid = [];
+
+    items.forEach((item, index) => {
+      const building = buildingMap.get(text(item.buildingname).toLowerCase());
+      const payload = cleanRoom({
+        ...item,
+        buildingid: item.buildingid || building?._id,
+        hosteltype: item.hosteltype || building?.hosteltype,
+        guesttype: item.guesttype || building?.guesttype,
+        residenttype: item.residenttype || building?.guesttype,
+        colid: req.body.colid || item.colid,
+        user: req.body.user || item.user
+      });
+      const error = validateRoom(payload);
+      if (!building) errors.push({ rowNumber: item.rowNumber || index + 2, message: "Building not found" });
+      else if (error) errors.push({ rowNumber: item.rowNumber || index + 2, message: error });
+      else valid.push(payload);
+    });
+
+    if (valid.length) await HostelRoom.insertMany(valid, { ordered: false });
+    res.json({ success: true, inserted: valid.length, errors });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.bulkCreateAssignments = async (req, res) => {
+  try {
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    if (!items.length) return res.status(400).json({ success: false, message: "No rows received" });
+
+    const colid = toNumber(req.body.colid);
+    const errors = [];
+    const valid = [];
+
+    for (const [index, item] of items.entries()) {
+      const roomQuery = {
+        colid,
+        buildingname: text(item.buildingname),
+        block: text(item.block),
+        floor: text(item.floor),
+        roomno: text(item.roomno)
+      };
+      const room = await HostelRoom.findOne(roomQuery).lean();
+      if (!room) {
+        errors.push({ rowNumber: item.rowNumber || index + 2, message: "Room not found" });
+        continue;
+      }
+
+      const bedno = toNumber(item.bedno);
+      if (!bedno || bedno < 1 || bedno > room.noofbeds) {
+        errors.push({ rowNumber: item.rowNumber || index + 2, message: "Invalid bed no" });
+        continue;
+      }
+
+      const occupied = await HostelAssignment.findOne({ roomid: room._id, bedno, status: "Active" });
+      if (occupied) {
+        errors.push({ rowNumber: item.rowNumber || index + 2, message: "Bed is already occupied" });
+        continue;
+      }
+
+      const studentQuery = { colid };
+      if (item.studentid) studentQuery._id = item.studentid;
+      else if (item.studentemail) studentQuery.email = text(item.studentemail);
+      else if (item.email) studentQuery.email = text(item.email);
+      else if (item.regno) studentQuery.regno = text(item.regno);
+      else if (item.student) studentQuery.name = text(item.student);
+
+      const student = await User.findOne(studentQuery).lean();
+      if (!student) {
+        errors.push({ rowNumber: item.rowNumber || index + 2, message: "Student not found" });
+        continue;
+      }
+
+      valid.push({
+        buildingid: room.buildingid,
+        roomid: room._id,
+        buildingname: room.buildingname,
+        hosteltype: room.hosteltype,
+        guesttype: room.guesttype,
+        block: room.block,
+        floor: room.floor,
+        roomno: room.roomno,
+        roomtype: room.roomtype,
+        residenttype: room.residenttype,
+        bedno,
+        studentid: student._id,
+        student: student.name,
+        studentemail: student.email,
+        studentphone: student.phone,
+        programcode: student.programcode,
+        program: student.degree || "",
+        regno: student.regno,
+        status: text(item.status) || "Active",
+        colid,
+        user: text(req.body.user || item.user)
+      });
+    }
+
+    if (valid.length) await HostelAssignment.insertMany(valid, { ordered: false });
+    res.json({ success: true, inserted: valid.length, errors });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
