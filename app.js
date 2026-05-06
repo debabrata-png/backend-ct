@@ -4361,6 +4361,7 @@ const regulationsubjectctlrds = require("./controllers/regulationsubjectctlrds")
 const regulationseatctlrds = require("./controllers/regulationseatctlrds");
 const regulationcoursemapctlrds = require("./controllers/regulationcoursemapctlrds");
 const courseassessmentctlrds = require("./controllers/courseassessmentctlrds");
+const academicsubjectctlrds = require("./controllers/academicsubjectctlrds");
 const mfeesconfigctlrds = require("./controllers/mfeesconfigctlrds");
 const feesmodelreportctlr = require("./controllers/feesmodelreportctlr");
 const feeApprovalRoleCtrl = require("./controllers/feeapprovalrolectlr");
@@ -4418,6 +4419,11 @@ app.get("/api/v2/courseassessment", courseassessmentctlrds.getCourseAssessments)
 app.post("/api/v2/courseassessment/update", courseassessmentctlrds.updateCourseAssessment);
 app.post("/api/v2/courseassessment/delete", courseassessmentctlrds.deleteCourseAssessment);
 app.post("/api/v2/courseassessment/bulkupload", courseassessmentctlrds.bulkCreateCourseAssessments);
+app.post("/api/v2/academicsubjects", academicsubjectctlrds.createAcademicSubject);
+app.get("/api/v2/academicsubjects", academicsubjectctlrds.getAcademicSubjects);
+app.post("/api/v2/academicsubjects/update", academicsubjectctlrds.updateAcademicSubject);
+app.post("/api/v2/academicsubjects/delete", academicsubjectctlrds.deleteAcademicSubject);
+app.post("/api/v2/academicsubjects/bulkupload", academicsubjectctlrds.bulkCreateAcademicSubjects);
 app.get("/api/v2/regulationseat/options", regulationseatctlrds.getRegulationSeatOptions);
 app.post("/api/v2/regulationseat", regulationseatctlrds.createRegulationSeat);
 app.get("/api/v2/regulationseat", regulationseatctlrds.getRegulationSeats);
