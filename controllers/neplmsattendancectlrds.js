@@ -186,3 +186,379 @@ exports.getAttendance = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.getStudentwiseAttendanceReport = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const query = { colid };
+    [
+      "academicyear",
+      "program",
+      "programcode",
+      "semester",
+      "major",
+      "course",
+      "coursecode",
+      "facultyemail",
+      "type"
+    ].forEach((field) => {
+      if (req.query[field]) query[field] = text(req.query[field]);
+    });
+
+    const data = await NepLmsAttendance.find(query).sort({ student: 1, classdate: 1, classtime: 1 }).lean();
+    const map = new Map();
+    data.forEach((row) => {
+      const key = String(row.studentid || row.regno || row.student || "");
+      if (!map.has(key)) {
+        map.set(key, {
+          id: key,
+          studentid: row.studentid,
+          student: row.student || "",
+          regno: row.regno || "",
+          email: row.studentemail || "",
+          phone: row.studentphone || "",
+          program: row.program || "",
+          programcode: row.programcode || "",
+          academicyear: row.academicyear || "",
+          semester: row.semester || "",
+          major: row.major || "",
+          total: 0,
+          present: 0,
+          absent: 0,
+          percentage: 0
+        });
+      }
+      const item = map.get(key);
+      item.total += 1;
+      if (Number(row.attendance) === 1) item.present += 1;
+      else item.absent += 1;
+      item.percentage = item.total ? Number(((item.present / item.total) * 100).toFixed(2)) : 0;
+    });
+
+    const rows = [...map.values()].sort((a, b) => String(a.student).localeCompare(String(b.student)));
+    const summary = {
+      totalStudents: rows.length,
+      totalClasses: data.length,
+      present: data.filter((row) => Number(row.attendance) === 1).length,
+      absent: data.filter((row) => Number(row.attendance) !== 1).length
+    };
+    summary.percentage = summary.totalClasses ? Number(((summary.present / summary.totalClasses) * 100).toFixed(2)) : 0;
+
+    const groupRows = (field) => [...data.reduce((acc, row) => {
+      const key = row[field] || "-";
+      const current = acc.get(key) || { name: key, total: 0, present: 0, absent: 0, percentage: 0 };
+      current.total += 1;
+      if (Number(row.attendance) === 1) current.present += 1;
+      else current.absent += 1;
+      current.percentage = current.total ? Number(((current.present / current.total) * 100).toFixed(2)) : 0;
+      acc.set(key, current);
+      return acc;
+    }, new Map()).values()].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+
+    const uniq = (field) => [...new Set(data.map((row) => text(row[field])).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    res.json({
+      success: true,
+      rows,
+      raw: data,
+      summary,
+      charts: {
+        byCourse: groupRows("coursecode"),
+        bySemester: groupRows("semester"),
+        byProgram: groupRows("programcode"),
+        presentAbsent: [
+          { name: "Present", value: summary.present },
+          { name: "Absent", value: summary.absent }
+        ]
+      },
+      options: {
+        academicyear: uniq("academicyear"),
+        program: uniq("program"),
+        programcode: uniq("programcode"),
+        semester: uniq("semester"),
+        major: uniq("major"),
+        course: uniq("course"),
+        coursecode: uniq("coursecode"),
+        type: uniq("type")
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getStudentCoursewiseAttendanceReport = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+
+    const query = { colid };
+    [
+      "academicyear",
+      "program",
+      "programcode",
+      "semester",
+      "major",
+      "course",
+      "coursecode",
+      "faculty",
+      "facultyemail",
+      "type"
+    ].forEach((field) => {
+      if (req.query[field]) query[field] = text(req.query[field]);
+    });
+    if (req.query.name || req.query.student) query.student = new RegExp(text(req.query.name || req.query.student), "i");
+    if (req.query.email) query.studentemail = new RegExp(text(req.query.email), "i");
+    if (req.query.regno) query.regno = new RegExp(text(req.query.regno), "i");
+
+    const data = await NepLmsAttendance.find(query).sort({ student: 1, coursecode: 1, classdate: 1, classtime: 1 }).lean();
+
+    const studentMap = new Map();
+    data.forEach((row) => {
+      const key = String(row.studentid || row.regno || row.studentemail || row.student || "");
+      if (!studentMap.has(key)) {
+        studentMap.set(key, {
+          id: key,
+          studentid: row.studentid,
+          student: row.student || "",
+          regno: row.regno || "",
+          email: row.studentemail || "",
+          phone: row.studentphone || "",
+          academicyear: row.academicyear || "",
+          program: row.program || "",
+          programcode: row.programcode || "",
+          semester: row.semester || "",
+          major: row.major || "",
+          total: 0,
+          present: 0,
+          absent: 0,
+          percentage: 0
+        });
+      }
+      const item = studentMap.get(key);
+      item.total += 1;
+      if (Number(row.attendance) === 1) item.present += 1;
+      else item.absent += 1;
+      item.percentage = item.total ? Number(((item.present / item.total) * 100).toFixed(2)) : 0;
+    });
+
+    const students = [...studentMap.values()].sort((a, b) => String(a.student).localeCompare(String(b.student)));
+    const selectedKey = text(req.query.studentid || req.query.selectedStudentId || req.query.selectedStudent || "");
+    const selectedRegno = text(req.query.selectedRegno || "");
+    const selectedEmail = text(req.query.selectedEmail || "");
+    const selectedStudent = students.find((item) => (
+      (selectedKey && String(item.id) === selectedKey)
+      || (selectedKey && String(item.studentid) === selectedKey)
+      || (selectedRegno && text(item.regno).toLowerCase() === selectedRegno.toLowerCase())
+      || (selectedEmail && text(item.email).toLowerCase() === selectedEmail.toLowerCase())
+    )) || null;
+
+    const selectedRows = selectedStudent
+      ? data.filter((row) => {
+        const key = String(row.studentid || row.regno || row.studentemail || row.student || "");
+        return key === String(selectedStudent.id)
+          || (selectedStudent.studentid && String(row.studentid) === String(selectedStudent.studentid))
+          || (selectedStudent.regno && text(row.regno).toLowerCase() === text(selectedStudent.regno).toLowerCase())
+          || (selectedStudent.email && text(row.studentemail).toLowerCase() === text(selectedStudent.email).toLowerCase());
+      })
+      : [];
+
+    const courseMap = new Map();
+    selectedRows.forEach((row) => {
+      const key = [
+        row.coursecode || row.course || "",
+        row.academicyear || "",
+        row.programcode || "",
+        row.semester || "",
+        row.major || "",
+        row.type || ""
+      ].join("||");
+      if (!courseMap.has(key)) {
+        courseMap.set(key, {
+          id: key,
+          course: row.course || "",
+          coursecode: row.coursecode || "",
+          academicyear: row.academicyear || "",
+          program: row.program || "",
+          programcode: row.programcode || "",
+          semester: row.semester || "",
+          major: row.major || "",
+          type: row.type || "",
+          totalClasses: 0,
+          classesAttended: 0,
+          classesAbsent: 0,
+          percentage: 0
+        });
+      }
+      const item = courseMap.get(key);
+      item.totalClasses += 1;
+      if (Number(row.attendance) === 1) item.classesAttended += 1;
+      else item.classesAbsent += 1;
+      item.percentage = item.totalClasses ? Number(((item.classesAttended / item.totalClasses) * 100).toFixed(2)) : 0;
+    });
+
+    const courseRows = [...courseMap.values()].sort((a, b) => String(a.coursecode || a.course).localeCompare(String(b.coursecode || b.course)));
+    const summary = {
+      totalCourses: courseRows.length,
+      totalClasses: selectedRows.length,
+      classesAttended: selectedRows.filter((row) => Number(row.attendance) === 1).length,
+      classesAbsent: selectedRows.filter((row) => Number(row.attendance) !== 1).length
+    };
+    summary.percentage = summary.totalClasses ? Number(((summary.classesAttended / summary.totalClasses) * 100).toFixed(2)) : 0;
+
+    const uniq = (field) => [...new Set(data.map((row) => text(row[field])).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    res.json({
+      success: true,
+      students,
+      selectedStudent,
+      rows: courseRows,
+      raw: selectedRows,
+      summary,
+      charts: {
+        courseAttendance: courseRows.map((row) => ({
+          name: row.coursecode || row.course || "-",
+          percentage: row.percentage,
+          totalClasses: row.totalClasses,
+          classesAttended: row.classesAttended
+        })),
+        presentAbsent: [
+          { name: "Attended", value: summary.classesAttended },
+          { name: "Absent", value: summary.classesAbsent }
+        ]
+      },
+      options: {
+        academicyear: uniq("academicyear"),
+        program: uniq("program"),
+        programcode: uniq("programcode"),
+        semester: uniq("semester"),
+        major: uniq("major"),
+        course: uniq("course"),
+        coursecode: uniq("coursecode"),
+        name: [...new Set(data.map((row) => text(row.student)).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+        email: [...new Set(data.map((row) => text(row.studentemail)).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+        regno: uniq("regno"),
+        type: uniq("type")
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getFacultyCoursewiseLowAttendanceReport = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    const threshold = Number(req.query.threshold || 75);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const query = { colid };
+    [
+      "academicyear",
+      "program",
+      "programcode",
+      "semester",
+      "major",
+      "course",
+      "coursecode",
+      "faculty",
+      "facultyemail",
+      "type"
+    ].forEach((field) => {
+      if (req.query[field]) query[field] = text(req.query[field]);
+    });
+
+    const data = await NepLmsAttendance.find(query).sort({ faculty: 1, coursecode: 1, classdate: 1 }).lean();
+    const map = new Map();
+    data.forEach((row) => {
+      const key = [
+        row.facultyemail || row.faculty || "",
+        row.coursecode || "",
+        row.programcode || "",
+        row.semester || "",
+        row.major || "",
+        row.academicyear || ""
+      ].join("||");
+      if (!map.has(key)) {
+        map.set(key, {
+          id: key,
+          faculty: row.faculty || "",
+          facultyemail: row.facultyemail || "",
+          course: row.course || "",
+          coursecode: row.coursecode || "",
+          program: row.program || "",
+          programcode: row.programcode || "",
+          academicyear: row.academicyear || "",
+          semester: row.semester || "",
+          major: row.major || "",
+          total: 0,
+          present: 0,
+          absent: 0,
+          averageAttendance: 0
+        });
+      }
+      const item = map.get(key);
+      item.total += 1;
+      if (Number(row.attendance) === 1) item.present += 1;
+      else item.absent += 1;
+      item.averageAttendance = item.total ? Number(((item.present / item.total) * 100).toFixed(2)) : 0;
+    });
+
+    const allRows = [...map.values()].sort((a, b) => (
+      String(a.faculty).localeCompare(String(b.faculty))
+      || String(a.coursecode).localeCompare(String(b.coursecode))
+    ));
+    const rows = allRows.filter((row) => Number(row.averageAttendance || 0) < threshold);
+
+    const groupRows = (items, field) => [...items.reduce((acc, row) => {
+      const key = row[field] || "-";
+      const current = acc.get(key) || { name: key, courses: 0, total: 0, present: 0, absent: 0, averageAttendance: 0 };
+      current.courses += 1;
+      current.total += Number(row.total || 0);
+      current.present += Number(row.present || 0);
+      current.absent += Number(row.absent || 0);
+      current.averageAttendance = current.total ? Number(((current.present / current.total) * 100).toFixed(2)) : 0;
+      acc.set(key, current);
+      return acc;
+    }, new Map()).values()].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+
+    const uniq = (field) => [...new Set(data.map((row) => text(row[field])).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    const summary = {
+      totalCourseRows: allRows.length,
+      lowCourseRows: rows.length,
+      totalEntries: rows.reduce((sum, row) => sum + Number(row.total || 0), 0),
+      present: rows.reduce((sum, row) => sum + Number(row.present || 0), 0),
+      absent: rows.reduce((sum, row) => sum + Number(row.absent || 0), 0),
+      threshold
+    };
+    summary.averageAttendance = summary.totalEntries ? Number(((summary.present / summary.totalEntries) * 100).toFixed(2)) : 0;
+
+    res.json({
+      success: true,
+      rows,
+      allRows,
+      summary,
+      charts: {
+        byFaculty: groupRows(rows, "faculty"),
+        byCourse: groupRows(rows, "coursecode"),
+        byProgram: groupRows(rows, "programcode"),
+        thresholdSummary: [
+          { name: "Below Threshold", value: rows.length },
+          { name: "At or Above", value: Math.max(allRows.length - rows.length, 0) }
+        ]
+      },
+      options: {
+        academicyear: uniq("academicyear"),
+        program: uniq("program"),
+        programcode: uniq("programcode"),
+        semester: uniq("semester"),
+        major: uniq("major"),
+        course: uniq("course"),
+        coursecode: uniq("coursecode"),
+        faculty: uniq("faculty"),
+        facultyemail: uniq("facultyemail"),
+        type: uniq("type")
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

@@ -4457,6 +4457,9 @@ app.get("/api/v2/neplms/attendance/context", neplmsattendancectlrds.getFacultyAt
 app.get("/api/v2/neplms/attendance/students", neplmsattendancectlrds.getStudentsForAttendance);
 app.post("/api/v2/neplms/attendance", neplmsattendancectlrds.saveAttendance);
 app.get("/api/v2/neplms/attendance", neplmsattendancectlrds.getAttendance);
+app.get("/api/v2/neplms/attendance/studentwise-report", neplmsattendancectlrds.getStudentwiseAttendanceReport);
+app.get("/api/v2/neplms/attendance/student-coursewise-report", neplmsattendancectlrds.getStudentCoursewiseAttendanceReport);
+app.get("/api/v2/neplms/attendance/faculty-course-low-report", neplmsattendancectlrds.getFacultyCoursewiseLowAttendanceReport);
 app.get("/api/v2/hostelmapping/options", hostelmappingctlrds.getOptions);
 app.post("/api/v2/hostelmapping/building", hostelmappingctlrds.createBuilding);
 app.get("/api/v2/hostelmapping/buildings", hostelmappingctlrds.getBuildings);
