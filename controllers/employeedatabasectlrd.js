@@ -39,13 +39,21 @@ const valueFromBody = (body, candidates = []) => {
   for (const candidate of candidates) {
     if (candidate && body[candidate] !== undefined) return body[candidate];
   }
+  const normalizeKey = (key) => String(key || "").trim().toLowerCase();
+  const compactKey = (key) => normalizeKey(key).replace(/[^a-z0-9]/g, "");
   const normalized = Object.entries(body).reduce((acc, [key, value]) => {
-    acc[String(key).trim().toLowerCase()] = value;
+    acc[normalizeKey(key)] = value;
+    return acc;
+  }, {});
+  const compact = Object.entries(body).reduce((acc, [key, value]) => {
+    acc[compactKey(key)] = value;
     return acc;
   }, {});
   for (const candidate of candidates) {
-    const key = String(candidate || "").trim().toLowerCase();
+    const key = normalizeKey(candidate);
     if (key && normalized[key] !== undefined) return normalized[key];
+    const compactCandidate = compactKey(candidate);
+    if (compactCandidate && compact[compactCandidate] !== undefined) return compact[compactCandidate];
   }
   return undefined;
 };
@@ -79,13 +87,13 @@ const employeePayload = (body, fieldDefs = []) => {
 
   return {
     colid: Number(body.colid),
-    name: String(body.name || body.Name || "").trim(),
-    email: String(body.email || body.Email || "").trim(),
-    phone: String(body.phone || body.Phone || "").trim(),
-    employeeid: String(body.employeeid || body.employeeId || body["Employee ID"] || body.EmployeeID || "").trim(),
-    login: String(body.login || body.Login || "").trim(),
-    institution: String(body.institution || body.Institution || "").trim(),
-    department: String(body.department || body.Department || "").trim(),
+    name: String(valueFromBody(body, ["name", "Name", "Employee Name", "EmployeeName", "Full Name", "FullName"]) || "").trim(),
+    email: String(valueFromBody(body, ["email", "Email", "Employee Email", "EmployeeEmail", "Email ID", "EmailID"]) || "").trim(),
+    phone: String(valueFromBody(body, ["phone", "Phone", "Mobile", "Mobile No", "Mobile Number", "Contact No", "Contact Number"]) || "").trim(),
+    employeeid: String(valueFromBody(body, ["employeeid", "employeeId", "Employee ID", "EmployeeID", "Employee Id", "Emp ID", "EmpID", "Employee Code", "EmployeeCode"]) || "").trim(),
+    login: String(valueFromBody(body, ["login", "Login", "User Login", "Username", "User Name"]) || "").trim(),
+    institution: String(valueFromBody(body, ["institution", "Institution", "Institute", "College"]) || "").trim(),
+    department: String(valueFromBody(body, ["department", "Department", "Dept"]) || "").trim(),
     customFields: customValues,
     status: body.status || body.Status || "Active",
     user: body.user || ""
