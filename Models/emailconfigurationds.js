@@ -22,6 +22,10 @@ const EmailConfigurationSchema = new mongoose.Schema({
     type: String,
     default: 'No'
   },
+  default: {
+    type: String,
+    default: 'No'
+  },
   isactive: {
     type: String,
     default: 'Yes'

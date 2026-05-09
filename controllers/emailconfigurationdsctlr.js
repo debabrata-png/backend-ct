@@ -15,6 +15,7 @@ const payloadFromBody = (body = {}) => ({
   smptp: body.smptp || '',
   port: toNumber(body.port) || 587,
   secure: body.secure || 'No',
+  default: body.default || 'No',
   isactive: body.isactive || 'Yes'
 });
 

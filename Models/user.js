@@ -26,6 +26,9 @@ const userschema = new mongoose.Schema({
         type: String,
         required: [true,'Please enter regno']
     },
+    program: {
+        type: String
+    },
     programcode: {
         type: String,
         required: [true,'Please enter program code']
@@ -33,6 +36,12 @@ const userschema = new mongoose.Schema({
     admissionyear: {
         type: String,
         required: [true,'Please enter admission year']
+    },
+    academicyear: {
+        type: String
+    },
+    rollno: {
+        type: String
     },
     semester: {
         type: String,
@@ -45,11 +54,32 @@ const userschema = new mongoose.Schema({
     gender: {
         type: String
     },
+    state: {
+        type: String
+    },
+    city: {
+        type: String
+    },
+    district: {
+        type: String
+    },
+    pincode: {
+        type: String
+    },
     department: {
         type: String,
         required: [true,'Please enter role']
     },
     photo: {
+        type: String
+    },
+    guardianname: {
+        type: String
+    },
+    guardianmobile: {
+        type: String
+    },
+    guardianemail: {
         type: String
     },
     expotoken: {

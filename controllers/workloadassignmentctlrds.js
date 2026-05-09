@@ -63,7 +63,12 @@ const buildQuery = (source = {}) => {
     "facultydepartment",
     "status"
   ].forEach((field) => {
-    if (source[field]) query[field] = source[field];
+    if (!source[field]) return;
+    if (field === "facultyemail") {
+      query[field] = { $regex: `^${String(source[field]).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" };
+      return;
+    }
+    query[field] = source[field];
   });
   return query;
 };
