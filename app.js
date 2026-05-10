@@ -4482,6 +4482,9 @@ app.get("/api/v2/neplms/assessment-marks", neplmsassessmentmarksctlrds.getAssess
 app.post("/api/v2/neplms/assessment-marks/savebulk", neplmsassessmentmarksctlrds.saveAssessmentMarksBulk);
 app.post("/api/v2/neplms/assessment-marks/update", neplmsassessmentmarksctlrds.updateAssessmentMark);
 app.post("/api/v2/neplms/assessment-marks/delete", neplmsassessmentmarksctlrds.deleteAssessmentMark);
+app.post("/api/v2/neplms/component-marks/process", neplmsassessmentmarksctlrds.processComponentMarks);
+app.get("/api/v2/neplms/component-marks", neplmsassessmentmarksctlrds.getComponentMarks);
+app.post("/api/v2/neplms/component-marks/delete", neplmsassessmentmarksctlrds.deleteComponentMark);
 app.get("/api/v2/hostelmapping/options", hostelmappingctlrds.getOptions);
 app.post("/api/v2/hostelmapping/building", hostelmappingctlrds.createBuilding);
 app.get("/api/v2/hostelmapping/buildings", hostelmappingctlrds.getBuildings);

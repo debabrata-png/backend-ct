@@ -2,6 +2,7 @@ const WorkloadAssignment = require("../Models/workloadassignmentds");
 const CourseAssessment = require("../Models/courseassessmentds");
 const User = require("../Models/user");
 const NepLmsAssessmentMarks = require("../Models/neplmsassessmentmarksds");
+const NepLmsComponentMarks = require("../Models/neplmscomponentmarksds");
 
 const toNumber = (value) => {
   if (value === "" || value === null || value === undefined) return undefined;
@@ -270,6 +271,147 @@ exports.deleteAssessmentMark = async (req, res) => {
 
     const deleted = await NepLmsAssessmentMarks.findOneAndDelete({ _id: id, colid });
     if (!deleted) return res.status(404).json({ success: false, message: "Marks entry not found" });
+
+    res.json({ success: true, data: deleted });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.processComponentMarks = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+
+    const query = { colid };
+    ["academicyear", "semester", "coursecode", "course", "programcode"].forEach((field) => {
+      if (req.body[field]) query[field] = req.body[field];
+    });
+    if (req.body.facultyemail || req.body.user) {
+      query.facultyemail = exactRegex(req.body.facultyemail || req.body.user);
+    }
+
+    const rawMarks = await NepLmsAssessmentMarks.find(query).lean();
+    if (!rawMarks.length) return res.status(400).json({ success: false, message: "No marks found for processing" });
+
+    const groups = new Map();
+    rawMarks.forEach((row) => {
+      const key = [
+        row.academicyear,
+        row.semester,
+        row.programcode,
+        row.coursecode,
+        row.regno,
+        row.assessmentgroup,
+        row.scoretype
+      ].map((item) => text(item)).join("||");
+
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(row);
+    });
+
+    const ops = [];
+    groups.forEach((rows) => {
+      const first = rows[0] || {};
+      const values = rows
+        .map((row) => toNumber(row.effectivemarks))
+        .filter((value) => value !== undefined);
+      if (!values.length) return;
+
+      const grouptype = text(first.grouptype || rows.find((row) => row.grouptype)?.grouptype);
+      const useBest = grouptype.toLowerCase() === "best";
+      const marks = useBest
+        ? Math.max(...values)
+        : values.reduce((sum, value) => sum + value, 0) / values.length;
+
+      const payload = {
+        academicyear: text(first.academicyear),
+        semester: text(first.semester),
+        programcode: text(first.programcode),
+        course: text(first.course),
+        coursecode: text(first.coursecode),
+        major: text(first.subject),
+        subject: text(first.subject),
+        student: text(first.student),
+        regno: text(first.regno),
+        assessmentgroup: text(first.assessmentgroup),
+        grouptype,
+        scoretype: text(first.scoretype),
+        marks: Number(marks.toFixed(2)),
+        colid,
+        user: text(req.body.user)
+      };
+
+      ops.push({
+        updateOne: {
+          filter: {
+            colid,
+            academicyear: payload.academicyear,
+            semester: payload.semester,
+            coursecode: payload.coursecode,
+            regno: payload.regno,
+            assessmentgroup: payload.assessmentgroup,
+            scoretype: payload.scoretype
+          },
+          update: { $set: payload },
+          upsert: true
+        }
+      });
+    });
+
+    let processed = 0;
+    if (ops.length) {
+      const result = await NepLmsComponentMarks.bulkWrite(ops, { ordered: false });
+      processed = (result.upsertedCount || 0) + (result.modifiedCount || 0) + (result.matchedCount || 0);
+    }
+
+    res.json({ success: true, processed });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getComponentMarks = async (req, res) => {
+  try {
+    const colid = toNumber(req.query.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+
+    const query = { colid };
+    [
+      "academicyear",
+      "semester",
+      "programcode",
+      "coursecode",
+      "course",
+      "major",
+      "subject",
+      "assessmentgroup",
+      "scoretype",
+      "regno"
+    ].forEach((field) => {
+      if (req.query[field]) query[field] = req.query[field];
+    });
+
+    const data = await NepLmsComponentMarks.find(query)
+      .sort({ academicyear: 1, semester: 1, course: 1, assessmentgroup: 1, regno: 1 })
+      .lean();
+
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteComponentMark = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    const id = text(req.body.id || req.body._id);
+
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!id) return res.status(400).json({ success: false, message: "id is required" });
+
+    const deleted = await NepLmsComponentMarks.findOneAndDelete({ _id: id, colid });
+    if (!deleted) return res.status(404).json({ success: false, message: "Componentwise marks entry not found" });
 
     res.json({ success: true, data: deleted });
   } catch (error) {
