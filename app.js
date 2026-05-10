@@ -4389,6 +4389,7 @@ const regulationsubjectctlrds = require("./controllers/regulationsubjectctlrds")
 const regulationseatctlrds = require("./controllers/regulationseatctlrds");
 const regulationcoursemapctlrds = require("./controllers/regulationcoursemapctlrds");
 const courseassessmentctlrds = require("./controllers/courseassessmentctlrds");
+const gradeconfigurationctlrds = require("./controllers/gradeconfigurationctlrds");
 const workloadassignmentctlrds = require("./controllers/workloadassignmentctlrds");
 const neplmsctlrds = require("./controllers/neplmsctlrds");
 const neplmsattendancectlrds = require("./controllers/neplmsattendancectlrds");
@@ -4452,6 +4453,12 @@ app.get("/api/v2/courseassessment", courseassessmentctlrds.getCourseAssessments)
 app.post("/api/v2/courseassessment/update", courseassessmentctlrds.updateCourseAssessment);
 app.post("/api/v2/courseassessment/delete", courseassessmentctlrds.deleteCourseAssessment);
 app.post("/api/v2/courseassessment/bulkupload", courseassessmentctlrds.bulkCreateCourseAssessments);
+app.get("/api/v2/gradeconfiguration/options", gradeconfigurationctlrds.getGradeConfigurationOptions);
+app.post("/api/v2/gradeconfiguration", gradeconfigurationctlrds.createGradeConfiguration);
+app.get("/api/v2/gradeconfiguration", gradeconfigurationctlrds.getGradeConfigurations);
+app.post("/api/v2/gradeconfiguration/update", gradeconfigurationctlrds.updateGradeConfiguration);
+app.post("/api/v2/gradeconfiguration/delete", gradeconfigurationctlrds.deleteGradeConfiguration);
+app.post("/api/v2/gradeconfiguration/bulkupload", gradeconfigurationctlrds.bulkCreateGradeConfigurations);
 app.get("/api/v2/workloadassignment/options", workloadassignmentctlrds.getWorkloadAssignmentOptions);
 app.post("/api/v2/workloadassignment", workloadassignmentctlrds.createWorkloadAssignment);
 app.get("/api/v2/workloadassignment", workloadassignmentctlrds.getWorkloadAssignments);

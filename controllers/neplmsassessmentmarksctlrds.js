@@ -294,6 +294,32 @@ exports.processComponentMarks = async (req, res) => {
     const rawMarks = await NepLmsAssessmentMarks.find(query).lean();
     if (!rawMarks.length) return res.status(400).json({ success: false, message: "No marks found for processing" });
 
+    const assessmentQuery = { colid };
+    ["academicyear", "semester", "coursecode", "programcode"].forEach((field) => {
+      if (query[field]) assessmentQuery[field] = query[field];
+    });
+    const assessments = await CourseAssessment.find(assessmentQuery).lean();
+    const assessmentMap = new Map();
+    assessments.forEach((item) => {
+      const key = [
+        item.academicyear,
+        item.semester,
+        item.coursecode,
+        item.assessmentgroup,
+        item.scoretype,
+        item.assessmentcomponent
+      ].map((value) => text(value).toLowerCase()).join("||");
+      assessmentMap.set(key, item);
+    });
+    const getAssessment = (row) => assessmentMap.get([
+      row.academicyear,
+      row.semester,
+      row.coursecode,
+      row.assessmentgroup,
+      row.scoretype,
+      row.assessmentcomponent
+    ].map((value) => text(value).toLowerCase()).join("||")) || {};
+
     const groups = new Map();
     rawMarks.forEach((row) => {
       const key = [
@@ -313,16 +339,31 @@ exports.processComponentMarks = async (req, res) => {
     const ops = [];
     groups.forEach((rows) => {
       const first = rows[0] || {};
-      const values = rows
-        .map((row) => toNumber(row.effectivemarks))
-        .filter((value) => value !== undefined);
-      if (!values.length) return;
+      const enrichedRows = rows
+        .map((row) => ({
+          row,
+          assessment: getAssessment(row),
+          effectivemarks: toNumber(row.effectivemarks)
+        }))
+        .filter((item) => item.effectivemarks !== undefined);
+      if (!enrichedRows.length) return;
 
       const grouptype = text(first.grouptype || rows.find((row) => row.grouptype)?.grouptype);
       const useBest = grouptype.toLowerCase() === "best";
+      const bestItem = enrichedRows.reduce((best, item) => (
+        !best || item.effectivemarks > best.effectivemarks ? item : best
+      ), null);
       const marks = useBest
-        ? Math.max(...values)
-        : values.reduce((sum, value) => sum + value, 0) / values.length;
+        ? bestItem.effectivemarks
+        : enrichedRows.reduce((sum, item) => sum + item.effectivemarks, 0) / enrichedRows.length;
+      const effectivePassmark = (assessment = {}) => (toNumber(assessment.passmarks) || 0) * (toNumber(assessment.weightage) || 0);
+      const passmarkValues = enrichedRows
+        .map((item) => effectivePassmark(item.assessment))
+        .filter((value) => value !== undefined);
+      const passmarks = useBest
+        ? effectivePassmark(bestItem.assessment)
+        : (passmarkValues.length ? passmarkValues.reduce((sum, value) => sum + value, 0) / passmarkValues.length : 0);
+      const credits = toNumber((useBest ? bestItem.assessment : enrichedRows[0].assessment).credits) || 0;
 
       const payload = {
         academicyear: text(first.academicyear),
@@ -338,6 +379,9 @@ exports.processComponentMarks = async (req, res) => {
         grouptype,
         scoretype: text(first.scoretype),
         marks: Number(marks.toFixed(2)),
+        passmarks: Number(passmarks.toFixed(2)),
+        credits,
+        passstatus: marks >= passmarks ? "Pass" : "Fail",
         colid,
         user: text(req.body.user)
       };

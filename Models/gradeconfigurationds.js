@@ -1,0 +1,35 @@
+const mongoose = require("mongoose");
+
+const gradeConfigurationSchema = new mongoose.Schema(
+  {
+    academicyear: { type: String, trim: true, required: true },
+    regulation: { type: String, trim: true, required: true },
+    program: { type: String, trim: true, required: true },
+    programcode: { type: String, trim: true, required: true },
+    subject: { type: String, trim: true, required: true },
+    semester: { type: String, trim: true, required: true },
+    course: { type: String, trim: true, required: true },
+    coursecode: { type: String, trim: true, required: true },
+    frompercentage: { type: Number, default: 0 },
+    topercentage: { type: Number, default: 0 },
+    gradepoint: { type: Number, default: 0 },
+    grade: { type: String, trim: true, required: true },
+    colid: { type: Number, required: true, index: true },
+    user: { type: String, trim: true },
+    status: { type: String, trim: true, default: "Active" }
+  },
+  { timestamps: true }
+);
+
+gradeConfigurationSchema.index({
+  colid: 1,
+  academicyear: 1,
+  regulation: 1,
+  programcode: 1,
+  subject: 1,
+  semester: 1,
+  coursecode: 1,
+  grade: 1
+});
+
+module.exports = mongoose.model("gradeconfigurationds", gradeConfigurationSchema);

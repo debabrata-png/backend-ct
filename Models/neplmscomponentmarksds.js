@@ -15,6 +15,9 @@ const nepLmsComponentMarksSchema = new mongoose.Schema(
     grouptype: { type: String, trim: true },
     scoretype: { type: String, trim: true },
     marks: { type: Number, default: 0 },
+    passmarks: { type: Number, default: 0 },
+    credits: { type: Number, default: 0 },
+    passstatus: { type: String, enum: ["Pass", "Fail"], default: "Fail" },
     colid: { type: Number, required: true, index: true },
     user: { type: String, trim: true }
   },

@@ -28,7 +28,9 @@ const cleanPayload = (input = {}) => ({
   scoretype: allowedScoreTypes.has(input.scoretype || input.scoreType) ? (input.scoretype || input.scoreType) : undefined,
   assessmentcomponent: text(input.assessmentcomponent || input.assessmentComponent),
   marks: toNumber(input.marks) || 0,
+  passmarks: toNumber(input.passmarks || input.passMarks) || 0,
   weightage: toNumber(input.weightage) || 0,
+  credits: toNumber(input.credits || input.credit) || 0,
   colid: toNumber(input.colid),
   user: text(input.user),
   status: text(input.status) || "Active"

@@ -16,7 +16,9 @@ const courseAssessmentSchema = new mongoose.Schema(
     scoretype: { type: String, enum: ["Internal", "External"], trim: true },
     assessmentcomponent: { type: String, trim: true, required: true },
     marks: { type: Number, default: 0 },
+    passmarks: { type: Number, default: 0 },
     weightage: { type: Number, default: 0 },
+    credits: { type: Number, default: 0 },
     colid: { type: Number, required: true, index: true },
     user: { type: String, trim: true },
     status: { type: String, trim: true, default: "Active" }
