@@ -45,7 +45,7 @@ exports.getCourseAssessmentsForMarks = async (req, res) => {
     if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
 
     const query = { colid, status: req.query.status || "Active" };
-    ["academicyear", "coursecode", "semester"].forEach((field) => {
+    ["academicyear", "regulation", "coursecode", "semester"].forEach((field) => {
       if (req.query[field]) query[field] = req.query[field];
     });
 

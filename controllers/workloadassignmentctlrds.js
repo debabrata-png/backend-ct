@@ -1,5 +1,6 @@
 const WorkloadAssignment = require("../Models/workloadassignmentds");
 const RegulationCourseMap = require("../Models/regulationcoursemapds");
+const RegulationSubject = require("../Models/regulationsubjectds");
 const User = require("../Models/user");
 
 const toNumber = (value) => {
@@ -85,11 +86,18 @@ exports.getWorkloadAssignmentOptions = async (req, res) => {
       if (req.query[field]) courseQuery[field] = req.query[field];
     });
 
+    const subjectQuery = { colid };
+    ["academicyear", "regulation", "program", "programcode", "type"].forEach((field) => {
+      if (req.query[field]) subjectQuery[field] = req.query[field];
+    });
+    if (req.query.status) subjectQuery.status = req.query.status;
+
     const facultyQuery = { colid, role: "Faculty" };
     if (req.query.department) facultyQuery.department = req.query.department;
 
-    const [courseMaps, faculty, assignments] = await Promise.all([
+    const [courseMaps, regulationSubjects, faculty, assignments] = await Promise.all([
       RegulationCourseMap.find(courseQuery).sort({ academicyear: 1, regulation: 1, program: 1, type: 1, subject: 1, semester: 1, course: 1 }).lean(),
+      RegulationSubject.find(subjectQuery).sort({ academicyear: 1, regulation: 1, program: 1, type: 1, subject: 1 }).lean(),
       User.find(facultyQuery).select("name email department role colid").sort({ name: 1, email: 1 }).lean(),
       WorkloadAssignment.find({ colid }).sort({ facultyname: 1, academicyear: 1, course: 1 }).lean()
     ]);
@@ -129,7 +137,7 @@ exports.getWorkloadAssignmentOptions = async (req, res) => {
       regulations: uniq(allRows.map((item) => item.regulation)),
       programs: [...programMap.values()].sort((a, b) => String(a.programcode).localeCompare(String(b.programcode))),
       types: uniq(allRows.map((item) => item.type)),
-      subjects: uniq(allRows.map((item) => item.subject)),
+      subjects: uniq(regulationSubjects.map((item) => item.subject)),
       semesters: uniq(allRows.map((item) => item.semester)),
       courses: [...courseMap.values()].sort((a, b) => String(a.course).localeCompare(String(b.course))),
       departments: uniq([...faculty.map((item) => item.department), ...assignments.map((item) => item.facultydepartment)]),

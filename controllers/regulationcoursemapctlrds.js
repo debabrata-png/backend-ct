@@ -1,6 +1,7 @@
 const RegulationCourseMap = require("../Models/regulationcoursemapds");
 const RegulationMaster = require("../Models/regulationmasterds");
 const MPrograms = require("../Models/mprograms");
+const RegulationSubject = require("../Models/regulationsubjectds");
 
 const allowedTypes = new Set(["Major", "Minor", "AEC", "SEC", "VAC", "IDC"]);
 
@@ -129,11 +130,12 @@ exports.getRegulationCourseMapOptions = async (req, res) => {
     if (req.query.academicyear) subjectQuery.academicyear = req.query.academicyear;
     if (req.query.regulation) subjectQuery.regulation = req.query.regulation;
     if (req.query.programcode) subjectQuery.programcode = req.query.programcode;
+    if (req.query.status) subjectQuery.status = req.query.status;
 
     const [regulations, programs, subjects] = await Promise.all([
       RegulationMaster.find({ colid, isactive: "Yes" }).sort({ regulation: 1 }).lean(),
       MPrograms.find({ colid }).sort({ program: 1, programcode: 1 }).lean(),
-      RegulationCourseMap.distinct("subject", subjectQuery)
+      RegulationSubject.distinct("subject", subjectQuery)
     ]);
 
     res.json({
