@@ -4394,6 +4394,7 @@ const workloadassignmentctlrds = require("./controllers/workloadassignmentctlrds
 const neplmsctlrds = require("./controllers/neplmsctlrds");
 const neplmsattendancectlrds = require("./controllers/neplmsattendancectlrds");
 const neplmsassessmentmarksctlrds = require("./controllers/neplmsassessmentmarksctlrds");
+const neplmsfinalmarksctlrds = require("./controllers/neplmsfinalmarksctlrds");
 const hostelmappingctlrds = require("./controllers/hostelmappingctlrds");
 const academicsubjectctlrds = require("./controllers/academicsubjectctlrds");
 const mfeesconfigctlrds = require("./controllers/mfeesconfigctlrds");
@@ -4492,6 +4493,9 @@ app.post("/api/v2/neplms/assessment-marks/delete", neplmsassessmentmarksctlrds.d
 app.post("/api/v2/neplms/component-marks/process", neplmsassessmentmarksctlrds.processComponentMarks);
 app.get("/api/v2/neplms/component-marks", neplmsassessmentmarksctlrds.getComponentMarks);
 app.post("/api/v2/neplms/component-marks/delete", neplmsassessmentmarksctlrds.deleteComponentMark);
+app.post("/api/v2/neplms/final-marks/process", neplmsfinalmarksctlrds.processFinalMarks);
+app.get("/api/v2/neplms/final-marks", neplmsfinalmarksctlrds.getFinalMarks);
+app.post("/api/v2/neplms/final-marks/delete", neplmsfinalmarksctlrds.deleteFinalMark);
 app.get("/api/v2/hostelmapping/options", hostelmappingctlrds.getOptions);
 app.post("/api/v2/hostelmapping/building", hostelmappingctlrds.createBuilding);
 app.get("/api/v2/hostelmapping/buildings", hostelmappingctlrds.getBuildings);

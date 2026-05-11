@@ -1,5 +1,6 @@
 const GradeConfiguration = require("../Models/gradeconfigurationds");
 const RegulationCourseMap = require("../Models/regulationcoursemapds");
+const RegulationSubject = require("../Models/regulationsubjectds");
 
 const toNumber = (value) => {
   if (value === "" || value === null || value === undefined) return undefined;
@@ -14,6 +15,7 @@ const cleanPayload = (input = {}) => ({
   regulation: text(input.regulation),
   program: text(input.program),
   programcode: text(input.programcode),
+  type: text(input.type),
   subject: text(input.subject),
   semester: text(input.semester),
   course: text(input.course),
@@ -33,6 +35,7 @@ const validatePayload = (payload) => {
   if (!payload.regulation) return "Regulation is required";
   if (!payload.program) return "Program is required";
   if (!payload.programcode) return "Program code is required";
+  if (!payload.type) return "Type is required";
   if (!payload.subject) return "Subject is required";
   if (!payload.semester) return "Semester is required";
   if (!payload.course) return "Course is required";
@@ -51,6 +54,7 @@ const buildQuery = (source = {}) => {
     "regulation",
     "program",
     "programcode",
+    "type",
     "subject",
     "semester",
     "course",
@@ -86,6 +90,7 @@ exports.getGradeConfigurations = async (req, res) => {
       academicyear: 1,
       regulation: 1,
       programcode: 1,
+      type: 1,
       subject: 1,
       semester: 1,
       course: 1,
@@ -146,32 +151,68 @@ exports.getGradeConfigurationOptions = async (req, res) => {
     const colid = toNumber(req.query.colid);
     if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
 
-    const courseMaps = await RegulationCourseMap.find({ colid }).sort({
-      academicyear: 1,
-      regulation: 1,
-      programcode: 1,
-      subject: 1,
-      semester: 1,
-      course: 1
-    }).lean();
-    const grades = await GradeConfiguration.find({ colid }).lean();
-    const allRows = [...courseMaps, ...grades];
-    const programMap = new Map();
-    allRows.forEach((item) => {
-      if (item.programcode) {
-        programMap.set(item.programcode, {
-          programcode: item.programcode,
-          program: item.program || ""
-        });
+    const courseQuery = { colid };
+    const subjectQuery = { colid };
+    ["academicyear", "regulation", "program", "programcode", "type", "subject", "semester"].forEach((field) => {
+      if (req.query[field]) {
+        courseQuery[field] = req.query[field];
+        subjectQuery[field] = req.query[field];
       }
     });
+    delete subjectQuery.semester;
+    if (req.query.status) {
+      courseQuery.status = req.query.status;
+      subjectQuery.status = req.query.status;
+    }
+
+    const [allCourseMaps, courseMaps, regulationSubjects, grades] = await Promise.all([
+      RegulationCourseMap.find({ colid }).sort({
+        academicyear: 1,
+        regulation: 1,
+        programcode: 1,
+        type: 1,
+        subject: 1,
+        semester: 1,
+        course: 1
+      }).lean(),
+      RegulationCourseMap.find(courseQuery).sort({
+        academicyear: 1,
+        regulation: 1,
+        programcode: 1,
+        type: 1,
+        subject: 1,
+        semester: 1,
+        course: 1
+      }).lean(),
+      RegulationSubject.find(subjectQuery).sort({
+        academicyear: 1,
+        regulation: 1,
+        programcode: 1,
+        type: 1,
+        subject: 1
+      }).lean(),
+      GradeConfiguration.find({ colid }).lean()
+    ]);
+    const allRows = [...allCourseMaps, ...grades, ...regulationSubjects];
 
     res.json({
       success: true,
       academicyears: uniqueSorted(allRows.map((item) => item.academicyear)),
       regulations: uniqueSorted(allRows.map((item) => item.regulation)),
-      programs: [...programMap.values()].sort((a, b) => String(a.programcode).localeCompare(String(b.programcode))),
-      subjects: uniqueSorted(allRows.map((item) => item.subject)),
+      programs: (() => {
+        const programMap = new Map();
+        allRows.forEach((item) => {
+          if (item.programcode) {
+            programMap.set(item.programcode, {
+              programcode: item.programcode,
+              program: item.program || ""
+            });
+          }
+        });
+        return [...programMap.values()].sort((a, b) => String(a.programcode).localeCompare(String(b.programcode)));
+      })(),
+      types: uniqueSorted(allRows.map((item) => item.type)),
+      subjects: uniqueSorted(regulationSubjects.map((item) => item.subject)),
       semesters: uniqueSorted(allRows.map((item) => item.semester)),
       courses: courseMaps.map((item) => ({
         _id: item._id,
@@ -179,6 +220,7 @@ exports.getGradeConfigurationOptions = async (req, res) => {
         regulation: item.regulation || "",
         program: item.program || "",
         programcode: item.programcode || "",
+        type: item.type || "",
         subject: item.subject || "",
         semester: item.semester || "",
         course: item.course || "",

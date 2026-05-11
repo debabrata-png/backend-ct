@@ -1,5 +1,6 @@
 const CourseAssessment = require("../Models/courseassessmentds");
 const RegulationCourseMap = require("../Models/regulationcoursemapds");
+const RegulationSubject = require("../Models/regulationsubjectds");
 
 const allowedTypes = new Set(["Major", "Minor"]);
 const allowedGroupTypes = new Set(["Best", "Average"]);
@@ -72,9 +73,15 @@ exports.getCourseAssessmentOptions = async (req, res) => {
     ["academicyear", "regulation", "programcode", "type", "subject", "semester"].forEach((field) => {
       if (req.query[field]) courseQuery[field] = req.query[field];
     });
+    const subjectQuery = { colid };
+    ["academicyear", "regulation", "program", "programcode", "type"].forEach((field) => {
+      if (req.query[field]) subjectQuery[field] = req.query[field];
+    });
+    if (req.query.status) subjectQuery.status = req.query.status;
 
-    const [courseMaps, assessments] = await Promise.all([
+    const [courseMaps, regulationSubjects, assessments] = await Promise.all([
       RegulationCourseMap.find(courseQuery).sort({ academicyear: 1, regulation: 1, program: 1, type: 1, subject: 1, semester: 1, course: 1 }).lean(),
+      RegulationSubject.find(subjectQuery).sort({ academicyear: 1, regulation: 1, program: 1, type: 1, subject: 1 }).lean(),
       CourseAssessment.find({ colid }).sort({ academicyear: 1, regulation: 1, program: 1, type: 1, course: 1 }).lean()
     ]);
 
@@ -105,7 +112,7 @@ exports.getCourseAssessmentOptions = async (req, res) => {
       regulations: uniq(allRows.map((item) => item.regulation)),
       programs: [...programMap.values()].sort((a, b) => String(a.programcode).localeCompare(String(b.programcode))),
       types: uniq(allRows.map((item) => item.type)).filter((item) => allowedTypes.has(item)),
-      subjects: uniq(courseMaps.map((item) => item.subject)),
+      subjects: uniq(regulationSubjects.map((item) => item.subject)),
       semesters: uniq(courseMaps.map((item) => item.semester)),
       courses: [...courseMap.values()],
       assessmentgroups: uniq(assessments.map((item) => item.assessmentgroup)),
