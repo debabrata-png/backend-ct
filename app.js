@@ -4496,6 +4496,9 @@ app.post("/api/v2/neplms/component-marks/delete", neplmsassessmentmarksctlrds.de
 app.post("/api/v2/neplms/final-marks/process", neplmsfinalmarksctlrds.processFinalMarks);
 app.get("/api/v2/neplms/final-marks", neplmsfinalmarksctlrds.getFinalMarks);
 app.post("/api/v2/neplms/final-marks/delete", neplmsfinalmarksctlrds.deleteFinalMark);
+app.get("/api/v2/neplms/grade-card/options", neplmsfinalmarksctlrds.getGradeCardOptions);
+app.get("/api/v2/neplms/grade-card/students", neplmsfinalmarksctlrds.searchGradeCardStudents);
+app.get("/api/v2/neplms/grade-card", neplmsfinalmarksctlrds.getGradeCard);
 app.get("/api/v2/hostelmapping/options", hostelmappingctlrds.getOptions);
 app.post("/api/v2/hostelmapping/building", hostelmappingctlrds.createBuilding);
 app.get("/api/v2/hostelmapping/buildings", hostelmappingctlrds.getBuildings);
@@ -5939,6 +5942,15 @@ app.post('/generate-salary', salaryTransfer.generateSalary);
 const hrArrearController = require('./controllers/hrarrearcontroller');
 app.post('/hr/populate-arrear', hrArrearController.hrPopulateArrear);
 app.get('/hr/employee-arrears', hrArrearController.hrGetEmployeeArrears);
+
+const hrResignationController = require('./controllers/hrresignationctlrds');
+app.get('/api/v2/hrresignation/options', hrResignationController.getOptions);
+app.get('/api/v2/hrresignation/employees', hrResignationController.searchEmployees);
+app.get('/api/v2/hrresignation', hrResignationController.getResignations);
+app.post('/api/v2/hrresignation', hrResignationController.createResignation);
+app.post('/api/v2/hrresignation/update', hrResignationController.updateResignation);
+app.post('/api/v2/hrresignation/delete', hrResignationController.deleteResignation);
+app.post('/api/v2/hrresignation/upload', hrResignationController.uploadMiddleware, hrResignationController.uploadDocument);
 
 const menuAccessController = require('./controllers/menuaccessctlrds');
 app.get('/api/v2/menu-access', menuAccessController.getMenuAccessRules);

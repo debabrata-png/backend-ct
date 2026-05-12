@@ -2,6 +2,7 @@ const NepLmsComponentMarks = require("../Models/neplmscomponentmarksds");
 const NepLmsFinalMarks = require("../Models/neplmsfinalmarksds");
 const NepLmsAssessmentMarks = require("../Models/neplmsassessmentmarksds");
 const GradeConfiguration = require("../Models/gradeconfigurationds");
+const User = require("../Models/user");
 
 const toNumber = (value) => {
   if (value === "" || value === null || value === undefined) return undefined;
@@ -131,6 +132,8 @@ exports.processFinalMarks = async (req, res) => {
       const gradeInfo = grademode.toLowerCase().includes("configuration")
         ? getConfiguredGrade(enriched, total)
         : getUgcGrade(total);
+      const gradepoint = passstatus === "Fail" ? 0 : gradeInfo.gradepoint;
+      const credits = rows.map((row) => toNumber(row.credits)).find((value) => value !== undefined) || 0;
 
       const payload = {
         academicyear: text(first.academicyear),
@@ -148,7 +151,9 @@ exports.processFinalMarks = async (req, res) => {
         externalmarks: Number(externalmarks.toFixed(2)),
         total: Number(total.toFixed(2)),
         grade: passstatus === "Fail" ? "F" : gradeInfo.grade,
-        gradepoint: passstatus === "Fail" ? 0 : gradeInfo.gradepoint,
+        gradepoint,
+        credits,
+        gpa: Number((gradepoint * credits).toFixed(2)),
         passstatus,
         attempt: 1,
         failmode,
@@ -210,6 +215,107 @@ exports.deleteFinalMark = async (req, res) => {
     if (!deleted) return res.status(404).json({ success: false, message: "Final marks entry not found" });
 
     res.json({ success: true, data: deleted });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.searchGradeCardStudents = async (req, res) => {
+  try {
+    const colid = toNumber(req.query.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+
+    const query = { colid, role: /^Student$/i };
+    const exactFields = ["academicyear", "admissionyear", "program", "programcode", "semester", "section"];
+    exactFields.forEach((field) => {
+      if (req.query[field]) query[field] = req.query[field];
+    });
+    if (req.query.major) query.Major = req.query.major;
+    if (req.query.minor) query.Minor = req.query.minor;
+    ["name", "email", "phone", "regno"].forEach((field) => {
+      if (req.query[field]) query[field] = { $regex: text(req.query[field]), $options: "i" };
+    });
+
+    const students = await User.find(query)
+      .select("name email phone regno rollno academicyear admissionyear program programcode semester section Major Minor category gender regulation colid")
+      .sort({ academicyear: 1, programcode: 1, semester: 1, section: 1, name: 1 })
+      .limit(500)
+      .lean();
+
+    res.json({ success: true, data: students });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getGradeCardOptions = async (req, res) => {
+  try {
+    const colid = toNumber(req.query.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+
+    const students = await User.find({ colid, role: /^Student$/i })
+      .select("academicyear admissionyear program programcode semester section Major Minor")
+      .lean();
+    const uniqueSorted = (values) => [...new Set(values.map(text).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+    res.json({
+      success: true,
+      academicyears: uniqueSorted(students.map((item) => item.academicyear)),
+      admissionyears: uniqueSorted(students.map((item) => item.admissionyear)),
+      programs: uniqueSorted(students.map((item) => item.program)),
+      programcodes: uniqueSorted(students.map((item) => item.programcode)),
+      semesters: uniqueSorted(students.map((item) => item.semester)),
+      sections: uniqueSorted(students.map((item) => item.section)),
+      majors: uniqueSorted(students.map((item) => item.Major)),
+      minors: uniqueSorted(students.map((item) => item.Minor))
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getGradeCard = async (req, res) => {
+  try {
+    const colid = toNumber(req.query.colid);
+    const regno = text(req.query.regno);
+    const semester = text(req.query.semester);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!regno) return res.status(400).json({ success: false, message: "regno is required" });
+    if (!semester) return res.status(400).json({ success: false, message: "semester is required" });
+
+    const [student, semesterMarks, allMarks] = await Promise.all([
+      User.findOne({ colid, regno }).select("name email phone regno rollno academicyear admissionyear program programcode semester section Major Minor category gender regulation colid").lean(),
+      NepLmsFinalMarks.find({ colid, regno, semester }).sort({ course: 1, coursecode: 1 }).lean(),
+      NepLmsFinalMarks.find({ colid, regno }).sort({ semester: 1, course: 1 }).lean()
+    ]);
+
+    const getSummary = (rows) => {
+      const totalCredits = rows.reduce((sum, row) => sum + (Number(row.credits) || 0), 0);
+      const totalGpa = rows.reduce((sum, row) => sum + (Number(row.gpa) || 0), 0);
+      return {
+        totalCredits: Number(totalCredits.toFixed(2)),
+        totalGpa: Number(totalGpa.toFixed(2)),
+        value: totalCredits ? Number((totalGpa / totalCredits).toFixed(2)) : 0
+      };
+    };
+
+    const selectedSemesterNumber = Number(semester);
+    const cgpaRows = Number.isNaN(selectedSemesterNumber)
+      ? allMarks
+      : allMarks.filter((row) => {
+        const rowSemester = Number(row.semester);
+        return !Number.isNaN(rowSemester) && rowSemester <= selectedSemesterNumber;
+      });
+
+    res.json({
+      success: true,
+      student,
+      marks: semesterMarks,
+      sgpa: getSummary(semesterMarks),
+      cgpa: getSummary(cgpaRows),
+      allMarks: cgpaRows
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
