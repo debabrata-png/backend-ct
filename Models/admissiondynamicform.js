@@ -4,6 +4,7 @@ const AdmissionDynamicFormSchema = new mongoose.Schema({
   colid: Number,
   formid: String,
   title: String,
+  level: String,
   description: String,
   isactive: {
     type: String,

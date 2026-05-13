@@ -26,6 +26,9 @@ type: String
 type: {
 type: String
 },
+level: {
+type: String
+},
 status1: {
         type: String
     },
@@ -37,4 +40,3 @@ status1: {
 const mprograms=mongoose.model('mprograms',mprogramsschema);
 
 module.exports=mprograms;
-

@@ -120,8 +120,10 @@ const userPivotReportController = require('./controllers/userpivotreportctlrds')
 const employeeDatabaseController = require('./controllers/employeedatabasectlrd');
 const awsFileLibraryController = require('./controllers/awsfilelibrarydsctlr');
 const awsConfigController = require('./controllers/awsconfigdsctlr');
+const mprogramsManagementController = require('./controllers/mprogramsmanagementctlrds');
 app.get('/admission-dynamic/programs', admissionDynamicController.getPrograms);
 app.get('/admission-dynamic/program-types', admissionDynamicController.getProgramTypes);
+app.get('/admission-dynamic/program-levels', admissionDynamicController.getProgramLevels);
 app.get('/admission-dynamic/forms', admissionDynamicController.getForms);
 app.get('/admission-dynamic/form', admissionDynamicController.getForm);
 app.post('/admission-dynamic/forms', admissionDynamicController.createForm);
@@ -140,6 +142,12 @@ app.post('/admission-dynamic/applications-update', admissionDynamicController.up
 app.post('/admission-dynamic/applications-bulk', admissionDynamicController.bulkCreateApplications);
 app.post('/admission-dynamic/applications-delete', admissionDynamicController.deleteApplication);
 app.post('/admission-dynamic/application-document-upload', admissionDynamicController.uploadDocumentMiddleware, admissionDynamicController.uploadApplicationDocument);
+app.get('/api/v2/mprograms-management', mprogramsManagementController.getPrograms);
+app.get('/api/v2/mprograms-management/options', mprogramsManagementController.getProgramOptions);
+app.post('/api/v2/mprograms-management', mprogramsManagementController.createProgram);
+app.post('/api/v2/mprograms-management-update', mprogramsManagementController.updateProgram);
+app.post('/api/v2/mprograms-management-delete', mprogramsManagementController.deleteProgram);
+app.post('/api/v2/mprograms-management-bulk', mprogramsManagementController.bulkPrograms);
 app.get('/api/v2/user-custom-fields', userCustomFieldController.getAll);
 app.post('/api/v2/user-custom-fields', userCustomFieldController.create);
 app.post('/api/v2/user-custom-fields-update', userCustomFieldController.update);
@@ -4835,6 +4843,10 @@ const studentledgeranalyticsctlr = require("./controllers/studentledgeranalytics
 const studentledgerpaidanalyticsctlr = require("./controllers/studentledgerpaidanalyticsctlr");
 const studentledgercounterpaymentctlr = require("./controllers/studentledgercounterpaymentctlr");
 const studentfeesreceiptctlr = require("./controllers/studentfeesreceiptctlr");
+const studentledgerinstallmentctlrds = require("./controllers/studentledgerinstallmentctlrds");
+const applicationfeectlrds = require("./controllers/applicationfeectlrds");
+const easebuzzgatewayctlrds = require("./controllers/easebuzzgatewayctlrds");
+const easebuzzpaymentprocessctlrds = require("./controllers/easebuzzpaymentprocessctlrds");
 // Ledger routes
 app.post("/api/v2/addledgerds", ledgerstuddsctlr.addledgerds);
 app.get("/api/v2/getledgersds", ledgerstuddsctlr.getledgersds);
@@ -4860,6 +4872,24 @@ app.get("/api/v2/studentledgerpaidanalytics", studentledgerpaidanalyticsctlr.get
 app.get("/api/v2/studentledgercounterpayment", studentledgercounterpaymentctlr.getCounterPaymentLedger);
 app.post("/api/v2/studentledgercounterpayment/pay", studentledgercounterpaymentctlr.postCounterPayment);
 app.get("/api/v2/studentfeesreceipt", studentfeesreceiptctlr.getFeesReceiptRows);
+app.get("/api/v2/studentledgerinstallment/options", studentledgerinstallmentctlrds.getInstallmentFilterOptions);
+app.get("/api/v2/studentledgerinstallment/students", studentledgerinstallmentctlrds.searchInstallmentStudents);
+app.get("/api/v2/studentledgerinstallment/ledger", studentledgerinstallmentctlrds.getStudentInstallmentLedger);
+app.post("/api/v2/studentledgerinstallment/convert", studentledgerinstallmentctlrds.convertLedgerToInstallments);
+app.get("/api/v2/applicationfee/options", applicationfeectlrds.getApplicationFeeOptions);
+app.get("/api/v2/applicationfee", applicationfeectlrds.getApplicationFees);
+app.post("/api/v2/applicationfee", applicationfeectlrds.createApplicationFee);
+app.post("/api/v2/applicationfee/update", applicationfeectlrds.updateApplicationFee);
+app.post("/api/v2/applicationfee/delete", applicationfeectlrds.deleteApplicationFee);
+app.post("/api/v2/applicationfee/bulk", applicationfeectlrds.bulkApplicationFee);
+app.get("/api/v2/easebuzzgateway", easebuzzgatewayctlrds.getEasebuzzGateways);
+app.post("/api/v2/easebuzzgateway", easebuzzgatewayctlrds.createEasebuzzGateway);
+app.post("/api/v2/easebuzzgateway/update", easebuzzgatewayctlrds.updateEasebuzzGateway);
+app.post("/api/v2/easebuzzgateway/delete", easebuzzgatewayctlrds.deleteEasebuzzGateway);
+app.get("/api/v2/easebuzzpayment", easebuzzpaymentprocessctlrds.getEasebuzzPayments);
+app.post("/api/v2/easebuzzpayment/initiate", easebuzzpaymentprocessctlrds.initiateEasebuzzPayment);
+app.post("/api/v2/easebuzzpayment/callback", easebuzzpaymentprocessctlrds.handleEasebuzzPaymentCallback);
+app.get("/api/v2/easebuzzpayment/callback", easebuzzpaymentprocessctlrds.handleEasebuzzPaymentCallback);
 
 const ledgerinstallmentdsctlr = require("./controllers/ledgerinstallmentdsctlr.js");
 app.get("/api/v2/getallledgerentriesds", ledgerinstallmentdsctlr.getallledgerentriesds);

@@ -39,6 +39,7 @@ const ensureDefaultForm = async (colid) => {
       colid,
       formid: 'default',
       title: 'Default Admission Form',
+      level: '',
       description: '',
       isactive: 'Yes'
     });
@@ -178,6 +179,7 @@ exports.createForm = async (req, res) => {
       colid,
       formid: cleanFormId(req.body.formid || title),
       title,
+      level: req.body.level || '',
       description: req.body.description || '',
       isactive: req.body.isactive || 'Yes',
       user: req.body.user || ''
@@ -196,6 +198,7 @@ exports.updateForm = async (req, res) => {
       { _id: req.body.id, colid: Number(req.body.colid) },
       {
         title: req.body.title,
+        level: req.body.level || '',
         description: req.body.description || '',
         isactive: req.body.isactive || 'Yes'
       },
@@ -225,6 +228,7 @@ exports.getPrograms = async (req, res) => {
     const filter = { colid: Number(req.query.colid) };
     if (req.query.year) filter.year = req.query.year;
     if (req.query.type) filter.type = req.query.type;
+    if (req.query.level) filter.level = req.query.level;
 
     const data = await MPrograms.find(filter).sort({ program: 1, programcode: 1 });
 
@@ -238,9 +242,23 @@ exports.getProgramTypes = async (req, res) => {
   try {
     const filter = { colid: Number(req.query.colid) };
     if (req.query.year) filter.year = req.query.year;
+    if (req.query.level) filter.level = req.query.level;
 
     const types = await MPrograms.distinct('type', filter);
     res.json(types.filter(Boolean).sort());
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.getProgramLevels = async (req, res) => {
+  try {
+    const filter = { colid: Number(req.query.colid) };
+    if (req.query.year) filter.year = req.query.year;
+    if (req.query.type) filter.type = req.query.type;
+
+    const levels = await MPrograms.distinct('level', filter);
+    res.json(levels.filter(Boolean).sort());
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
