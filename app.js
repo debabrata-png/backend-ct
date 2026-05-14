@@ -4855,6 +4855,7 @@ const studentledgerinstallmentctlrds = require("./controllers/studentledgerinsta
 const applicationfeectlrds = require("./controllers/applicationfeectlrds");
 const easebuzzgatewayctlrds = require("./controllers/easebuzzgatewayctlrds");
 const easebuzzpaymentprocessctlrds = require("./controllers/easebuzzpaymentprocessctlrds");
+const mastergatewayctlrds = require("./controllers/mastergatewayctlrds");
 // Ledger routes
 app.post("/api/v2/addledgerds", ledgerstuddsctlr.addledgerds);
 app.get("/api/v2/getledgersds", ledgerstuddsctlr.getledgersds);
@@ -4894,6 +4895,10 @@ app.get("/api/v2/easebuzzgateway", easebuzzgatewayctlrds.getEasebuzzGateways);
 app.post("/api/v2/easebuzzgateway", easebuzzgatewayctlrds.createEasebuzzGateway);
 app.post("/api/v2/easebuzzgateway/update", easebuzzgatewayctlrds.updateEasebuzzGateway);
 app.post("/api/v2/easebuzzgateway/delete", easebuzzgatewayctlrds.deleteEasebuzzGateway);
+app.get("/api/v2/mastergateway", mastergatewayctlrds.getMasterGateways);
+app.post("/api/v2/mastergateway", mastergatewayctlrds.createMasterGateway);
+app.post("/api/v2/mastergateway/update", mastergatewayctlrds.updateMasterGateway);
+app.post("/api/v2/mastergateway/delete", mastergatewayctlrds.deleteMasterGateway);
 app.get("/api/v2/easebuzzpayment", easebuzzpaymentprocessctlrds.getEasebuzzPayments);
 app.post("/api/v2/easebuzzpayment/initiate", easebuzzpaymentprocessctlrds.initiateEasebuzzPayment);
 app.post("/api/v2/easebuzzpayment/callback", easebuzzpaymentprocessctlrds.handleEasebuzzPaymentCallback);
