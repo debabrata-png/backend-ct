@@ -1,5 +1,6 @@
 const EasebuzzGateway = require("../Models/easebuzzgatewayds");
 const EasebuzzPayment = require("../Models/easebuzzpaymentds");
+const AdmissionApplication = require("../Models/admissionapplicationdynamic");
 const EasebuzzPaymentHandler = require("../utils/easebuzzgatewayhandler");
 
 function text(value) {
@@ -42,7 +43,8 @@ exports.initiateEasebuzzPayment = async (req, res) => {
   try {
     const colid = Number(req.body.colid);
     const paidAmount = amount(req.body.amount);
-    const paymentType = text(req.body.type) === "Event" ? "Event" : "Student";
+    const requestedType = text(req.body.type);
+    const paymentType = requestedType === "Event" ? "Event" : requestedType === "Admission" ? "Admission" : "Student";
     if (!colid) return res.status(400).json({ success: false, message: "colid is required" });
     if (!text(req.body.student) || !text(req.body.regno) || !text(req.body.feeitem) || paidAmount <= 0) {
       return res.status(400).json({ success: false, message: "Student, regno, fee item and amount are required" });
@@ -70,6 +72,7 @@ exports.initiateEasebuzzPayment = async (req, res) => {
       feeitem: text(req.body.feeitem),
       amount: paidAmount,
       type: paymentType,
+      applicationid: text(req.body.applicationid),
       refno,
       description: text(req.body.description),
       email,
@@ -90,7 +93,8 @@ exports.initiateEasebuzzPayment = async (req, res) => {
       udf1: paymentType,
       udf2: text(req.body.regno),
       udf3: String(payment._id),
-      udf4: text(req.body.description)
+      udf4: text(req.body.description),
+      udf5: text(req.body.applicationid)
     };
     easebuzzParams.hash = handler.generateHash(easebuzzParams);
 
@@ -110,6 +114,19 @@ exports.initiateEasebuzzPayment = async (req, res) => {
 
     payment.gatewayresponse = { initiation: result };
     await payment.save();
+
+    if (paymentType === "Admission" && text(req.body.applicationid)) {
+      await AdmissionApplication.findOneAndUpdate(
+        { _id: text(req.body.applicationid), colid },
+        {
+          applicationfeeamount: paidAmount,
+          paymentstatus: "INITIATED",
+          paymentrefno: refno,
+          paymentdetails: { initiation: result }
+        },
+        { new: true }
+      );
+    }
 
     res.json({
       success: true,
@@ -149,6 +166,21 @@ exports.handleEasebuzzPaymentCallback = async (req, res) => {
     payment.paidamount = isSuccess ? amount(params.amount) : 0;
     payment.gatewayresponse = params;
     await payment.save();
+
+    if (payment.type === "Admission" && payment.applicationid) {
+      await AdmissionApplication.findOneAndUpdate(
+        { _id: payment.applicationid, colid: payment.colid },
+        {
+          paymentstatus: payment.status,
+          paymentrefno: payment.refno,
+          paiddate: payment.paiddate,
+          paidamount: payment.paidamount,
+          paymentdetails: params,
+          applicationstatus: isSuccess ? "Applied" : "Payment Failed"
+        },
+        { new: true }
+      );
+    }
 
     const redirectBase = callbackRedirectUrl(config);
     const joiner = redirectBase.includes("?") ? "&" : "?";

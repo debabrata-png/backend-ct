@@ -55,6 +55,21 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   twelvesubjectmarks: [SubjectMarksSchema],
   documents: [AdmissionDocumentSchema],
   extraFields: mongoose.Schema.Types.Mixed,
+  applicationfeeamount: {
+    type: Number,
+    default: 0
+  },
+  paymentstatus: {
+    type: String,
+    default: 'Not Required'
+  },
+  paymentrefno: String,
+  paidamount: {
+    type: Number,
+    default: 0
+  },
+  paiddate: Date,
+  paymentdetails: mongoose.Schema.Types.Mixed,
   user: String
 }, { timestamps: true });
 

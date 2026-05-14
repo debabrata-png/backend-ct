@@ -121,6 +121,7 @@ const employeeDatabaseController = require('./controllers/employeedatabasectlrd'
 const awsFileLibraryController = require('./controllers/awsfilelibrarydsctlr');
 const awsConfigController = require('./controllers/awsconfigdsctlr');
 const mprogramsManagementController = require('./controllers/mprogramsmanagementctlrds');
+const studentActivityController = require('./controllers/studentactivityctlrds');
 app.get('/admission-dynamic/programs', admissionDynamicController.getPrograms);
 app.get('/admission-dynamic/program-types', admissionDynamicController.getProgramTypes);
 app.get('/admission-dynamic/program-levels', admissionDynamicController.getProgramLevels);
@@ -148,6 +149,13 @@ app.post('/api/v2/mprograms-management', mprogramsManagementController.createPro
 app.post('/api/v2/mprograms-management-update', mprogramsManagementController.updateProgram);
 app.post('/api/v2/mprograms-management-delete', mprogramsManagementController.deleteProgram);
 app.post('/api/v2/mprograms-management-bulk', mprogramsManagementController.bulkPrograms);
+app.get('/api/v2/student-activities/options', studentActivityController.getStudentFilterOptions);
+app.post('/api/v2/student-activities/students', studentActivityController.searchStudents);
+app.get('/api/v2/student-activities', studentActivityController.getActivities);
+app.post('/api/v2/student-activities', studentActivityController.uploadMiddleware, studentActivityController.createActivity);
+app.post('/api/v2/student-activities-update', studentActivityController.uploadMiddleware, studentActivityController.updateActivity);
+app.post('/api/v2/student-activities-delete', studentActivityController.deleteActivity);
+app.post('/api/v2/student-activities-bulk', studentActivityController.bulkActivities);
 app.get('/api/v2/user-custom-fields', userCustomFieldController.getAll);
 app.post('/api/v2/user-custom-fields', userCustomFieldController.create);
 app.post('/api/v2/user-custom-fields-update', userCustomFieldController.update);
