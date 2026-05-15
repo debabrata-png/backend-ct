@@ -39,6 +39,12 @@ function queryFrom(source = {}) {
   return query;
 }
 
+function isProvisionalAdmissionPayment(source = {}) {
+  const paymentFor = text(source.paymentfor).toLowerCase();
+  const feeItem = text(source.feeitem).toLowerCase();
+  return paymentFor.includes("provisional") || feeItem.includes("provisional");
+}
+
 exports.initiateEasebuzzPayment = async (req, res) => {
   try {
     const colid = Number(req.body.colid);
@@ -72,6 +78,7 @@ exports.initiateEasebuzzPayment = async (req, res) => {
       feeitem: text(req.body.feeitem),
       amount: paidAmount,
       type: paymentType,
+      paymentfor: text(req.body.paymentfor),
       applicationid: text(req.body.applicationid),
       refno,
       description: text(req.body.description),
@@ -116,14 +123,23 @@ exports.initiateEasebuzzPayment = async (req, res) => {
     await payment.save();
 
     if (paymentType === "Admission" && text(req.body.applicationid)) {
+      const provisionalPayment = isProvisionalAdmissionPayment(req.body);
+      const updatePayload = provisionalPayment
+        ? {
+            provisionalfeeamount: paidAmount,
+            provisionalpaymentstatus: "INITIATED",
+            provisionalpaymentrefno: refno,
+            provisionalpaymentdetails: { initiation: result }
+          }
+        : {
+            applicationfeeamount: paidAmount,
+            paymentstatus: "INITIATED",
+            paymentrefno: refno,
+            paymentdetails: { initiation: result }
+          };
       await AdmissionApplication.findOneAndUpdate(
         { _id: text(req.body.applicationid), colid },
-        {
-          applicationfeeamount: paidAmount,
-          paymentstatus: "INITIATED",
-          paymentrefno: refno,
-          paymentdetails: { initiation: result }
-        },
+        updatePayload,
         { new: true }
       );
     }
@@ -168,16 +184,27 @@ exports.handleEasebuzzPaymentCallback = async (req, res) => {
     await payment.save();
 
     if (payment.type === "Admission" && payment.applicationid) {
+      const provisionalPayment = isProvisionalAdmissionPayment(payment);
+      const updatePayload = provisionalPayment
+        ? {
+            provisionalpaymentstatus: payment.status,
+            provisionalpaymentrefno: payment.refno,
+            provisionalpaiddate: payment.paiddate,
+            provisionalpaidamount: payment.paidamount,
+            provisionalpaymentdetails: params,
+            applicationstatus: isSuccess ? "Applied" : "Payment Failed"
+          }
+        : {
+            paymentstatus: payment.status,
+            paymentrefno: payment.refno,
+            paiddate: payment.paiddate,
+            paidamount: payment.paidamount,
+            paymentdetails: params,
+            applicationstatus: isSuccess ? "Applied" : "Payment Failed"
+          };
       await AdmissionApplication.findOneAndUpdate(
         { _id: payment.applicationid, colid: payment.colid },
-        {
-          paymentstatus: payment.status,
-          paymentrefno: payment.refno,
-          paiddate: payment.paiddate,
-          paidamount: payment.paidamount,
-          paymentdetails: params,
-          applicationstatus: isSuccess ? "Applied" : "Payment Failed"
-        },
+        updatePayload,
         { new: true }
       );
     }

@@ -70,6 +70,21 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   },
   paiddate: Date,
   paymentdetails: mongoose.Schema.Types.Mixed,
+  provisionalfeeamount: {
+    type: Number,
+    default: 0
+  },
+  provisionalpaymentstatus: {
+    type: String,
+    default: 'Not Required'
+  },
+  provisionalpaymentrefno: String,
+  provisionalpaidamount: {
+    type: Number,
+    default: 0
+  },
+  provisionalpaiddate: Date,
+  provisionalpaymentdetails: mongoose.Schema.Types.Mixed,
   user: String
 }, { timestamps: true });
 

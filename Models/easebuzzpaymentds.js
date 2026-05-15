@@ -10,6 +10,7 @@ const easebuzzPaymentSchema = new mongoose.Schema(
     feeitem: { type: String, required: true },
     amount: { type: Number, required: true },
     type: { type: String, enum: ["Student", "Event", "Admission"], default: "Student" },
+    paymentfor: { type: String },
     applicationid: { type: String },
     initiationdate: { type: Date, default: Date.now },
     paiddate: { type: Date },

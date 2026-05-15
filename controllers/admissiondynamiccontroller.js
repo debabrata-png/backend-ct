@@ -4,6 +4,7 @@ const AdmissionDynamicForm = require('./../Models/admissiondynamicform');
 const EmailConfiguration = require('./../Models/emailconfigurationds');
 const MPrograms = require('./../Models/mprograms');
 const Awsconfig = require('./../Models/awsconfig');
+const mongoose = require('mongoose');
 const path = require('path');
 const multer = require('multer');
 const AWS = require('aws-sdk');
@@ -696,10 +697,15 @@ exports.getFilterOptions = async (req, res) => {
 
 exports.getApplicationById = async (req, res) => {
   try {
+    const id = String(req.query.id || req.query.applicationnumber || '').trim();
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ msg: 'Invalid application number' });
+    }
     const data = await AdmissionApplication.findOne({
-      _id: req.query.id,
+      _id: id,
       colid: Number(req.query.colid)
     });
+    if (!data) return res.status(404).json({ msg: 'Application not found' });
     res.json(data);
   } catch (err) {
     res.status(500).json({ msg: err.message });
