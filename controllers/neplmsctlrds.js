@@ -4,6 +4,7 @@ const AWS = require("aws-sdk");
 const Awsconfig = require("../Models/awsconfig");
 const NepLmsResource = require("../Models/neplmsresourceds");
 const NepLmsTimetable = require("../Models/neplmstimetableds");
+const NepLmsAssignmentSubmission = require("../Models/neplmsassignmentsubmissionds");
 
 const upload = multer({ storage: multer.memoryStorage() });
 exports.uploadMiddleware = upload.single("file");
@@ -11,6 +12,11 @@ exports.uploadMiddleware = upload.single("file");
 const text = (value) => String(value || "").trim();
 const number = (value) => {
   const parsed = Number(value || 0);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+const optionalNumber = (value) => {
+  if (value === "" || value === null || value === undefined) return 0;
+  const parsed = Number(value);
   return Number.isNaN(parsed) ? 0 : parsed;
 };
 const encodeS3Key = (key) => String(key || "").split("/").map(encodeURIComponent).join("/");
@@ -43,6 +49,8 @@ const resourcePayload = (body = {}) => ({
   module: text(body.module),
   topic: text(body.topic),
   description: text(body.description),
+  duedate: text(body.duedate),
+  fullmarks: optionalNumber(body.fullmarks),
   status: text(body.status) || "Active"
 });
 
@@ -90,6 +98,71 @@ const getDefaultAwsConfig = async (colid) => Awsconfig.findOne({ colid: Number(c
 exports.getResources = async (req, res) => {
   try {
     const data = await NepLmsResource.find(courseFilter(req.query)).sort({ createdAt: -1 }).lean();
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getAssignmentSubmissions = async (req, res) => {
+  try {
+    const colid = Number(req.query.colid);
+    const assignmentid = text(req.query.assignmentid);
+    if (!colid) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!assignmentid) return res.status(400).json({ success: false, message: "Assignment is required" });
+
+    const assignment = await NepLmsResource.findOne({
+      _id: assignmentid,
+      colid,
+      resourcetype: "Assignment"
+    }).lean();
+    if (!assignment) return res.status(404).json({ success: false, message: "Assignment not found" });
+
+    if (req.query.coursecode && assignment.coursecode !== req.query.coursecode) {
+      return res.status(400).json({ success: false, message: "Assignment does not belong to selected course" });
+    }
+    if (req.query.facultyemail && assignment.facultyemail !== req.query.facultyemail) {
+      return res.status(403).json({ success: false, message: "Assignment does not belong to selected faculty" });
+    }
+
+    const submissions = await NepLmsAssignmentSubmission.find({ colid, assignmentid })
+      .sort({ submitteddate: -1, student: 1 })
+      .lean();
+    const data = submissions.map((row) => ({
+      ...row,
+      fullmarks: row.fullmarks || assignment.fullmarks || 0
+    }));
+
+    res.json({ success: true, assignment, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.gradeAssignmentSubmission = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    const id = text(req.body.id);
+    if (!colid) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!id) return res.status(400).json({ success: false, message: "Submission is required" });
+
+    const submission = await NepLmsAssignmentSubmission.findOne({ _id: id, colid });
+    if (!submission) return res.status(404).json({ success: false, message: "Submission not found" });
+
+    const assignment = await NepLmsResource.findOne({ _id: submission.assignmentid, colid, resourcetype: "Assignment" }).lean();
+    const fullmarks = optionalNumber(req.body.fullmarks || submission.fullmarks || assignment?.fullmarks);
+    const marks = optionalNumber(req.body.marks);
+    if (fullmarks && marks > fullmarks) {
+      return res.status(400).json({ success: false, message: "Marks cannot be more than full marks" });
+    }
+
+    submission.fullmarks = fullmarks;
+    submission.marks = marks;
+    submission.facultycomments = text(req.body.facultycomments);
+    submission.gradedby = text(req.body.gradedby || req.body.user);
+    submission.gradeddate = new Date();
+    submission.status = "Graded";
+    const data = await submission.save();
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

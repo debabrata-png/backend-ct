@@ -9,8 +9,16 @@ const toNumber = (value) => {
 const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const filterFields = [
+  { field: "name", label: "Name" },
+  { field: "regno", label: "Reg No" },
+  { field: "email", label: "Email" },
+  { field: "phone", label: "Phone" },
+  { field: "password", label: "Password" },
   { field: "admissionyear", label: "Academic year" },
+  { field: "academicyear", label: "Academic Year" },
+  { field: "program", label: "Program Name" },
   { field: "programcode", label: "Program" },
+  { field: "regulation", label: "Regulation" },
   { field: "department", label: "Department" },
   { field: "Major", label: "Major" },
   { field: "Minor", label: "Minor" },
@@ -80,6 +88,65 @@ const countByField = (rows, field) => {
     .sort((a, b) => b.count - a.count || String(a.value).localeCompare(String(b.value)));
 };
 
+const clean = (value) => String(value ?? "").trim();
+
+const valueFromBody = (body, field) => {
+  const aliases = {
+    Major: ["Major", "major"],
+    Minor: ["Minor", "minor"],
+    AEC: ["AEC", "aec"],
+    SEC: ["SEC", "sec"],
+    VAC: ["VAC", "vac"],
+    IDC: ["IDC", "idc"]
+  };
+  const keys = aliases[field] || [field];
+  for (const key of keys) {
+    if (body[key] !== undefined) return body[key];
+  }
+  return "";
+};
+
+const buildStudentPayload = (body = {}) => ({
+  name: clean(body.name) || "NA",
+  regno: clean(body.regno) || "NA",
+  email: clean(body.email),
+  phone: clean(body.phone) || "NA",
+  password: clean(body.password) || "NA",
+  role: "Student",
+  program: clean(body.program) || "NA",
+  programcode: clean(body.programcode) || "NA",
+  admissionyear: clean(body.admissionyear || body.academicyear) || "NA",
+  academicyear: clean(body.academicyear || body.admissionyear) || "NA",
+  semester: clean(body.semester) || "NA",
+  section: clean(body.section) || "NA",
+  gender: clean(body.gender) || "Not specified",
+  category: clean(body.category) || "General",
+  department: clean(body.department) || "NA",
+  regulation: clean(body.regulation) || "NA",
+  Major: clean(valueFromBody(body, "Major")) || "NA",
+  Minor: clean(valueFromBody(body, "Minor")) || "NA",
+  AEC: clean(valueFromBody(body, "AEC")) || "NA",
+  SEC: clean(valueFromBody(body, "SEC")) || "NA",
+  VAC: clean(valueFromBody(body, "VAC")) || "NA",
+  IDC: clean(valueFromBody(body, "IDC")) || "NA",
+  state: clean(body.state) || "NA",
+  city: clean(body.city) || "NA",
+  district: clean(body.district) || "NA",
+  pincode: clean(body.pincode) || "NA",
+  guardianname: clean(body.guardianname) || "NA",
+  guardianmobile: clean(body.guardianmobile) || "NA",
+  guardianemail: clean(body.guardianemail) || "NA",
+  rollno: clean(body.rollno) || "NA",
+  photo: clean(body.photo),
+  institution: clean(body.institution) || "NA",
+  user: clean(body.user),
+  addedby: clean(body.user),
+  status1: clean(body.status1),
+  colid: Number(body.colid),
+  status: Number(body.status || 1),
+  lastlogin: body.lastlogin ? new Date(body.lastlogin) : new Date(Date.now() + (365 * 24 * 60 * 60 * 1000))
+});
+
 exports.getStudentFilterOptions = async (req, res) => {
   try {
     const colid = toNumber(req.query.colid);
@@ -128,7 +195,7 @@ exports.searchStudentsDynamic = async (req, res) => {
     };
 
     const rows = await User.find(query)
-      .select("-password -expotoken")
+      .select("-expotoken")
       .sort({ admissionyear: 1, programcode: 1, name: 1 })
       .lean();
 
@@ -139,6 +206,57 @@ exports.searchStudentsDynamic = async (req, res) => {
     };
 
     res.json({ success: true, count: rows.length, data: rows, summary });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.createStudent = async (req, res) => {
+  try {
+    const payload = buildStudentPayload(req.body);
+    if (!payload.colid) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!payload.email) return res.status(400).json({ success: false, message: "Email is required" });
+
+    const data = await User.create(payload);
+    res.json({ success: true, data });
+  } catch (error) {
+    if (error.code === 11000) return res.status(400).json({ success: false, message: "Duplicate email is not allowed" });
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.updateStudent = async (req, res) => {
+  try {
+    const payload = buildStudentPayload(req.body);
+    if (!payload.colid) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!req.body.id) return res.status(400).json({ success: false, message: "id is required" });
+    if (!payload.email) return res.status(400).json({ success: false, message: "Email is required" });
+
+    const duplicate = await User.findOne({ _id: { $ne: req.body.id }, email: payload.email });
+    if (duplicate) return res.status(400).json({ success: false, message: "Duplicate email is not allowed" });
+
+    const data = await User.findOneAndUpdate(
+      { _id: req.body.id, ...buildBaseQuery(payload.colid) },
+      payload,
+      { new: true, runValidators: true }
+    );
+    if (!data) return res.status(404).json({ success: false, message: "Student not found" });
+    res.json({ success: true, data });
+  } catch (error) {
+    if (error.code === 11000) return res.status(400).json({ success: false, message: "Duplicate email is not allowed" });
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteStudent = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!req.body.id) return res.status(400).json({ success: false, message: "id is required" });
+
+    const data = await User.findOneAndDelete({ _id: req.body.id, ...buildBaseQuery(colid) });
+    if (!data) return res.status(404).json({ success: false, message: "Student not found" });
+    res.json({ success: true, message: "Student deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
