@@ -9,6 +9,8 @@ const numberColid = (value) => {
 
 const programPayload = (body = {}) => {
   const program = text(body.program || body.name);
+  const orderValue = body.Order ?? body.order ?? body.programorder ?? body.ProgramOrder;
+  const parsedOrder = orderValue === '' || orderValue === undefined || orderValue === null ? 0 : Number(orderValue);
   return {
     name: text(body.name || program),
     user: text(body.user),
@@ -18,6 +20,7 @@ const programPayload = (body = {}) => {
     programcode: text(body.programcode || body.programCode),
     type: text(body.type),
     level: text(body.level),
+    Order: Number.isNaN(parsedOrder) ? 0 : parsedOrder,
     status1: text(body.status1 || body.status || "Active") || "Active",
     comments: text(body.comments)
   };
@@ -34,7 +37,7 @@ exports.getPrograms = async (req, res) => {
     });
     if (text(req.query.program)) filter.program = new RegExp(text(req.query.program).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
 
-    const data = await MPrograms.find(filter).sort({ year: -1, level: 1, type: 1, program: 1, programcode: 1 }).lean();
+    const data = await MPrograms.find(filter).sort({ year: -1, level: 1, type: 1, Order: 1, program: 1, programcode: 1 }).lean();
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

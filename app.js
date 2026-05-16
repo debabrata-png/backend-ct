@@ -122,6 +122,8 @@ const awsFileLibraryController = require('./controllers/awsfilelibrarydsctlr');
 const awsConfigController = require('./controllers/awsconfigdsctlr');
 const mprogramsManagementController = require('./controllers/mprogramsmanagementctlrds');
 const studentActivityController = require('./controllers/studentactivityctlrds');
+const admissionDateSummaryController = require('./controllers/admissiondatesummaryctlrds');
+const researchSeedFundController = require('./controllers/researchseedfundctlrds');
 app.get('/admission-dynamic/programs', admissionDynamicController.getPrograms);
 app.get('/admission-dynamic/program-types', admissionDynamicController.getProgramTypes);
 app.get('/admission-dynamic/program-levels', admissionDynamicController.getProgramLevels);
@@ -137,6 +139,7 @@ app.post('/admission-dynamic/fields-update', admissionDynamicController.updateFi
 app.post('/admission-dynamic/fields-delete', admissionDynamicController.deleteField);
 app.get('/admission-dynamic/applications', admissionDynamicController.getApplications);
 app.get('/admission-dynamic/application', admissionDynamicController.getApplicationById);
+app.get('/admission-dynamic/date-summary', admissionDateSummaryController.getAdmissionDateSummary);
 app.get('/admission-dynamic/filter-options', admissionDynamicController.getFilterOptions);
 app.post('/admission-dynamic/applications', admissionDynamicController.createApplication);
 app.post('/admission-dynamic/applications-update', admissionDynamicController.updateApplication);
@@ -156,6 +159,22 @@ app.post('/api/v2/student-activities', studentActivityController.uploadMiddlewar
 app.post('/api/v2/student-activities-update', studentActivityController.uploadMiddleware, studentActivityController.updateActivity);
 app.post('/api/v2/student-activities-delete', studentActivityController.deleteActivity);
 app.post('/api/v2/student-activities-bulk', studentActivityController.bulkActivities);
+app.get('/api/v2/research/approval-matrix', researchSeedFundController.getApprovalMatrix);
+app.post('/api/v2/research/approval-matrix', researchSeedFundController.saveApprovalMatrix);
+app.post('/api/v2/research/approval-matrix/delete', researchSeedFundController.deleteApprovalMatrix);
+app.get('/api/v2/research/components', researchSeedFundController.getComponents);
+app.post('/api/v2/research/components', researchSeedFundController.saveComponent);
+app.post('/api/v2/research/components/delete', researchSeedFundController.deleteComponent);
+app.get('/api/v2/research/faculty-search', researchSeedFundController.searchFaculty);
+app.post('/api/v2/research/upload', researchSeedFundController.uploadMiddleware, researchSeedFundController.uploadDocument);
+app.get('/api/v2/research/grants', researchSeedFundController.getGrants);
+app.post('/api/v2/research/grants', researchSeedFundController.createGrant);
+app.post('/api/v2/research/grants/bulk', researchSeedFundController.bulkCreateGrants);
+app.post('/api/v2/research/grants/update', researchSeedFundController.updateGrant);
+app.post('/api/v2/research/grants/delete', researchSeedFundController.deleteGrant);
+app.get('/api/v2/research/approval-queue', researchSeedFundController.getApprovalQueue);
+app.post('/api/v2/research/approval-decision', researchSeedFundController.decideGrant);
+app.get('/api/v2/research/summary', researchSeedFundController.getSummary);
 app.get('/api/v2/user-custom-fields', userCustomFieldController.getAll);
 app.post('/api/v2/user-custom-fields', userCustomFieldController.create);
 app.post('/api/v2/user-custom-fields-update', userCustomFieldController.update);
@@ -4859,6 +4878,7 @@ const studentledgerpaidanalyticsctlr = require("./controllers/studentledgerpaida
 const studentledgercounterpaymentctlr = require("./controllers/studentledgercounterpaymentctlr");
 const studentfeesreceiptctlr = require("./controllers/studentfeesreceiptctlr");
 const studentledgerinstallmentctlrds = require("./controllers/studentledgerinstallmentctlrds");
+const feespivotctlrds = require("./controllers/feespivotctlrds");
 const applicationfeectlrds = require("./controllers/applicationfeectlrds");
 const provisionaladmissionfeectlrds = require("./controllers/provisionaladmissionfeectlrds");
 const easebuzzgatewayctlrds = require("./controllers/easebuzzgatewayctlrds");
@@ -4886,6 +4906,8 @@ app.get("/api/v2/studentledgeradjust", studentledgeradjustctlr.getStudentLedgerA
 app.post("/api/v2/studentledgeradjust/concession", studentledgeradjustctlr.updateStudentLedgerConcession);
 app.get("/api/v2/studentledgeranalytics", studentledgeranalyticsctlr.getStudentLedgerAnalytics);
 app.get("/api/v2/studentledgerpaidanalytics", studentledgerpaidanalyticsctlr.getStudentLedgerPaidAnalytics);
+app.get("/api/v2/feespivot/options", feespivotctlrds.getFeesPivotOptions);
+app.get("/api/v2/feespivot", feespivotctlrds.getFeesPivot);
 app.get("/api/v2/studentledgercounterpayment", studentledgercounterpaymentctlr.getCounterPaymentLedger);
 app.post("/api/v2/studentledgercounterpayment/pay", studentledgercounterpaymentctlr.postCounterPayment);
 app.get("/api/v2/studentfeesreceipt", studentfeesreceiptctlr.getFeesReceiptRows);
@@ -6057,12 +6079,15 @@ app.post('/indstock-delete/:id', indcontroller1.indDeleteStock);
 
 const budgetCtrl = require('./controllers/indbudgetcontroller');
 const indBudgetApprovalRoleCtrl = require('./controllers/indbudgetapprovalrolectlr');
+const indBudgetLogCtrl = require('./controllers/indbudgetlogcontroller');
 
 // BUDGET ROUTES
 app.post('/indbudget', budgetCtrl.indCreateBudget);
 app.get('/indbudget', budgetCtrl.indGetBudget);
 app.post('/indbudget/approve/:id', budgetCtrl.indApproveBudget);
 app.post('/indbudget/reject/:id', budgetCtrl.indRejectBudget);
+app.get('/indbudgetlogs', indBudgetLogCtrl.getBudgetLogs);
+app.get('/indbudgetlogs/options', indBudgetLogCtrl.getBudgetLogOptions);
 app.get('/indbudgetapprovalroles', indBudgetApprovalRoleCtrl.getIndBudgetApprovalRoles);
 app.post('/indbudgetapprovalroles', indBudgetApprovalRoleCtrl.createIndBudgetApprovalRole);
 app.post('/indbudgetapprovalroles-update', indBudgetApprovalRoleCtrl.updateIndBudgetApprovalRole);
@@ -6227,6 +6252,7 @@ const prepCtrl = require('./controllers/prepcontroller1');
 // 🔥 DIRECT CONTROLLER MAPPING (NO ROUTER)
 app.post('/prep/create', prepCtrl.prepCreateBudget);
 app.get('/prep/list', prepCtrl.prepGetBudgets);
+app.get('/prep/status-options', prepCtrl.prepStatusOptions);
 app.get('/prep/dept-summary', prepCtrl.prepDepartmentSummary);
 app.get('/prep/dept-items', prepCtrl.prepItemsByDepartment);
 app.get('/prep/category-summary', prepCtrl.prepCategorySummary);

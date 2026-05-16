@@ -29,6 +29,9 @@ type: String
 level: {
 type: String
 },
+Order: {
+type: Number
+},
 status1: {
         type: String
     },

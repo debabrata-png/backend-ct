@@ -1,5 +1,24 @@
 const Budget = require('./../Models/pbudget');
 
+const buildPrepFilter = (query = {}) => {
+  const { colid, academicyear, status, search, department } = query;
+  const filter = {};
+
+  if (colid) filter.colid = Number(colid);
+  if (academicyear) filter.academicyear = academicyear;
+  if (status) filter.status = status;
+  if (department) filter.department = department;
+
+  if (search) {
+    filter.$or = [
+      { itemname: { $regex: search, $options: 'i' } },
+      { department: { $regex: search, $options: 'i' } }
+    ];
+  }
+
+  return filter;
+};
+
 // 🔹 CREATE
 exports.prepCreateBudget = async (req, res) => {
   try {
@@ -13,20 +32,22 @@ exports.prepCreateBudget = async (req, res) => {
 // 🔹 LIST WITH FILTER (colid)
 exports.prepGetBudgets = async (req, res) => {
   try {
-    const { colid, search } = req.query;
-
-    let filter = { colid: Number(colid) };
-
-    // optional search (itemname / department)
-    if (search) {
-      filter.$or = [
-        { itemname: { $regex: search, $options: 'i' } },
-        { department: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    const data = await Budget.find(filter);
+    const data = await Budget.find(buildPrepFilter(req.query));
     res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.prepStatusOptions = async (req, res) => {
+  try {
+    const { colid, academicyear } = req.query;
+    const filter = {};
+    if (colid) filter.colid = Number(colid);
+    if (academicyear) filter.academicyear = academicyear;
+
+    const statuses = await Budget.distinct('status', filter);
+    res.json(statuses.filter(Boolean).sort());
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -35,10 +56,10 @@ exports.prepGetBudgets = async (req, res) => {
 // 🔹 DEPARTMENT SUMMARY (FOR GRID + BAR CHART)
 exports.prepDepartmentSummary = async (req, res) => {
   try {
-    const { colid } = req.query;
+    const filter = buildPrepFilter(req.query);
 
     const data = await Budget.aggregate([
-      { $match: { colid: Number(colid) } },
+      { $match: filter },
       {
         $group: {
           _id: "$department",
@@ -58,12 +79,9 @@ exports.prepDepartmentSummary = async (req, res) => {
 // 🔹 ITEMS BY DEPARTMENT (DRILLDOWN)
 exports.prepItemsByDepartment = async (req, res) => {
   try {
-    const { department, colid } = req.query;
-
-    const data = await Budget.find({
-      department,
-      colid: Number(colid)
-    });
+    const data = await Budget.find(buildPrepFilter(req.query))
+      .populate('categoryid')
+      .populate('storeid');
 
     res.json(data);
   } catch (err) {
@@ -74,15 +92,10 @@ exports.prepItemsByDepartment = async (req, res) => {
 // 🔹 CATEGORY SUMMARY (PIE / BAR)
 exports.prepCategorySummary = async (req, res) => {
   try {
-    const { department, colid } = req.query;
+    const filter = buildPrepFilter(req.query);
 
     const data = await Budget.aggregate([
-      {
-        $match: {
-          department,
-          colid: Number(colid)
-        }
-      },
+      { $match: filter },
       {
         $group: {
           _id: "$categoryid",

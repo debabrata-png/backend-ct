@@ -68,12 +68,12 @@ exports.getStudentLedgerPaidAnalytics = async (req, res) => {
     if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
 
     const query = { colid };
-    const paidDate = {};
+    const paidDate = { $exists: true, $ne: null };
     const from = dateAtStart(req.query.fromdate);
     const to = dateAtEnd(req.query.todate);
     if (from) paidDate.$gte = from;
     if (to) paidDate.$lte = to;
-    if (Object.keys(paidDate).length) query.paiddate = paidDate;
+    query.paiddate = paidDate;
 
     filterFields.forEach((field) => {
       if (req.query[field]) query[field] = req.query[field];

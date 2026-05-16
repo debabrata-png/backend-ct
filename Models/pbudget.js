@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const BudgetSchema = new mongoose.Schema({
   colid: Number,
+  academicyear: String,
 
   storeid: { type: mongoose.Schema.Types.ObjectId, ref: 'pstore' },
   categoryid: { type: mongoose.Schema.Types.ObjectId, ref: 'pcategory' },

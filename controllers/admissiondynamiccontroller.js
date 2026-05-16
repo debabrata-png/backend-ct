@@ -231,7 +231,7 @@ exports.getPrograms = async (req, res) => {
     if (req.query.type) filter.type = req.query.type;
     if (req.query.level) filter.level = req.query.level;
 
-    const data = await MPrograms.find(filter).sort({ program: 1, programcode: 1 });
+    const data = await MPrograms.find(filter).sort({ Order: 1, program: 1, programcode: 1 });
 
     res.json(data);
   } catch (err) {
@@ -245,8 +245,17 @@ exports.getProgramTypes = async (req, res) => {
     if (req.query.year) filter.year = req.query.year;
     if (req.query.level) filter.level = req.query.level;
 
-    const types = await MPrograms.distinct('type', filter);
-    res.json(types.filter(Boolean).sort());
+    const types = await MPrograms.aggregate([
+      { $match: { ...filter, type: { $nin: [null, ''] } } },
+      {
+        $group: {
+          _id: '$type',
+          minOrder: { $min: { $ifNull: ['$Order', 0] } }
+        }
+      },
+      { $sort: { minOrder: 1, _id: 1 } }
+    ]);
+    res.json(types.map((item) => item._id).filter(Boolean));
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
