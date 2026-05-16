@@ -112,6 +112,7 @@ const dynamicAdmissionToUserController = require('./controllers/dynamicadmission
 const provisionalAdmissionLetterController = require('./controllers/provisionaladmissionletterctlr');
 const offerLetterController = require('./controllers/offerletterctlr');
 const emailConfigurationController = require('./controllers/emailconfigurationdsctlr');
+const aiConfigurationController = require('./controllers/aiconfigurationdsctlr');
 const userCustomFieldController = require('./controllers/usercustomfielddsctlr');
 const userDataManagementController = require('./controllers/userdatamanagementdsctlr');
 const studentDataUploadController = require('./controllers/studentdatauploadctlrds');
@@ -236,6 +237,10 @@ app.get('/api/v2/email-configuration', emailConfigurationController.getEmailConf
 app.post('/api/v2/email-configuration', emailConfigurationController.createEmailConfiguration);
 app.post('/api/v2/email-configuration-update', emailConfigurationController.updateEmailConfiguration);
 app.post('/api/v2/email-configuration-delete', emailConfigurationController.deleteEmailConfiguration);
+app.get('/api/v2/ai-configuration', aiConfigurationController.getAiConfigurations);
+app.post('/api/v2/ai-configuration', aiConfigurationController.createAiConfiguration);
+app.post('/api/v2/ai-configuration-update', aiConfigurationController.updateAiConfiguration);
+app.post('/api/v2/ai-configuration-delete', aiConfigurationController.deleteAiConfiguration);
 app.get('/api/v2/student-email-message/options', studentEmailMessagingController.getStudentFilterOptions);
 app.post('/api/v2/student-email-message/search', studentEmailMessagingController.searchStudents);
 app.post('/api/v2/student-email-message/send', studentEmailMessagingController.sendMessage);
@@ -591,6 +596,9 @@ const rselectprograminst=require('./router/selectprograminstrouter.js');
 
 const User=require('./Models/user');
 const Admusers=require('./Models/admusers');
+const publicSignupCtlrds = require('./controllers/publicsignupctlrds');
+
+app.post('/api/v2/public-signup', publicSignupCtlrds.createPublicAccount);
 
 
 app.use(passport.initialize());
@@ -4428,6 +4436,7 @@ const syllabusctlrds = require("./controllers/syllabusctlrds");
 const gradeconfigurationctlrds = require("./controllers/gradeconfigurationctlrds");
 const workloadassignmentctlrds = require("./controllers/workloadassignmentctlrds");
 const neplmsctlrds = require("./controllers/neplmsctlrds");
+const neplmsaicoursegenerationctlrds = require("./controllers/neplmsaicoursegenerationctlrds");
 const neplmsattendancectlrds = require("./controllers/neplmsattendancectlrds");
 const neplmsassessmentmarksctlrds = require("./controllers/neplmsassessmentmarksctlrds");
 const neplmsfinalmarksctlrds = require("./controllers/neplmsfinalmarksctlrds");
@@ -4512,6 +4521,8 @@ app.get("/api/v2/neplms/resources", neplmsctlrds.getResources);
 app.post("/api/v2/neplms/resources", neplmsctlrds.uploadMiddleware, neplmsctlrds.uploadResource);
 app.post("/api/v2/neplms/resources/update", neplmsctlrds.updateResource);
 app.post("/api/v2/neplms/resources/delete", neplmsctlrds.deleteResource);
+app.get("/api/v2/neplms/ai-course-generation/context", neplmsaicoursegenerationctlrds.getContext);
+app.post("/api/v2/neplms/ai-course-generation/generate", neplmsaicoursegenerationctlrds.generateCourseMaterial);
 app.get("/api/v2/neplms/timetable", neplmsctlrds.getTimetable);
 app.post("/api/v2/neplms/timetable", neplmsctlrds.createTimetable);
 app.post("/api/v2/neplms/timetable/update", neplmsctlrds.updateTimetable);
