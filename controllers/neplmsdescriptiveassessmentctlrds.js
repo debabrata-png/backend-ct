@@ -1,6 +1,7 @@
 const User = require("../Models/user");
 const WorkloadAssignment = require("../Models/workloadassignmentds");
 const Syllabus = require("../Models/syllabusds");
+const CourseOutcome = require("../Models/courseoutcomeds");
 const AiConfiguration = require("../Models/aiconfigurationds");
 const Assessment = require("../Models/neplmsdescriptiveassessmentds");
 const Attempt = require("../Models/neplmsdescriptiveattemptds");
@@ -120,6 +121,14 @@ const assessmentPayload = (body = {}) => ({
   startdatetime: body.startdatetime ? new Date(body.startdatetime) : null,
   enddatetime: body.enddatetime ? new Date(body.enddatetime) : null,
   status: text(body.status) || "Active"
+});
+
+const questionPayload = (body = {}) => ({
+  question: text(body.question),
+  marks: number(body.marks) || 1,
+  conumber: text(body.conumber),
+  co: text(body.co),
+  bloomlevel: text(body.bloomlevel)
 });
 
 const assessmentFilter = (source = {}) => {
@@ -250,9 +259,19 @@ exports.addQuestion = async (req, res) => {
     if (!assessment) return res.status(404).json({ success: false, message: "Assessment not found" });
     const section = assessment.sections.id(req.body.sectionid);
     if (!section) return res.status(404).json({ success: false, message: "Section not found" });
-    const question = text(req.body.question);
-    if (!question) return res.status(400).json({ success: false, message: "Question is required" });
-    section.questions.push({ question, marks: number(req.body.marks) || 1 });
+    const payload = questionPayload(req.body);
+    if (!payload.question) return res.status(400).json({ success: false, message: "Question is required" });
+    if (text(req.body.questionid)) {
+      const existing = section.questions.id(req.body.questionid);
+      if (!existing) return res.status(404).json({ success: false, message: "Question not found" });
+      existing.set(payload);
+      existing.aiCheckStatus = "";
+      existing.aiCheckFeedback = "";
+      existing.aiSuggestedCo = "";
+      existing.aiSuggestedBloomlevel = "";
+    } else {
+      section.questions.push(payload);
+    }
     const data = await assessment.save();
     res.json({ success: true, data });
   } catch (error) {
@@ -304,11 +323,103 @@ Return only JSON array like [{"question":"...","marks":5}]. Questions must be an
     const parsed = parseJson(raw);
     const items = (Array.isArray(parsed) ? parsed : parsed.questions || []).map((item) => ({
       question: text(item.question),
-      marks: number(item.marks || item.score) || 1
+      marks: number(item.marks || item.score) || 1,
+      conumber: text(item.conumber || item.coNumber),
+      co: text(item.co || item.courseoutcome || item.courseOutcome),
+      bloomlevel: text(item.bloomlevel || item.bloomLevel || item.bloom)
     })).filter((item) => item.question);
     items.forEach((item) => section.questions.push(item));
     const data = await assessment.save();
     res.json({ success: true, inserted: items.length, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.aiCheckQuestions = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    const assessment = await Assessment.findOne({ _id: req.body.assessmentid, colid });
+    if (!assessment) return res.status(404).json({ success: false, message: "Assessment not found" });
+    const aiConfig = await getAiConfig(colid, req.body.provider);
+    if (!aiConfig?.apikey) return res.status(400).json({ success: false, message: `Active ${req.body.provider} AI configuration was not found` });
+
+    const outcomes = await CourseOutcome.find({
+      colid,
+      academicyear: assessment.academicyear,
+      regulation: assessment.regulation,
+      programcode: assessment.programcode,
+      type: assessment.type,
+      subject: assessment.major || assessment.subject,
+      semester: assessment.semester,
+      coursecode: assessment.coursecode,
+      status: "Active"
+    }).lean();
+
+    const questions = [];
+    (assessment.sections || []).forEach((section) => {
+      (section.questions || []).forEach((question) => {
+        questions.push({
+          questionid: String(question._id),
+          section: section.title,
+          question: question.question,
+          marks: question.marks,
+          conumber: question.conumber,
+          co: question.co,
+          bloomlevel: question.bloomlevel
+        });
+      });
+    });
+
+    if (!questions.length) return res.status(400).json({ success: false, message: "No questions found for AI checking" });
+
+    const prompt = `Check these descriptive assessment questions against the selected CO and Bloom taxonomy level.
+Language: ${text(req.body.language) || "English"}
+Course: ${assessment.course} (${assessment.coursecode})
+Subject: ${assessment.major || assessment.subject}
+
+Available course outcomes:
+${outcomes.map((item) => `${item.conumber || ""}: ${item.co || ""} | Bloom levels: ${(item.bloomlevels || []).join(", ")}`).join("\n")}
+
+Questions:
+${questions.map((item, index) => `${index + 1}. questionid: ${item.questionid}
+Question: ${item.question}
+Selected CO: ${item.conumber || ""} ${item.co || ""}
+Selected Bloom: ${item.bloomlevel || ""}`).join("\n\n")}
+
+Return only JSON array. Each item must be:
+{
+  "questionid": "same id",
+  "status": "Aligned" or "Needs Review",
+  "feedback": "short checking feedback",
+  "conumber": "best matching CO number if the selected one is blank or wrong",
+  "co": "best matching CO text if the selected one is blank or wrong",
+  "bloomlevel": "best matching Bloom level if selected level is blank or wrong",
+  "suggestedCo": "optional suggestion",
+  "suggestedBloomlevel": "optional suggestion"
+}`;
+
+    const raw = await callAi(req.body.provider, aiConfig.apikey, prompt);
+    const parsed = parseJson(raw);
+    const checks = Array.isArray(parsed) ? parsed : parsed.items || parsed.questions || [];
+    const checkMap = new Map(checks.map((item) => [text(item.questionid), item]));
+
+    (assessment.sections || []).forEach((section) => {
+      (section.questions || []).forEach((question) => {
+        const check = checkMap.get(String(question._id));
+        if (!check) return;
+        question.aiCheckStatus = text(check.status) || "Checked";
+        question.aiCheckFeedback = text(check.feedback || check.reason || check.comment);
+        question.aiSuggestedCo = text(check.suggestedCo || check.suggestedco || check.co);
+        question.aiSuggestedBloomlevel = text(check.suggestedBloomlevel || check.suggestedbloomlevel || check.bloomlevel);
+        if (text(check.conumber)) question.conumber = text(check.conumber);
+        if (text(check.co)) question.co = text(check.co);
+        if (text(check.bloomlevel)) question.bloomlevel = text(check.bloomlevel);
+      });
+    });
+
+    const data = await assessment.save();
+    res.json({ success: true, checked: checks.length, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -376,6 +487,9 @@ exports.submitAssessment = async (req, res) => {
           sectiontitle: section.title,
           questionid: String(question._id),
           question: question.question,
+          conumber: question.conumber,
+          co: question.co,
+          bloomlevel: question.bloomlevel,
           answer: answerMap.get(String(question._id)) || "",
           maxmarks: number(question.marks),
           marks: 0

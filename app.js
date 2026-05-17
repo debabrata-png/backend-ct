@@ -4447,6 +4447,7 @@ const workloadassignmentctlrds = require("./controllers/workloadassignmentctlrds
 const neplmsctlrds = require("./controllers/neplmsctlrds");
 const neplmsquizctlrds = require("./controllers/neplmsquizctlrds");
 const neplmsdescriptiveassessmentctlrds = require("./controllers/neplmsdescriptiveassessmentctlrds");
+const neplmscoattainmentctlrds = require("./controllers/neplmscoattainmentctlrds");
 const neplmsaicoursegenerationctlrds = require("./controllers/neplmsaicoursegenerationctlrds");
 const neplmsstudentworkspacectlrds = require("./controllers/neplmsstudentworkspacectlrds");
 const neplmsstudentdashboardctlrds = require("./controllers/neplmsstudentdashboardctlrds");
@@ -4558,10 +4559,13 @@ app.post("/api/v2/neplms/assessments/sections", neplmsdescriptiveassessmentctlrd
 app.post("/api/v2/neplms/assessments/sections/delete", neplmsdescriptiveassessmentctlrds.deleteSection);
 app.post("/api/v2/neplms/assessments/questions", neplmsdescriptiveassessmentctlrds.addQuestion);
 app.post("/api/v2/neplms/assessments/questions/generate", neplmsdescriptiveassessmentctlrds.generateQuestions);
+app.post("/api/v2/neplms/assessments/questions/ai-check", neplmsdescriptiveassessmentctlrds.aiCheckQuestions);
 app.post("/api/v2/neplms/assessments/questions/delete", neplmsdescriptiveassessmentctlrds.deleteQuestion);
 app.get("/api/v2/neplms/assessments/attempts", neplmsdescriptiveassessmentctlrds.getAttempts);
 app.post("/api/v2/neplms/assessments/attempts/marks", neplmsdescriptiveassessmentctlrds.updateMarks);
 app.post("/api/v2/neplms/assessments/attempts/ai-evaluate", neplmsdescriptiveassessmentctlrds.evaluateAttemptWithAi);
+app.get("/api/v2/neplms/co-attainment", neplmscoattainmentctlrds.getCoAttainment);
+app.post("/api/v2/neplms/co-attainment/process", neplmscoattainmentctlrds.processCoAttainment);
 app.post("/api/v2/neplms/resources", neplmsctlrds.uploadMiddleware, neplmsctlrds.uploadResource);
 app.post("/api/v2/neplms/resources/update", neplmsctlrds.updateResource);
 app.post("/api/v2/neplms/resources/delete", neplmsctlrds.deleteResource);

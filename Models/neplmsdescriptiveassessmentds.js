@@ -3,7 +3,14 @@ const mongoose = require("mongoose");
 const descriptiveQuestionSchema = new mongoose.Schema(
   {
     question: { type: String, trim: true, required: true },
-    marks: { type: Number, default: 1 }
+    marks: { type: Number, default: 1 },
+    conumber: { type: String, trim: true },
+    co: { type: String, trim: true },
+    bloomlevel: { type: String, trim: true },
+    aiCheckStatus: { type: String, trim: true },
+    aiCheckFeedback: { type: String, trim: true },
+    aiSuggestedCo: { type: String, trim: true },
+    aiSuggestedBloomlevel: { type: String, trim: true }
   },
   { timestamps: true }
 );
