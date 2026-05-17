@@ -286,7 +286,7 @@ exports.getFields = async (req, res) => {
       colid,
       ...formFilter,
       ...(req.query.activeOnly === 'No' ? {} : { isactive: 'Yes' })
-    }).sort({ page: 1, section: 1, order: 1, label: 1 });
+    }).sort({ order: 1, createdAt: 1, label: 1 });
 
     res.json(data);
   } catch (err) {
@@ -424,6 +424,8 @@ const applicationPayload = (body) => ({
   formid: cleanFormId(body.formid),
   academicyear: body.academicyear,
   name: body.name,
+  username: String(body.username || '').trim(),
+  password: String(body.password || '').trim(),
   email: String(body.email || '').trim().toLowerCase(),
   phone: String(body.phone || '').trim(),
   address: body.address,
@@ -835,6 +837,96 @@ exports.retrieveApplication = async (req, res) => {
     const data = await AdmissionApplication.findOne(filter).sort({ createdAt: -1 });
     if (!data) return res.status(404).json({ msg: 'Application not found' });
     res.json(data);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.retrieveApplicationByCredential = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid || req.query.colid);
+    const username = String(req.body.username || req.query.username || '').trim();
+    const password = String(req.body.password || req.query.password || '').trim();
+    const formid = req.body.formid || req.query.formid ? cleanFormId(req.body.formid || req.query.formid) : '';
+
+    if (!colid) return res.status(400).json({ msg: 'College id is required' });
+    if (!username || !password) return res.status(400).json({ msg: 'Username and password are required' });
+
+    const filter = { colid, username, password };
+    if (formid) filter.formid = formid;
+
+    const data = await AdmissionApplication.findOne(filter).sort({ updatedAt: -1, createdAt: -1 });
+    if (!data) return res.status(404).json({ msg: 'Application not found or password is incorrect' });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.forgotApplicationPassword = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid || req.query.colid);
+    const email = String(req.body.email || req.query.email || '').trim().toLowerCase();
+    const formid = req.body.formid || req.query.formid ? cleanFormId(req.body.formid || req.query.formid) : '';
+
+    if (!colid) return res.status(400).json({ msg: 'College id is required' });
+    if (!email) return res.status(400).json({ msg: 'Email is required' });
+
+    const filter = { colid, email };
+    if (formid) filter.formid = formid;
+    const application = await AdmissionApplication.findOne(filter).sort({ updatedAt: -1, createdAt: -1 }).lean();
+    if (!application) return res.status(404).json({ msg: 'Application not found for this email' });
+    if (!application.username || !application.password) return res.status(400).json({ msg: 'Username/password is not available for this application' });
+
+    const mailConfig = await EmailConfiguration.findOne({
+      colid,
+      provider: /^gmail$/i,
+      type: /^admission$/i,
+      isactive: 'Yes'
+    }).lean();
+
+    if (!mailConfig?.username || !mailConfig?.password) {
+      return res.status(400).json({ msg: 'Admission Gmail configuration missing' });
+    }
+
+    const formDefinition = await AdmissionDynamicForm.findOne({
+      colid,
+      formid: application.formid || 'default'
+    }).lean();
+
+    const transporter = createAdmissionMailTransport(mailConfig);
+    await transporter.sendMail({
+      from: `${formDefinition?.title || 'Admissions'} <${mailConfig.username}>`,
+      to: email,
+      subject: `Admission application login details - ${application._id}`,
+      text: [
+        `Dear ${application.name || 'Applicant'},`,
+        '',
+        'Your admission application login details are:',
+        `Application ID: ${application._id}`,
+        `Username: ${application.username}`,
+        `Password: ${application.password}`,
+        '',
+        'Please keep these details safe for continuing your application.',
+        '',
+        'This is an automated email.'
+      ].join('\n'),
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.55;color:#111827">
+          <p>Dear ${application.name || 'Applicant'},</p>
+          <p>Your admission application login details are:</p>
+          <table style="border-collapse:collapse;margin:12px 0">
+            <tr><td style="padding:6px 10px;border:1px solid #d1d5db"><b>Application ID</b></td><td style="padding:6px 10px;border:1px solid #d1d5db">${application._id}</td></tr>
+            <tr><td style="padding:6px 10px;border:1px solid #d1d5db"><b>Username</b></td><td style="padding:6px 10px;border:1px solid #d1d5db">${application.username}</td></tr>
+            <tr><td style="padding:6px 10px;border:1px solid #d1d5db"><b>Password</b></td><td style="padding:6px 10px;border:1px solid #d1d5db">${application.password}</td></tr>
+          </table>
+          <p>Please keep these details safe for continuing your application.</p>
+          <p style="font-size:12px;color:#6b7280">This is an automated email.</p>
+        </div>
+      `
+    });
+
+    res.json({ msg: 'Login details sent to email' });
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }

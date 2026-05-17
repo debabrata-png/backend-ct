@@ -141,6 +141,8 @@ app.post('/admission-dynamic/fields-delete', admissionDynamicController.deleteFi
 app.get('/admission-dynamic/applications', admissionDynamicController.getApplications);
 app.get('/admission-dynamic/application', admissionDynamicController.getApplicationById);
 app.get('/admission-dynamic/application-retrieve', admissionDynamicController.retrieveApplication);
+app.post('/admission-dynamic/application-credential-retrieve', admissionDynamicController.retrieveApplicationByCredential);
+app.post('/admission-dynamic/application-forgot-password', admissionDynamicController.forgotApplicationPassword);
 app.get('/admission-dynamic/date-summary', admissionDateSummaryController.getAdmissionDateSummary);
 app.get('/admission-dynamic/filter-options', admissionDynamicController.getFilterOptions);
 app.post('/admission-dynamic/applications', admissionDynamicController.createApplication);
