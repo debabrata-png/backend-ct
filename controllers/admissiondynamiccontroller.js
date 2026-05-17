@@ -805,3 +805,37 @@ exports.getApplicationById = async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 };
+
+exports.retrieveApplication = async (req, res) => {
+  try {
+    const colid = Number(req.query.colid);
+    const id = String(req.query.id || req.query.applicationnumber || '').trim();
+    const email = String(req.query.email || '').trim().toLowerCase();
+    const phone = String(req.query.phone || '').trim();
+    const formid = req.query.formid ? cleanFormId(req.query.formid) : '';
+
+    if (!colid) return res.status(400).json({ msg: 'College id is required' });
+
+    const filter = { colid };
+    if (formid) filter.formid = formid;
+
+    if (id) {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ msg: 'Invalid application number' });
+      }
+      filter._id = id;
+    } else {
+      if (!email || !phone) {
+        return res.status(400).json({ msg: 'Enter application number or both email and phone' });
+      }
+      filter.email = email;
+      filter.phone = phone;
+    }
+
+    const data = await AdmissionApplication.findOne(filter).sort({ createdAt: -1 });
+    if (!data) return res.status(404).json({ msg: 'Application not found' });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};

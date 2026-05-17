@@ -53,7 +53,7 @@ const callChatGpt = async (apikey, prompt) => {
 };
 
 const callGemini = async (apikey, prompt) => {
-  const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
+  const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
   let lastError = "";
   for (const model of models) {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apikey)}`, {
