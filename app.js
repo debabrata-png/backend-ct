@@ -4555,6 +4555,7 @@ app.get("/api/v2/neplms/assessments", neplmsdescriptiveassessmentctlrds.getAsses
 app.post("/api/v2/neplms/assessments", neplmsdescriptiveassessmentctlrds.createAssessment);
 app.post("/api/v2/neplms/assessments/update", neplmsdescriptiveassessmentctlrds.updateAssessment);
 app.post("/api/v2/neplms/assessments/delete", neplmsdescriptiveassessmentctlrds.deleteAssessment);
+app.post("/api/v2/neplms/assessments/image-upload", neplmsdescriptiveassessmentctlrds.uploadImageMiddleware, neplmsdescriptiveassessmentctlrds.uploadAssessmentImage);
 app.post("/api/v2/neplms/assessments/sections", neplmsdescriptiveassessmentctlrds.addSection);
 app.post("/api/v2/neplms/assessments/sections/delete", neplmsdescriptiveassessmentctlrds.deleteSection);
 app.post("/api/v2/neplms/assessments/questions", neplmsdescriptiveassessmentctlrds.addQuestion);

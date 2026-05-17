@@ -1,10 +1,17 @@
+const path = require("path");
+const multer = require("multer");
+const AWS = require("aws-sdk");
 const User = require("../Models/user");
 const WorkloadAssignment = require("../Models/workloadassignmentds");
 const Syllabus = require("../Models/syllabusds");
 const CourseOutcome = require("../Models/courseoutcomeds");
 const AiConfiguration = require("../Models/aiconfigurationds");
+const Awsconfig = require("../Models/awsconfig");
 const Assessment = require("../Models/neplmsdescriptiveassessmentds");
 const Attempt = require("../Models/neplmsdescriptiveattemptds");
+
+const upload = multer({ storage: multer.memoryStorage() });
+exports.uploadImageMiddleware = upload.single("file");
 
 const text = (value) => String(value || "").trim();
 const number = (value) => {
@@ -14,12 +21,20 @@ const number = (value) => {
 const escRegex = (value) => String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const stripCodeFence = (content) => text(content).replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "").trim();
 const listFromValue = (value) => Array.isArray(value) ? value.map(text).filter(Boolean) : String(value || "").split(",").map(text).filter(Boolean);
+const encodeS3Key = (key) => String(key || "").split("/").map(encodeURIComponent).join("/");
+const s3Url = (bucket, region, key) => {
+  const encodedKey = encodeS3Key(key);
+  if (region === "us-east-1") return `https://${bucket}.s3.amazonaws.com/${encodedKey}`;
+  return `https://${bucket}.s3.${region}.amazonaws.com/${encodedKey}`;
+};
 
 const getAiConfig = async (colid, provider) => {
   const providerRegex = new RegExp(`^${escRegex(provider)}$`, "i");
   return AiConfiguration.findOne({ colid: Number(colid), type: providerRegex, active: /^yes$/i, default: /^yes$/i }).sort({ _id: -1 }).lean()
     || AiConfiguration.findOne({ colid: Number(colid), type: providerRegex, active: /^yes$/i }).sort({ _id: -1 }).lean();
 };
+
+const getDefaultAwsConfig = async (colid) => Awsconfig.findOne({ colid: Number(colid), type: /^aws$/i, default: /^yes$/i }).sort({ _id: -1 }).lean();
 
 const callChatGpt = async (apikey, prompt) => {
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -126,6 +141,8 @@ const assessmentPayload = (body = {}) => ({
 const questionPayload = (body = {}) => ({
   question: text(body.question),
   marks: number(body.marks) || 1,
+  imageurl: text(body.imageurl),
+  imagefilename: text(body.imagefilename),
   conumber: text(body.conumber),
   co: text(body.co),
   bloomlevel: text(body.bloomlevel)
@@ -222,6 +239,53 @@ exports.deleteAssessment = async (req, res) => {
     await Assessment.findOneAndDelete({ _id: req.body.id, colid: Number(req.body.colid) });
     await Attempt.deleteMany({ assessmentid: req.body.id, colid: Number(req.body.colid) });
     res.json({ success: true, message: "Deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.uploadAssessmentImage = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    if (!colid) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!req.file) return res.status(400).json({ success: false, message: "Image file is required" });
+    if (!String(req.file.mimetype || "").startsWith("image/")) {
+      return res.status(400).json({ success: false, message: "Only image files are allowed" });
+    }
+
+    const config = await getDefaultAwsConfig(colid);
+    if (!config?.username || !config?.password || !config?.bucket || !config?.region) {
+      return res.status(400).json({ success: false, message: "Default AWS configuration is incomplete" });
+    }
+
+    const cleanName = path.basename(req.file.originalname).replace(/[^\w.\-() ]/g, "_");
+    const folder = `nep-lms/assessment-images/${text(req.body.context) || "images"}`;
+    const key = `${colid}/${folder}/${Date.now()}-${cleanName}`;
+    const s3 = new AWS.S3({
+      accessKeyId: config.username,
+      secretAccessKey: config.password,
+      region: config.region
+    });
+    await s3.putObject({
+      Bucket: config.bucket,
+      Key: key,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype
+    }).promise();
+
+    res.json({
+      success: true,
+      data: {
+        filename: cleanName,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        bucket: config.bucket,
+        region: config.region,
+        key,
+        url: s3Url(config.bucket, config.region, key)
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -324,6 +388,8 @@ Return only JSON array like [{"question":"...","marks":5}]. Questions must be an
     const items = (Array.isArray(parsed) ? parsed : parsed.questions || []).map((item) => ({
       question: text(item.question),
       marks: number(item.marks || item.score) || 1,
+      imageurl: text(item.imageurl),
+      imagefilename: text(item.imagefilename),
       conumber: text(item.conumber || item.coNumber),
       co: text(item.co || item.courseoutcome || item.courseOutcome),
       bloomlevel: text(item.bloomlevel || item.bloomLevel || item.bloom)
@@ -478,7 +544,11 @@ exports.submitAssessment = async (req, res) => {
     if (now < new Date(assessment.startdatetime) || now > new Date(assessment.enddatetime)) {
       return res.status(400).json({ success: false, message: "Assessment is not active now" });
     }
-    const answerMap = new Map((req.body.answers || []).map((answer) => [text(answer.questionid), text(answer.answer)]));
+    const answerMap = new Map((req.body.answers || []).map((answer) => [text(answer.questionid), {
+      answer: text(answer.answer),
+      answerimageurl: text(answer.answerimageurl),
+      answerimagefilename: text(answer.answerimagefilename)
+    }]));
     const answers = [];
     (assessment.sections || []).forEach((section) => {
       (section.questions || []).forEach((question) => {
@@ -487,10 +557,13 @@ exports.submitAssessment = async (req, res) => {
           sectiontitle: section.title,
           questionid: String(question._id),
           question: question.question,
+          questionimageurl: question.imageurl,
           conumber: question.conumber,
           co: question.co,
           bloomlevel: question.bloomlevel,
-          answer: answerMap.get(String(question._id)) || "",
+          answer: answerMap.get(String(question._id))?.answer || "",
+          answerimageurl: answerMap.get(String(question._id))?.answerimageurl || "",
+          answerimagefilename: answerMap.get(String(question._id))?.answerimagefilename || "",
           maxmarks: number(question.marks),
           marks: 0
         });
@@ -562,8 +635,10 @@ exports.evaluateAttemptWithAi = async (req, res) => {
     for (const answer of attempt.answers) {
       const prompt = `Evaluate this student answer in ${text(req.body.language) || "English"}.
 Question: ${answer.question}
+Question image URL: ${answer.questionimageurl || "None"}
 Maximum marks: ${answer.maxmarks}
 Student answer: ${answer.answer}
+Student uploaded answer image URL: ${answer.answerimageurl || "None"}
 Return only JSON: {"marks": number, "feedback": "brief feedback"}. Award marks between 0 and maximum marks.`;
       const raw = await callAi(req.body.provider, aiConfig.apikey, prompt);
       const parsed = parseJson(raw);

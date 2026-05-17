@@ -4,6 +4,8 @@ const descriptiveQuestionSchema = new mongoose.Schema(
   {
     question: { type: String, trim: true, required: true },
     marks: { type: Number, default: 1 },
+    imageurl: { type: String, trim: true },
+    imagefilename: { type: String, trim: true },
     conumber: { type: String, trim: true },
     co: { type: String, trim: true },
     bloomlevel: { type: String, trim: true },
