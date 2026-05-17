@@ -143,6 +143,8 @@ app.get('/admission-dynamic/application', admissionDynamicController.getApplicat
 app.get('/admission-dynamic/date-summary', admissionDateSummaryController.getAdmissionDateSummary);
 app.get('/admission-dynamic/filter-options', admissionDynamicController.getFilterOptions);
 app.post('/admission-dynamic/applications', admissionDynamicController.createApplication);
+app.post('/admission-dynamic/applications-draft-save', admissionDynamicController.saveDraftApplication);
+app.post('/admission-dynamic/applications-draft-submit', admissionDynamicController.submitDraftApplication);
 app.post('/admission-dynamic/applications-update', admissionDynamicController.updateApplication);
 app.post('/admission-dynamic/applications-bulk', admissionDynamicController.bulkCreateApplications);
 app.post('/admission-dynamic/applications-delete', admissionDynamicController.deleteApplication);
@@ -4442,6 +4444,8 @@ const neplmsctlrds = require("./controllers/neplmsctlrds");
 const neplmsquizctlrds = require("./controllers/neplmsquizctlrds");
 const neplmsaicoursegenerationctlrds = require("./controllers/neplmsaicoursegenerationctlrds");
 const neplmsstudentworkspacectlrds = require("./controllers/neplmsstudentworkspacectlrds");
+const neplmsstudentdashboardctlrds = require("./controllers/neplmsstudentdashboardctlrds");
+const neplmsfacultydashboardctlrds = require("./controllers/neplmsfacultydashboardctlrds");
 const neplmsattendancectlrds = require("./controllers/neplmsattendancectlrds");
 const neplmsassessmentmarksctlrds = require("./controllers/neplmsassessmentmarksctlrds");
 const neplmsfinalmarksctlrds = require("./controllers/neplmsfinalmarksctlrds");
@@ -4543,6 +4547,8 @@ app.post("/api/v2/neplms/ai-course-generation/generate", neplmsaicoursegeneratio
 app.get("/api/v2/neplms/student-workspace/courses", neplmsstudentworkspacectlrds.getStudentCourses);
 app.get("/api/v2/neplms/student-workspace/course", neplmsstudentworkspacectlrds.getCourseWorkspace);
 app.post("/api/v2/neplms/student-workspace/assignment-submit", neplmsstudentworkspacectlrds.uploadMiddleware, neplmsstudentworkspacectlrds.submitAssignment);
+app.get("/api/v2/neplms/student-dashboard", neplmsstudentdashboardctlrds.getStudentDashboard);
+app.get("/api/v2/neplms/faculty-dashboard", neplmsfacultydashboardctlrds.getFacultyDashboard);
 app.get("/api/v2/neplms/student-workspace/active-quizzes", neplmsquizctlrds.getActiveStudentQuizzes);
 app.post("/api/v2/neplms/student-workspace/quiz-submit", neplmsquizctlrds.submitQuiz);
 app.get("/api/v2/neplms/timetable", neplmsctlrds.getTimetable);

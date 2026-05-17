@@ -544,6 +544,91 @@ exports.createApplication = async (req, res) => {
   }
 };
 
+exports.saveDraftApplication = async (req, res) => {
+  try {
+    const payload = applicationPayload({
+      ...req.body,
+      applicationstatus: 'Draft'
+    });
+    if (!payload.email || !payload.phone) {
+      return res.status(400).json({ msg: 'Email and phone are required before saving the application' });
+    }
+
+    const id = String(req.body.id || '').trim();
+    const duplicateFilter = {
+      colid: payload.colid,
+      $or: [{ email: payload.email }, { phone: payload.phone }]
+    };
+    if (id) duplicateFilter._id = { $ne: id };
+
+    const duplicate = await AdmissionApplication.findOne(duplicateFilter);
+    if (duplicate) {
+      return res.status(400).json({ msg: 'Duplicate email or phone is not allowed' });
+    }
+
+    if (id) {
+      const current = await AdmissionApplication.findOne({ _id: id, colid: payload.colid });
+      if (!current) return res.status(404).json({ msg: 'Application not found' });
+      if (current.applicationstatus !== 'Draft') {
+        return res.status(400).json({ msg: 'Submitted application cannot be edited' });
+      }
+      const data = await AdmissionApplication.findOneAndUpdate(
+        { _id: id, colid: payload.colid },
+        payload,
+        { new: true }
+      );
+      return res.json(data);
+    }
+
+    const data = await AdmissionApplication.create(payload);
+    res.json(data);
+  } catch (err) {
+    if (err.code === 11000) return res.status(400).json({ msg: 'Duplicate email or phone is not allowed' });
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.submitDraftApplication = async (req, res) => {
+  try {
+    const payload = applicationPayload({
+      ...req.body,
+      applicationstatus: 'Applied'
+    });
+    if (!req.body.id) return res.status(400).json({ msg: 'Application id is required' });
+    if (!payload.email || !payload.phone) {
+      return res.status(400).json({ msg: 'Email and phone are required' });
+    }
+
+    const duplicate = await AdmissionApplication.findOne({
+      _id: { $ne: req.body.id },
+      colid: payload.colid,
+      $or: [{ email: payload.email }, { phone: payload.phone }]
+    });
+    if (duplicate) {
+      return res.status(400).json({ msg: 'Duplicate email or phone is not allowed' });
+    }
+
+    const current = await AdmissionApplication.findOne({ _id: req.body.id, colid: payload.colid });
+    if (!current) return res.status(404).json({ msg: 'Application not found' });
+    if (current.applicationstatus !== 'Draft') {
+      return res.status(400).json({ msg: 'Only draft applications can be submitted from this page' });
+    }
+
+    const data = await AdmissionApplication.findOneAndUpdate(
+      { _id: req.body.id, colid: payload.colid },
+      payload,
+      { new: true }
+    );
+    const mailStatus = await sendAdmissionConfirmationMail(data);
+    const response = data.toObject();
+    response.mailStatus = mailStatus;
+    res.json(response);
+  } catch (err) {
+    if (err.code === 11000) return res.status(400).json({ msg: 'Duplicate email or phone is not allowed' });
+    res.status(500).json({ msg: err.message });
+  }
+};
+
 exports.bulkCreateApplications = async (req, res) => {
   try {
     const items = Array.isArray(req.body.items) ? req.body.items : [];
