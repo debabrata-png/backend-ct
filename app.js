@@ -4462,12 +4462,41 @@ const mfeesconfigctlrds = require("./controllers/mfeesconfigctlrds");
 const feesmodelreportctlr = require("./controllers/feesmodelreportctlr");
 const feeApprovalRoleCtrl = require("./controllers/feeapprovalrolectlr");
 const meritListUpload = multer({ storage: multer.memoryStorage() });
+const hrLeaveUpload = multer({ storage: multer.memoryStorage() });
+const hrleavemanagementctlrds = require("./controllers/hrleavemanagementctlrds");
 const ds1profileeditconfigctlr = require("./controllers/ds1profileeditconfigctlr");
 const ds1profileeditlogctlr = require("./controllers/ds1profileeditlogctlr");
 const ds1datareportctlr = require("./controllers/ds1datareportctlr");
 
 
 app.get("/api/v2/ds1getcounsellors", ds1userctlr.ds1getcounsellors);
+app.get("/api/v2/hrleave/options", hrleavemanagementctlrds.options);
+app.get("/api/v2/hrleave/classes", hrleavemanagementctlrds.checkClasses);
+app.post("/api/v2/hrleave/hierarchy", hrleavemanagementctlrds.createHierarchy);
+app.get("/api/v2/hrleave/hierarchy", hrleavemanagementctlrds.getHierarchies);
+app.post("/api/v2/hrleave/hierarchy/update", hrleavemanagementctlrds.updateHierarchy);
+app.post("/api/v2/hrleave/hierarchy/delete", hrleavemanagementctlrds.deleteHierarchy);
+app.post("/api/v2/hrleave/hierarchy/bulkupload", hrLeaveUpload.single("file"), hrleavemanagementctlrds.bulkHierarchy);
+app.post("/api/v2/hrleave/type", hrleavemanagementctlrds.createType);
+app.get("/api/v2/hrleave/type", hrleavemanagementctlrds.getTypes);
+app.post("/api/v2/hrleave/type/update", hrleavemanagementctlrds.updateType);
+app.post("/api/v2/hrleave/type/delete", hrleavemanagementctlrds.deleteType);
+app.post("/api/v2/hrleave/type/bulkupload", hrLeaveUpload.single("file"), hrleavemanagementctlrds.bulkType);
+app.post("/api/v2/hrleave/cycle", hrleavemanagementctlrds.createCycle);
+app.get("/api/v2/hrleave/cycle", hrleavemanagementctlrds.getCycles);
+app.post("/api/v2/hrleave/cycle/update", hrleavemanagementctlrds.updateCycle);
+app.post("/api/v2/hrleave/cycle/delete", hrleavemanagementctlrds.deleteCycle);
+app.post("/api/v2/hrleave/cycle/bulkupload", hrLeaveUpload.single("file"), hrleavemanagementctlrds.bulkCycle);
+app.post("/api/v2/hrleave/balance", hrleavemanagementctlrds.createBalance);
+app.get("/api/v2/hrleave/balance", hrleavemanagementctlrds.getBalances);
+app.post("/api/v2/hrleave/balance/update", hrleavemanagementctlrds.updateBalance);
+app.post("/api/v2/hrleave/balance/delete", hrleavemanagementctlrds.deleteBalance);
+app.post("/api/v2/hrleave/balance/bulkupload", hrLeaveUpload.single("file"), hrleavemanagementctlrds.bulkBalance);
+app.post("/api/v2/hrleave/reset", hrleavemanagementctlrds.resetLeaves);
+app.post("/api/v2/hrleave/apply", hrleavemanagementctlrds.applyLeave);
+app.get("/api/v2/hrleave/applications", hrleavemanagementctlrds.getApplications);
+app.post("/api/v2/hrleave/approve", hrleavemanagementctlrds.approveLeave);
+app.get("/api/v2/hrleave/dashboard", hrleavemanagementctlrds.dashboard);
 
 // ==========================================
 // USER MANAGEMENT ROUTES (ADMIN) - ds1 prefix
