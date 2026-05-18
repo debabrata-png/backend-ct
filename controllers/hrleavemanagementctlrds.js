@@ -1,11 +1,19 @@
 const XLSX = require("xlsx");
+const path = require("path");
+const multer = require("multer");
+const AWS = require("aws-sdk");
 const User = require("../Models/user");
+const Awsconfig = require("../Models/awsconfig");
 const NepLmsTimetable = require("../Models/neplmstimetableds");
 const LeaveHierarchy = require("../Models/hrleavehierarchyds");
 const LeaveType = require("../Models/hrleavetypeds");
 const LeaveCycle = require("../Models/hrleavecycleds");
 const LeaveBalance = require("../Models/hrleavebalanceds");
 const LeaveApplication = require("../Models/hrleaveapplicationds");
+const LeaveClassPlan = require("../Models/hrleaveclassplands");
+
+const upload = multer({ storage: multer.memoryStorage() });
+exports.uploadMiddleware = upload.single("file");
 
 const text = (value) => String(value || "").trim();
 const number = (value) => {
@@ -19,6 +27,13 @@ const dateDays = (from, to) => {
   return Math.floor((end - start) / 86400000) + 1;
 };
 const readSheet = (buffer) => XLSX.utils.sheet_to_json(XLSX.read(buffer, { type: "buffer" }).Sheets[XLSX.read(buffer, { type: "buffer" }).SheetNames[0]], { defval: "" });
+const encodeS3Key = (key) => String(key || "").split("/").map(encodeURIComponent).join("/");
+const s3Url = (bucket, region, key) => {
+  const encodedKey = encodeS3Key(key);
+  if (region === "us-east-1") return `https://${bucket}.s3.amazonaws.com/${encodedKey}`;
+  return `https://${bucket}.s3.${region}.amazonaws.com/${encodedKey}`;
+};
+const getDefaultAwsConfig = async (colid) => Awsconfig.findOne({ colid: Number(colid), type: /^aws$/i, default: /^yes$/i }).sort({ _id: -1 }).lean();
 const splitLevels = (row) => {
   if (Array.isArray(row.levels)) return row.levels;
   const levels = [];
@@ -49,6 +64,12 @@ const getAssignedClasses = async (colid, employeeemail, fromdate, todate) => {
     .lean();
 };
 
+const findLeaveBalance = async (colid, employeeemail, leavetype, cyclename) => {
+  const exact = await LeaveBalance.findOne({ colid, employeeemail, leavetype, cyclename });
+  if (exact) return exact;
+  return LeaveBalance.findOne({ colid, employeeemail, leavetype }).sort({ updatedAt: -1 });
+};
+
 const calcCarryForward = (type, unused) => {
   const criteria = text(type.carryforwardcriteria).toLowerCase();
   if (criteria === "full") return unused;
@@ -65,12 +86,18 @@ const queryFrom = (source, fields) => {
   return filter;
 };
 
+const leaveBalancePayload = (payload = {}) => ({
+  ...payload,
+  balance: number(payload.openingbalance) + number(payload.carryforward) + number(payload.earned) - number(payload.used)
+});
+
 const crud = (Model, fields, required = []) => ({
   create: async (req, res) => {
     try {
       const payload = { colid: Number(req.body.colid), user: text(req.body.user) };
       fields.forEach((field) => { if (Object.prototype.hasOwnProperty.call(req.body, field)) payload[field] = req.body[field]; });
       if (fields.includes("levels")) payload.levels = splitLevels(req.body);
+      if (Model === LeaveBalance) Object.assign(payload, leaveBalancePayload(payload));
       required.forEach((field) => {
         if (!text(payload[field])) throw new Error(`${field} is required`);
       });
@@ -95,6 +122,7 @@ const crud = (Model, fields, required = []) => ({
       const payload = { user: text(req.body.user) };
       fields.forEach((field) => { if (Object.prototype.hasOwnProperty.call(req.body, field)) payload[field] = req.body[field]; });
       if (fields.includes("levels")) payload.levels = splitLevels(req.body);
+      if (Model === LeaveBalance) Object.assign(payload, leaveBalancePayload(payload));
       const data = await Model.findOneAndUpdate({ _id: req.body.id, colid: Number(req.body.colid) }, payload, { new: true, runValidators: true });
       if (!data) return res.status(404).json({ success: false, message: "Record not found" });
       res.json({ success: true, data });
@@ -118,6 +146,7 @@ const crud = (Model, fields, required = []) => ({
         const payload = { colid, user: text(req.body.user) };
         fields.forEach((field) => { if (field !== "levels") payload[field] = row[field] ?? ""; });
         if (fields.includes("levels")) payload.levels = splitLevels(row);
+        if (Model === LeaveBalance) Object.assign(payload, leaveBalancePayload(payload));
         return payload;
       });
       const data = await Model.insertMany(rows, { ordered: false });
@@ -175,18 +204,80 @@ exports.checkClasses = async (req, res) => {
   }
 };
 
+exports.uploadLeaveDocument = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    if (!colid) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!req.file) return res.status(400).json({ success: false, message: "File is required" });
+
+    const config = await getDefaultAwsConfig(colid);
+    if (!config?.username || !config?.password || !config?.bucket || !config?.region) {
+      return res.status(400).json({ success: false, message: "Default AWS configuration is incomplete" });
+    }
+
+    const cleanName = path.basename(req.file.originalname).replace(/[^\w.\-() ]/g, "_");
+    const cleanUser = text(req.body.user).replace(/[^\w.\-()@ ]/g, "_") || "user";
+    const key = `${colid}/hr-leave/${cleanUser}/${Date.now()}-${cleanName}`;
+    const s3 = new AWS.S3({
+      accessKeyId: config.username,
+      secretAccessKey: config.password,
+      region: config.region
+    });
+
+    await s3.putObject({
+      Bucket: config.bucket,
+      Key: key,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype
+    }).promise();
+
+    res.json({
+      success: true,
+      url: s3Url(config.bucket, config.region, key),
+      key,
+      bucket: config.bucket,
+      region: config.region,
+      originalname: req.file.originalname
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.applyLeave = async (req, res) => {
   try {
     const colid = Number(req.body.colid);
     const employeeemail = text(req.body.employeeemail || req.body.user);
     const days = dateDays(req.body.fromdate, req.body.todate);
     if (!days) return res.status(400).json({ success: false, message: "Valid from and to date are required" });
-    const balance = await LeaveBalance.findOne({ colid, employeeemail, leavetype: text(req.body.leavetype), cyclename: text(req.body.cyclename) });
+    const overlappingLeave = await LeaveApplication.findOne({
+      colid,
+      employeeemail,
+      status: { $in: ["Applied", "In Approval", "Approved"] },
+      fromdate: { $lte: text(req.body.todate) },
+      todate: { $gte: text(req.body.fromdate) }
+    }).lean();
+    if (overlappingLeave) {
+      return res.status(400).json({
+        success: false,
+        message: `Leave application already exists with status ${overlappingLeave.status} from ${overlappingLeave.fromdate} to ${overlappingLeave.todate}. New leave cannot overlap fully or partially.`
+      });
+    }
+    const balance = await findLeaveBalance(colid, employeeemail, text(req.body.leavetype), text(req.body.cyclename));
     if (!balance || number(balance.balance) < days) return res.status(400).json({ success: false, message: "Insufficient leave balance" });
     const hierarchy = await LeaveHierarchy.findOne({ colid, employeeemail, status: "Active" }).lean();
     if (!hierarchy?.levels?.length) return res.status(400).json({ success: false, message: "Approval hierarchy not configured" });
     const classes = await getAssignedClasses(colid, employeeemail, text(req.body.fromdate), text(req.body.todate));
+    const requestedPlans = Array.isArray(req.body.classplans) ? req.body.classplans : [];
+    const planByClassId = new Map(requestedPlans.map((item) => [text(item.timetableid || item.classid || item._id), text(item.alternateplan)]));
+    const missingPlans = classes.filter((item) => !planByClassId.get(text(item._id)));
+    if (missingPlans.length) {
+      return res.status(400).json({ success: false, message: "Select every assigned class and enter alternate plan for each class" });
+    }
     const approvals = hierarchy.levels.sort((a, b) => number(a.level) - number(b.level)).map((level) => ({ ...level, status: "Pending" }));
+    balance.used = number(balance.used) + days;
+    balance.balance = number(balance.balance) - days;
+    await balance.save();
     const data = await LeaveApplication.create({
       cyclename: text(req.body.cyclename),
       employeename: text(req.body.employeename || hierarchy.employeename),
@@ -202,10 +293,34 @@ exports.applyLeave = async (req, res) => {
       classes,
       approvals,
       currentlevel: approvals[0]?.level || 1,
+      balancededucted: true,
       status: "Applied",
       colid,
       user: text(req.body.user)
     });
+    if (classes.length) {
+      await LeaveClassPlan.insertMany(classes.map((item) => ({
+        leaveapplicationid: data._id,
+        timetableid: item._id,
+        academicyear: text(item.academicyear),
+        regulation: text(item.regulation),
+        program: text(item.program),
+        programcode: text(item.programcode),
+        major: text(item.major),
+        semester: text(item.semester),
+        course: text(item.course),
+        coursecode: text(item.coursecode),
+        classdate: text(item.classdate),
+        classtime: text(item.classtime),
+        period: text(item.period),
+        topic: text(item.topic),
+        faculty: text(item.faculty),
+        facultyemail: text(item.facultyemail),
+        alternateplan: planByClassId.get(text(item._id)),
+        colid,
+        user: text(req.body.user)
+      })));
+    }
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -218,7 +333,15 @@ exports.getApplications = async (req, res) => {
     const approveremail = text(req.query.approveremail);
     if (approveremail) filter["approvals.approveremail"] = approveremail;
     const data = await LeaveApplication.find(filter).sort({ createdAt: -1 }).lean();
-    res.json({ success: true, data });
+    const ids = data.map((item) => item._id);
+    const plans = ids.length ? await LeaveClassPlan.find({ colid: Number(req.query.colid), leaveapplicationid: { $in: ids } }).sort({ classdate: 1, classtime: 1 }).lean() : [];
+    const plansByApplication = plans.reduce((map, item) => {
+      const key = text(item.leaveapplicationid);
+      if (!map[key]) map[key] = [];
+      map[key].push(item);
+      return map;
+    }, {});
+    res.json({ success: true, data: data.map((item) => ({ ...item, classplans: plansByApplication[text(item._id)] || [] })) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -235,6 +358,13 @@ exports.approveLeave = async (req, res) => {
     approval.comment = text(req.body.comment);
     approval.actiondate = new Date();
     if (approval.status === "Rejected") {
+      const balance = await findLeaveBalance(app.colid, app.employeeemail, app.leavetype, app.cyclename);
+      if (app.balancededucted && balance) {
+        balance.used = Math.max(0, number(balance.used) - number(app.days));
+        balance.balance = number(balance.balance) + number(app.days);
+        await balance.save();
+        app.balancededucted = false;
+      }
       app.status = "Rejected";
       app.finalcomment = text(req.body.comment);
     } else {
@@ -243,11 +373,14 @@ exports.approveLeave = async (req, res) => {
         app.currentlevel = next.level;
         app.status = "In Approval";
       } else {
-        const balance = await LeaveBalance.findOne({ colid: app.colid, employeeemail: app.employeeemail, leavetype: app.leavetype, cyclename: app.cyclename });
-        if (!balance || number(balance.balance) < number(app.days)) return res.status(400).json({ success: false, message: "Insufficient leave balance at final approval" });
-        balance.used = number(balance.used) + number(app.days);
-        balance.balance = number(balance.balance) - number(app.days);
-        await balance.save();
+        if (!app.balancededucted) {
+          const balance = await findLeaveBalance(app.colid, app.employeeemail, app.leavetype, app.cyclename);
+          if (!balance || number(balance.balance) < number(app.days)) return res.status(400).json({ success: false, message: "Insufficient leave balance at final approval" });
+          balance.used = number(balance.used) + number(app.days);
+          balance.balance = number(balance.balance) - number(app.days);
+          await balance.save();
+          app.balancededucted = true;
+        }
         app.status = "Approved";
         app.finalcomment = text(req.body.comment);
       }
@@ -287,19 +420,35 @@ exports.dashboard = async (req, res) => {
   try {
     const colid = Number(req.query.colid);
     const employeeemail = text(req.query.employeeemail || req.query.user);
-    const balances = await LeaveBalance.find({ colid, employeeemail }).sort({ leavetype: 1 }).lean();
-    const applications = await LeaveApplication.find({ colid, employeeemail }).sort({ fromdate: 1 }).lean();
+    const cyclename = text(req.query.cyclename);
+    const cycleFilter = cyclename ? { cyclename } : {};
+    const balances = await LeaveBalance.find({ colid, employeeemail, ...cycleFilter }).sort({ leavetype: 1 }).lean();
+    const applications = await LeaveApplication.find({ colid, employeeemail, ...cycleFilter }).sort({ fromdate: 1 }).lean();
     const monthwise = {};
     applications.filter((item) => item.status === "Approved").forEach((item) => {
       const month = text(item.fromdate).slice(0, 7);
       monthwise[month] = (monthwise[month] || 0) + number(item.days);
     });
+    const applied = applications.filter((item) => item.status === "Applied").length;
+    const inApproval = applications.filter((item) => item.status === "In Approval").length;
+    const approved = applications.filter((item) => item.status === "Approved").length;
+    const rejected = applications.filter((item) => item.status === "Rejected").length;
     res.json({
       success: true,
       balances,
       applications,
       monthwise: Object.entries(monthwise).map(([month, days]) => ({ month, days })),
-      pending: applications.filter((item) => ["Applied", "In Approval"].includes(item.status)).length
+      applied,
+      approved,
+      rejected,
+      inApproval,
+      pending: applied + inApproval,
+      statusSummary: [
+        { status: "Applied", count: applied },
+        { status: "In Approval", count: inApproval },
+        { status: "Approved", count: approved },
+        { status: "Rejected", count: rejected }
+      ]
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

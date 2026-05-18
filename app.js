@@ -4472,6 +4472,7 @@ const ds1datareportctlr = require("./controllers/ds1datareportctlr");
 app.get("/api/v2/ds1getcounsellors", ds1userctlr.ds1getcounsellors);
 app.get("/api/v2/hrleave/options", hrleavemanagementctlrds.options);
 app.get("/api/v2/hrleave/classes", hrleavemanagementctlrds.checkClasses);
+app.post("/api/v2/hrleave/upload-document", hrleavemanagementctlrds.uploadMiddleware, hrleavemanagementctlrds.uploadLeaveDocument);
 app.post("/api/v2/hrleave/hierarchy", hrleavemanagementctlrds.createHierarchy);
 app.get("/api/v2/hrleave/hierarchy", hrleavemanagementctlrds.getHierarchies);
 app.post("/api/v2/hrleave/hierarchy/update", hrleavemanagementctlrds.updateHierarchy);

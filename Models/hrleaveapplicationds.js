@@ -42,6 +42,7 @@ const hrLeaveApplicationSchema = new mongoose.Schema(
     classes: [assignedClassSchema],
     approvals: [leaveApprovalSchema],
     currentlevel: { type: Number, default: 1 },
+    balancededucted: { type: Boolean, default: false },
     status: { type: String, trim: true, default: "Applied" },
     finalcomment: { type: String, trim: true },
     colid: { type: Number, required: true, index: true },
