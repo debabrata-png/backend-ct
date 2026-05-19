@@ -6154,6 +6154,11 @@ app.post('/api/v2/hrresignation/update', hrResignationController.updateResignati
 app.post('/api/v2/hrresignation/delete', hrResignationController.deleteResignation);
 app.post('/api/v2/hrresignation/upload', hrResignationController.uploadMiddleware, hrResignationController.uploadDocument);
 
+const hrSalarySlipController = require('./controllers/hrsalaryslipctlrds');
+app.get('/api/v2/hrsalary-slip/options', hrSalarySlipController.getSalarySlipOptions);
+app.post('/api/v2/hrsalary-slip/employees', hrSalarySlipController.searchSalarySlipEmployees);
+app.post('/api/v2/hrsalary-slip/generate', hrSalarySlipController.generateSalarySlip);
+
 const menuAccessController = require('./controllers/menuaccessctlrds');
 app.get('/api/v2/menu-access', menuAccessController.getMenuAccessRules);
 app.post('/api/v2/menu-access', menuAccessController.createMenuAccessRule);

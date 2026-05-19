@@ -53,10 +53,7 @@ exports.generateSalary = async (req, res) => {
             comments: s.comments
         }));
 
-        // 3. Remove existing salary for same period (avoid duplicates)
-        await hrsalary.deleteMany({ colid: numericColid, month, year });
-
-        // 4. Insert new salary
+        // 3. Insert new salary rows without deleting any existing salary entries.
         const insertedSalary = await hrsalary.insertMany(salaryDocs);
 
         const summaryMap = insertedSalary.reduce((acc, item) => {
