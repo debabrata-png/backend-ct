@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const hrLeaveTypeSchema = new mongoose.Schema(
   {
     leavetype: { type: String, trim: true, required: true },
+    leavetypecategory: { type: String, trim: true, enum: ["EL", "Non EL"], default: "Non EL" },
     code: { type: String, trim: true },
     description: { type: String, trim: true },
     annualquota: { type: Number, default: 0 },

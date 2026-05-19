@@ -1,8 +1,19 @@
 const User = require('../Models/user');
 const UserCustomField = require('../Models/usercustomfieldds');
+const path = require('path');
+const multer = require('multer');
+const AWS = require('aws-sdk');
+const Awsconfig = require('../Models/awsconfig');
 
 const excludedFilterFields = new Set(['_id', '__v', 'colid', 'user', 'customFields']);
-const hiddenFields = new Set(['_id', '__v', 'colid', 'user', 'customFields', 'lastlogin']);
+const hiddenFields = new Set([
+  '_id', '__v', 'colid', 'user', 'customFields', 'lastlogin', 'photo',
+  'dob', 'eligibilityname', 'srno', 'degree', 'samestate', 'admissionapplicationid',
+  'minorsub', 'vocationalsub', 'mdcsub', 'othersub', 'merit', 'obtain', 'bonus',
+  'weightage', 'ncctype', 'scholarship', 'expotoken', 'quota', 'status1',
+  'comments', 'addedby'
+]);
+const upload = multer({ storage: multer.memoryStorage() });
 
 const cleanValue = (value) => {
   if (value === undefined || value === null) return '';
@@ -21,12 +32,16 @@ const hasDemoText = (payload) => {
   return name.includes('demo') || email.includes('demo');
 };
 
-const baseUserFields = () => Object.keys(User.schema.paths).filter((field) => !hiddenFields.has(field));
+const isHiddenSchemaPath = (field) => hiddenFields.has(field) || String(field).startsWith('customFields.');
+
+const baseUserFields = () => Object.keys(User.schema.paths).filter((field) => !isHiddenSchemaPath(field));
 
 const fieldOptions = (field) => {
   if (field === 'gender') return ['Male', 'Female', 'Not specified'];
   if (field === 'category') return ['General', 'SC', 'ST', 'OBC', 'EBC', 'EWS', 'PH'];
   if (field === 'isdisabled') return ['Yes', 'No'];
+  if (field === 'role') return ['Faculty', 'Student', 'All', 'Admin'];
+  if (field === 'status') return ['1', '0'];
   return [];
 };
 
@@ -43,18 +58,38 @@ const normalizeCustomFields = (customFields) => {
 
 const colidOnlyFilter = (colid) => ({ colid: Number(colid) });
 
+const encodeS3Key = (key) => String(key || '').split('/').map(encodeURIComponent).join('/');
+
+const s3Url = (bucket, region, key) => {
+  const encodedKey = encodeS3Key(key);
+  if (region === 'us-east-1') return `https://${bucket}.s3.amazonaws.com/${encodedKey}`;
+  return `https://${bucket}.s3.${region}.amazonaws.com/${encodedKey}`;
+};
+
 const userPayload = (body, customFieldDefs = []) => {
   const payload = {};
   const numberFields = new Set(numericFields());
+  const isNonStudent = /^non/i.test(String(body.usertype || body.userType || body.studenttype || ''));
+  const nonStudentNaFields = ['program', 'programcode', 'regulation', 'Major', 'Minor', 'AEC', 'SEC', 'VAC', 'IDC', 'rollno', 'semester', 'section'];
 
   baseUserFields().forEach((field) => {
     if (body[field] !== undefined) {
-      payload[field] = numberFields.has(field) ? Number(body[field] || 0) : cleanValue(body[field]);
+      const bodyValue = field === 'status' && /^active$/i.test(String(body[field])) ? 1
+        : field === 'status' && /^inactive$/i.test(String(body[field])) ? 0
+          : body[field];
+      payload[field] = numberFields.has(field) ? Number(bodyValue || 0) : cleanValue(bodyValue);
     }
   });
 
+  if (isNonStudent) {
+    nonStudentNaFields.forEach((field) => {
+      payload[field] = 'NA';
+    });
+  }
+
   payload.colid = Number(body.colid);
   payload.user = body.user || '';
+  if (body.photo !== undefined) payload.photo = cleanValue(body.photo);
   payload.lastlogin = hasDemoText(payload) ? dateAfterDays(3) : dateAfterDays(365);
 
   const customInput = normalizeCustomFields(body.customFields);
@@ -130,9 +165,63 @@ exports.getOptions = async (req, res) => {
   try {
     const colid = Number(req.query.colid);
     const field = req.query.field;
-    if (!field || excludedFilterFields.has(field)) return res.json([]);
+    if (!field || excludedFilterFields.has(field) || String(field).includes('$')) return res.json([]);
     const values = await User.distinct(field, colidOnlyFilter(colid));
     res.json(values.filter((item) => item !== undefined && item !== null && String(item).trim() !== '').sort());
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.uploadPhotoMiddleware = upload.single('photo');
+
+exports.uploadPhoto = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ msg: 'Select a photo to upload' });
+    const colid = Number(req.body.colid);
+    if (!colid) return res.status(400).json({ msg: 'colid is required' });
+
+    const extension = path.extname(req.file.originalname || '').toLowerCase();
+    const allowedMime = ['image/jpeg', 'image/jpg', 'image/png'].includes(req.file.mimetype);
+    const allowedExtension = ['.jpg', '.jpeg', '.png'].includes(extension);
+    if (!allowedMime || !allowedExtension) {
+      return res.status(400).json({ msg: 'Photo must be a JPG, JPEG, or PNG file' });
+    }
+
+    const config = await Awsconfig.findOne({
+      colid,
+      type: /^aws$/i,
+      default: /^yes$/i
+    }).lean();
+    if (!config?.username || !config?.password || !config?.bucket || !config?.region) {
+      return res.status(400).json({ msg: 'Default AWS configuration is missing or incomplete' });
+    }
+
+    const cleanName = path.basename(req.file.originalname).replace(/[^\w.\-() ]/g, '_');
+    const key = `${colid}/user-photos/${Date.now()}-${cleanName}`;
+    const s3 = new AWS.S3({
+      accessKeyId: config.username,
+      secretAccessKey: config.password,
+      region: config.region
+    });
+
+    await s3.putObject({
+      Bucket: config.bucket,
+      Key: key,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype
+    }).promise();
+
+    res.json({
+      filename: cleanName,
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      bucket: config.bucket,
+      region: config.region,
+      key,
+      url: s3Url(config.bucket, config.region, key)
+    });
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }

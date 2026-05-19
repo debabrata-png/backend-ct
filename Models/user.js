@@ -126,6 +126,12 @@ const userschema = new mongoose.Schema({
     dob: {
         type: String
     },
+    birthdate: {
+        type: Date
+    },
+    joiningdate: {
+        type: Date
+    },
     eligibilityname: {
         type: String
     },

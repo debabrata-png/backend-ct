@@ -77,11 +77,8 @@ exports.update = async (req, res) => {
 
 exports.deleteField = async (req, res) => {
   try {
-    await UserCustomField.findOneAndUpdate(
-      { _id: req.body.id, colid: Number(req.body.colid) },
-      { isactive: 'No' },
-      { new: true }
-    );
+    const deleted = await UserCustomField.findOneAndDelete({ _id: req.body.id, colid: Number(req.body.colid) });
+    if (!deleted) return res.status(404).json({ msg: 'Custom field not found' });
     res.json({ msg: 'Deleted' });
   } catch (err) {
     res.status(500).json({ msg: err.message });

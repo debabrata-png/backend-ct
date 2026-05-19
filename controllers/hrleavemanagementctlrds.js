@@ -158,7 +158,7 @@ const crud = (Model, fields, required = []) => ({
 });
 
 const hierarchyCrud = crud(LeaveHierarchy, ["employeename", "employeeemail", "department", "levels", "status"], ["employeeemail"]);
-const typeCrud = crud(LeaveType, ["leavetype", "code", "description", "annualquota", "documentrequired", "carryforwardcriteria", "carryforwardmaxdays", "carryforwardpercentage", "status"], ["leavetype"]);
+const typeCrud = crud(LeaveType, ["leavetype", "leavetypecategory", "code", "description", "annualquota", "documentrequired", "carryforwardcriteria", "carryforwardmaxdays", "carryforwardpercentage", "status"], ["leavetype"]);
 const cycleCrud = crud(LeaveCycle, ["cyclename", "resetmonth", "resetday", "status"], ["cyclename"]);
 const balanceCrud = crud(LeaveBalance, ["cyclename", "employeename", "employeeemail", "department", "leavetype", "openingbalance", "carryforward", "earned", "used", "balance", "status"], ["employeeemail", "leavetype"]);
 
@@ -403,11 +403,12 @@ exports.resetLeaves = async (req, res) => {
       const type = typeMap.get(balance.leavetype) || {};
       const unused = Math.max(0, number(balance.balance));
       const carry = calcCarryForward(type, unused);
+      const isElLeave = text(type.leavetypecategory).toLowerCase() === "el";
       balance.carryforward = carry;
-      balance.openingbalance = number(type.annualquota) + carry;
-      balance.earned = number(type.annualquota);
+      balance.openingbalance = isElLeave ? carry : number(type.annualquota) + carry;
+      balance.earned = isElLeave ? 0 : number(type.annualquota);
       balance.used = 0;
-      balance.balance = number(type.annualquota) + carry;
+      balance.balance = isElLeave ? carry : number(type.annualquota) + carry;
       await balance.save();
     }
     res.json({ success: true, updated: balances.length });

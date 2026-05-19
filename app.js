@@ -193,6 +193,7 @@ app.post('/api/v2/user-data', userDataManagementController.create);
 app.post('/api/v2/user-data-update', userDataManagementController.update);
 app.post('/api/v2/user-data-delete', userDataManagementController.deleteUser);
 app.post('/api/v2/user-data-bulk', userDataManagementController.bulkCreate);
+app.post('/api/v2/user-data-photo', userDataManagementController.uploadPhotoMiddleware, userDataManagementController.uploadPhoto);
 app.get('/api/v2/student-data-upload', studentDataUploadController.getStudents);
 app.post('/api/v2/student-data-upload', studentDataUploadController.createStudent);
 app.post('/api/v2/student-data-upload-update', studentDataUploadController.updateStudent);
@@ -6138,6 +6139,7 @@ app.post('/ex/run', ctrl.exRunDay);
 const salaryTransfer = require('./controllers/hrsalaryTransfer');
 // Direct controller usage (NO ROUTER)
 app.post('/generate-salary', salaryTransfer.generateSalary);
+app.post('/salarytransfer/add-earned-leave', salaryTransfer.addEarnedLeave);
 
 const hrArrearController = require('./controllers/hrarrearcontroller');
 app.post('/hr/populate-arrear', hrArrearController.hrPopulateArrear);
