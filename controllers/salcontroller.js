@@ -13,9 +13,38 @@ exports.salGetEmployees = async (req, res) => {
         const users = await User.find({
             role: { $ne: 'student' },
             colid
-        }).select('name');
+        }).select('name email phone department role user empid employeeemail').sort({ name: 1 }).lean();
 
-        res.json(users);
+        res.json(users.map((item) => ({
+            ...item,
+            displayemail: item.email || item.user || item.employeeemail || item.empid || ''
+        })));
+
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
+// Searchable salary assignment dropdown source. Returns all users that have an email.
+exports.salGetUsersWithEmail = async (req, res) => {
+    try {
+        const { colid } = req.query;
+
+        const users = await User.find({
+            colid,
+            email: { $exists: true, $ne: '' }
+        }).select('name email phone department role user').sort({ name: 1 }).lean();
+
+        res.json(users.map((item) => ({
+            _id: item._id,
+            name: item.name || '',
+            email: item.email || '',
+            displayemail: item.email || '',
+            phone: item.phone || '',
+            department: item.department || '',
+            role: item.role || '',
+            user: item.user || ''
+        })));
 
     } catch (err) {
         res.status(500).json(err);
@@ -45,14 +74,14 @@ exports.salGetEmployeeStructure = async (req, res) => {
             return res.status(400).json({ message: 'colid and employeeid are required' });
         }
 
-        const emp = await User.findById(employeeid).select('name email');
+        const emp = await User.findById(employeeid).select('name email user employeeemail empid');
         if (!emp) {
             return res.status(404).json({ message: 'Employee not found' });
         }
 
         const data = await hrsalstructure.find({
             colid,
-            empid: emp.email
+            empid: emp.email || emp.user || emp.employeeemail || emp.empid
         }).sort({ component: 1 });
 
         res.json(data);
@@ -84,7 +113,7 @@ exports.salAssignStructure = async (req, res) => {
         // 4️⃣ Archive old salary structure rows for this employee
         await hrsalstructure.updateMany({
             // empid: employeeid,
-            empid: emp.email,
+            empid: emp.email || emp.user || emp.employeeemail || emp.empid,
             colid
         }, {
             $set: {

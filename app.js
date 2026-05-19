@@ -4464,6 +4464,7 @@ const feeApprovalRoleCtrl = require("./controllers/feeapprovalrolectlr");
 const meritListUpload = multer({ storage: multer.memoryStorage() });
 const hrLeaveUpload = multer({ storage: multer.memoryStorage() });
 const hrleavemanagementctlrds = require("./controllers/hrleavemanagementctlrds");
+const hremployeeattendancectlrds = require("./controllers/hremployeeattendancectlrds");
 const ds1profileeditconfigctlr = require("./controllers/ds1profileeditconfigctlr");
 const ds1profileeditlogctlr = require("./controllers/ds1profileeditlogctlr");
 const ds1datareportctlr = require("./controllers/ds1datareportctlr");
@@ -4498,6 +4499,19 @@ app.post("/api/v2/hrleave/apply", hrleavemanagementctlrds.applyLeave);
 app.get("/api/v2/hrleave/applications", hrleavemanagementctlrds.getApplications);
 app.post("/api/v2/hrleave/approve", hrleavemanagementctlrds.approveLeave);
 app.get("/api/v2/hrleave/dashboard", hrleavemanagementctlrds.dashboard);
+app.get("/api/v2/hrleave/hrdashboard", hrleavemanagementctlrds.hrDashboard);
+app.get("/api/v2/hrattendance/options", hremployeeattendancectlrds.options);
+app.post("/api/v2/hrattendance", hremployeeattendancectlrds.createAttendance);
+app.get("/api/v2/hrattendance", hremployeeattendancectlrds.getAttendance);
+app.post("/api/v2/hrattendance/update", hremployeeattendancectlrds.updateAttendance);
+app.post("/api/v2/hrattendance/delete", hremployeeattendancectlrds.deleteAttendance);
+app.post("/api/v2/hrattendance/bulkupload", hremployeeattendancectlrds.uploadMiddleware, hremployeeattendancectlrds.bulkAttendance);
+app.post("/api/v2/hrattendance/matrix", hremployeeattendancectlrds.createMatrix);
+app.get("/api/v2/hrattendance/matrix", hremployeeattendancectlrds.getMatrix);
+app.post("/api/v2/hrattendance/matrix/update", hremployeeattendancectlrds.updateMatrix);
+app.post("/api/v2/hrattendance/matrix/delete", hremployeeattendancectlrds.deleteMatrix);
+app.post("/api/v2/hrattendance/matrix/bulkupload", hremployeeattendancectlrds.uploadMiddleware, hremployeeattendancectlrds.bulkMatrix);
+app.post("/api/v2/hrattendance/approve", hremployeeattendancectlrds.approveAttendance);
 
 // ==========================================
 // USER MANAGEMENT ROUTES (ADMIN) - ds1 prefix
@@ -6085,6 +6099,7 @@ app.post('/ex-check-insert', exController.exCheckAndInsert);
 const salController = require('./controllers/salcontroller');
 
 app.get('/sal/employees', salController.salGetEmployees);
+app.get('/sal/userswithemail', salController.salGetUsersWithEmail);
 app.get('/sal/structures', salController.salGetStructures);
 app.get('/sal/employee-structure', salController.salGetEmployeeStructure);
 app.post('/sal/assign', salController.salAssignStructure);

@@ -1,0 +1,331 @@
+const XLSX = require("xlsx");
+const multer = require("multer");
+const User = require("../Models/user");
+const HrEmployeeAttendance = require("../Models/hremployeeattendanceds");
+const HrEmployeeAttendanceApprovalMatrix = require("../Models/hremployeeattendanceapprovalmatrixds");
+const LeaveApplication = require("../Models/hrleaveapplicationds");
+const HrSalStructure = require("../Models/hrsalstructure");
+const HrSalary = require("../Models/hrsalary");
+
+const upload = multer({ storage: multer.memoryStorage() });
+exports.uploadMiddleware = upload.single("file");
+
+const text = (value) => String(value || "").trim();
+const number = (value) => {
+  const parsed = Number(value || 0);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+const readSheet = (buffer) => {
+  const workbook = XLSX.read(buffer, { type: "buffer" });
+  return XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
+};
+const splitLevels = (row) => {
+  if (Array.isArray(row.levels)) return row.levels;
+  const levels = [];
+  for (let index = 1; index <= 10; index += 1) {
+    const approveremail = text(row[`approveremail${index}`] || row[`level${index}email`]);
+    if (approveremail) {
+      levels.push({
+        level: index,
+        approvername: text(row[`approvername${index}`] || row[`level${index}name`]),
+        approveremail,
+        approverrole: text(row[`approverrole${index}`] || row[`level${index}role`])
+      });
+    }
+  }
+  return levels;
+};
+const attendanceStatus = (value) => (number(value) === 1 ? "Present" : "Absent");
+const isDeduction = (value) => text(value).toLowerCase() === "deduction";
+
+const hasApprovedLeaveForDate = async (attendanceRow) => {
+  if (!attendanceRow?.date) return false;
+  const leave = await LeaveApplication.findOne({
+    colid: Number(attendanceRow.colid),
+    employeeemail: text(attendanceRow.employeeemail),
+    status: "Approved",
+    fromdate: { $lte: text(attendanceRow.date) },
+    todate: { $gte: text(attendanceRow.date) }
+  }).lean();
+  return Boolean(leave);
+};
+
+const createLopDeductionIfRequired = async (attendanceRow, approvedByUser) => {
+  if (number(attendanceRow.attendance) !== 0 || attendanceRow.approvalstatus !== "Approved") return null;
+  const approvedLeaveExists = await hasApprovedLeaveForDate(attendanceRow);
+  if (approvedLeaveExists) return null;
+
+  const comments = `LOP Deduction for attendance ${attendanceRow._id} on ${attendanceRow.date}`;
+  const existingLop = await HrSalary.findOne({
+    colid: Number(attendanceRow.colid),
+    empid: text(attendanceRow.employeeemail),
+    year: text(attendanceRow.academicyear),
+    month: text(attendanceRow.month),
+    component: "LOP Deduction",
+    comments
+  }).lean();
+  if (existingLop) return existingLop;
+
+  const salaryRows = await HrSalStructure.find({
+    colid: Number(attendanceRow.colid),
+    empid: text(attendanceRow.employeeemail),
+    level: /^Active$/i
+  }).lean();
+  if (!salaryRows.length) return null;
+
+  const earningRows = salaryRows.filter((row) => !isDeduction(row.type) && number(row.amount) > 0);
+  const baseRows = earningRows.length ? earningRows : salaryRows.filter((row) => number(row.amount) > 0);
+  const monthlySalary = baseRows.reduce((sum, row) => sum + number(row.amount), 0);
+  const oneDaySalary = Number((monthlySalary / 30).toFixed(2));
+  if (oneDaySalary <= 0) return null;
+
+  const first = salaryRows[0] || {};
+  return HrSalary.create({
+    name: text(attendanceRow.employeename) || text(first.name) || "LOP",
+    user: text(approvedByUser) || text(first.user) || text(attendanceRow.employeeemail),
+    colid: Number(attendanceRow.colid),
+    year: text(attendanceRow.academicyear),
+    month: text(attendanceRow.month),
+    duedate: attendanceRow.date ? new Date(attendanceRow.date) : undefined,
+    structure: text(first.structure),
+    structureid: text(first.structureid),
+    employee: text(attendanceRow.employeename) || text(first.employee),
+    empid: text(attendanceRow.employeeemail),
+    component: "LOP Deduction",
+    amount: -oneDaySalary,
+    type: "Deduction",
+    level: "Active",
+    paystatus: "Pending",
+    status1: "Added",
+    comments
+  });
+};
+
+const buildApprovals = async (colid, department, user) => {
+  const matrix = await HrEmployeeAttendanceApprovalMatrix.findOne({
+    colid,
+    status: "Active",
+    $or: [{ department: text(department) }, { department: "" }, { department: { $exists: false } }]
+  }).sort({ department: -1, updatedAt: -1 }).lean();
+
+  const levels = matrix?.levels?.length ? matrix.levels : [{ level: 1, approvername: "", approveremail: text(user), approverrole: "Approver" }];
+  return levels.sort((a, b) => number(a.level) - number(b.level)).map((item, index) => ({
+    level: number(item.level) || index + 1,
+    approvername: text(item.approvername),
+    approveremail: text(item.approveremail),
+    approverrole: text(item.approverrole),
+    status: "Pending"
+  }));
+};
+
+const attendancePayload = async (body, actiontype = "Add") => {
+  const colid = Number(body.colid);
+  const employeeemail = text(body.employeeemail);
+  const user = await User.findOne({ colid, $or: [{ email: employeeemail }, { user: employeeemail }] }).select("name email user department").lean();
+  const attendance = number(body.attendance);
+  const approvals = await buildApprovals(colid, user?.department || body.department, body.user);
+  return {
+    academicyear: text(body.academicyear),
+    month: text(body.month),
+    date: text(body.date),
+    employeename: text(body.employeename || user?.name),
+    employeeemail,
+    attendance,
+    status: attendanceStatus(attendance),
+    approvalstatus: "Pending",
+    actiontype,
+    approvals,
+    currentlevel: approvals[0]?.level || 1,
+    finalcomment: "",
+    colid,
+    user: text(body.user)
+  };
+};
+
+exports.options = async (req, res) => {
+  try {
+    const colid = Number(req.query.colid);
+    const users = await User.find({ colid }).select("name email user phone department role").sort({ name: 1 }).lean();
+    const years = await HrEmployeeAttendance.distinct("academicyear", { colid });
+    res.json({ success: true, users, years });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.createAttendance = async (req, res) => {
+  try {
+    const payload = await attendancePayload(req.body, "Add");
+    if (!payload.academicyear || !payload.month || !payload.date || !payload.employeeemail) {
+      return res.status(400).json({ success: false, message: "Academic year, month, date and employee are required" });
+    }
+    const data = await HrEmployeeAttendance.create(payload);
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getAttendance = async (req, res) => {
+  try {
+    const filter = { colid: Number(req.query.colid) };
+    ["academicyear", "month", "date", "employeeemail", "approvalstatus", "status"].forEach((field) => {
+      if (text(req.query[field])) filter[field] = text(req.query[field]);
+    });
+    const data = await HrEmployeeAttendance.find(filter).sort({ date: -1, employeename: 1 }).lean();
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.updateAttendance = async (req, res) => {
+  try {
+    const existing = await HrEmployeeAttendance.findOne({ _id: req.body.id, colid: Number(req.body.colid) });
+    if (!existing) return res.status(404).json({ success: false, message: "Attendance record not found" });
+    const payload = await attendancePayload(req.body, "Edit");
+    Object.assign(existing, payload);
+    const data = await existing.save();
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteAttendance = async (req, res) => {
+  try {
+    await HrEmployeeAttendance.findOneAndDelete({ _id: req.body.id, colid: Number(req.body.colid) });
+    res.json({ success: true, message: "Deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.bulkAttendance = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    if (!req.file) return res.status(400).json({ success: false, message: "Excel file is required" });
+    const rows = readSheet(req.file.buffer);
+    const payloads = [];
+    for (const row of rows) {
+      payloads.push(await attendancePayload({ ...row, colid, user: req.body.user }, "Add"));
+    }
+    const data = await HrEmployeeAttendance.insertMany(payloads, { ordered: false });
+    res.json({ success: true, inserted: data.length, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.createMatrix = async (req, res) => {
+  try {
+    const payload = {
+      name: text(req.body.name) || "Employee Attendance Approval",
+      department: text(req.body.department),
+      levels: splitLevels(req.body),
+      status: text(req.body.status) || "Active",
+      colid: Number(req.body.colid),
+      user: text(req.body.user)
+    };
+    const data = await HrEmployeeAttendanceApprovalMatrix.create(payload);
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getMatrix = async (req, res) => {
+  try {
+    const filter = { colid: Number(req.query.colid) };
+    if (text(req.query.status)) filter.status = text(req.query.status);
+    const data = await HrEmployeeAttendanceApprovalMatrix.find(filter).sort({ updatedAt: -1 }).lean();
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.updateMatrix = async (req, res) => {
+  try {
+    const payload = {
+      name: text(req.body.name) || "Employee Attendance Approval",
+      department: text(req.body.department),
+      levels: splitLevels(req.body),
+      status: text(req.body.status) || "Active",
+      user: text(req.body.user)
+    };
+    const data = await HrEmployeeAttendanceApprovalMatrix.findOneAndUpdate({ _id: req.body.id, colid: Number(req.body.colid) }, payload, { new: true });
+    if (!data) return res.status(404).json({ success: false, message: "Approval matrix not found" });
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteMatrix = async (req, res) => {
+  try {
+    await HrEmployeeAttendanceApprovalMatrix.findOneAndDelete({ _id: req.body.id, colid: Number(req.body.colid) });
+    res.json({ success: true, message: "Deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.bulkMatrix = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    if (!req.file) return res.status(400).json({ success: false, message: "Excel file is required" });
+    const rows = readSheet(req.file.buffer).map((row) => ({
+      name: text(row.name) || "Employee Attendance Approval",
+      department: text(row.department),
+      levels: splitLevels(row),
+      status: text(row.status) || "Active",
+      colid,
+      user: text(req.body.user)
+    }));
+    const data = await HrEmployeeAttendanceApprovalMatrix.insertMany(rows, { ordered: false });
+    res.json({ success: true, inserted: data.length, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.approveAttendance = async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body.ids) ? req.body.ids : [req.body.id].filter(Boolean);
+    const action = text(req.body.action) === "Reject" ? "Rejected" : "Approved";
+    const approveremail = text(req.body.approveremail || req.body.user);
+    const comment = text(req.body.comment);
+    const updated = [];
+
+    for (const id of ids) {
+      const item = await HrEmployeeAttendance.findOne({ _id: id, colid: Number(req.body.colid) });
+      if (!item) continue;
+      const pending = item.approvals.find((approval) => approval.status === "Pending" && (!approval.approveremail || text(approval.approveremail).toLowerCase() === approveremail.toLowerCase()))
+        || item.approvals.find((approval) => approval.status === "Pending");
+      if (!pending) continue;
+      pending.status = action;
+      pending.comment = comment;
+      pending.actiondate = new Date();
+      if (action === "Rejected") {
+        item.approvalstatus = "Rejected";
+        item.finalcomment = comment;
+      } else {
+        const next = item.approvals.find((approval) => approval.status === "Pending");
+        if (next) {
+          item.currentlevel = next.level;
+          item.approvalstatus = "Pending";
+        } else {
+          item.approvalstatus = "Approved";
+          item.finalcomment = comment;
+        }
+      }
+      const savedItem = await item.save();
+      await createLopDeductionIfRequired(savedItem, req.body.user);
+      updated.push(savedItem);
+    }
+    res.json({ success: true, updated: updated.length, data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

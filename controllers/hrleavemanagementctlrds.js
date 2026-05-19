@@ -454,3 +454,65 @@ exports.dashboard = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.hrDashboard = async (req, res) => {
+  try {
+    const colid = Number(req.query.colid);
+    const employeeemail = text(req.query.employeeemail || req.query.user);
+    const cyclename = text(req.query.cyclename);
+    if (!colid || !employeeemail) return res.status(400).json({ success: false, message: "colid and employee are required" });
+
+    const cycleFilter = cyclename ? { cyclename } : {};
+    const employee = await User.findOne({ colid, $or: [{ email: employeeemail }, { user: employeeemail }] }).select("name email user phone department role").lean();
+    const balances = await LeaveBalance.find({ colid, employeeemail, ...cycleFilter }).sort({ leavetype: 1 }).lean();
+    const applications = await LeaveApplication.find({ colid, employeeemail, ...cycleFilter }).sort({ fromdate: 1 }).lean();
+    const types = await LeaveType.find({ colid }).lean();
+    const typeMap = new Map(types.map((item) => [text(item.leavetype).toLowerCase(), item]));
+
+    const balancesWithCarry = balances.map((item) => {
+      const available = number(item.balance);
+      const type = typeMap.get(text(item.leavetype).toLowerCase()) || {};
+      return {
+        ...item,
+        eligiblecarryforward: calcCarryForward(type, Math.max(0, available)),
+        carryforwardcriteria: type.carryforwardcriteria || "None",
+        annualquota: number(type.annualquota)
+      };
+    });
+
+    const monthwiseMap = {};
+    const statusMap = {};
+    const typeTakenMap = {};
+    applications.forEach((item) => {
+      statusMap[item.status || "Blank"] = (statusMap[item.status || "Blank"] || 0) + 1;
+      if (item.status === "Approved") {
+        const month = text(item.fromdate).slice(0, 7) || "No date";
+        monthwiseMap[month] = (monthwiseMap[month] || 0) + number(item.days);
+        typeTakenMap[item.leavetype || "Blank"] = (typeTakenMap[item.leavetype || "Blank"] || 0) + number(item.days);
+      }
+    });
+
+    const totals = balancesWithCarry.reduce((acc, item) => {
+      acc.openingbalance += number(item.openingbalance);
+      acc.carryforward += number(item.carryforward);
+      acc.earned += number(item.earned);
+      acc.used += number(item.used);
+      acc.balance += number(item.balance);
+      acc.eligiblecarryforward += number(item.eligiblecarryforward);
+      return acc;
+    }, { openingbalance: 0, carryforward: 0, earned: 0, used: 0, balance: 0, eligiblecarryforward: 0 });
+
+    res.json({
+      success: true,
+      employee,
+      balances: balancesWithCarry,
+      applications,
+      totals,
+      monthwise: Object.entries(monthwiseMap).map(([month, days]) => ({ month, days })).sort((a, b) => a.month.localeCompare(b.month)),
+      statusSummary: Object.entries(statusMap).map(([status, count]) => ({ status, count })),
+      typeTaken: Object.entries(typeTakenMap).map(([leavetype, days]) => ({ leavetype, days }))
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
