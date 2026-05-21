@@ -124,6 +124,7 @@ const awsConfigController = require('./controllers/awsconfigdsctlr');
 const mprogramsManagementController = require('./controllers/mprogramsmanagementctlrds');
 const studentActivityController = require('./controllers/studentactivityctlrds');
 const admissionDateSummaryController = require('./controllers/admissiondatesummaryctlrds');
+const admissionAddressConfigurationController = require('./controllers/admissionaddressconfigurationctlr');
 const researchSeedFundController = require('./controllers/researchseedfundctlrds');
 app.get('/admission-dynamic/programs', admissionDynamicController.getPrograms);
 app.get('/admission-dynamic/program-types', admissionDynamicController.getProgramTypes);
@@ -152,6 +153,11 @@ app.post('/admission-dynamic/applications-update', admissionDynamicController.up
 app.post('/admission-dynamic/applications-bulk', admissionDynamicController.bulkCreateApplications);
 app.post('/admission-dynamic/applications-delete', admissionDynamicController.deleteApplication);
 app.post('/admission-dynamic/application-document-upload', admissionDynamicController.uploadDocumentMiddleware, admissionDynamicController.uploadApplicationDocument);
+app.get('/admission-address-configuration', admissionAddressConfigurationController.getAddressConfigurations);
+app.post('/admission-address-configuration', admissionAddressConfigurationController.createAddressConfiguration);
+app.post('/admission-address-configuration-update', admissionAddressConfigurationController.updateAddressConfiguration);
+app.post('/admission-address-configuration-delete', admissionAddressConfigurationController.deleteAddressConfiguration);
+app.post('/admission-address-configuration-bulk', admissionAddressConfigurationController.bulkAddressConfigurations);
 app.get('/api/v2/mprograms-management', mprogramsManagementController.getPrograms);
 app.get('/api/v2/mprograms-management/options', mprogramsManagementController.getProgramOptions);
 app.post('/api/v2/mprograms-management', mprogramsManagementController.createProgram);
@@ -6212,6 +6218,8 @@ const indBudgetLogCtrl = require('./controllers/indbudgetlogcontroller');
 // BUDGET ROUTES
 app.post('/indbudget', budgetCtrl.indCreateBudget);
 app.get('/indbudget', budgetCtrl.indGetBudget);
+app.post('/indbudget/update/:id', budgetCtrl.indUpdatePendingBudget);
+app.post('/indbudget/approval-add', budgetCtrl.indAddBudgetItemAtApproval);
 app.post('/indbudget/approve/:id', budgetCtrl.indApproveBudget);
 app.post('/indbudget/reject/:id', budgetCtrl.indRejectBudget);
 app.get('/indbudgetlogs', indBudgetLogCtrl.getBudgetLogs);

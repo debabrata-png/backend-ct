@@ -18,6 +18,9 @@ const BudgetSchema = new mongoose.Schema({
 
   department: String,
   institution: String,
+  username: String,
+  useremail: String,
+  userdepartment: String,
 
   status: {
     type: String,

@@ -6,7 +6,7 @@ exports.getIndBudgetApprovalRoles = async (req, res) => {
     const filter = {};
     if (colid) filter.colid = Number(colid);
 
-    const items = await IndBudgetApprovalRole.find(filter).sort({ level: 1, role: 1 });
+    const items = await IndBudgetApprovalRole.find(filter).sort({ academicyear: 1, department: 1, level: 1, role: 1 });
     res.json({ status: 'success', data: items });
   } catch (err) {
     res.status(400).json({ status: 'fail', message: err.message });
