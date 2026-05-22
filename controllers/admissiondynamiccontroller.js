@@ -4,6 +4,8 @@ const AdmissionDynamicForm = require('./../Models/admissiondynamicform');
 const EmailConfiguration = require('./../Models/emailconfigurationds');
 const MPrograms = require('./../Models/mprograms');
 const Awsconfig = require('./../Models/awsconfig');
+const AiConfiguration = require('./../Models/aiconfigurationds');
+const AdmissionValidationCriteria = require('./../Models/admissionvalidationcriteria');
 const mongoose = require('mongoose');
 const path = require('path');
 const multer = require('multer');
@@ -21,6 +23,108 @@ const cleanFieldName = (value) => String(value || '')
 const normalizeOptions = (options) => {
   if (Array.isArray(options)) return options.map((item) => String(item).trim()).filter(Boolean);
   return String(options || '').split(',').map((item) => item.trim()).filter(Boolean);
+};
+
+const textValue = (value) => String(value || '').trim();
+
+const getNestedValueByHints = (source = {}, hints = []) => {
+  const entries = Object.entries(source || {});
+  const found = entries.find(([key]) => {
+    const normalizedKey = String(key || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+    return hints.every((hint) => normalizedKey.includes(hint));
+  });
+  return found ? found[1] : '';
+};
+
+const extractYear = (value) => {
+  const match = String(value || '').match(/\b(19|20)\d{2}\b/);
+  return match ? Number(match[0]) : null;
+};
+
+const findDoc = (documents = [], patterns = []) => documents.find((doc) => {
+  const haystack = [
+    doc.documenttype,
+    doc.description,
+    doc.originalname,
+    doc.filename,
+    doc.url
+  ].map((item) => String(item || '').toLowerCase()).join(' ');
+  return patterns.some((pattern) => haystack.includes(pattern));
+});
+
+const getDefaultGeminiConfig = async (colid) => (
+  await AiConfiguration.findOne({ colid: Number(colid), type: /^gemini$/i, active: /^yes$/i, default: /^yes$/i }).sort({ _id: -1 }).lean()
+  || await AiConfiguration.findOne({ colid: Number(colid), type: /^gemini$/i, active: /^yes$/i }).sort({ _id: -1 }).lean()
+);
+
+const getDocumentMimeType = (doc = {}) => {
+  const value = String(doc.mimetype || '').toLowerCase();
+  if (value) return value;
+  const url = String(doc.url || doc.originalname || doc.filename || '').toLowerCase();
+  if (url.includes('.pdf')) return 'application/pdf';
+  if (url.includes('.png')) return 'image/png';
+  if (url.includes('.jpg') || url.includes('.jpeg')) return 'image/jpeg';
+  return '';
+};
+
+const buildGeminiDocumentParts = async (documents = []) => {
+  const relevantDocs = documents
+    .filter((doc) => findDoc([doc], ['marksheet', 'mark sheet', '10th', '12th', 'tenth', 'twelve', 'caste']))
+    .filter((doc) => doc.url)
+    .slice(0, 4);
+  const parts = [];
+  for (const doc of relevantDocs) {
+    const mimeType = getDocumentMimeType(doc);
+    if (!['application/pdf', 'image/png', 'image/jpeg'].includes(mimeType)) {
+      parts.push({ text: `Document ${doc.documenttype || doc.originalname || doc.url} was not attached because its file type is unsupported for AI document reading.` });
+      continue;
+    }
+    try {
+      const response = await fetch(doc.url);
+      if (!response.ok) throw new Error(`Unable to fetch document: ${response.status}`);
+      const buffer = Buffer.from(await response.arrayBuffer());
+      if (buffer.length > 6 * 1024 * 1024) {
+        parts.push({ text: `Document ${doc.documenttype || doc.originalname || doc.url} was not attached because it is larger than 6 MB.` });
+        continue;
+      }
+      parts.push({ text: `Attached document for validation: ${doc.documenttype || doc.originalname || doc.url}` });
+      parts.push({
+        inlineData: {
+          mimeType,
+          data: buffer.toString('base64')
+        }
+      });
+    } catch (err) {
+      parts.push({ text: `Document ${doc.documenttype || doc.originalname || doc.url} could not be read for AI validation: ${err.message}` });
+    }
+  }
+  return parts;
+};
+
+const callGeminiJson = async (apikey, prompt, extraParts = []) => {
+  const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+  let lastError = '';
+  for (const model of models) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apikey)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }, ...extraParts] }],
+        generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
+      })
+    });
+    const data = await response.json();
+    if (response.ok) {
+      const output = data.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('\n') || '{}';
+      try {
+        return JSON.parse(output);
+      } catch (err) {
+        return { validationstatus: 'Fail', validationcomments: output };
+      }
+    }
+    lastError = data.error?.message || `Gemini API request failed for ${model}`;
+  }
+  throw new Error(lastError || 'Gemini API request failed');
 };
 
 const cleanFormId = (value) => cleanFieldName(value || 'default') || 'default';
@@ -450,6 +554,8 @@ const applicationPayload = (body) => ({
   programapplied: body.programapplied,
   programcode: body.programcode,
   applicationstatus: body.applicationstatus || 'Applied',
+  validationstatus: body.validationstatus || '',
+  validationcomments: body.validationcomments || '',
   tenthsubjectmarks: body.tenthsubjectmarks || [],
   twelvesubjectmarks: body.twelvesubjectmarks || [],
   documents: body.documents || [],
@@ -516,6 +622,147 @@ exports.uploadApplicationDocument = async (req, res) => {
       key,
       url: s3Url(config.bucket, config.region, key),
       uploadedAt: new Date()
+    });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.validateApplicationWithAi = async (req, res) => {
+  try {
+    const payload = applicationPayload(req.body || {});
+    if (!payload.colid) return res.status(400).json({ msg: 'College id is required' });
+
+    const documents = payload.documents || [];
+    const extraFields = payload.extraFields || {};
+    const deterministicIssues = [];
+    const deterministicPasses = [];
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email || '');
+    const phoneDigits = String(payload.phone || '').replace(/\D/g, '');
+    const phoneOk = phoneDigits.length >= 10 && phoneDigits.length <= 15;
+    if (emailOk) deterministicPasses.push('Email format is valid.');
+    else deterministicIssues.push('Email format is invalid.');
+    if (phoneOk) deterministicPasses.push('Phone number format is valid.');
+    else deterministicIssues.push('Phone number should contain 10 to 15 digits.');
+
+    const tenthPassoutYear = extractYear(
+      req.body.tenthpassoutyear
+      || req.body.tenth_passout_year
+      || getNestedValueByHints(extraFields, ['tenth', 'passout'])
+      || getNestedValueByHints(extraFields, ['10th', 'passout'])
+      || getNestedValueByHints(extraFields, ['ssc', 'passout'])
+    );
+    const twelvePassoutYear = extractYear(
+      req.body.twelvepassoutyear
+      || req.body.twelve_passout_year
+      || getNestedValueByHints(extraFields, ['twelve', 'passout'])
+      || getNestedValueByHints(extraFields, ['12th', 'passout'])
+      || getNestedValueByHints(extraFields, ['hsc', 'passout'])
+    );
+    if (tenthPassoutYear && twelvePassoutYear) {
+      if (twelvePassoutYear - tenthPassoutYear >= 2) deterministicPasses.push('Gap between tenth and twelve passout year is at least 2 years.');
+      else deterministicIssues.push('Gap between tenth and twelve passout year is less than 2 years.');
+    } else {
+      deterministicPasses.push('Tenth/twelve passout year gap check was skipped because one or both years are not present.');
+    }
+
+    const marksheetDoc = findDoc(documents, ['marksheet', 'mark sheet', '10th', '12th', 'tenth', 'twelve']);
+    if (marksheetDoc) deterministicPasses.push('At least one marksheet document/link is uploaded.');
+    else deterministicIssues.push('No marksheet document/link found for name validation.');
+
+    const category = textValue(payload.category);
+    const needsCaste = category && !/^general$/i.test(category);
+    const casteDoc = findDoc(documents, ['caste']);
+    if (needsCaste && !casteDoc) deterministicIssues.push('Caste certificate is mandatory for category other than General.');
+    if (needsCaste && casteDoc) deterministicPasses.push('Caste certificate document/link is uploaded.');
+
+    const formCriteria = await AdmissionValidationCriteria.findOne({
+      colid: Number(payload.colid),
+      formid: payload.formid || 'default'
+    }).lean();
+    const additionalValidationCriteria = textValue(formCriteria?.validationcriteria);
+
+    const aiConfig = await getDefaultGeminiConfig(payload.colid);
+    if (!aiConfig?.apikey) {
+      const comments = [
+        ...deterministicPasses,
+        ...deterministicIssues,
+        additionalValidationCriteria ? `Additional validation criteria configured for this form but not evaluated because Gemini is unavailable:\n${additionalValidationCriteria}` : '',
+        'Gemini AI validation could not run because active/default Gemini API configuration is missing.'
+      ].filter(Boolean).join('\n');
+      return res.json({
+        validationstatus: deterministicIssues.length ? 'Fail' : 'Pass',
+        validationcomments: comments,
+        summary: comments,
+        ai: null
+      });
+    }
+
+    const prompt = `
+You are validating an admission application. Return ONLY JSON with:
+{
+  "validationstatus": "Pass" or "Fail",
+  "validationcomments": "clear bullet-style summary",
+  "checks": [{"check":"", "status":"Pass/Fail", "comment":""}]
+}
+
+Rules:
+1. Email format must be plausible.
+2. Phone format must be plausible.
+3. If both tenth passout year and twelve passout year are present, the gap must be at least 2 years.
+4. Validate applicant name against marksheet evidence from attached files. If content is not readable, mark Fail and mention document review needed.
+5. If category is not General, caste certificate is mandatory. Validate name and caste/category against certificate evidence from attached files. If content is not readable, mark Fail and mention document review needed.
+6. Overall validationstatus should be Fail if any required deterministic rule fails, if mandatory caste certificate is missing, or if any document-content check cannot be completed.
+${additionalValidationCriteria ? `\nAdditional validation criteria for this form (${formCriteria.formname || payload.formid}):\n${additionalValidationCriteria}\nApply these criteria along with the rules above and include the result in validationcomments.` : ''}
+
+Deterministic checks already found:
+Passes:
+${deterministicPasses.map((item) => `- ${item}`).join('\n') || '- None'}
+Issues:
+${deterministicIssues.map((item) => `- ${item}`).join('\n') || '- None'}
+
+Application:
+${JSON.stringify({
+  name: payload.name,
+  email: payload.email,
+  phone: payload.phone,
+  category: payload.category,
+  tenthPassoutYear,
+  twelvePassoutYear,
+  program: payload.programapplied,
+  programcode: payload.programcode,
+  extraFields,
+  documents: documents.map((doc) => ({
+    documenttype: doc.documenttype,
+    description: doc.description,
+    originalname: doc.originalname,
+    filename: doc.filename,
+    url: doc.url
+  }))
+}, null, 2)}
+`;
+
+    const documentParts = await buildGeminiDocumentParts(documents);
+    const aiResult = await callGeminiJson(aiConfig.apikey, prompt, documentParts);
+    const aiComments = textValue(aiResult.validationcomments || aiResult.summary);
+    const aiChecksText = JSON.stringify(aiResult.checks || aiResult);
+    const hasManualOrFailedDocumentCheck = /manual|unreadable|cannot be completed|could not be read/i.test(aiChecksText);
+    const combinedComments = [
+      'Deterministic validation:',
+      ...deterministicPasses.map((item) => `PASS: ${item}`),
+      ...deterministicIssues.map((item) => `FAIL: ${item}`),
+      '',
+      'AI validation summary:',
+      aiComments || JSON.stringify(aiResult.checks || aiResult)
+    ].join('\n').trim();
+
+    const status = deterministicIssues.length || hasManualOrFailedDocumentCheck ? 'Fail' : (/^fail$/i.test(aiResult.validationstatus) ? 'Fail' : 'Pass');
+    res.json({
+      validationstatus: status,
+      validationcomments: combinedComments,
+      summary: combinedComments,
+      ai: aiResult
     });
   } catch (err) {
     res.status(500).json({ msg: err.message });

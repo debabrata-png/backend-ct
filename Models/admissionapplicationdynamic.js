@@ -56,6 +56,11 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
     type: String,
     default: 'Applied'
   },
+  validationstatus: {
+    type: String,
+    default: ''
+  },
+  validationcomments: String,
   tenthsubjectmarks: [SubjectMarksSchema],
   twelvesubjectmarks: [SubjectMarksSchema],
   documents: [AdmissionDocumentSchema],

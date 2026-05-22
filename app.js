@@ -125,6 +125,7 @@ const mprogramsManagementController = require('./controllers/mprogramsmanagement
 const studentActivityController = require('./controllers/studentactivityctlrds');
 const admissionDateSummaryController = require('./controllers/admissiondatesummaryctlrds');
 const admissionAddressConfigurationController = require('./controllers/admissionaddressconfigurationctlr');
+const admissionValidationCriteriaController = require('./controllers/admissionvalidationcriteriactlr');
 const researchSeedFundController = require('./controllers/researchseedfundctlrds');
 app.get('/admission-dynamic/programs', admissionDynamicController.getPrograms);
 app.get('/admission-dynamic/program-types', admissionDynamicController.getProgramTypes);
@@ -146,6 +147,7 @@ app.post('/admission-dynamic/application-credential-retrieve', admissionDynamicC
 app.post('/admission-dynamic/application-forgot-password', admissionDynamicController.forgotApplicationPassword);
 app.get('/admission-dynamic/date-summary', admissionDateSummaryController.getAdmissionDateSummary);
 app.get('/admission-dynamic/filter-options', admissionDynamicController.getFilterOptions);
+app.post('/admission-dynamic/validate-application-ai', admissionDynamicController.validateApplicationWithAi);
 app.post('/admission-dynamic/applications', admissionDynamicController.createApplication);
 app.post('/admission-dynamic/applications-draft-save', admissionDynamicController.saveDraftApplication);
 app.post('/admission-dynamic/applications-draft-submit', admissionDynamicController.submitDraftApplication);
@@ -158,6 +160,10 @@ app.post('/admission-address-configuration', admissionAddressConfigurationContro
 app.post('/admission-address-configuration-update', admissionAddressConfigurationController.updateAddressConfiguration);
 app.post('/admission-address-configuration-delete', admissionAddressConfigurationController.deleteAddressConfiguration);
 app.post('/admission-address-configuration-bulk', admissionAddressConfigurationController.bulkAddressConfigurations);
+app.get('/admission-validation-criteria', admissionValidationCriteriaController.getValidationCriteria);
+app.post('/admission-validation-criteria', admissionValidationCriteriaController.createValidationCriteria);
+app.post('/admission-validation-criteria-update', admissionValidationCriteriaController.updateValidationCriteria);
+app.post('/admission-validation-criteria-delete', admissionValidationCriteriaController.deleteValidationCriteria);
 app.get('/api/v2/mprograms-management', mprogramsManagementController.getPrograms);
 app.get('/api/v2/mprograms-management/options', mprogramsManagementController.getProgramOptions);
 app.post('/api/v2/mprograms-management', mprogramsManagementController.createProgram);
