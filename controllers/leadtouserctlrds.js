@@ -1,5 +1,7 @@
 const Lead = require("../Models/crmh1");
 const User = require("../Models/user");
+const RegulationMaster = require("../Models/regulationmasterds");
+const RegulationSubject = require("../Models/regulationsubjectds");
 
 const userRequiredFields = [
   "name",
@@ -55,6 +57,13 @@ const buildUserDataFromLead = (lead, overrides = {}) => {
 const getMissingRequiredFields = (data) =>
   userRequiredFields.filter((field) => !hasValue(data[field]));
 
+const sortValues = (values = []) =>
+  values
+    .filter((value) => hasValue(value))
+    .map((value) => String(value).trim())
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+
 exports.searchCrmLeadsForUserds = async (req, res) => {
   try {
     const {
@@ -105,6 +114,80 @@ exports.searchCrmLeadsForUserds = async (req, res) => {
     res.status(200).json({ success: true, count: leads.length, data: leads });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error searching CRM leads", error: error.message });
+  }
+};
+
+exports.getCrmAdmitOptionsds = async (req, res) => {
+  try {
+    const colid = Number(req.query.colid);
+    const academicyear = String(req.query.academicyear || "").trim();
+    const regulation = String(req.query.regulation || "").trim();
+    const programcode = String(req.query.programcode || "").trim();
+    if (!colid) return res.status(400).json({ success: false, message: "colid is required" });
+
+    const regulations = await RegulationMaster.find({ colid, isactive: "Yes" }).sort({ regulation: 1 }).lean();
+    let programs = [];
+    const subjectOptions = { Major: [], Minor: [] };
+    if (academicyear && regulation) {
+      const rows = await RegulationSubject.find({
+        colid,
+        academicyear,
+        regulation,
+        status: "Active"
+      }).select("program programcode").sort({ program: 1, programcode: 1 }).lean();
+      const map = new Map();
+      rows.forEach((row) => {
+        if (row.programcode || row.program) {
+          map.set(row.programcode || row.program, {
+            program: row.program || row.programcode || "",
+            programcode: row.programcode || ""
+          });
+        }
+      });
+      programs = Array.from(map.values()).sort((a, b) => String(a.program).localeCompare(String(b.program)));
+
+      const subjectQuery = {
+        colid,
+        academicyear,
+        regulation,
+        type: { $in: ["Major", "Minor"] },
+        status: "Active"
+      };
+      if (programcode) subjectQuery.programcode = programcode;
+
+      const subjectRows = await RegulationSubject.find(subjectQuery)
+        .select("subject type")
+        .sort({ type: 1, subject: 1 })
+        .lean();
+      subjectOptions.Major = sortValues(subjectRows.filter((row) => row.type === "Major").map((row) => row.subject));
+      subjectOptions.Minor = sortValues(subjectRows.filter((row) => row.type === "Minor").map((row) => row.subject));
+    }
+
+    const [categories, crmPrograms, courseInterested, pipelineStages, leadStatuses] = await Promise.all([
+      Lead.distinct("category", { colid }),
+      Lead.distinct("program", { colid }),
+      Lead.distinct("course_interested", { colid }),
+      Lead.distinct("pipeline_stage", { colid }),
+      Lead.distinct("leadstatus", { colid })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        regulations,
+        programs,
+        subjectOptions,
+        crmFilterOptions: {
+          category: sortValues(categories),
+          program: sortValues(crmPrograms),
+          course_interested: sortValues(courseInterested),
+          pipeline_stage: sortValues(pipelineStages),
+          leadstatus: sortValues(leadStatuses)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error loading admission options", error: error.message });
   }
 };
 

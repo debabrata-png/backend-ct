@@ -5294,6 +5294,7 @@ const settingsctlrds = require('./controllers/settingsctlrds.js');
 // ==================== USER ROUTES ====================
 app.get('/api/v2/searchusersds', crmh1ctlrds.searchusersds);
 app.get('/api/v2/searchcrmleadsforuserds', leadtouserctlrds.searchCrmLeadsForUserds);
+app.get('/api/v2/crmadmitoptionsds', leadtouserctlrds.getCrmAdmitOptionsds);
 app.get('/api/v2/getleaduserprefillds', leadtouserctlrds.getLeadUserPrefillds);
 app.post('/api/v2/createuserfromleadds', leadtouserctlrds.createUserFromLeadds);
 
