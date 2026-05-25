@@ -445,6 +445,126 @@ exports.getStudentCoursewiseAttendanceReport = async (req, res) => {
   }
 };
 
+exports.getMyStudentAttendanceSummary = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    const regno = text(req.query.regno);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!regno) return res.status(400).json({ success: false, message: "regno is required" });
+
+    const query = { colid, regno: regexText(regno) };
+    ["academicyear", "semester", "course", "coursecode", "type"].forEach((field) => {
+      if (req.query[field]) query[field] = text(req.query[field]);
+    });
+
+    const data = await NepLmsAttendance.find(query).sort({ semester: 1, coursecode: 1, classdate: 1, classtime: 1 }).lean();
+    const student = data[0] ? {
+      student: data[0].student || "",
+      regno: data[0].regno || "",
+      email: data[0].studentemail || "",
+      phone: data[0].studentphone || "",
+      program: data[0].program || "",
+      programcode: data[0].programcode || "",
+      academicyear: data[0].academicyear || "",
+      major: data[0].major || ""
+    } : {};
+
+    const courseMap = new Map();
+    data.forEach((row) => {
+      const key = [row.semester || "", row.coursecode || row.course || "", row.type || ""].join("||");
+      if (!courseMap.has(key)) {
+        courseMap.set(key, {
+          id: key,
+          academicyear: row.academicyear || "",
+          semester: row.semester || "",
+          program: row.program || "",
+          programcode: row.programcode || "",
+          major: row.major || "",
+          course: row.course || "",
+          coursecode: row.coursecode || "",
+          faculty: row.faculty || "",
+          facultyemail: row.facultyemail || "",
+          type: row.type || "",
+          totalClasses: 0,
+          present: 0,
+          absent: 0,
+          percentage: 0
+        });
+      }
+      const item = courseMap.get(key);
+      item.totalClasses += 1;
+      if (Number(row.attendance) === 1) item.present += 1;
+      else item.absent += 1;
+      item.percentage = item.totalClasses ? Number(((item.present / item.totalClasses) * 100).toFixed(2)) : 0;
+    });
+
+    const rows = [...courseMap.values()].sort((a, b) => (
+      String(a.semester).localeCompare(String(b.semester), undefined, { numeric: true })
+      || String(a.coursecode || a.course).localeCompare(String(b.coursecode || b.course))
+    ));
+    const summary = {
+      totalCourses: rows.length,
+      totalClasses: data.length,
+      present: data.filter((row) => Number(row.attendance) === 1).length,
+      absent: data.filter((row) => Number(row.attendance) !== 1).length
+    };
+    summary.percentage = summary.totalClasses ? Number(((summary.present / summary.totalClasses) * 100).toFixed(2)) : 0;
+
+    const groupRows = (field) => [...data.reduce((acc, row) => {
+      const key = row[field] || "-";
+      const current = acc.get(key) || { name: key, total: 0, present: 0, absent: 0, percentage: 0 };
+      current.total += 1;
+      if (Number(row.attendance) === 1) current.present += 1;
+      else current.absent += 1;
+      current.percentage = current.total ? Number(((current.present / current.total) * 100).toFixed(2)) : 0;
+      acc.set(key, current);
+      return acc;
+    }, new Map()).values()].sort((a, b) => String(a.name).localeCompare(String(b.name), undefined, { numeric: true }));
+
+    const detailRows = data.map((row) => ({
+      id: String(row._id),
+      academicyear: row.academicyear || "",
+      semester: row.semester || "",
+      course: row.course || "",
+      coursecode: row.coursecode || "",
+      faculty: row.faculty || "",
+      facultyemail: row.facultyemail || "",
+      classdate: row.classdate || "",
+      classtime: row.classtime || "",
+      type: row.type || "",
+      attendance: Number(row.attendance) === 1 ? 1 : 0,
+      status: Number(row.attendance) === 1 ? "Present" : "Absent",
+      comments: row.comments || ""
+    }));
+
+    const uniq = (field) => [...new Set(data.map((row) => text(row[field])).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    res.json({
+      success: true,
+      student,
+      rows,
+      detailRows,
+      summary,
+      charts: {
+        bySemester: groupRows("semester"),
+        byCourse: rows.map((row) => ({ name: row.coursecode || row.course || "-", percentage: row.percentage, total: row.totalClasses, present: row.present })),
+        presentAbsent: [
+          { name: "Present", value: summary.present },
+          { name: "Absent", value: summary.absent }
+        ]
+      },
+      options: {
+        academicyear: uniq("academicyear"),
+        semester: uniq("semester"),
+        course: uniq("course"),
+        coursecode: uniq("coursecode"),
+        type: uniq("type")
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.getFacultyCoursewiseLowAttendanceReport = async (req, res) => {
   try {
     const colid = number(req.query.colid);

@@ -523,7 +523,23 @@ exports.deleteField = async (req, res) => {
   }
 };
 
-const applicationPayload = (body) => ({
+const normalizeEducationMarks = (body, marksTypeField, marksField, cgpaField) => {
+  const marksType = String(body[marksTypeField] || '').trim();
+  const isCgpa = /^cgpa$/i.test(marksType);
+  const isPercentage = /^percentage$/i.test(marksType);
+  return {
+    marksType,
+    marks: isCgpa ? 0 : Number(body[marksField] || 0),
+    cgpa: isPercentage ? 'NA' : String(body[cgpaField] || '').trim()
+  };
+};
+
+const applicationPayload = (body) => {
+  const tenthEducation = normalizeEducationMarks(body, 'marks_type_10th', 'marks_10', 'cgpa_10');
+  const twelveEducation = normalizeEducationMarks(body, 'marks_type_12th', 'marks_12', 'cgpa_12');
+  const ugEducation = normalizeEducationMarks(body, 'marks_type_UG', 'marks_UG', 'cgpa_UG');
+  const pgEducation = normalizeEducationMarks(body, 'marks_type_PG', 'marks_PG', 'cgpa_PG');
+  return ({
   colid: Number(body.colid),
   formid: cleanFormId(body.formid),
   academicyear: body.academicyear,
@@ -537,6 +553,22 @@ const applicationPayload = (body) => ({
   country_form: body.country_form,
   state_form: body.state_form,
   district_form: body.district_form,
+  board_12th: body.board_12th,
+  marks_type_12th: twelveEducation.marksType,
+  marks_12: twelveEducation.marks,
+  cgpa_12: twelveEducation.cgpa,
+  board_10th: body.board_10th,
+  marks_type_10th: tenthEducation.marksType,
+  marks_10: tenthEducation.marks,
+  cgpa_10: tenthEducation.cgpa,
+  University_UG: body.University_UG,
+  marks_type_UG: ugEducation.marksType,
+  marks_UG: ugEducation.marks,
+  cgpa_UG: ugEducation.cgpa,
+  University_PG: body.University_PG,
+  marks_type_PG: pgEducation.marksType,
+  marks_PG: pgEducation.marks,
+  cgpa_PG: pgEducation.cgpa,
   gender: body.gender,
   category: body.category,
   ews: body.ews,
@@ -562,6 +594,7 @@ const applicationPayload = (body) => ({
   extraFields: body.extraFields || {},
   user: body.user || ''
 });
+};
 
 exports.uploadDocumentMiddleware = upload.single('file');
 

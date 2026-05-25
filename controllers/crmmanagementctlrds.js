@@ -262,6 +262,69 @@ exports.updateLeadAction = async (req, res) => {
   }
 };
 
+exports.getMyLeads = async (req, res) => {
+  try {
+    const colid = asNumber(req.body.colid);
+    const assignedto = clean(req.body.assignedto || req.body.user || req.body.email);
+    if (!assignedto) return res.status(400).json({ success: false, message: "assigned user is required" });
+    const query = { ...leadSearchQuery({ ...req.body, colid }), assignedto };
+    const rows = await Lead.find(query).sort({ updatedAt: -1 }).limit(1000).lean();
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.createMyLead = async (req, res) => {
+  try {
+    const assignedto = clean(req.body.assignedto || req.body.user || req.body.email);
+    if (!assignedto) return res.status(400).json({ success: false, message: "assigned user is required" });
+    const data = normalizeLead({ ...req.body, assignedto, user: assignedto }, { ...req.body, user: assignedto });
+    const row = await Lead.create(data);
+    res.json({ success: true, data: row });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.updateMyLeadStatus = async (req, res) => {
+  try {
+    const assignedto = clean(req.body.assignedto || req.body.user || req.body.email);
+    if (!assignedto) return res.status(400).json({ success: false, message: "assigned user is required" });
+    const update = {};
+    if (clean(req.body.pipeline_stage)) update.pipeline_stage = clean(req.body.pipeline_stage);
+    if (clean(req.body.leadstatus)) update.leadstatus = clean(req.body.leadstatus);
+    if (!Object.keys(update).length) return res.status(400).json({ success: false, message: "Nothing to update" });
+    const row = await Lead.findOneAndUpdate(
+      { _id: req.body.id, colid: asNumber(req.body.colid), assignedto },
+      { $set: update },
+      { new: true }
+    );
+    if (!row) return res.status(404).json({ success: false, message: "Lead not found for this user" });
+    res.json({ success: true, data: row });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getMyFollowups = async (req, res) => {
+  try {
+    const colid = asNumber(req.body.colid);
+    const assignedto = clean(req.body.assignedto || req.body.user || req.body.email);
+    if (!assignedto) return res.status(400).json({ success: false, message: "assigned user is required" });
+    const { fromDate, toDate, ...searchBody } = req.body;
+    const query = {
+      ...leadSearchQuery({ ...searchBody, colid }),
+      assignedto,
+      ...dateRange(fromDate, toDate, "next_followup_date")
+    };
+    const rows = await Lead.find(query).sort({ next_followup_date: 1, updatedAt: -1 }).limit(1000).lean();
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 exports.getReports = async (req, res) => {
   try {
     const colid = asNumber(req.body.colid);
