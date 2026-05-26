@@ -36,6 +36,7 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   country_form: String,
   state_form: String,
   district_form: String,
+  result_status_12th: String,
   board_12th: String,
   marks_type_12th: String,
   marks_12: {
@@ -43,6 +44,7 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
     default: 0
   },
   cgpa_12: String,
+  result_status_10th: String,
   board_10th: String,
   marks_type_10th: String,
   marks_10: {
@@ -51,6 +53,7 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   },
   cgpa_10: String,
   University_UG: String,
+  result_status_UG: String,
   marks_type_UG: String,
   marks_UG: {
     type: Number,
@@ -58,6 +61,7 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   },
   cgpa_UG: String,
   University_PG: String,
+  result_status_PG: String,
   marks_type_PG: String,
   marks_PG: {
     type: Number,

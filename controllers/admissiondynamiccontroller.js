@@ -523,22 +523,35 @@ exports.deleteField = async (req, res) => {
   }
 };
 
-const normalizeEducationMarks = (body, marksTypeField, marksField, cgpaField) => {
+const normalizeEducationMarks = (body, resultStatusField, institutionField, marksTypeField, marksField, cgpaField) => {
+  const resultStatus = String(body[resultStatusField] || '').trim();
+  if (/^awaited$/i.test(resultStatus)) {
+    return {
+      resultStatus,
+      institution: '',
+      marksType: '',
+      marks: 0,
+      cgpa: 'NA'
+    };
+  }
   const marksType = String(body[marksTypeField] || '').trim();
   const isCgpa = /^cgpa$/i.test(marksType);
   const isPercentage = /^percentage$/i.test(marksType);
+  const isGrade = /^grade$/i.test(marksType);
   return {
+    resultStatus,
+    institution: body[institutionField],
     marksType,
-    marks: isCgpa ? 0 : Number(body[marksField] || 0),
+    marks: (isCgpa || isGrade) ? 0 : Number(body[marksField] || 0),
     cgpa: isPercentage ? 'NA' : String(body[cgpaField] || '').trim()
   };
 };
 
 const applicationPayload = (body) => {
-  const tenthEducation = normalizeEducationMarks(body, 'marks_type_10th', 'marks_10', 'cgpa_10');
-  const twelveEducation = normalizeEducationMarks(body, 'marks_type_12th', 'marks_12', 'cgpa_12');
-  const ugEducation = normalizeEducationMarks(body, 'marks_type_UG', 'marks_UG', 'cgpa_UG');
-  const pgEducation = normalizeEducationMarks(body, 'marks_type_PG', 'marks_PG', 'cgpa_PG');
+  const tenthEducation = normalizeEducationMarks(body, 'result_status_10th', 'board_10th', 'marks_type_10th', 'marks_10', 'cgpa_10');
+  const twelveEducation = normalizeEducationMarks(body, 'result_status_12th', 'board_12th', 'marks_type_12th', 'marks_12', 'cgpa_12');
+  const ugEducation = normalizeEducationMarks(body, 'result_status_UG', 'University_UG', 'marks_type_UG', 'marks_UG', 'cgpa_UG');
+  const pgEducation = normalizeEducationMarks(body, 'result_status_PG', 'University_PG', 'marks_type_PG', 'marks_PG', 'cgpa_PG');
   return ({
   colid: Number(body.colid),
   formid: cleanFormId(body.formid),
@@ -553,19 +566,23 @@ const applicationPayload = (body) => {
   country_form: body.country_form,
   state_form: body.state_form,
   district_form: body.district_form,
-  board_12th: body.board_12th,
+  result_status_12th: twelveEducation.resultStatus,
+  board_12th: twelveEducation.institution,
   marks_type_12th: twelveEducation.marksType,
   marks_12: twelveEducation.marks,
   cgpa_12: twelveEducation.cgpa,
-  board_10th: body.board_10th,
+  result_status_10th: tenthEducation.resultStatus,
+  board_10th: tenthEducation.institution,
   marks_type_10th: tenthEducation.marksType,
   marks_10: tenthEducation.marks,
   cgpa_10: tenthEducation.cgpa,
-  University_UG: body.University_UG,
+  result_status_UG: ugEducation.resultStatus,
+  University_UG: ugEducation.institution,
   marks_type_UG: ugEducation.marksType,
   marks_UG: ugEducation.marks,
   cgpa_UG: ugEducation.cgpa,
-  University_PG: body.University_PG,
+  result_status_PG: pgEducation.resultStatus,
+  University_PG: pgEducation.institution,
   marks_type_PG: pgEducation.marksType,
   marks_PG: pgEducation.marks,
   cgpa_PG: pgEducation.cgpa,

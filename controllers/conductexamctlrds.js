@@ -1,0 +1,465 @@
+const ConductExam = require("../Models/conductexamds");
+const ConductExamCourse = require("../Models/conductexamcourseds");
+const ConductExamRoll = require("../Models/conductexamrollds");
+const ConductExamRoom = require("../Models/conductexamroomds");
+const RegulationCourseMap = require("../Models/regulationcoursemapds");
+const User = require("../Models/user");
+
+const text = (value) => String(value || "").trim();
+const number = (value) => {
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
+const uniq = (values) => [...new Set(values.map((item) => text(item)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+
+const examPayload = (body = {}) => ({
+  colid: number(body.colid),
+  academicyear: text(body.academicyear),
+  examname: text(body.examname || body.exam),
+  examcode: text(body.examcode),
+  session: text(body.session),
+  type: text(body.type),
+  user: text(body.user)
+});
+
+const examCoursePayload = (body = {}) => ({
+  colid: number(body.colid),
+  academicyear: text(body.academicyear),
+  regulation: text(body.regulation),
+  exam: text(body.exam || body.examname),
+  examcode: text(body.examcode),
+  program: text(body.program),
+  programcode: text(body.programcode),
+  type: text(body.type),
+  subject: text(body.subject),
+  semester: text(body.semester),
+  course: text(body.course),
+  coursecode: text(body.coursecode),
+  user: text(body.user)
+});
+
+const rollPayload = (body = {}) => ({
+  colid: number(body.colid),
+  academicyear: text(body.academicyear),
+  regulation: text(body.regulation),
+  exam: text(body.exam || body.examname),
+  examcode: text(body.examcode),
+  program: text(body.program),
+  programcode: text(body.programcode),
+  type: text(body.type),
+  subject: text(body.subject),
+  semester: text(body.semester),
+  course: text(body.course),
+  coursecode: text(body.coursecode),
+  student: text(body.student || body.name),
+  regno: text(body.regno),
+  email: text(body.email),
+  phone: text(body.phone),
+  section: text(body.section),
+  applied: text(body.applied) || "Yes",
+  admitcardeligible: text(body.admitcardeligible) || "Yes",
+  attended: text(body.attended) || "No",
+  examdate: text(body.examdate),
+  examroom: text(body.examroom),
+  seatno: text(body.seatno),
+  user: text(body.user)
+});
+
+const roomPayload = (body = {}) => ({
+  colid: number(body.colid),
+  campus: text(body.campus),
+  building: text(body.building),
+  room: text(body.room),
+  noofseats: number(body.noofseats || body.noOfSeats || body["No of seats"]),
+  user: text(body.user)
+});
+
+const validateExam = (p) => {
+  if (p.colid === undefined) return "colid is required";
+  if (!p.academicyear) return "Academic year is required";
+  if (!p.examname) return "Exam name is required";
+  if (!p.examcode) return "Exam code is required";
+  if (!["Odd", "Even"].includes(p.session)) return "Session is required";
+  if (!["Regular", "Supplementary"].includes(p.type)) return "Exam type is required";
+  return "";
+};
+
+const validateExamCourse = (p) => {
+  if (p.colid === undefined) return "colid is required";
+  for (const field of ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode"]) {
+    if (!p[field]) return `${field} is required`;
+  }
+  if (!["Major", "Minor"].includes(p.type)) return "Type must be Major or Minor";
+  return "";
+};
+
+const validateRoll = (p) => {
+  const courseError = validateExamCourse(p);
+  if (courseError) return courseError;
+  if (!p.student) return "Student is required";
+  if (!p.regno) return "Reg no is required";
+  return "";
+};
+
+const validateRoom = (p) => {
+  if (p.colid === undefined) return "colid is required";
+  if (!p.campus) return "Campus is required";
+  if (!p.building) return "Building is required";
+  if (!p.room) return "Room is required";
+  if (p.noofseats === undefined) return "No of seats is required";
+  if (p.noofseats < 0) return "No of seats cannot be negative";
+  return "";
+};
+
+const buildFilter = (source = {}, fields = []) => {
+  const filter = {};
+  const colid = number(source.colid);
+  if (colid !== undefined) filter.colid = colid;
+  fields.forEach((field) => {
+    if (source[field]) filter[field] = source[field];
+  });
+  return filter;
+};
+
+exports.getExams = async (req, res) => {
+  try {
+    const filter = buildFilter(req.query, ["academicyear", "examname", "examcode", "session", "type"]);
+    if (filter.colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const data = await ConductExam.find(filter).sort({ academicyear: -1, examname: 1 }).lean();
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.saveExam = async (req, res) => {
+  try {
+    const payload = examPayload(req.body);
+    const error = validateExam(payload);
+    if (error) return res.status(400).json({ success: false, message: error });
+    const data = req.body.id
+      ? await ConductExam.findOneAndUpdate({ _id: req.body.id, colid: payload.colid }, payload, { new: true, runValidators: true })
+      : await ConductExam.create(payload);
+    res.json({ success: true, data });
+  } catch (err) {
+    if (err.code === 11000) return res.status(400).json({ success: false, message: "Exam code already exists for this academic year" });
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.deleteExam = async (req, res) => {
+  try {
+    await ConductExam.findOneAndDelete({ _id: req.body.id, colid: number(req.body.colid) });
+    res.json({ success: true, message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.bulkExams = async (req, res) => {
+  try {
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const errors = [];
+    let saved = 0;
+    for (let index = 0; index < items.length; index += 1) {
+      const payload = examPayload({ ...items[index], colid: req.body.colid || items[index].colid, user: req.body.user || items[index].user });
+      const error = validateExam(payload);
+      if (error) {
+        errors.push({ rowNumber: items[index].rowNumber || index + 2, message: error });
+        continue;
+      }
+      await ConductExam.findOneAndUpdate(
+        { colid: payload.colid, academicyear: payload.academicyear, examcode: payload.examcode },
+        payload,
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      saved += 1;
+    }
+    res.json({ success: true, saved, errors });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getRooms = async (req, res) => {
+  try {
+    const filter = buildFilter(req.query, ["campus", "building", "room"]);
+    if (filter.colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const data = await ConductExamRoom.find(filter).sort({ campus: 1, building: 1, room: 1 }).lean();
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.saveRoom = async (req, res) => {
+  try {
+    const payload = roomPayload(req.body);
+    const error = validateRoom(payload);
+    if (error) return res.status(400).json({ success: false, message: error });
+    const data = req.body.id
+      ? await ConductExamRoom.findOneAndUpdate({ _id: req.body.id, colid: payload.colid }, payload, { new: true, runValidators: true })
+      : await ConductExamRoom.create(payload);
+    res.json({ success: true, data });
+  } catch (err) {
+    if (err.code === 11000) return res.status(400).json({ success: false, message: "Room already exists for this campus and building" });
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.deleteRoom = async (req, res) => {
+  try {
+    await ConductExamRoom.findOneAndDelete({ _id: req.body.id, colid: number(req.body.colid) });
+    res.json({ success: true, message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.bulkRooms = async (req, res) => {
+  try {
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const errors = [];
+    let saved = 0;
+    for (let index = 0; index < items.length; index += 1) {
+      const payload = roomPayload({ ...items[index], colid: req.body.colid || items[index].colid, user: req.body.user || items[index].user });
+      const error = validateRoom(payload);
+      if (error) {
+        errors.push({ rowNumber: items[index].rowNumber || index + 2, message: error });
+        continue;
+      }
+      await ConductExamRoom.findOneAndUpdate(
+        { colid: payload.colid, campus: payload.campus, building: payload.building, room: payload.room },
+        payload,
+        { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
+      );
+      saved += 1;
+    }
+    res.json({ success: true, saved, errors });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getExamCourses = async (req, res) => {
+  try {
+    const filter = buildFilter(req.query, ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode"]);
+    if (filter.colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const data = await ConductExamCourse.find(filter).sort({ academicyear: -1, exam: 1, program: 1, type: 1, semester: 1, course: 1 }).lean();
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.saveExamCourses = async (req, res) => {
+  try {
+    const courses = Array.isArray(req.body.courses) ? req.body.courses : [req.body];
+    const saved = [];
+    for (const course of courses) {
+      const payload = examCoursePayload({ ...req.body, ...course });
+      const error = validateExamCourse(payload);
+      if (error) return res.status(400).json({ success: false, message: error });
+      const data = req.body.id && courses.length === 1
+        ? await ConductExamCourse.findOneAndUpdate({ _id: req.body.id, colid: payload.colid }, payload, { new: true, runValidators: true })
+        : await ConductExamCourse.findOneAndUpdate(
+          { colid: payload.colid, academicyear: payload.academicyear, regulation: payload.regulation, examcode: payload.examcode, programcode: payload.programcode, type: payload.type, subject: payload.subject, semester: payload.semester, coursecode: payload.coursecode },
+          payload,
+          { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
+        );
+      saved.push(data);
+    }
+    res.json({ success: true, data: saved });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.deleteExamCourse = async (req, res) => {
+  try {
+    await ConductExamCourse.findOneAndDelete({ _id: req.body.id, colid: number(req.body.colid) });
+    res.json({ success: true, message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.bulkExamCourses = async (req, res) => {
+  try {
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const errors = [];
+    let saved = 0;
+    for (let index = 0; index < items.length; index += 1) {
+      const payload = examCoursePayload({ ...items[index], colid: req.body.colid || items[index].colid, user: req.body.user || items[index].user });
+      const error = validateExamCourse(payload);
+      if (error) {
+        errors.push({ rowNumber: items[index].rowNumber || index + 2, message: error });
+        continue;
+      }
+      await ConductExamCourse.findOneAndUpdate(
+        { colid: payload.colid, academicyear: payload.academicyear, regulation: payload.regulation, examcode: payload.examcode, programcode: payload.programcode, type: payload.type, subject: payload.subject, semester: payload.semester, coursecode: payload.coursecode },
+        payload,
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      saved += 1;
+    }
+    res.json({ success: true, saved, errors });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getCourseMapOptions = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const filter = { colid };
+    ["academicyear", "regulation", "program", "programcode", "type", "subject", "semester"].forEach((field) => {
+      if (req.query[field]) filter[field] = req.query[field];
+    });
+    const rows = await RegulationCourseMap.find(filter).sort({ program: 1, type: 1, subject: 1, semester: 1, course: 1 }).lean();
+    res.json({
+      success: true,
+      data: rows,
+      academicyears: uniq(rows.map((r) => r.academicyear)),
+      regulations: uniq(rows.map((r) => r.regulation)),
+      programs: uniq(rows.map((r) => `${r.programcode}||${r.program}`)).map((value) => {
+        const [programcode, program] = value.split("||");
+        return { programcode, program };
+      }),
+      types: uniq(rows.map((r) => r.type)),
+      subjects: uniq(rows.map((r) => r.subject)),
+      semesters: uniq(rows.map((r) => r.semester)),
+      courses: rows.map((r) => ({ course: r.course, coursecode: r.coursecode, subject: r.subject, type: r.type, semester: r.semester, program: r.program, programcode: r.programcode, regulation: r.regulation }))
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getExamRolls = async (req, res) => {
+  try {
+    const filter = buildFilter(req.query, ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode", "regno", "applied", "admitcardeligible", "attended"]);
+    if (filter.colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const data = await ConductExamRoll.find(filter).sort({ program: 1, semester: 1, course: 1, regno: 1 }).lean();
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.generateExamRolls = async (req, res) => {
+  try {
+    const selectedCourses = Array.isArray(req.body.courses) ? req.body.courses : [];
+    if (!selectedCourses.length) return res.status(400).json({ success: false, message: "Select at least one course" });
+    const base = {
+      colid: number(req.body.colid),
+      academicyear: text(req.body.academicyear),
+      regulation: text(req.body.regulation),
+      exam: text(req.body.exam),
+      examcode: text(req.body.examcode),
+      program: text(req.body.program),
+      programcode: text(req.body.programcode),
+      type: text(req.body.type),
+      subject: text(req.body.subject),
+      semester: text(req.body.semester),
+      user: text(req.body.user)
+    };
+    if (base.colid === undefined || !base.academicyear || !base.regulation || !base.exam || !base.examcode || !base.programcode || !base.type || !base.semester) {
+      return res.status(400).json({ success: false, message: "Exam, regulation, program, type and semester are required" });
+    }
+    const studentFilter = {
+      colid: base.colid,
+      academicyear: base.academicyear,
+      programcode: base.programcode,
+      semester: base.semester,
+      role: /^student$/i
+    };
+    if (base.type === "Major") studentFilter.Major = base.subject;
+    if (base.type === "Minor") studentFilter.Minor = base.subject;
+    const students = await User.find(studentFilter).select("name regno email phone section program programcode").lean();
+    let saved = 0;
+    const errors = [];
+    for (const course of selectedCourses) {
+      for (const student of students) {
+        const payload = rollPayload({
+          ...base,
+          course: course.course,
+          coursecode: course.coursecode,
+          student: student.name,
+          regno: student.regno,
+          email: student.email,
+          phone: student.phone,
+          section: student.section,
+          program: base.program || student.program,
+          applied: "Yes",
+          admitcardeligible: "Yes",
+          attended: "No"
+        });
+        const error = validateRoll(payload);
+        if (error) {
+          errors.push({ regno: student.regno, coursecode: course.coursecode, message: error });
+          continue;
+        }
+        await ConductExamRoll.findOneAndUpdate(
+          { colid: payload.colid, academicyear: payload.academicyear, regulation: payload.regulation, examcode: payload.examcode, programcode: payload.programcode, semester: payload.semester, coursecode: payload.coursecode, regno: payload.regno },
+          payload,
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        saved += 1;
+      }
+    }
+    res.json({ success: true, saved, studentCount: students.length, errors });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.saveExamRoll = async (req, res) => {
+  try {
+    const payload = rollPayload(req.body);
+    const error = validateRoll(payload);
+    if (error) return res.status(400).json({ success: false, message: error });
+    const data = req.body.id
+      ? await ConductExamRoll.findOneAndUpdate({ _id: req.body.id, colid: payload.colid }, payload, { new: true, runValidators: true })
+      : await ConductExamRoll.create(payload);
+    res.json({ success: true, data });
+  } catch (err) {
+    if (err.code === 11000) return res.status(400).json({ success: false, message: "This student is already added for the selected course" });
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.deleteExamRoll = async (req, res) => {
+  try {
+    await ConductExamRoll.findOneAndDelete({ _id: req.body.id, colid: number(req.body.colid) });
+    res.json({ success: true, message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.bulkExamRolls = async (req, res) => {
+  try {
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const errors = [];
+    let saved = 0;
+    for (let index = 0; index < items.length; index += 1) {
+      const payload = rollPayload({ ...items[index], colid: req.body.colid || items[index].colid, user: req.body.user || items[index].user });
+      const error = validateRoll(payload);
+      if (error) {
+        errors.push({ rowNumber: items[index].rowNumber || index + 2, message: error });
+        continue;
+      }
+      await ConductExamRoll.findOneAndUpdate(
+        { colid: payload.colid, academicyear: payload.academicyear, regulation: payload.regulation, examcode: payload.examcode, programcode: payload.programcode, semester: payload.semester, coursecode: payload.coursecode, regno: payload.regno },
+        payload,
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      saved += 1;
+    }
+    res.json({ success: true, saved, errors });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
