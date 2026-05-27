@@ -229,6 +229,19 @@ exports.deleteStudent = async (req, res) => {
   }
 };
 
+exports.bulkDeleteStudents = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    const ids = Array.isArray(req.body.ids) ? req.body.ids.filter(Boolean) : [];
+    if (!colid) return res.status(400).json({ msg: 'colid is required' });
+    if (!ids.length) return res.status(400).json({ msg: 'Select at least one student to delete' });
+    const data = await User.deleteMany({ _id: { $in: ids }, ...colidFilter(colid) });
+    res.json({ msg: 'Deleted', deleted: data.deletedCount || 0 });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
 exports.bulkStudents = async (req, res) => {
   try {
     const colid = Number(req.body.colid);

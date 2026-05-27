@@ -31,6 +31,7 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   password: String,
   email: String,
   phone: String,
+  regno: String,
   address: String,
   pin: String,
   country_form: String,

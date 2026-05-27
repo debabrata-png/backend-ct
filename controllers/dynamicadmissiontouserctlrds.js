@@ -4,6 +4,9 @@ const RegulationMaster = require("../Models/regulationmasterds");
 const RegulationSubject = require("../Models/regulationsubjectds");
 const RegulationSeat = require("../Models/regulationseatds");
 const User = require("../Models/user");
+const AiConfiguration = require("../Models/aiconfigurationds");
+const EmailConfiguration = require("../Models/emailconfigurationds");
+const nodemailer = require("nodemailer");
 
 const categories = ["General", "SC", "ST", "OBC", "EWS", "EBC", "PH", "Supernumerary", "Sports"];
 const subjectTypes = ["Major", "Minor", "AEC", "SEC", "VAC", "IDC"];
@@ -19,6 +22,130 @@ const clean = (value) => String(value || "").trim();
 const escapeRegex = (value = "") => clean(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const getProgramName = (application) => application.programapplied || application.program || application.programcode || "";
+
+const getDefaultGeminiConfig = async (colid) => (
+  await AiConfiguration.findOne({ colid: Number(colid), type: /^gemini$/i, active: /^yes$/i, default: /^yes$/i }).sort({ _id: -1 }).lean()
+  || await AiConfiguration.findOne({ colid: Number(colid), type: /^gemini$/i, active: /^yes$/i }).sort({ _id: -1 }).lean()
+);
+
+const getEmailHost = (config = {}) => {
+  if (config.smtp) return config.smtp;
+  if (config.smptp) return config.smptp;
+  if (/gmail/i.test(config.provider || "")) return "smtp.gmail.com";
+  return "";
+};
+
+const createMailTransporter = (config) => {
+  const port = Number(config.port) || (/gmail/i.test(config.provider || "") ? 465 : 587);
+  return nodemailer.createTransport({
+    host: getEmailHost(config),
+    port,
+    secure: String(config.secure || "").toLowerCase() === "yes" || String(config.secure || "").toLowerCase() === "true" || port === 465,
+    auth: {
+      user: config.username,
+      pass: config.password
+    }
+  });
+};
+
+const getAdmissionEmailConfig = async (colid) => {
+  const activeQuery = { colid: Number(colid), isactive: /^yes$/i };
+  return (
+    await EmailConfiguration.findOne({ ...activeQuery, provider: /^gmail$/i, type: /^admission$/i, default: /^yes$/i }).sort({ updatedAt: -1, createdAt: -1 }).lean()
+    || await EmailConfiguration.findOne({ ...activeQuery, provider: /^gmail$/i, type: /^admission$/i }).sort({ updatedAt: -1, createdAt: -1 }).lean()
+    || await EmailConfiguration.findOne({ ...activeQuery, default: /^yes$/i }).sort({ updatedAt: -1, createdAt: -1 }).lean()
+    || await EmailConfiguration.findOne(activeQuery).sort({ updatedAt: -1, createdAt: -1 }).lean()
+  );
+};
+
+const escapeHtml = (value) => clean(value).replace(/[&<>"']/g, (char) => ({
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;"
+}[char]));
+
+const sendAdmissionWelcomeMail = async ({ colid, student, password, institution }) => {
+  try {
+    if (!student?.email) return { sent: false, reason: "Student email missing" };
+    const config = await getAdmissionEmailConfig(colid);
+    if (!config?.username || !config?.password || !getEmailHost(config)) {
+      return { sent: false, reason: "Active email configuration is missing or incomplete" };
+    }
+
+    const transporter = createMailTransporter(config);
+    const displayInstitution = institution || student.institution || "Institution";
+    const subject = `Welcome to ${displayInstitution}`;
+    const text = [
+      `Dear ${student.name || "Student"},`,
+      "",
+      `Your admission has been confirmed and your student login has been created.`,
+      "",
+      `Username: ${student.email}`,
+      `Password: ${password}`,
+      `Registration No: ${student.regno || ""}`,
+      `Program: ${student.department || student.programcode || ""}`,
+      "",
+      "Please keep these credentials safely and change your password after login if the system provides that option.",
+      "",
+      "This is an automated email."
+    ].join("\n");
+    const html = `
+      <div style="font-family:Arial,sans-serif;line-height:1.55;color:#111827">
+        <p>Dear ${escapeHtml(student.name || "Student")},</p>
+        <p>Your admission has been confirmed and your student login has been created.</p>
+        <table style="border-collapse:collapse;margin:12px 0">
+          <tr><td style="padding:7px 10px;border:1px solid #d1d5db"><b>Username</b></td><td style="padding:7px 10px;border:1px solid #d1d5db">${escapeHtml(student.email)}</td></tr>
+          <tr><td style="padding:7px 10px;border:1px solid #d1d5db"><b>Password</b></td><td style="padding:7px 10px;border:1px solid #d1d5db">${escapeHtml(password)}</td></tr>
+          <tr><td style="padding:7px 10px;border:1px solid #d1d5db"><b>Registration No</b></td><td style="padding:7px 10px;border:1px solid #d1d5db">${escapeHtml(student.regno)}</td></tr>
+          <tr><td style="padding:7px 10px;border:1px solid #d1d5db"><b>Program</b></td><td style="padding:7px 10px;border:1px solid #d1d5db">${escapeHtml(student.department || student.programcode)}</td></tr>
+        </table>
+        <p>Please keep these credentials safely and change your password after login if the system provides that option.</p>
+        <p style="font-size:12px;color:#6b7280">This is an automated email.</p>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: `"${displayInstitution}" <${config.username}>`,
+      to: student.email,
+      subject,
+      text,
+      html
+    });
+
+    return { sent: true };
+  } catch (error) {
+    console.error("Admission welcome mail failed:", error.message);
+    return { sent: false, reason: error.message };
+  }
+};
+
+const callGeminiJson = async (apikey, prompt) => {
+  const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+  let lastError = "";
+  for (const model of models) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apikey)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
+      })
+    });
+    const data = await response.json();
+    if (response.ok) {
+      const output = data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("\n") || "{}";
+      try {
+        return JSON.parse(output);
+      } catch (err) {
+        return { registrationNumber: clean(output).split(/\s+/)[0] || "" };
+      }
+    }
+    lastError = data.error?.message || `Gemini API request failed for ${model}`;
+  }
+  throw new Error(lastError || "Gemini API request failed");
+};
 
 const buildSearchQuery = (body = {}) => {
   const colid = toNumber(body.colid);
@@ -231,6 +358,84 @@ exports.checkAdmissionMajorCapacity = async (req, res) => {
   }
 };
 
+exports.generateRegistrationNumber = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    const rule = clean(req.body.rule);
+    const application = req.body.application || {};
+    const userData = req.body.userData || {};
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!rule) return res.status(400).json({ success: false, message: "Registration rule is required" });
+    const admissionyear = clean(userData.admissionyear || application.academicyear);
+    const programcode = clean(req.body.programcode || userData.programcode || application.programcode);
+    if (!admissionyear || !programcode) {
+      return res.status(400).json({ success: false, message: "Academic year and program code are required to generate registration number" });
+    }
+
+    const aiConfig = await getDefaultGeminiConfig(colid);
+    if (!aiConfig?.apikey) {
+      return res.status(400).json({ success: false, message: "Active/default Gemini AI configuration was not found" });
+    }
+
+    const effectiveApplication = { ...application, programcode };
+    const effectiveUserData = { ...userData, programcode };
+
+    const existingRegnos = await User.find({ colid, role: { $regex: /^student$/i }, admissionyear, programcode })
+      .select("regno admissionyear programcode department")
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(100)
+      .lean();
+    const admittedCount = await User.countDocuments({
+      colid,
+      role: { $regex: /^student$/i },
+      admissionyear,
+      programcode
+    });
+    const sequence = String(admittedCount + 1).padStart(4, "0");
+
+    const prompt = `
+You generate student registration numbers. Return ONLY JSON:
+{
+  "registrationNumber": "the registration number base without the final four digit running sequence",
+  "reason": "short explanation"
+}
+
+Rule:
+${rule}
+
+Use the rule exactly. Use the application and user data below. Do not add the final four digit running sequence. The system will append this sequence separately: ${sequence}. Return only the registration number base, no spaces unless the rule explicitly requires spaces.
+
+Program code selected in the Program Code textbox. This is authoritative:
+${programcode}
+
+Admitted student count for this academic year and program code:
+${admittedCount}
+
+Final four digit sequence to be appended:
+${sequence}
+
+Application data:
+${JSON.stringify(effectiveApplication, null, 2)}
+
+User form data:
+${JSON.stringify(effectiveUserData, null, 2)}
+
+Recent existing registration records:
+${JSON.stringify(existingRegnos, null, 2)}
+`;
+
+    const result = await callGeminiJson(aiConfig.apikey, prompt);
+    const registrationBase = clean(result.registrationNumber || result.regno || result.registrationno || result.registrationNumberGenerated).replace(/\d{4}$/, "");
+    if (!registrationBase) {
+      return res.status(400).json({ success: false, message: "Gemini did not return a registration number", data: result });
+    }
+    const registrationNumber = `${registrationBase}${sequence}`;
+    res.json({ success: true, registrationNumber, sequence, admittedCount, reason: result.reason || "" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.admitDynamicApplicantToUser = async (req, res) => {
   try {
     const colid = toNumber(req.body.colid);
@@ -306,12 +511,22 @@ exports.admitDynamicApplicantToUser = async (req, res) => {
 
     const createdUser = await User.create(finalUser);
     application.applicationstatus = "Admitted";
+    application.regno = finalUser.regno;
     await application.save();
+    const welcomeMail = await sendAdmissionWelcomeMail({
+      colid,
+      student: createdUser,
+      password: finalUser.password,
+      institution: finalUser.institution
+    });
 
     res.status(201).json({
       success: true,
-      message: "Student admitted and user created",
+      message: welcomeMail.sent
+        ? "Student admitted, user created and welcome mail sent"
+        : `Student admitted and user created. Welcome mail not sent: ${welcomeMail.reason || "Email configuration unavailable"}`,
       data: createdUser,
+      welcomeMail,
       capacity: {
         ...capacity,
         major: {

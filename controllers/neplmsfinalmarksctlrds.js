@@ -2,6 +2,8 @@ const NepLmsComponentMarks = require("../Models/neplmscomponentmarksds");
 const NepLmsFinalMarks = require("../Models/neplmsfinalmarksds");
 const NepLmsAssessmentMarks = require("../Models/neplmsassessmentmarksds");
 const GradeConfiguration = require("../Models/gradeconfigurationds");
+const RelativeGradingConfiguration = require("../Models/relativegradingconfigurationds");
+const ZScoreConfiguration = require("../Models/zscoreconfigurationds");
 const User = require("../Models/user");
 
 const toNumber = (value) => {
@@ -11,6 +13,46 @@ const toNumber = (value) => {
 };
 
 const text = (value) => String(value || "").trim();
+const normalizePassStatus = (value) => (text(value).toLowerCase() === "pass" ? "Pass" : "Fail");
+const getPassStatusFromGrade = (grade) => (text(grade).toUpperCase() === "F" ? "Fail" : "Pass");
+
+const buildFinalMarkPayload = (source = {}, colid, user = "") => {
+  const internalmarks = toNumber(source.internalmarks) || 0;
+  const externalmarks = toNumber(source.externalmarks) || 0;
+  const total = toNumber(source.total);
+  const gradepoint = toNumber(source.gradepoint) || 0;
+  const zscore = toNumber(source.zscore) || 0;
+  const credits = toNumber(source.credits) || 0;
+  const gpa = toNumber(source.gpa);
+
+  return {
+    academicyear: text(source.academicyear),
+    semester: text(source.semester),
+    program: text(source.program),
+    programcode: text(source.programcode),
+    regulation: text(source.regulation),
+    course: text(source.course),
+    coursecode: text(source.coursecode),
+    major: text(source.major),
+    subject: text(source.subject),
+    student: text(source.student),
+    regno: text(source.regno),
+    internalmarks,
+    externalmarks,
+    total: total !== undefined ? total : Number((internalmarks + externalmarks).toFixed(2)),
+    grade: text(source.grade),
+    gradepoint,
+    zscore,
+    credits,
+    gpa: gpa !== undefined ? gpa : Number((gradepoint * credits).toFixed(2)),
+    passstatus: normalizePassStatus(source.passstatus),
+    attempt: toNumber(source.attempt) || 1,
+    failmode: text(source.failmode),
+    grademode: text(source.grademode),
+    colid,
+    user
+  };
+};
 
 const getUgcGrade = (percentage) => {
   if (percentage >= 90) return { grade: "O", gradepoint: 10 };
@@ -51,6 +93,39 @@ const buildQuery = (source = {}) => {
     if (source[field]) query[field] = source[field];
   });
   return query;
+};
+
+const buildFinalMarksScopeQuery = (source = {}) => {
+  const colid = toNumber(source.colid);
+  const query = { colid };
+  ["academicyear", "regulation", "program", "programcode", "course", "coursecode"].forEach((field) => {
+    query[field] = text(source[field]);
+  });
+  const missing = Object.entries(query)
+    .filter(([key, value]) => key !== "colid" && !value)
+    .map(([key]) => key);
+  return { query, missing, colid };
+};
+
+const getFinalMarksRowsForScope = async (source = {}) => {
+  const { query, missing, colid } = buildFinalMarksScopeQuery(source);
+  if (colid === undefined) {
+    const error = new Error("colid is required");
+    error.statusCode = 400;
+    throw error;
+  }
+  if (missing.length) {
+    const error = new Error(`Missing required fields: ${missing.join(", ")}`);
+    error.statusCode = 400;
+    throw error;
+  }
+  const marksRows = await NepLmsFinalMarks.find(query).lean();
+  if (!marksRows.length) {
+    const error = new Error("No final marks found for selected filter");
+    error.statusCode = 400;
+    throw error;
+  }
+  return { marksRows, query, colid };
 };
 
 exports.processFinalMarks = async (req, res) => {
@@ -152,6 +227,7 @@ exports.processFinalMarks = async (req, res) => {
         total: Number(total.toFixed(2)),
         grade: passstatus === "Fail" ? "F" : gradeInfo.grade,
         gradepoint,
+        zscore: 0,
         credits,
         gpa: Number((gradepoint * credits).toFixed(2)),
         passstatus,
@@ -185,7 +261,7 @@ exports.processFinalMarks = async (req, res) => {
 
     res.json({ success: true, processed });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 
@@ -201,6 +277,448 @@ exports.getFinalMarks = async (req, res) => {
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.bulkUploadFinalMarks = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+
+    const rows = Array.isArray(req.body.rows) ? req.body.rows : [];
+    if (!rows.length) return res.status(400).json({ success: false, message: "No rows received for bulk upload" });
+
+    const user = text(req.body.user);
+    const errors = [];
+    const ops = [];
+
+    rows.forEach((row, index) => {
+      const payload = buildFinalMarkPayload(row, colid, user);
+      const missing = ["academicyear", "semester", "coursecode", "regno"].filter((field) => !payload[field]);
+      if (missing.length) {
+        errors.push({ row: index + 2, message: `Missing required fields: ${missing.join(", ")}` });
+        return;
+      }
+
+      ops.push({
+        updateOne: {
+          filter: {
+            colid,
+            academicyear: payload.academicyear,
+            semester: payload.semester,
+            coursecode: payload.coursecode,
+            regno: payload.regno
+          },
+          update: { $set: payload },
+          upsert: true
+        }
+      });
+    });
+
+    if (!ops.length) {
+      return res.status(400).json({ success: false, message: "No valid rows found", errors });
+    }
+
+    const result = await NepLmsFinalMarks.bulkWrite(ops, { ordered: false });
+    res.json({
+      success: true,
+      message: `Bulk upload completed. Valid rows: ${ops.length}. Rejected rows: ${errors.length}.`,
+      inserted: result.upsertedCount || 0,
+      updated: result.modifiedCount || 0,
+      matched: result.matchedCount || 0,
+      errors
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.processRelativeGrading = async (req, res) => {
+  try {
+    const { marksRows, query, colid } = await getFinalMarksRowsForScope(req.body);
+
+    const bandRows = await RelativeGradingConfiguration.find(query).sort({ from: 1 }).lean();
+    if (!bandRows.length) {
+      return res.status(400).json({ success: false, message: "No relative grading bands found for selected filter" });
+    }
+
+    const totals = marksRows.map((row) => Number(row.total)).filter((value) => Number.isFinite(value));
+    if (!totals.length) {
+      return res.status(400).json({ success: false, message: "No valid total marks found for selected filter" });
+    }
+
+    const mean = totals.reduce((sum, value) => sum + value, 0) / totals.length;
+    const variance = totals.reduce((sum, value) => sum + ((value - mean) ** 2), 0) / totals.length;
+    const standardDeviation = Math.sqrt(variance);
+    const computedBands = bandRows.map((band) => {
+      const lower = mean + ((Number(band.from) || 0) * standardDeviation);
+      const upper = mean + ((Number(band.to) || 0) * standardDeviation);
+      return {
+        lower,
+        upper,
+        grade: text(band.grade),
+        gradepoint: toNumber(band.gradepoint) || 0,
+        label: `${Number(band.from) || 0} SD to ${Number(band.to) || 0} SD (${lower.toFixed(2)} - ${upper.toFixed(2)})`
+      };
+    });
+
+    const ops = marksRows.map((row) => {
+      const total = Number(row.total);
+      const matchedBand = computedBands.find((band) => total >= band.lower && total <= band.upper);
+      const grade = matchedBand?.grade || "F";
+      const gradepoint = matchedBand?.gradepoint || 0;
+      const credits = Number(row.credits) || 0;
+      return {
+        updateOne: {
+          filter: { _id: row._id, colid },
+          update: {
+            $set: {
+              grade,
+              gradepoint,
+              gpa: Number((gradepoint * credits).toFixed(2)),
+              passstatus: getPassStatusFromGrade(grade),
+              grademode: matchedBand?.label || "No matching band",
+              zscore: standardDeviation ? Number(((total - mean) / standardDeviation).toFixed(4)) : 0,
+              user: text(req.body.user || row.user)
+            }
+          }
+        }
+      };
+    });
+
+    const result = await NepLmsFinalMarks.bulkWrite(ops, { ordered: false });
+    res.json({
+      success: true,
+      message: "Relative grading processed",
+      mean: Number(mean.toFixed(4)),
+      standardDeviation: Number(standardDeviation.toFixed(4)),
+      updated: (result.modifiedCount || 0) + (result.matchedCount || 0),
+      count: marksRows.length,
+      bands: computedBands.map((band) => ({
+        grade: band.grade,
+        gradepoint: band.gradepoint,
+        lower: Number(band.lower.toFixed(4)),
+        upper: Number(band.upper.toFixed(4)),
+        label: band.label
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.processAutomaticZScoreGrading = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+
+    const query = {
+      colid,
+      academicyear: text(req.body.academicyear),
+      regulation: text(req.body.regulation),
+      program: text(req.body.program),
+      programcode: text(req.body.programcode),
+      course: text(req.body.course),
+      coursecode: text(req.body.coursecode)
+    };
+
+    const missing = Object.entries(query)
+      .filter(([key, value]) => key !== "colid" && !value)
+      .map(([key]) => key);
+    if (missing.length) {
+      return res.status(400).json({ success: false, message: `Missing required fields: ${missing.join(", ")}` });
+    }
+
+    const marksRows = await NepLmsFinalMarks.find(query).lean();
+    if (!marksRows.length) {
+      return res.status(400).json({ success: false, message: "No final marks found for selected filter" });
+    }
+
+    const validRows = marksRows.filter((row) => Number.isFinite(Number(row.total)));
+    if (!validRows.length) {
+      return res.status(400).json({ success: false, message: "No valid total marks found for selected filter" });
+    }
+
+    const totals = validRows.map((row) => Number(row.total));
+    const mean = totals.reduce((sum, value) => sum + value, 0) / totals.length;
+    const variance = totals.reduce((sum, value) => sum + ((value - mean) ** 2), 0) / totals.length;
+    const standardDeviation = Math.sqrt(variance);
+    const scoredRows = validRows.map((row) => ({
+      row,
+      zscore: standardDeviation ? Number(((Number(row.total) - mean) / standardDeviation).toFixed(4)) : 0
+    }));
+
+    const minZScore = Math.min(...scoredRows.map((item) => item.zscore));
+    const maxZScore = Math.max(...scoredRows.map((item) => item.zscore));
+    const spread = maxZScore - minZScore;
+    const interval = spread ? spread / 8 : 0;
+    const gradeScale = [
+      { grade: "F", gradepoint: 0 },
+      { grade: "P", gradepoint: 4 },
+      { grade: "C", gradepoint: 5 },
+      { grade: "B", gradepoint: 6 },
+      { grade: "B+", gradepoint: 7 },
+      { grade: "A", gradepoint: 8 },
+      { grade: "A+", gradepoint: 9 },
+      { grade: "O", gradepoint: 10 }
+    ];
+    const bands = gradeScale.map((item, index) => {
+      const lower = spread ? minZScore + (interval * index) : minZScore;
+      const upper = spread ? (index === gradeScale.length - 1 ? maxZScore : minZScore + (interval * (index + 1))) : maxZScore;
+      return {
+        ...item,
+        lower: Number(lower.toFixed(4)),
+        upper: Number(upper.toFixed(4)),
+        label: spread
+          ? `Z ${lower.toFixed(4)} ${index === gradeScale.length - 1 ? "to" : "to below"} ${upper.toFixed(4)}`
+          : "All students have the same z-score"
+      };
+    });
+
+    const getBand = (zscore) => {
+      if (!spread) return bands[bands.length - 1];
+      const index = Math.min(gradeScale.length - 1, Math.max(0, Math.floor((zscore - minZScore) / interval)));
+      return bands[index];
+    };
+
+    const ops = scoredRows.map(({ row, zscore }) => {
+      const band = getBand(zscore);
+      const credits = Number(row.credits) || 0;
+      return {
+        updateOne: {
+          filter: { _id: row._id, colid },
+          update: {
+            $set: {
+              zscore,
+              grade: band.grade,
+              gradepoint: band.gradepoint,
+              gpa: Number((band.gradepoint * credits).toFixed(2)),
+              passstatus: getPassStatusFromGrade(band.grade),
+              grademode: band.label,
+              user: text(req.body.user || row.user)
+            }
+          }
+        }
+      };
+    });
+
+    const result = await NepLmsFinalMarks.bulkWrite(ops, { ordered: false });
+    res.json({
+      success: true,
+      message: "Automatic z-score grading processed",
+      mean: Number(mean.toFixed(4)),
+      standardDeviation: Number(standardDeviation.toFixed(4)),
+      minZScore: Number(minZScore.toFixed(4)),
+      maxZScore: Number(maxZScore.toFixed(4)),
+      spread: Number(spread.toFixed(4)),
+      interval: Number(interval.toFixed(4)),
+      updated: result.modifiedCount || 0,
+      count: scoredRows.length,
+      bands
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+exports.processUgcGradeScale = async (req, res) => {
+  try {
+    const { marksRows, colid } = await getFinalMarksRowsForScope(req.body);
+    const validRows = marksRows.filter((row) => Number.isFinite(Number(row.total)));
+    if (!validRows.length) {
+      return res.status(400).json({ success: false, message: "No valid total marks found for selected filter" });
+    }
+
+    const ops = validRows.map((row) => {
+      const gradeInfo = getUgcGrade(Number(row.total));
+      const credits = Number(row.credits) || 0;
+      return {
+        updateOne: {
+          filter: { _id: row._id, colid },
+          update: {
+            $set: {
+              grade: gradeInfo.grade,
+              gradepoint: gradeInfo.gradepoint,
+              gpa: Number((gradeInfo.gradepoint * credits).toFixed(2)),
+              passstatus: getPassStatusFromGrade(gradeInfo.grade),
+              grademode: "UGC grade scale",
+              user: text(req.body.user || row.user)
+            }
+          }
+        }
+      };
+    });
+
+    const result = await NepLmsFinalMarks.bulkWrite(ops, { ordered: false });
+    res.json({
+      success: true,
+      message: "UGC grade scale processed",
+      updated: result.modifiedCount || 0,
+      count: validRows.length,
+      bands: [
+        { grade: "O", gradepoint: 10, lower: 90, upper: 100, label: "90 and above" },
+        { grade: "A+", gradepoint: 9, lower: 80, upper: 89.99, label: "80 to below 90" },
+        { grade: "A", gradepoint: 8, lower: 70, upper: 79.99, label: "70 to below 80" },
+        { grade: "B+", gradepoint: 7, lower: 60, upper: 69.99, label: "60 to below 70" },
+        { grade: "B", gradepoint: 6, lower: 50, upper: 59.99, label: "50 to below 60" },
+        { grade: "C", gradepoint: 5, lower: 40, upper: 49.99, label: "40 to below 50" },
+        { grade: "P", gradepoint: 4, lower: 36, upper: 39.99, label: "36 to below 40" },
+        { grade: "F", gradepoint: 0, lower: 0, upper: 35.99, label: "Below 36" }
+      ]
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+exports.processConfiguredGradeScale = async (req, res) => {
+  try {
+    const { marksRows, colid } = await getFinalMarksRowsForScope(req.body);
+    const validRows = marksRows.filter((row) => Number.isFinite(Number(row.total)));
+    if (!validRows.length) {
+      return res.status(400).json({ success: false, message: "No valid total marks found for selected filter" });
+    }
+
+    const gradeRows = await GradeConfiguration.find({ colid, status: "Active" }).sort({ frompercentage: 1 }).lean();
+    if (!gradeRows.length) {
+      return res.status(400).json({ success: false, message: "No active grade configuration found" });
+    }
+
+    const gradeMap = new Map();
+    gradeRows.forEach((item) => {
+      const key = buildGradeKey(item);
+      if (!gradeMap.has(key)) gradeMap.set(key, []);
+      gradeMap.get(key).push(item);
+    });
+
+    let noConfigCount = 0;
+    const usedBands = new Map();
+    const ops = validRows.map((row) => {
+      const total = Number(row.total);
+      const configs = gradeMap.get(buildGradeKey(row)) || [];
+      const found = configs.find((item) => total >= (Number(item.frompercentage) || 0) && total <= (Number(item.topercentage) || 0));
+      if (!found) noConfigCount += 1;
+      const grade = found ? text(found.grade) : "F";
+      const gradepoint = found ? (Number(found.gradepoint) || 0) : 0;
+      const credits = Number(row.credits) || 0;
+      const label = found
+        ? `Configured grade ${Number(found.frompercentage) || 0} to ${Number(found.topercentage) || 0}`
+        : "No configured grade band";
+      if (found) {
+        usedBands.set(`${grade}-${found.frompercentage}-${found.topercentage}`, {
+          grade,
+          gradepoint,
+          lower: Number(found.frompercentage) || 0,
+          upper: Number(found.topercentage) || 0,
+          label
+        });
+      }
+      return {
+        updateOne: {
+          filter: { _id: row._id, colid },
+          update: {
+            $set: {
+              grade,
+              gradepoint,
+              gpa: Number((gradepoint * credits).toFixed(2)),
+              passstatus: getPassStatusFromGrade(grade),
+              grademode: label,
+              user: text(req.body.user || row.user)
+            }
+          }
+        }
+      };
+    });
+
+    const result = await NepLmsFinalMarks.bulkWrite(ops, { ordered: false });
+    res.json({
+      success: true,
+      message: "Configured grade scale processed",
+      updated: result.modifiedCount || 0,
+      count: validRows.length,
+      noConfigCount,
+      bands: [...usedBands.values()]
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+exports.processConfiguredZScoreScale = async (req, res) => {
+  try {
+    const { marksRows, query, colid } = await getFinalMarksRowsForScope(req.body);
+    const validRows = marksRows.filter((row) => Number.isFinite(Number(row.total)));
+    if (!validRows.length) {
+      return res.status(400).json({ success: false, message: "No valid total marks found for selected filter" });
+    }
+
+    const configRows = await ZScoreConfiguration.find(query).sort({ from: 1 }).lean();
+    if (!configRows.length) {
+      return res.status(400).json({ success: false, message: "No z score configuration found for selected filter" });
+    }
+
+    const totals = validRows.map((row) => Number(row.total));
+    const mean = totals.reduce((sum, value) => sum + value, 0) / totals.length;
+    const variance = totals.reduce((sum, value) => sum + ((value - mean) ** 2), 0) / totals.length;
+    const standardDeviation = Math.sqrt(variance);
+    const scoredRows = validRows.map((row) => ({
+      row,
+      zscore: standardDeviation ? Number(((Number(row.total) - mean) / standardDeviation).toFixed(4)) : 0
+    }));
+
+    const minZScore = Math.min(...scoredRows.map((item) => item.zscore));
+    const maxZScore = Math.max(...scoredRows.map((item) => item.zscore));
+    const spread = maxZScore - minZScore;
+    let noConfigCount = 0;
+
+    const bands = configRows.map((band) => ({
+      grade: text(band.grade),
+      gradepoint: Number(band.gradepoint) || 0,
+      lower: Number(band.from) || 0,
+      upper: Number(band.to) || 0,
+      label: `Configured z score ${Number(band.from) || 0} to ${Number(band.to) || 0}`
+    }));
+
+    const ops = scoredRows.map(({ row, zscore }) => {
+      const matchedBand = bands.find((band) => zscore >= band.lower && zscore <= band.upper);
+      if (!matchedBand) noConfigCount += 1;
+      const grade = matchedBand?.grade || "F";
+      const gradepoint = matchedBand?.gradepoint || 0;
+      const credits = Number(row.credits) || 0;
+      return {
+        updateOne: {
+          filter: { _id: row._id, colid },
+          update: {
+            $set: {
+              zscore,
+              grade,
+              gradepoint,
+              gpa: Number((gradepoint * credits).toFixed(2)),
+              passstatus: getPassStatusFromGrade(grade),
+              grademode: matchedBand?.label || "No configured z score band",
+              user: text(req.body.user || row.user)
+            }
+          }
+        }
+      };
+    });
+
+    const result = await NepLmsFinalMarks.bulkWrite(ops, { ordered: false });
+    res.json({
+      success: true,
+      message: "Configured z score scale processed",
+      mean: Number(mean.toFixed(4)),
+      standardDeviation: Number(standardDeviation.toFixed(4)),
+      minZScore: Number(minZScore.toFixed(4)),
+      maxZScore: Number(maxZScore.toFixed(4)),
+      spread: Number(spread.toFixed(4)),
+      updated: result.modifiedCount || 0,
+      count: scoredRows.length,
+      noConfigCount,
+      bands
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 

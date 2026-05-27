@@ -561,6 +561,7 @@ const applicationPayload = (body) => {
   password: String(body.password || '').trim(),
   email: String(body.email || '').trim().toLowerCase(),
   phone: String(body.phone || '').trim(),
+  regno: String(body.regno || '').trim(),
   address: body.address,
   pin: body.pin,
   country_form: body.country_form,

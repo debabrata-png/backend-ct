@@ -18,6 +18,7 @@ const nepLmsFinalMarksSchema = new mongoose.Schema(
     total: { type: Number, default: 0 },
     grade: { type: String, trim: true },
     gradepoint: { type: Number, default: 0 },
+    zscore: { type: Number, default: 0 },
     credits: { type: Number, default: 0 },
     gpa: { type: Number, default: 0 },
     passstatus: { type: String, enum: ["Pass", "Fail"], default: "Fail" },
