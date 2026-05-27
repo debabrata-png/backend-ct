@@ -5,6 +5,7 @@ const AdmissionValidationCriteriaSchema = new mongoose.Schema({
   formname: { type: String, required: true, trim: true },
   formid: { type: String, required: true, trim: true },
   validationcriteria: { type: String, default: '' },
+  mandatorycriteria: { type: String, default: '' },
   user: String
 }, { timestamps: true });
 

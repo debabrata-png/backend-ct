@@ -732,12 +732,14 @@ exports.validateApplicationWithAi = async (req, res) => {
       formid: payload.formid || 'default'
     }).lean();
     const additionalValidationCriteria = textValue(formCriteria?.validationcriteria);
+    const mandatoryValidationCriteria = textValue(formCriteria?.mandatorycriteria);
 
     const aiConfig = await getDefaultGeminiConfig(payload.colid);
     if (!aiConfig?.apikey) {
       const comments = [
         ...deterministicPasses,
         ...deterministicIssues,
+        mandatoryValidationCriteria ? `Mandatory validation criteria configured for this form but not evaluated because Gemini is unavailable:\n${mandatoryValidationCriteria}` : '',
         additionalValidationCriteria ? `Additional validation criteria configured for this form but not evaluated because Gemini is unavailable:\n${additionalValidationCriteria}` : '',
         'Gemini AI validation could not run because active/default Gemini API configuration is missing.'
       ].filter(Boolean).join('\n');
@@ -745,6 +747,23 @@ exports.validateApplicationWithAi = async (req, res) => {
         validationstatus: deterministicIssues.length ? 'Fail' : 'Pass',
         validationcomments: comments,
         summary: comments,
+        mandatoryFailed: deterministicIssues.length > 0 || !!mandatoryValidationCriteria,
+        criteriaissues: [
+          ...deterministicIssues.map((item) => ({
+            criteriaType: 'Mandatory',
+            tab: 'Documents',
+            field: 'Documents',
+            status: 'Fail',
+            comment: item
+          })),
+          ...(mandatoryValidationCriteria ? [{
+            criteriaType: 'Mandatory',
+            tab: 'General',
+            field: 'Mandatory Criteria',
+            status: 'Fail',
+            comment: 'Mandatory criteria could not be evaluated because Gemini AI configuration is missing.'
+          }] : [])
+        ],
         ai: null
       });
     }
@@ -754,7 +773,9 @@ You are validating an admission application. Return ONLY JSON with:
 {
   "validationstatus": "Pass" or "Fail",
   "validationcomments": "clear bullet-style summary",
-  "checks": [{"check":"", "status":"Pass/Fail", "comment":""}]
+  "mandatorycriteriaresult": "Pass" or "Fail",
+  "checks": [{"check":"", "status":"Pass/Fail", "comment":""}],
+  "criteriaissues": [{"criteriaType":"Mandatory/Other", "tab":"", "field":"", "status":"Pass/Fail", "comment":""}]
 }
 
 Rules:
@@ -764,7 +785,9 @@ Rules:
 4. Validate applicant name against marksheet evidence from attached files. If content is not readable, mark Fail and mention document review needed.
 5. If category is not General, caste certificate is mandatory. Validate name and caste/category against certificate evidence from attached files. If content is not readable, mark Fail and mention document review needed.
 6. Overall validationstatus should be Fail if any required deterministic rule fails, if mandatory caste certificate is missing, or if any document-content check cannot be completed.
+${mandatoryValidationCriteria ? `\nMandatory criteria for this form (${formCriteria.formname || payload.formid}):\n${mandatoryValidationCriteria}\nThese criteria are compulsory. If any mandatory criterion is not satisfied, set validationstatus to Fail and explain it in validationcomments.` : ''}
 ${additionalValidationCriteria ? `\nAdditional validation criteria for this form (${formCriteria.formname || payload.formid}):\n${additionalValidationCriteria}\nApply these criteria along with the rules above and include the result in validationcomments.` : ''}
+When a mandatory or additional criterion fails, add one criteriaissues item with criteriaType, tab, field, status and a correction-oriented comment. Use tab names such as Basic Registration, Applicant Details, Documents, or the custom page name when it is clear. Use field names exactly as shown in the application where possible.
 
 Deterministic checks already found:
 Passes:
@@ -798,6 +821,17 @@ ${JSON.stringify({
     const aiComments = textValue(aiResult.validationcomments || aiResult.summary);
     const aiChecksText = JSON.stringify(aiResult.checks || aiResult);
     const hasManualOrFailedDocumentCheck = /manual|unreadable|cannot be completed|could not be read/i.test(aiChecksText);
+    const criteriaIssues = Array.isArray(aiResult.criteriaissues) ? aiResult.criteriaissues : [];
+    const mandatoryCriteriaFailed = criteriaIssues.some((issue) => (
+      /mandatory/i.test(textValue(issue.criteriaType || issue.type)) && /^fail$/i.test(textValue(issue.status))
+    )) || /^fail$/i.test(textValue(aiResult.mandatorycriteriaresult));
+    const deterministicCriteriaIssues = deterministicIssues.map((item) => ({
+      criteriaType: 'Mandatory',
+      tab: 'Documents',
+      field: 'Documents',
+      status: 'Fail',
+      comment: item
+    }));
     const combinedComments = [
       'Deterministic validation:',
       ...deterministicPasses.map((item) => `PASS: ${item}`),
@@ -812,6 +846,8 @@ ${JSON.stringify({
       validationstatus: status,
       validationcomments: combinedComments,
       summary: combinedComments,
+      mandatoryFailed: deterministicIssues.length > 0 || mandatoryCriteriaFailed,
+      criteriaissues: [...deterministicCriteriaIssues, ...criteriaIssues],
       ai: aiResult
     });
   } catch (err) {

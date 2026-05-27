@@ -32,6 +32,7 @@ exports.createValidationCriteria = async (req, res) => {
       formname,
       formid,
       validationcriteria: req.body.validationcriteria || '',
+      mandatorycriteria: req.body.mandatorycriteria || '',
       user: req.body.user || ''
     });
     res.json(data);
@@ -55,6 +56,7 @@ exports.updateValidationCriteria = async (req, res) => {
         formname,
         formid,
         validationcriteria: req.body.validationcriteria || '',
+        mandatorycriteria: req.body.mandatorycriteria || '',
         user: req.body.user || ''
       },
       { new: true }
