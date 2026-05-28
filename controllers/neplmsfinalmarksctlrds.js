@@ -280,6 +280,47 @@ exports.getFinalMarks = async (req, res) => {
   }
 };
 
+exports.bulkUpdateFinalMarksField = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+
+    const academicyear = text(req.body.academicyear);
+    const programcode = text(req.body.programcode);
+    const coursecode = text(req.body.coursecode);
+    const field = text(req.body.field).toLowerCase();
+    const value = text(req.body.value);
+    const allowedFields = ["regulation", "program"];
+
+    const missing = [];
+    if (!academicyear) missing.push("academic year");
+    if (!programcode) missing.push("program code");
+    if (!coursecode) missing.push("course code");
+    if (!allowedFields.includes(field)) missing.push("valid field");
+    if (!value) missing.push("value");
+    if (missing.length) {
+      return res.status(400).json({ success: false, message: `Missing required fields: ${missing.join(", ")}` });
+    }
+
+    const query = { colid, academicyear, programcode, coursecode };
+    const result = await NepLmsFinalMarks.updateMany(query, {
+      $set: {
+        [field]: value,
+        user: text(req.body.user)
+      }
+    });
+
+    res.json({
+      success: true,
+      message: `${field} updated successfully`,
+      matched: result.matchedCount || result.n || 0,
+      modified: result.modifiedCount || result.nModified || 0
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.bulkUploadFinalMarks = async (req, res) => {
   try {
     const colid = toNumber(req.body.colid);
@@ -733,6 +774,25 @@ exports.deleteFinalMark = async (req, res) => {
     if (!deleted) return res.status(404).json({ success: false, message: "Final marks entry not found" });
 
     res.json({ success: true, data: deleted });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.bulkDeleteFinalMarks = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    const ids = Array.isArray(req.body.ids) ? req.body.ids.map((id) => text(id)).filter(Boolean) : [];
+
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!ids.length) return res.status(400).json({ success: false, message: "Select at least one final marks row" });
+
+    const result = await NepLmsFinalMarks.deleteMany({ colid, _id: { $in: ids } });
+    res.json({
+      success: true,
+      message: "Selected final marks deleted",
+      deleted: result.deletedCount || 0
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

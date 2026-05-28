@@ -1,8 +1,13 @@
+const XLSX = require("xlsx");
+const multer = require("multer");
 const WorkloadAssignment = require("../Models/workloadassignmentds");
 const CourseAssessment = require("../Models/courseassessmentds");
 const User = require("../Models/user");
 const NepLmsAssessmentMarks = require("../Models/neplmsassessmentmarksds");
 const NepLmsComponentMarks = require("../Models/neplmscomponentmarksds");
+
+const upload = multer({ storage: multer.memoryStorage() });
+exports.uploadMiddleware = upload.single("file");
 
 const toNumber = (value) => {
   if (value === "" || value === null || value === undefined) return undefined;
@@ -13,6 +18,21 @@ const toNumber = (value) => {
 const text = (value) => String(value || "").trim();
 const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const exactRegex = (value) => ({ $regex: `^${escapeRegExp(text(value))}$`, $options: "i" });
+const readSheet = (buffer) => {
+  const workbook = XLSX.read(buffer, { type: "buffer" });
+  return XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
+};
+
+const readAny = (row, keys = []) => {
+  const entries = Object.entries(row || {});
+  for (const key of keys) {
+    const exact = entries.find(([entryKey]) => text(entryKey).toLowerCase() === text(key).toLowerCase());
+    if (exact) return exact[1];
+  }
+  const normalizedKeys = keys.map((key) => text(key).replace(/[^a-z0-9]/gi, "").toLowerCase());
+  const fuzzy = entries.find(([entryKey]) => normalizedKeys.includes(text(entryKey).replace(/[^a-z0-9]/gi, "").toLowerCase()));
+  return fuzzy ? fuzzy[1] : "";
+};
 
 exports.getFacultyCourses = async (req, res) => {
   try {
@@ -441,6 +461,91 @@ exports.getComponentMarks = async (req, res) => {
       .lean();
 
     res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.bulkUploadComponentMarks = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!req.file) return res.status(400).json({ success: false, message: "Excel file is required" });
+
+    const rows = readSheet(req.file.buffer);
+    if (!rows.length) return res.status(400).json({ success: false, message: "No rows found in Excel file" });
+
+    const errors = [];
+    const ops = [];
+    rows.forEach((row, index) => {
+      const rowNumber = index + 2;
+      const academicyear = text(readAny(row, ["academicyear", "academic year"]));
+      const semester = text(readAny(row, ["semester", "sem"]));
+      const coursecode = text(readAny(row, ["coursecode", "course code"]));
+      const regno = text(readAny(row, ["regno", "reg no", "registration no"]));
+      const assessmentgroup = text(readAny(row, ["assessmentgroup", "assessment group"]));
+      const scoretype = text(readAny(row, ["scoretype", "score type"]));
+      const marks = toNumber(readAny(row, ["marks", "obtained marks", "component marks"])) || 0;
+      const passmarks = toNumber(readAny(row, ["passmarks", "pass marks"])) || 0;
+      const credits = toNumber(readAny(row, ["credits", "credit"])) || 0;
+      const missing = [];
+      if (!academicyear) missing.push("academicyear");
+      if (!semester) missing.push("semester");
+      if (!coursecode) missing.push("coursecode");
+      if (!regno) missing.push("regno");
+      if (!assessmentgroup) missing.push("assessmentgroup");
+      if (!scoretype) missing.push("scoretype");
+      if (missing.length) {
+        errors.push({ rowNumber, message: `Missing required fields: ${missing.join(", ")}` });
+        return;
+      }
+
+      const passstatusValue = text(readAny(row, ["passstatus", "pass status"]));
+      const payload = {
+        academicyear,
+        semester,
+        programcode: text(readAny(row, ["programcode", "program code"])),
+        course: text(readAny(row, ["course"])),
+        coursecode,
+        major: text(readAny(row, ["major"])),
+        subject: text(readAny(row, ["subject"])),
+        student: text(readAny(row, ["student", "name", "student name"])),
+        regno,
+        assessmentgroup,
+        grouptype: text(readAny(row, ["grouptype", "group type"])),
+        scoretype,
+        marks,
+        passmarks,
+        credits,
+        passstatus: /^pass$/i.test(passstatusValue) ? "Pass" : /^fail$/i.test(passstatusValue) ? "Fail" : (marks >= passmarks ? "Pass" : "Fail"),
+        colid,
+        user: text(req.body.user)
+      };
+
+      ops.push({
+        updateOne: {
+          filter: {
+            colid,
+            academicyear: payload.academicyear,
+            semester: payload.semester,
+            coursecode: payload.coursecode,
+            regno: payload.regno,
+            assessmentgroup: payload.assessmentgroup,
+            scoretype: payload.scoretype
+          },
+          update: { $set: payload },
+          upsert: true
+        }
+      });
+    });
+
+    let saved = 0;
+    if (ops.length) {
+      const result = await NepLmsComponentMarks.bulkWrite(ops, { ordered: false });
+      saved = (result.upsertedCount || 0) + (result.modifiedCount || 0) + (result.matchedCount || 0);
+    }
+
+    res.json({ success: true, saved, errors });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
