@@ -5161,6 +5161,9 @@ const provisionaladmissionfeectlrds = require("./controllers/provisionaladmissio
 const easebuzzgatewayctlrds = require("./controllers/easebuzzgatewayctlrds");
 const easebuzzpaymentprocessctlrds = require("./controllers/easebuzzpaymentprocessctlrds");
 const mastergatewayctlrds = require("./controllers/mastergatewayctlrds");
+const icicigatewayconfigctlrds = require("./controllers/icicigatewayconfigctlrds");
+const icicipaymentprocessctlrds = require("./controllers/icicipaymentprocessctlrds");
+const purchase2crudctlrds = require("./controllers/purchase2crudctlrds");
 // Ledger routes
 app.post("/api/v2/addledgerds", ledgerstuddsctlr.addledgerds);
 app.get("/api/v2/getledgersds", ledgerstuddsctlr.getledgersds);
@@ -5212,10 +5215,22 @@ app.get("/api/v2/mastergateway", mastergatewayctlrds.getMasterGateways);
 app.post("/api/v2/mastergateway", mastergatewayctlrds.createMasterGateway);
 app.post("/api/v2/mastergateway/update", mastergatewayctlrds.updateMasterGateway);
 app.post("/api/v2/mastergateway/delete", mastergatewayctlrds.deleteMasterGateway);
+app.get("/api/v2/icicigatewayconfig", icicigatewayconfigctlrds.getIciciGatewayConfigs);
+app.post("/api/v2/icicigatewayconfig", icicigatewayconfigctlrds.createIciciGatewayConfig);
+app.post("/api/v2/icicigatewayconfig/update", icicigatewayconfigctlrds.updateIciciGatewayConfig);
+app.post("/api/v2/icicigatewayconfig/delete", icicigatewayconfigctlrds.deleteIciciGatewayConfig);
 app.get("/api/v2/easebuzzpayment", easebuzzpaymentprocessctlrds.getEasebuzzPayments);
 app.post("/api/v2/easebuzzpayment/initiate", easebuzzpaymentprocessctlrds.initiateEasebuzzPayment);
 app.post("/api/v2/easebuzzpayment/callback", easebuzzpaymentprocessctlrds.handleEasebuzzPaymentCallback);
 app.get("/api/v2/easebuzzpayment/callback", easebuzzpaymentprocessctlrds.handleEasebuzzPaymentCallback);
+app.get("/api/v2/icicipayment", icicipaymentprocessctlrds.getIciciPayments);
+app.post("/api/v2/icicipayment/initiate", icicipaymentprocessctlrds.initiateIciciPayment);
+app.post("/api/v2/icicipayment/callback", icicipaymentprocessctlrds.handleIciciPaymentCallback);
+app.get("/api/v2/icicipayment/callback", icicipaymentprocessctlrds.handleIciciPaymentCallback);
+app.get("/api/v2/purchase2/:model", purchase2crudctlrds.getPurchase2Rows);
+app.post("/api/v2/purchase2/:model", purchase2crudctlrds.savePurchase2Row);
+app.post("/api/v2/purchase2/:model/delete", purchase2crudctlrds.deletePurchase2Row);
+app.post("/api/v2/purchase2/:model/bulk", purchase2crudctlrds.bulkPurchase2Rows);
 
 const ledgerinstallmentdsctlr = require("./controllers/ledgerinstallmentdsctlr.js");
 app.get("/api/v2/getallledgerentriesds", ledgerinstallmentdsctlr.getallledgerentriesds);

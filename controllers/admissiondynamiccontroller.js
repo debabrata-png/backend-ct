@@ -728,10 +728,15 @@ exports.validateApplicationWithAi = async (req, res) => {
     if (needsCaste && !casteDoc) deterministicIssues.push('Caste certificate is mandatory for category other than General.');
     if (needsCaste && casteDoc) deterministicPasses.push('Caste certificate document/link is uploaded.');
 
-    const formCriteria = await AdmissionValidationCriteria.findOne({
-      colid: Number(payload.colid),
-      formid: payload.formid || 'default'
-    }).lean();
+    const requestedFormId = textValue(req.body.formid);
+    const normalizedRequestedFormId = requestedFormId ? cleanFormId(requestedFormId) : '';
+    const sameFormIds = [...new Set([requestedFormId, normalizedRequestedFormId].filter(Boolean))];
+    const formCriteria = sameFormIds.length
+      ? await AdmissionValidationCriteria.findOne({
+          colid: Number(payload.colid),
+          formid: { $in: sameFormIds }
+        }).lean()
+      : null;
     const additionalValidationCriteria = textValue(formCriteria?.validationcriteria);
     const mandatoryValidationCriteria = textValue(formCriteria?.mandatorycriteria);
 
