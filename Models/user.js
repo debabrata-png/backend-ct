@@ -168,6 +168,9 @@ const userschema = new mongoose.Schema({
     IDC: {
         type: String
     },
+    MDC: {
+        type: String
+    },
     minorsub: {
         type: String
     },

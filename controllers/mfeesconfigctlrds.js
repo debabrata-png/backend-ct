@@ -29,6 +29,8 @@ function cleanPayload(input = {}) {
     regulation: text(input.regulation),
     major: text(input.major),
     minor: text(input.minor),
+    IDC: text(input.IDC || input.idc),
+    gender: text(input.gender),
     feebook: text(input.feebook),
     cashbook: text(input.cashbook),
     feegroup: text(input.feegroup),
@@ -61,7 +63,7 @@ function buildQuery(source = {}) {
   const query = {};
   const colid = toNumber(source.colid);
   if (colid !== undefined) query.colid = colid;
-  ["academicyear", "programcode", "regulation", "major", "minor", "semester", "feebook", "cashbook", "status"].forEach((key) => {
+  ["academicyear", "programcode", "regulation", "major", "minor", "IDC", "gender", "semester", "feebook", "cashbook", "status"].forEach((key) => {
     if (source[key]) query[key] = source[key];
   });
   return query;
@@ -94,14 +96,15 @@ exports.getMFeesOptions = async (req, res) => {
     if (regulation) subjectQuery.regulation = regulation;
     if (programcode) subjectQuery.programcode = programcode;
 
-    const [feebooks, cashbooks, programs, masterRegulations, subjectRegulations, majors, minors] = await Promise.all([
+    const [feebooks, cashbooks, programs, masterRegulations, subjectRegulations, majors, minors, idcs] = await Promise.all([
       FeeBook.find({ colid }).sort({ feebook: 1 }).lean(),
       CashBook.find({ colid }).sort({ cashnook: 1, cashbook: 1 }).lean(),
       MPrograms.find({ colid }).sort({ program: 1, programcode: 1 }).lean(),
       RegulationMaster.find({ colid, isactive: "Yes" }).sort({ regulation: 1 }).lean(),
       RegulationSubject.distinct("regulation", { colid, ...(academicyear ? { academicyear } : {}) }),
       RegulationSubject.find({ ...subjectQuery, type: "Major", status: "Active" }).sort({ subject: 1 }).lean(),
-      RegulationSubject.find({ ...subjectQuery, type: "Minor", status: "Active" }).sort({ subject: 1 }).lean()
+      RegulationSubject.find({ ...subjectQuery, type: "Minor", status: "Active" }).sort({ subject: 1 }).lean(),
+      RegulationSubject.find({ ...subjectQuery, type: "IDC", status: "Active" }).sort({ subject: 1 }).lean()
     ]);
 
     const regulationNames = Array.from(new Set([
@@ -123,7 +126,8 @@ exports.getMFeesOptions = async (req, res) => {
       })),
       regulations: regulationNames,
       majors: majors.map((item) => item.subject).filter(Boolean),
-      minors: minors.map((item) => item.subject).filter(Boolean)
+      minors: minors.map((item) => item.subject).filter(Boolean),
+      idcs: idcs.map((item) => item.subject).filter(Boolean)
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -199,6 +203,18 @@ exports.deleteMFees = async (req, res) => {
     const data = await Fees.findByIdAndDelete(req.body.id);
     if (!data) return res.status(404).json({ success: false, message: "Fee record not found" });
     res.json({ success: true, message: "Fee record deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.bulkDeleteMFees = async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body.ids) ? req.body.ids.filter(Boolean) : [];
+    if (!ids.length) return res.status(400).json({ success: false, message: "No fee records selected" });
+
+    const result = await Fees.deleteMany({ _id: { $in: ids } });
+    res.json({ success: true, deleted: result.deletedCount || 0, message: "Selected fee records deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -4858,6 +4858,7 @@ app.post("/api/v2/mfeesconfig", mfeesconfigctlrds.createMFees);
 app.get("/api/v2/mfeesconfig", mfeesconfigctlrds.getMFees);
 app.post("/api/v2/mfeesconfig/update", mfeesconfigctlrds.updateMFees);
 app.post("/api/v2/mfeesconfig/delete", mfeesconfigctlrds.deleteMFees);
+app.post("/api/v2/mfeesconfig/bulk-delete", mfeesconfigctlrds.bulkDeleteMFees);
 app.post("/api/v2/mfeesconfig/bulkupload", mfeesconfigctlrds.bulkCreateMFees);
 app.get("/api/v2/mfeesapproval", mfeesconfigctlrds.getMFeesForApproval);
 app.post("/api/v2/mfeesapproval/approve", mfeesconfigctlrds.approveMFees);
@@ -5155,6 +5156,7 @@ app.get("/api/v2/collegerepledgerreportds", collegerepotdsctlr.collegeStudentLed
 
 const ledgerstuddsctlr = require("./controllers/ledgerstuddsctlr");
 const studentfeeapplyctlrds = require("./controllers/studentfeeapplyctlrds");
+const feeapplicationctlrds = require("./controllers/feeapplicationctlrds");
 const studentledgerapprovalrolectlr = require("./controllers/studentledgerapprovalrolectlr");
 const studentledgerapprovalctlr = require("./controllers/studentledgerapprovalctlr");
 const studentledgeradjustctlr = require("./controllers/studentledgeradjustctlr");
@@ -5183,6 +5185,10 @@ app.get("/api/v2/studentfeeapply/options", studentfeeapplyctlrds.getStudentFeeAp
 app.get("/api/v2/studentfeeapply/students", studentfeeapplyctlrds.searchStudentFeeApplyStudents);
 app.get("/api/v2/studentfeeapply/fees", studentfeeapplyctlrds.getStudentApplicableFees);
 app.post("/api/v2/studentfeeapply/apply", studentfeeapplyctlrds.applyStudentFees);
+app.get("/api/v2/feeapplication/options", feeapplicationctlrds.getFeeApplicationOptions);
+app.post("/api/v2/feeapplication/students", feeapplicationctlrds.searchFeeApplicationStudents);
+app.post("/api/v2/feeapplication/fees", feeapplicationctlrds.searchFeeApplicationFees);
+app.post("/api/v2/feeapplication/apply", feeapplicationctlrds.applyFeesToStudents);
 app.get("/studentledgerapprovalroles", studentledgerapprovalrolectlr.getStudentLedgerApprovalRoles);
 app.post("/studentledgerapprovalroles", studentledgerapprovalrolectlr.createStudentLedgerApprovalRole);
 app.post("/studentledgerapprovalroles-update", studentledgerapprovalrolectlr.updateStudentLedgerApprovalRole);

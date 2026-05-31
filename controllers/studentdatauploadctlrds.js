@@ -18,6 +18,7 @@ const fields = [
   'SEC',
   'VAC',
   'IDC',
+  'MDC',
   'major',
   'minor',
   'academicyear',
@@ -53,7 +54,10 @@ const valueFromBody = (body, field) => {
     major: ['major', 'Major'],
     minor: ['minor', 'Minor'],
     Major: ['Major', 'major'],
-    Minor: ['Minor', 'minor']
+    Minor: ['Minor', 'minor'],
+    MDC: ['MDC', 'mdc', 'mdcsub'],
+    mdc: ['mdc', 'MDC', 'mdcsub'],
+    mdcsub: ['mdcsub', 'MDC', 'mdc']
   };
   const keys = aliases[field] || [field];
   for (const key of keys) {
@@ -76,6 +80,8 @@ const buildPayload = (body = {}) => ({
   SEC: clean(body.SEC || body.sec) || 'NA',
   VAC: clean(body.VAC || body.vac) || 'NA',
   IDC: clean(body.IDC || body.idc) || 'NA',
+  MDC: clean(valueFromBody(body, 'MDC')) || 'NA',
+  mdcsub: clean(valueFromBody(body, 'MDC')) || 'NA',
   academicyear: clean(body.academicyear) || 'NA',
   admissionyear: clean(body.admissionyear || body.academicyear) || 'NA',
   rollno: clean(body.rollno) || 'NA',
@@ -111,7 +117,9 @@ const serialize = (row) => {
     aec: data.AEC || '',
     sec: data.SEC || '',
     vac: data.VAC || '',
-    idc: data.IDC || ''
+    idc: data.IDC || '',
+    mdc: data.MDC || data.mdcsub || '',
+    mdcsub: data.mdcsub || data.MDC || ''
   };
 };
 

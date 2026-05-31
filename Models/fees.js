@@ -31,6 +31,14 @@ const feesschema = new mongoose.Schema({
         type: String,
         unique: false
     },
+    IDC: {
+        type: String,
+        unique: false
+    },
+    gender: {
+        type: String,
+        unique: false
+    },
     feebook: {
         type: String,
         unique: false
