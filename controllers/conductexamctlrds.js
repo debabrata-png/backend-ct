@@ -35,6 +35,8 @@ const examCoursePayload = (body = {}) => ({
   semester: text(body.semester),
   course: text(body.course),
   coursecode: text(body.coursecode),
+  examdate: text(body.examdate),
+  examslot: text(body.examslot),
   user: text(body.user)
 });
 
@@ -60,6 +62,9 @@ const rollPayload = (body = {}) => ({
   admitcardeligible: text(body.admitcardeligible) || "Yes",
   attended: text(body.attended) || "No",
   examdate: text(body.examdate),
+  examslot: text(body.examslot),
+  campus: text(body.campus),
+  building: text(body.building),
   examroom: text(body.examroom),
   seatno: text(body.seatno),
   user: text(body.user)
@@ -119,6 +124,29 @@ const buildFilter = (source = {}, fields = []) => {
     if (source[field]) filter[field] = source[field];
   });
   return filter;
+};
+
+const shuffle = (items = []) => {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
+
+const pickSeatCandidate = (pool, previousCourse) => {
+  const eligible = pool.filter((row) => row.coursecode !== previousCourse);
+  const candidates = eligible.length ? eligible : pool;
+  const counts = candidates.reduce((acc, row) => {
+    const key = row.coursecode || "Unknown";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const maxCount = Math.max(...Object.values(counts));
+  const dominantCourses = Object.keys(counts).filter((key) => counts[key] === maxCount);
+  const dominantCandidates = candidates.filter((row) => dominantCourses.includes(row.coursecode || "Unknown"));
+  return dominantCandidates[Math.floor(Math.random() * dominantCandidates.length)];
 };
 
 exports.getExams = async (req, res) => {
@@ -243,7 +271,7 @@ exports.bulkRooms = async (req, res) => {
 
 exports.getExamCourses = async (req, res) => {
   try {
-    const filter = buildFilter(req.query, ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode"]);
+    const filter = buildFilter(req.query, ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode", "examdate", "examslot"]);
     if (filter.colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
     const data = await ConductExamCourse.find(filter).sort({ academicyear: -1, exam: 1, program: 1, type: 1, semester: 1, course: 1 }).lean();
     res.json({ success: true, data });
@@ -330,7 +358,7 @@ exports.getCourseMapOptions = async (req, res) => {
       types: uniq(rows.map((r) => r.type)),
       subjects: uniq(rows.map((r) => r.subject)),
       semesters: uniq(rows.map((r) => r.semester)),
-      courses: rows.map((r) => ({ course: r.course, coursecode: r.coursecode, subject: r.subject, type: r.type, semester: r.semester, program: r.program, programcode: r.programcode, regulation: r.regulation }))
+      courses: rows.map((r) => ({ course: r.course, coursecode: r.coursecode, examdate: r.examdate, examslot: r.examslot, subject: r.subject, type: r.type, semester: r.semester, program: r.program, programcode: r.programcode, regulation: r.regulation }))
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -339,7 +367,7 @@ exports.getCourseMapOptions = async (req, res) => {
 
 exports.getExamRolls = async (req, res) => {
   try {
-    const filter = buildFilter(req.query, ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode", "regno", "applied", "admitcardeligible", "attended"]);
+    const filter = buildFilter(req.query, ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode", "student", "regno", "email", "phone", "section", "applied", "admitcardeligible", "attended", "examdate", "examslot", "campus", "building", "examroom", "seatno"]);
     if (filter.colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
     const data = await ConductExamRoll.find(filter).sort({ program: 1, semester: 1, course: 1, regno: 1 }).lean();
     res.json({ success: true, data });
@@ -386,6 +414,8 @@ exports.generateExamRolls = async (req, res) => {
           ...base,
           course: course.course,
           coursecode: course.coursecode,
+          examdate: course.examdate,
+          examslot: course.examslot,
           student: student.name,
           regno: student.regno,
           email: student.email,
@@ -439,6 +469,19 @@ exports.deleteExamRoll = async (req, res) => {
   }
 };
 
+exports.deleteExamRollsBulk = async (req, res) => {
+  try {
+    const colid = number(req.body.colid);
+    const ids = Array.isArray(req.body.ids) ? req.body.ids.filter(Boolean) : [];
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!ids.length) return res.status(400).json({ success: false, message: "Select at least one exam roll entry" });
+    const result = await ConductExamRoll.deleteMany({ colid, _id: { $in: ids } });
+    res.json({ success: true, deleted: result.deletedCount || 0, message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 exports.bulkExamRolls = async (req, res) => {
   try {
     const items = Array.isArray(req.body.items) ? req.body.items : [];
@@ -459,6 +502,79 @@ exports.bulkExamRolls = async (req, res) => {
       saved += 1;
     }
     res.json({ success: true, saved, errors });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.allocateExamSeats = async (req, res) => {
+  try {
+    const colid = number(req.body.colid);
+    const examcode = text(req.body.examcode);
+    const examdate = text(req.body.examdate);
+    const examslot = text(req.body.examslot);
+    const roomIds = Array.isArray(req.body.roomIds) ? req.body.roomIds.filter(Boolean) : [];
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!examcode || !examdate || !examslot) return res.status(400).json({ success: false, message: "Exam, exam date and slot are required" });
+    if (!roomIds.length) return res.status(400).json({ success: false, message: "Select at least one room" });
+
+    const rooms = await ConductExamRoom.find({ _id: { $in: roomIds }, colid }).sort({ campus: 1, building: 1, room: 1 }).lean();
+    if (!rooms.length) return res.status(400).json({ success: false, message: "No valid rooms found" });
+
+    const rolls = await ConductExamRoll.find({
+      colid,
+      examcode,
+      examdate,
+      examslot,
+      applied: "Yes",
+      admitcardeligible: "Yes"
+    }).sort({ coursecode: 1, regno: 1 }).lean();
+    if (!rolls.length) return res.status(400).json({ success: false, message: "No eligible exam roll entries found for the selected slot" });
+
+    const totalSeats = rooms.reduce((sum, room) => sum + (Number(room.noofseats) || 0), 0);
+    if (totalSeats < rolls.length) {
+      return res.status(400).json({ success: false, message: `Selected rooms have ${totalSeats} seats, but ${rolls.length} students need seats.` });
+    }
+
+    const remaining = shuffle(rolls);
+    const allocations = [];
+    let unavoidableAdjacent = 0;
+
+    for (const room of rooms) {
+      const seatCount = Number(room.noofseats) || 0;
+      let previousCourse = "";
+      for (let seatIndex = 1; seatIndex <= seatCount && remaining.length; seatIndex += 1) {
+        const candidate = pickSeatCandidate(remaining, previousCourse);
+        if (!candidate) break;
+        if (previousCourse && candidate.coursecode === previousCourse) unavoidableAdjacent += 1;
+        const poolIndex = remaining.findIndex((row) => String(row._id) === String(candidate._id));
+        if (poolIndex >= 0) remaining.splice(poolIndex, 1);
+        allocations.push({
+          ...candidate,
+          campus: room.campus,
+          building: room.building,
+          examroom: room.room,
+          seatno: `Seat ${seatIndex}`
+        });
+        previousCourse = candidate.coursecode;
+      }
+    }
+
+    await ConductExamRoll.bulkWrite(allocations.map((row) => ({
+      updateOne: {
+        filter: { _id: row._id, colid },
+        update: { $set: { campus: row.campus, building: row.building, examroom: row.examroom, seatno: row.seatno } }
+      }
+    })));
+
+    res.json({
+      success: true,
+      allocated: allocations.length,
+      totalStudents: rolls.length,
+      totalSeats,
+      unavoidableAdjacent,
+      data: allocations
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

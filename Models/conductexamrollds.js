@@ -22,6 +22,9 @@ const conductExamRollSchema = new mongoose.Schema({
   admitcardeligible: { type: String, enum: ["Yes", "No"], default: "Yes" },
   attended: { type: String, enum: ["Yes", "No"], default: "No" },
   examdate: { type: String, trim: true },
+  examslot: { type: String, trim: true },
+  campus: { type: String, trim: true },
+  building: { type: String, trim: true },
   examroom: { type: String, trim: true },
   seatno: { type: String, trim: true },
   user: { type: String, trim: true }

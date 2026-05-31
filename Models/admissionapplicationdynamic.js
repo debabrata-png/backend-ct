@@ -82,6 +82,7 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   dateofapplication: String,
   age: Number,
   twelvesubjects: String,
+  level: String,
   programtype: String,
   programapplied: String,
   programcode: String,

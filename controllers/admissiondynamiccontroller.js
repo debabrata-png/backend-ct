@@ -8,6 +8,7 @@ const AiConfiguration = require('./../Models/aiconfigurationds');
 const AdmissionValidationCriteria = require('./../Models/admissionvalidationcriteria');
 const mongoose = require('mongoose');
 const path = require('path');
+const crypto = require('crypto');
 const multer = require('multer');
 const AWS = require('aws-sdk');
 const nodemailer = require('nodemailer');
@@ -26,6 +27,9 @@ const normalizeOptions = (options) => {
 };
 
 const textValue = (value) => String(value || '').trim();
+
+const randomUsername = () => `app${Date.now().toString(36)}${crypto.randomBytes(4).toString('hex')}`;
+const randomPassword = () => `Aa1!${crypto.randomBytes(8).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}`;
 
 const getNestedValueByHints = (source = {}, hints = []) => {
   const entries = Object.entries(source || {});
@@ -600,6 +604,7 @@ const applicationPayload = (body) => {
   dateofapplication: body.dateofapplication,
   age: Number(body.age || 0),
   twelvesubjects: body.twelvesubjects,
+  level: body.level,
   programtype: body.programtype,
   programapplied: body.programapplied,
   programcode: body.programcode,
@@ -989,9 +994,12 @@ exports.bulkCreateApplications = async (req, res) => {
     const valid = [];
     const seenEmails = new Set();
     const seenPhones = new Set();
+    const seenUsernames = new Set();
 
     payloads.forEach((item) => {
       const payload = item.data;
+      payload.username = String(payload.phone || payload.email || randomUsername()).trim();
+      payload.password = randomPassword();
       if (!payload.email || !payload.phone) {
         errors.push({ rowNumber: item.rowNumber, msg: 'Email and phone are required' });
         return;
@@ -1018,18 +1026,27 @@ exports.bulkCreateApplications = async (req, res) => {
       colid,
       $or: [
         { email: { $in: valid.map((item) => item.data.email) } },
-        { phone: { $in: valid.map((item) => item.data.phone) } }
+        { phone: { $in: valid.map((item) => item.data.phone) } },
+        { username: { $in: valid.map((item) => item.data.username).filter(Boolean) } }
       ]
-    }).select('email phone').lean();
+    }).select('email phone username').lean();
 
     const existingEmails = new Set(existing.map((item) => item.email));
     const existingPhones = new Set(existing.map((item) => item.phone));
+    const existingUsernames = new Set(existing.map((item) => item.username).filter(Boolean));
     const insertable = [];
 
     valid.forEach((item) => {
       if (existingEmails.has(item.data.email) || existingPhones.has(item.data.phone)) {
         errors.push({ rowNumber: item.rowNumber, msg: 'Duplicate email or phone already exists' });
       } else {
+        if (existingUsernames.has(item.data.username) || seenUsernames.has(item.data.username)) {
+          item.data.username = randomUsername();
+          while (existingUsernames.has(item.data.username) || seenUsernames.has(item.data.username)) {
+            item.data.username = randomUsername();
+          }
+        }
+        seenUsernames.add(item.data.username);
         insertable.push(item.data);
       }
     });

@@ -294,6 +294,12 @@ exports.updateMyLeadStatus = async (req, res) => {
     const update = {};
     if (clean(req.body.pipeline_stage)) update.pipeline_stage = clean(req.body.pipeline_stage);
     if (clean(req.body.leadstatus)) update.leadstatus = clean(req.body.leadstatus);
+    const nextFollowup = clean(req.body.next_followup_date || req.body.nextfollowupdate);
+    if (nextFollowup) update.next_followup_date = new Date(nextFollowup);
+    if (clean(req.body.comments)) {
+      update.comments = clean(req.body.comments);
+      update.fcomments = clean(req.body.comments);
+    }
     if (!Object.keys(update).length) return res.status(400).json({ success: false, message: "Nothing to update" });
     const row = await Lead.findOneAndUpdate(
       { _id: req.body.id, colid: asNumber(req.body.colid), assignedto },

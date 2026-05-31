@@ -96,7 +96,7 @@ app.use(function(req, res, next) {
 //app.set('view engine', 'pug');
 app.set('view engine', 'ejs');
 app.set('views',path.join(__dirname,'views'));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(session({
     name: "my_session",
     secret: "my_secret",
@@ -106,6 +106,7 @@ app.use(flash());
 app.use(cookieParser());
 
 const admissionDynamicController = require('./controllers/admissiondynamiccontroller');
+const admissionApplicationManagementController = require('./controllers/admissionapplicationmanagementctlrds');
 const studentDynamicFilterController = require('./controllers/studentdynamicfilterctlrds');
 const programEligibilityController = require('./controllers/programeligibilityctlrds');
 const dynamicAdmissionToUserController = require('./controllers/dynamicadmissiontouserctlrds');
@@ -209,6 +210,10 @@ app.post('/admission-dynamic/applications-draft-submit', admissionDynamicControl
 app.post('/admission-dynamic/applications-update', admissionDynamicController.updateApplication);
 app.post('/admission-dynamic/applications-bulk', admissionDynamicController.bulkCreateApplications);
 app.post('/admission-dynamic/applications-delete', admissionDynamicController.deleteApplication);
+app.get('/api/v2/admission-application-management/options', admissionApplicationManagementController.getOptions);
+app.post('/api/v2/admission-application-management/search', admissionApplicationManagementController.searchApplications);
+app.post('/api/v2/admission-application-management/bulk-delete', admissionApplicationManagementController.bulkDeleteApplications);
+app.post('/api/v2/admission-application-management/send-email', admissionApplicationManagementController.sendEmail);
 app.post('/admission-dynamic/application-document-upload', admissionDynamicController.uploadDocumentMiddleware, admissionDynamicController.uploadApplicationDocument);
 app.get('/admission-address-configuration', admissionAddressConfigurationController.getAddressConfigurations);
 app.post('/admission-address-configuration', admissionAddressConfigurationController.createAddressConfiguration);
@@ -303,6 +308,7 @@ app.post('/api/v2/student-data-upload-update', studentDataUploadController.updat
 app.post('/api/v2/student-data-upload-delete', studentDataUploadController.deleteStudent);
 app.post('/api/v2/student-data-upload-bulk-delete', studentDataUploadController.bulkDeleteStudents);
 app.post('/api/v2/student-data-upload-bulk', studentDataUploadController.bulkStudents);
+app.post('/api/v2/student-data-upload-bulk-subject-update', studentDataUploadController.bulkUpdateSubject);
 app.post('/api/v2/student-data-upload-photo', studentDataUploadController.uploadPhotoMiddleware, studentDataUploadController.uploadPhoto);
 app.get('/api/v2/employee-database/meta', employeeDatabaseController.getMeta);
 app.get('/api/v2/employee-database-fields', employeeDatabaseController.getFields);
@@ -442,7 +448,7 @@ app.use("/addteachingfeedback", express.static(path.join(__dirname, 'public')));
 app.use("/adddeptfeedback", express.static(path.join(__dirname, 'public')));
 //app.use("/viewanswer", express.static(path.join(__dirname, 'public')));
 //app.use(express.static(`${__dirname}/admin-theme`));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 
 const router1=require('./router/approuter.js');
@@ -4680,7 +4686,9 @@ app.get("/api/v2/conductexam/examrolls", conductexamctlrds.getExamRolls);
 app.post("/api/v2/conductexam/examrolls-generate", conductexamctlrds.generateExamRolls);
 app.post("/api/v2/conductexam/examrolls", conductexamctlrds.saveExamRoll);
 app.post("/api/v2/conductexam/examrolls-delete", conductexamctlrds.deleteExamRoll);
+app.post("/api/v2/conductexam/examrolls-bulk-delete", conductexamctlrds.deleteExamRollsBulk);
 app.post("/api/v2/conductexam/examrolls-bulk", conductexamctlrds.bulkExamRolls);
+app.post("/api/v2/conductexam/seat-allocation", conductexamctlrds.allocateExamSeats);
 app.get("/api/v2/visitingfaculty/faculty", visitingfacultyctlrds.getFaculty);
 app.post("/api/v2/visitingfaculty/faculty", visitingfacultyctlrds.saveFaculty);
 app.post("/api/v2/visitingfaculty/faculty-delete", visitingfacultyctlrds.deleteFaculty);

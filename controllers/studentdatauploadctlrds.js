@@ -284,4 +284,25 @@ exports.bulkStudents = async (req, res) => {
   }
 };
 
+exports.bulkUpdateSubject = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    const field = clean(req.body.field);
+    const oldValue = clean(req.body.oldValue);
+    const newValue = clean(req.body.newValue);
+    if (!colid) return res.status(400).json({ msg: 'colid is required' });
+    if (!['Major', 'Minor'].includes(field)) return res.status(400).json({ msg: 'Field must be Major or Minor' });
+    if (!oldValue) return res.status(400).json({ msg: `Select old ${field}` });
+    if (!newValue) return res.status(400).json({ msg: `Enter new ${field}` });
+
+    const result = await User.updateMany(
+      { ...colidFilter(colid), [field]: oldValue },
+      { $set: { [field]: newValue } }
+    );
+    res.json({ msg: `${field} updated`, matched: result.matchedCount || 0, modified: result.modifiedCount || 0 });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
 exports.fields = fields;
