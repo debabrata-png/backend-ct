@@ -105,6 +105,11 @@ const buildGeminiDocumentParts = async (documents = []) => {
   return parts;
 };
 
+const criteriaRequiresDocumentValidation = (criteriaText = '') => (
+  /document|upload|file|pdf|image|photo|certificate|marksheet|mark sheet|aadhar|aadhaar|caste|migration|transfer|leaving|proof/i
+    .test(String(criteriaText || ''))
+);
+
 const callGeminiJson = async (apikey, prompt, extraParts = []) => {
   const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
   let lastError = '';
@@ -689,50 +694,6 @@ exports.validateApplicationWithAi = async (req, res) => {
     const payload = applicationPayload(req.body || {});
     if (!payload.colid) return res.status(400).json({ msg: 'College id is required' });
 
-    const documents = payload.documents || [];
-    const extraFields = payload.extraFields || {};
-    const deterministicIssues = [];
-    const deterministicPasses = [];
-
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email || '');
-    const phoneDigits = String(payload.phone || '').replace(/\D/g, '');
-    const phoneOk = phoneDigits.length >= 10 && phoneDigits.length <= 15;
-    if (emailOk) deterministicPasses.push('Email format is valid.');
-    else deterministicIssues.push('Email format is invalid.');
-    if (phoneOk) deterministicPasses.push('Phone number format is valid.');
-    else deterministicIssues.push('Phone number should contain 10 to 15 digits.');
-
-    const tenthPassoutYear = extractYear(
-      req.body.tenthpassoutyear
-      || req.body.tenth_passout_year
-      || getNestedValueByHints(extraFields, ['tenth', 'passout'])
-      || getNestedValueByHints(extraFields, ['10th', 'passout'])
-      || getNestedValueByHints(extraFields, ['ssc', 'passout'])
-    );
-    const twelvePassoutYear = extractYear(
-      req.body.twelvepassoutyear
-      || req.body.twelve_passout_year
-      || getNestedValueByHints(extraFields, ['twelve', 'passout'])
-      || getNestedValueByHints(extraFields, ['12th', 'passout'])
-      || getNestedValueByHints(extraFields, ['hsc', 'passout'])
-    );
-    if (tenthPassoutYear && twelvePassoutYear) {
-      if (twelvePassoutYear - tenthPassoutYear >= 2) deterministicPasses.push('Gap between tenth and twelve passout year is at least 2 years.');
-      else deterministicIssues.push('Gap between tenth and twelve passout year is less than 2 years.');
-    } else {
-      deterministicPasses.push('Tenth/twelve passout year gap check was skipped because one or both years are not present.');
-    }
-
-    const marksheetDoc = findDoc(documents, ['marksheet', 'mark sheet', '10th', '12th', 'tenth', 'twelve']);
-    if (marksheetDoc) deterministicPasses.push('At least one marksheet document/link is uploaded.');
-    else deterministicIssues.push('No marksheet document/link found for name validation.');
-
-    const category = textValue(payload.category);
-    const needsCaste = category && !/^general$/i.test(category);
-    const casteDoc = findDoc(documents, ['caste']);
-    if (needsCaste && !casteDoc) deterministicIssues.push('Caste certificate is mandatory for category other than General.');
-    if (needsCaste && casteDoc) deterministicPasses.push('Caste certificate document/link is uploaded.');
-
     const requestedFormId = textValue(req.body.formid);
     const normalizedRequestedFormId = requestedFormId ? cleanFormId(requestedFormId) : '';
     const sameFormIds = [...new Set([requestedFormId, normalizedRequestedFormId].filter(Boolean))];
@@ -744,41 +705,38 @@ exports.validateApplicationWithAi = async (req, res) => {
       : null;
     const additionalValidationCriteria = textValue(formCriteria?.validationcriteria);
     const mandatoryValidationCriteria = textValue(formCriteria?.mandatorycriteria);
+    const combinedCriteria = [mandatoryValidationCriteria, additionalValidationCriteria].filter(Boolean).join('\n\n');
 
-    const aiConfig = await getDefaultGeminiConfig(payload.colid);
-    if (!aiConfig?.apikey) {
-      const comments = [
-        ...deterministicPasses,
-        ...deterministicIssues,
-        mandatoryValidationCriteria ? `Mandatory validation criteria configured for this form but not evaluated because Gemini is unavailable:\n${mandatoryValidationCriteria}` : '',
-        additionalValidationCriteria ? `Additional validation criteria configured for this form but not evaluated because Gemini is unavailable:\n${additionalValidationCriteria}` : '',
-        'Gemini AI validation could not run because active/default Gemini API configuration is missing.'
-      ].filter(Boolean).join('\n');
+    if (!formCriteria || !combinedCriteria) {
+      const comments = 'AI validation skipped because no validation criteria are configured for this form.';
       return res.json({
-        validationstatus: deterministicIssues.length ? 'Fail' : 'Pass',
+        validationstatus: 'Pass',
         validationcomments: comments,
         summary: comments,
-        mandatoryFailed: deterministicIssues.length > 0 || !!mandatoryValidationCriteria,
-        criteriaissues: [
-          ...deterministicIssues.map((item) => ({
-            criteriaType: 'Mandatory',
-            tab: 'Documents',
-            field: 'Documents',
-            status: 'Fail',
-            comment: item
-          })),
-          ...(mandatoryValidationCriteria ? [{
-            criteriaType: 'Mandatory',
-            tab: 'General',
-            field: 'Mandatory Criteria',
-            status: 'Fail',
-            comment: 'Mandatory criteria could not be evaluated because Gemini AI configuration is missing.'
-          }] : [])
-        ],
+        mandatoryFailed: false,
+        criteriaissues: [],
+        skipped: true,
         ai: null
       });
     }
 
+    const aiConfig = await getDefaultGeminiConfig(payload.colid);
+    if (!aiConfig?.apikey) {
+      const comments = 'AI validation skipped because active/default Gemini API configuration is missing.';
+      return res.json({
+        validationstatus: 'Pass',
+        validationcomments: comments,
+        summary: comments,
+        mandatoryFailed: false,
+        criteriaissues: [],
+        skipped: true,
+        ai: null
+      });
+    }
+
+    const documents = payload.documents || [];
+    const extraFields = payload.extraFields || {};
+    const includeDocumentValidation = criteriaRequiresDocumentValidation(combinedCriteria);
     const prompt = `
 You are validating an admission application. Return ONLY JSON with:
 {
@@ -789,22 +747,11 @@ You are validating an admission application. Return ONLY JSON with:
   "criteriaissues": [{"criteriaType":"Mandatory/Other", "tab":"", "field":"", "status":"Pass/Fail", "comment":""}]
 }
 
-Rules:
-1. Email format must be plausible.
-2. Phone format must be plausible.
-3. If both tenth passout year and twelve passout year are present, the gap must be at least 2 years.
-4. Validate applicant name against marksheet evidence from attached files. If content is not readable, mark Fail and mention document review needed.
-5. If category is not General, caste certificate is mandatory. Validate name and caste/category against certificate evidence from attached files. If content is not readable, mark Fail and mention document review needed.
-6. Overall validationstatus should be Fail if any required deterministic rule fails, if mandatory caste certificate is missing, or if any document-content check cannot be completed.
-${mandatoryValidationCriteria ? `\nMandatory criteria for this form (${formCriteria.formname || payload.formid}):\n${mandatoryValidationCriteria}\nThese criteria are compulsory. If any mandatory criterion is not satisfied, set validationstatus to Fail and explain it in validationcomments.` : ''}
-${additionalValidationCriteria ? `\nAdditional validation criteria for this form (${formCriteria.formname || payload.formid}):\n${additionalValidationCriteria}\nApply these criteria along with the rules above and include the result in validationcomments.` : ''}
+Validate ONLY the criteria configured for this exact form and college. Do not apply any default or assumed validation rule.
+${mandatoryValidationCriteria ? `\nMandatory criteria for this form (${formCriteria.formname || payload.formid}):\n${mandatoryValidationCriteria}\nThese criteria are compulsory. If any mandatory criterion is not satisfied, set validationstatus to Fail, set mandatorycriteriaresult to Fail, and explain it in validationcomments.` : ''}
+${additionalValidationCriteria ? `\nAdditional validation criteria for this form (${formCriteria.formname || payload.formid}):\n${additionalValidationCriteria}\nApply these criteria and include the result in validationcomments.` : ''}
+${includeDocumentValidation ? 'Document validation is requested by the configured criteria. Use attached documents where relevant. If required document content is unreadable, mark the relevant criterion as Fail.' : 'Document validation is not requested by the configured criteria. Do not fail the application because documents are missing or unreadable.'}
 When a mandatory or additional criterion fails, add one criteriaissues item with criteriaType, tab, field, status and a correction-oriented comment. Use tab names such as Basic Registration, Applicant Details, Documents, or the custom page name when it is clear. Use field names exactly as shown in the application where possible.
-
-Deterministic checks already found:
-Passes:
-${deterministicPasses.map((item) => `- ${item}`).join('\n') || '- None'}
-Issues:
-${deterministicIssues.map((item) => `- ${item}`).join('\n') || '- None'}
 
 Application:
 ${JSON.stringify({
@@ -812,53 +759,41 @@ ${JSON.stringify({
   email: payload.email,
   phone: payload.phone,
   category: payload.category,
-  tenthPassoutYear,
-  twelvePassoutYear,
   program: payload.programapplied,
   programcode: payload.programcode,
   extraFields,
-  documents: documents.map((doc) => ({
+  documents: includeDocumentValidation ? documents.map((doc) => ({
     documenttype: doc.documenttype,
     description: doc.description,
     originalname: doc.originalname,
     filename: doc.filename,
     url: doc.url
-  }))
+  })) : []
 }, null, 2)}
 `;
 
-    const documentParts = await buildGeminiDocumentParts(documents);
+    const documentParts = includeDocumentValidation ? await buildGeminiDocumentParts(documents) : [];
     const aiResult = await callGeminiJson(aiConfig.apikey, prompt, documentParts);
     const aiComments = textValue(aiResult.validationcomments || aiResult.summary);
     const aiChecksText = JSON.stringify(aiResult.checks || aiResult);
-    const hasManualOrFailedDocumentCheck = /manual|unreadable|cannot be completed|could not be read/i.test(aiChecksText);
+    const hasManualOrFailedDocumentCheck = includeDocumentValidation && /manual|unreadable|cannot be completed|could not be read/i.test(aiChecksText);
     const criteriaIssues = Array.isArray(aiResult.criteriaissues) ? aiResult.criteriaissues : [];
     const mandatoryCriteriaFailed = criteriaIssues.some((issue) => (
       /mandatory/i.test(textValue(issue.criteriaType || issue.type)) && /^fail$/i.test(textValue(issue.status))
     )) || /^fail$/i.test(textValue(aiResult.mandatorycriteriaresult));
-    const deterministicCriteriaIssues = deterministicIssues.map((item) => ({
-      criteriaType: 'Mandatory',
-      tab: 'Documents',
-      field: 'Documents',
-      status: 'Fail',
-      comment: item
-    }));
     const combinedComments = [
-      'Deterministic validation:',
-      ...deterministicPasses.map((item) => `PASS: ${item}`),
-      ...deterministicIssues.map((item) => `FAIL: ${item}`),
-      '',
+      includeDocumentValidation ? 'Document validation enabled by configured criteria.' : 'Document validation skipped because configured criteria did not request it.',
       'AI validation summary:',
       aiComments || JSON.stringify(aiResult.checks || aiResult)
     ].join('\n').trim();
 
-    const status = deterministicIssues.length || hasManualOrFailedDocumentCheck ? 'Fail' : (/^fail$/i.test(aiResult.validationstatus) ? 'Fail' : 'Pass');
+    const status = hasManualOrFailedDocumentCheck ? 'Fail' : (/^fail$/i.test(aiResult.validationstatus) ? 'Fail' : 'Pass');
     res.json({
       validationstatus: status,
       validationcomments: combinedComments,
       summary: combinedComments,
-      mandatoryFailed: deterministicIssues.length > 0 || mandatoryCriteriaFailed,
-      criteriaissues: [...deterministicCriteriaIssues, ...criteriaIssues],
+      mandatoryFailed: mandatoryCriteriaFailed,
+      criteriaissues: criteriaIssues,
       ai: aiResult
     });
   } catch (err) {

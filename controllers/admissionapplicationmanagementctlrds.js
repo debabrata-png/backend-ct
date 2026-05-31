@@ -2,6 +2,10 @@ const nodemailer = require('nodemailer');
 const AdmissionApplication = require('../Models/admissionapplicationdynamic');
 const AdmissionFormField = require('../Models/admissionformfield');
 const EmailConfiguration = require('../Models/emailconfigurationds');
+const RegulationMaster = require('../Models/regulationmasterds');
+const RegulationSubject = require('../Models/regulationsubjectds');
+const MPrograms = require('../Models/mprograms');
+const User = require('../Models/user');
 
 const baseFields = [
   'formid',
@@ -101,6 +105,10 @@ const safeHtml = (value) => clean(value).replace(/[&<>"']/g, (char) => ({ '&': '
 
 const customFieldId = (fieldname) => `extraFields.${fieldname}`;
 const fieldLabel = (field) => labels[field] || field.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+const randomPassword = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%';
+  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+};
 
 const getNestedValue = (row, field) => {
   if (field.startsWith('extraFields.')) return row.extraFields?.[field.replace('extraFields.', '')];
@@ -214,6 +222,271 @@ exports.searchApplications = async (req, res) => {
     (Array.isArray(req.body.filters) ? req.body.filters : []).forEach((filter) => addFilter(query, filter));
     const data = await AdmissionApplication.find(query).sort({ createdAt: -1 }).lean();
     res.json(data);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.getGeneralAdmissionOptions = async (req, res) => {
+  try {
+    const colid = toNumber(req.query.colid);
+    const academicyear = clean(req.query.academicyear);
+    const regulation = clean(req.query.regulation);
+    if (colid === undefined) return res.status(400).json({ msg: 'colid is required' });
+
+    const yearValues = await Promise.all([
+      AdmissionApplication.distinct('academicyear', { colid }),
+      RegulationSubject.distinct('academicyear', { colid }),
+      MPrograms.distinct('year', { colid })
+    ]);
+    const academicyears = Array.from(new Set(yearValues.flat().map(clean).filter(Boolean))).sort();
+
+    let regulationValues = [];
+    if (academicyear) {
+      regulationValues = await RegulationSubject.distinct('regulation', { colid, academicyear });
+    }
+    if (!regulationValues.length) {
+      regulationValues = (await RegulationMaster.find({ colid, isactive: /^Yes$/i }).select('regulation').lean()).map((item) => item.regulation);
+    }
+    const regulations = Array.from(new Set(regulationValues.map(clean).filter(Boolean))).sort();
+
+    const programMap = new Map();
+    const subjectQuery = { colid };
+    if (academicyear) subjectQuery.academicyear = academicyear;
+    if (regulation) subjectQuery.regulation = regulation;
+    const subjectPrograms = await RegulationSubject.find(subjectQuery).select('program programcode').lean();
+    subjectPrograms.forEach((item) => {
+      const programcode = clean(item.programcode);
+      const program = clean(item.program);
+      if (programcode || program) programMap.set(programcode || program, { program, programcode });
+    });
+    if (!programMap.size) {
+      const programQuery = { colid };
+      if (academicyear) programQuery.year = academicyear;
+      const programs = await MPrograms.find(programQuery).select('program programcode name Order').sort({ Order: 1, program: 1 }).lean();
+      programs.forEach((item) => {
+        const programcode = clean(item.programcode);
+        const program = clean(item.program || item.name);
+        if (programcode || program) programMap.set(programcode || program, { program, programcode });
+      });
+    }
+
+    res.json({
+      academicyears,
+      regulations,
+      programs: Array.from(programMap.values()).sort((a, b) => `${a.program} ${a.programcode}`.localeCompare(`${b.program} ${b.programcode}`))
+    });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.generalAdmissionBulkAdmit = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    const applicationIds = Array.isArray(req.body.applicationIds) ? req.body.applicationIds.filter(Boolean) : [];
+    const contactOverrides = req.body.contactOverrides && typeof req.body.contactOverrides === 'object' ? req.body.contactOverrides : {};
+    const academicyear = clean(req.body.academicyear);
+    const regulation = clean(req.body.regulation);
+    const program = clean(req.body.program);
+    const programcode = clean(req.body.programcode);
+    const semester = clean(req.body.semester);
+    const section = clean(req.body.section);
+    if (colid === undefined) return res.status(400).json({ msg: 'colid is required' });
+    if (!applicationIds.length) return res.status(400).json({ msg: 'Select at least one applicant' });
+    const missingPanel = [];
+    if (!academicyear) missingPanel.push('academic year');
+    if (!regulation) missingPanel.push('regulation');
+    if (!program) missingPanel.push('program');
+    if (!programcode) missingPanel.push('program code');
+    if (!semester) missingPanel.push('semester');
+    if (!section) missingPanel.push('section');
+    if (missingPanel.length) return res.status(400).json({ msg: `Missing fields: ${missingPanel.join(', ')}` });
+
+    // console.log('[GeneralAdmission] Bulk admit request', {
+    //   colid,
+    //   academicyear,
+    //   regulation,
+    //   program,
+    //   programcode,
+    //   semester,
+    //   section,
+    //   applicationCount: applicationIds.length,
+    //   actionUser: clean(req.body.user)
+    // });
+
+    const applications = await AdmissionApplication.find({ colid, _id: { $in: applicationIds } }).lean();
+    // console.log('[GeneralAdmission] Applications loaded', {
+    //   requested: applicationIds.length,
+    //   found: applications.length,
+    //   ids: applications.map((item) => String(item._id))
+    // });
+    const applicationById = new Map(applications.map((item) => [String(item._id), item]));
+    const created = [];
+    const errors = [];
+    let sequence = await User.countDocuments({
+      colid,
+      role: { $regex: /^Student$/i },
+      academicyear,
+      programcode
+    });
+
+    for (const applicationId of applicationIds) {
+      const application = applicationById.get(String(applicationId));
+      // console.log('[GeneralAdmission] Processing application', {
+      //   applicationId,
+      //   found: Boolean(application),
+      //   name: application?.name,
+      //   status: application?.applicationstatus,
+      //   email: application?.email,
+      //   phone: application?.phone
+      // });
+      if (!application) {
+        errors.push({ applicationId, msg: 'Application not found' });
+        continue;
+      }
+      if (application.applicationstatus && !/^Applied$/i.test(application.applicationstatus)) {
+        errors.push({ applicationId, name: application.name, msg: `Application status is ${application.applicationstatus}` });
+        continue;
+      }
+      const overrides = contactOverrides[String(applicationId)] || {};
+      const email = clean(overrides.email || application.email).toLowerCase();
+      const phone = clean(overrides.phone || application.phone);
+      if (!email || !phone) {
+        errors.push({ applicationId, name: application.name, msg: 'Email and phone are required' });
+        continue;
+      }
+      const duplicate = await User.findOne({ email }).select('_id email').lean();
+      if (duplicate) {
+        // console.log('[GeneralAdmission] Duplicate user found', { applicationId, email, duplicateId: String(duplicate._id) });
+        errors.push({ applicationId, name: application.name, email, msg: 'User already exists with this email' });
+        continue;
+      }
+
+      sequence += 1;
+      const rollno = String(sequence).padStart(4, '0');
+      const regno = `${academicyear}-${programcode}-${rollno}`;
+      const password = randomPassword();
+      const userPayload = {
+        name: clean(application.name) || email,
+        email,
+        phone,
+        password,
+        role: 'Student',
+        regno,
+        program,
+        programcode,
+        admissionyear: academicyear,
+        academicyear,
+        rollno,
+        semester,
+        section,
+        gender: clean(application.gender) || 'NA',
+        state: clean(application.state || application.extraFields?.state) || 'NA',
+        city: clean(application.city || application.extraFields?.city) || 'NA',
+        district: clean(application.district || application.extraFields?.district) || 'NA',
+        pincode: clean(application.pincode || application.pin || application.extraFields?.pincode) || 'NA',
+        department: program,
+        category: clean(application.category) || 'NA',
+        address: clean(application.address) || 'NA',
+        guardianname: clean(application.guardianname || application.extraFields?.guardianname) || 'NA',
+        guardianmobile: clean(application.guardianmobile || application.extraFields?.guardianmobile) || 'NA',
+        guardianemail: clean(application.guardianemail || application.extraFields?.guardianemail) || 'NA',
+        fathername: clean(application.fathername || application.extraFields?.fathername) || 'NA',
+        mothername: clean(application.mothername || application.extraFields?.mothername) || 'NA',
+        dob: clean(application.dateofbirth || application.dob || application.extraFields?.dob) || 'NA',
+        colid,
+        status: 1,
+        user: email,
+        addedby: clean(req.body.user),
+        institution: clean(req.body.institution),
+        regulation,
+        Major: clean(application.Major || application.major || application.extraFields?.Major || application.extraFields?.major) || 'NA',
+        Minor: clean(application.Minor || application.minor || application.extraFields?.Minor || application.extraFields?.minor) || 'NA',
+        AEC: clean(application.AEC || application.aec || application.extraFields?.AEC || application.extraFields?.aec) || 'NA',
+        SEC: clean(application.SEC || application.sec || application.extraFields?.SEC || application.extraFields?.sec) || 'NA',
+        VAC: clean(application.VAC || application.vac || application.extraFields?.VAC || application.extraFields?.vac) || 'NA',
+        IDC: clean(application.IDC || application.idc || application.extraFields?.IDC || application.extraFields?.idc) || 'NA',
+        isdisabled: 'No',
+        admissionapplicationid: String(application._id),
+        lastlogin: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+      };
+
+      try {
+        const validationDoc = new User(userPayload);
+        const validationError = validationDoc.validateSync();
+        // console.log('[GeneralAdmission] User payload before create', {
+        //   applicationId,
+        //   payload: userPayload,
+        //   validationErrors: validationError
+        //     ? Object.fromEntries(Object.entries(validationError.errors || {}).map(([key, value]) => [key, value.message]))
+        //     : null
+        // });
+        if (validationError) {
+          throw validationError;
+        }
+        const user = await User.create(userPayload);
+        // console.log('[GeneralAdmission] User created', {
+        //   applicationId,
+        //   userId: String(user._id),
+        //   email: user.email,
+        //   regno: user.regno
+        // });
+        const updateResult = await AdmissionApplication.updateOne(
+          { _id: application._id, colid },
+          { $set: { applicationstatus: 'Admitted', regno, email, phone, username: email, password } }
+        );
+        // console.log('[GeneralAdmission] Application update status', {
+        //   applicationId,
+        //   matchedCount: updateResult.matchedCount,
+        //   modifiedCount: updateResult.modifiedCount,
+        //   acknowledged: updateResult.acknowledged
+        // });
+        created.push({
+          applicationId: String(application._id),
+          userId: String(user._id),
+          name: user.name,
+          email,
+          phone,
+          rollno,
+          regno,
+          password
+        });
+      } catch (err) {
+        sequence -= 1;
+        // console.error('[GeneralAdmission] User create/update failed', {
+        //   applicationId,
+        //   name: application.name,
+        //   email,
+        //   error: err.message,
+        //   code: err.code,
+        //   errors: err.errors
+        //     ? Object.fromEntries(Object.entries(err.errors).map(([key, value]) => [key, value.message]))
+        //     : undefined
+        // });
+        errors.push({
+          applicationId,
+          name: application.name,
+          email,
+          msg: err.message,
+          details: err.errors
+            ? Object.fromEntries(Object.entries(err.errors).map(([key, value]) => [key, value.message]))
+            : undefined
+        });
+      }
+    }
+
+    // console.log('[GeneralAdmission] Bulk admit completed', {
+    //   created: created.length,
+    //   errors: errors.length,
+    //   errorSummary: errors
+    // });
+
+    res.json({
+      msg: `Admitted ${created.length} applicant${created.length === 1 ? '' : 's'}`,
+      created,
+      errors
+    });
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }

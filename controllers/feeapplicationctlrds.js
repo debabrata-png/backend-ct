@@ -16,11 +16,9 @@ function regex(value) {
   return new RegExp(text(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
 }
 
-function normalizeFilterField(field) {
+function normalizeStudentFilterField(field) {
   const map = {
     academicYear: "academicyear",
-    feeitem: "feeeitem",
-    fmajor: "major",
     idc: "IDC",
     major: "Major",
     minor: "Minor"
@@ -31,7 +29,7 @@ function normalizeFilterField(field) {
 function buildStudentQuery(colid, filters = []) {
   const query = { colid, role: /^Student$/i };
   filters.forEach((filter) => {
-    const field = normalizeFilterField(filter.field);
+    const field = normalizeStudentFilterField(filter.field);
     const value = text(filter.value);
     if (!field || !value) return;
     if (["name", "email", "phone"].includes(field)) query[field] = regex(value);
@@ -41,10 +39,20 @@ function buildStudentQuery(colid, filters = []) {
   return query;
 }
 
+function normalizeFeeFilterField(field) {
+  const map = {
+    academicYear: "academicyear",
+    feeitem: "feeeitem",
+    fmajor: "major",
+    idc: "IDC"
+  };
+  return map[field] || field;
+}
+
 function buildFeeQuery(colid, filters = []) {
   const query = { colid };
   filters.forEach((filter) => {
-    const field = normalizeFilterField(filter.field);
+    const field = normalizeFeeFilterField(filter.field);
     const value = text(filter.value);
     if (!field || !value) return;
     query[field] = value;
@@ -83,6 +91,7 @@ exports.getFeeApplicationOptions = async (req, res) => {
       feeMinors,
       feeIdcs,
       genders,
+      semesters,
       feeGroups,
       feeItems,
       feeCategories,
@@ -105,6 +114,7 @@ exports.getFeeApplicationOptions = async (req, res) => {
       distinctSorted(Fees, "minor", feeQuery),
       distinctSorted(Fees, "IDC", feeQuery),
       distinctSorted(Fees, "gender", feeQuery),
+      distinctSorted(Fees, "semester", feeQuery),
       distinctSorted(Fees, "feegroup", feeQuery),
       distinctSorted(Fees, "feeeitem", feeQuery),
       distinctSorted(Fees, "feecategory", feeQuery),
@@ -132,6 +142,7 @@ exports.getFeeApplicationOptions = async (req, res) => {
         minor: feeMinors,
         IDC: feeIdcs,
         gender: genders,
+        semester: semesters,
         feegroup: feeGroups,
         feeeitem: feeItems,
         feecategory: feeCategories,

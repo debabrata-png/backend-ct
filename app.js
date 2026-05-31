@@ -121,6 +121,9 @@ const userDataManagementController = require('./controllers/userdatamanagementds
 const studentDataUploadController = require('./controllers/studentdatauploadctlrds');
 const studentEmailMessagingController = require('./controllers/studentemailmessagingctlrds');
 const userPivotReportController = require('./controllers/userpivotreportctlrds');
+const studentDetailsReportController = require('./controllers/studentdetailsreportctlrds');
+const studentPromotionController = require('./controllers/studentpromotionctlrds');
+const admissionCancellationController = require('./controllers/admissioncancellationctlrds');
 const employeeDatabaseController = require('./controllers/employeedatabasectlrd');
 const awsFileLibraryController = require('./controllers/awsfilelibrarydsctlr');
 const awsConfigController = require('./controllers/awsconfigdsctlr');
@@ -211,8 +214,10 @@ app.post('/admission-dynamic/applications-update', admissionDynamicController.up
 app.post('/admission-dynamic/applications-bulk', admissionDynamicController.bulkCreateApplications);
 app.post('/admission-dynamic/applications-delete', admissionDynamicController.deleteApplication);
 app.get('/api/v2/admission-application-management/options', admissionApplicationManagementController.getOptions);
+app.get('/api/v2/admission-application-management/general-options', admissionApplicationManagementController.getGeneralAdmissionOptions);
 app.post('/api/v2/admission-application-management/search', admissionApplicationManagementController.searchApplications);
 app.post('/api/v2/admission-application-management/bulk-delete', admissionApplicationManagementController.bulkDeleteApplications);
+app.post('/api/v2/admission-application-management/general-admit', admissionApplicationManagementController.generalAdmissionBulkAdmit);
 app.post('/api/v2/admission-application-management/send-email', admissionApplicationManagementController.sendEmail);
 app.post('/admission-dynamic/application-document-upload', admissionDynamicController.uploadDocumentMiddleware, admissionDynamicController.uploadApplicationDocument);
 app.get('/admission-address-configuration', admissionAddressConfigurationController.getAddressConfigurations);
@@ -366,6 +371,17 @@ app.post('/api/v2/student-email-message/search', studentEmailMessagingController
 app.post('/api/v2/student-email-message/send', studentEmailMessagingController.sendMessage);
 app.get('/api/v2/user-pivot-report/options', userPivotReportController.getUserPivotOptions);
 app.post('/api/v2/user-pivot-report', userPivotReportController.generateUserPivotReport);
+app.get('/api/v2/student-details-report/options', studentDetailsReportController.getStudentDetailsOptions);
+app.post('/api/v2/student-details-report', studentDetailsReportController.getStudentDetailsReport);
+app.get('/api/v2/student-promotion/options', studentPromotionController.getStudentPromotionOptions);
+app.post('/api/v2/student-promotion/search', studentPromotionController.searchStudentPromotionStudents);
+app.post('/api/v2/student-promotion/update', studentPromotionController.promoteStudents);
+app.get('/api/v2/admission-cancellation/student-options', admissionCancellationController.getStudentOptions);
+app.post('/api/v2/admission-cancellation/students', admissionCancellationController.searchStudents);
+app.post('/api/v2/admission-cancellation/paid-fees', admissionCancellationController.getStudentPaidFees);
+app.post('/api/v2/admission-cancellation/save', admissionCancellationController.saveCancellation);
+app.get('/api/v2/admission-cancellation/refund-options', admissionCancellationController.getRefundOptions);
+app.post('/api/v2/admission-cancellation/refunds', admissionCancellationController.searchRefunds);
 
 
 const port=process.env.PORT || 3001;
@@ -5164,6 +5180,7 @@ const studentledgeranalyticsctlr = require("./controllers/studentledgeranalytics
 const studentledgerpaidanalyticsctlr = require("./controllers/studentledgerpaidanalyticsctlr");
 const studentledgercounterpaymentctlr = require("./controllers/studentledgercounterpaymentctlr");
 const studentfeesreceiptctlr = require("./controllers/studentfeesreceiptctlr");
+const studentLedgerDetailReportController = require("./controllers/studentledgerdetailreportctlrds");
 const studentledgerinstallmentctlrds = require("./controllers/studentledgerinstallmentctlrds");
 const feespivotctlrds = require("./controllers/feespivotctlrds");
 const applicationfeectlrds = require("./controllers/applicationfeectlrds");
@@ -5205,6 +5222,9 @@ app.get("/api/v2/feespivot", feespivotctlrds.getFeesPivot);
 app.get("/api/v2/studentledgercounterpayment", studentledgercounterpaymentctlr.getCounterPaymentLedger);
 app.post("/api/v2/studentledgercounterpayment/pay", studentledgercounterpaymentctlr.postCounterPayment);
 app.get("/api/v2/studentfeesreceipt", studentfeesreceiptctlr.getFeesReceiptRows);
+app.get("/api/v2/studentledgerdetail/options", studentLedgerDetailReportController.getStudentLedgerDetailOptions);
+app.post("/api/v2/studentledgerdetail/students", studentLedgerDetailReportController.searchStudentLedgerStudents);
+app.post("/api/v2/studentledgerdetail/ledger", studentLedgerDetailReportController.getStudentLedgerDetails);
 app.get("/api/v2/studentledgerinstallment/options", studentledgerinstallmentctlrds.getInstallmentFilterOptions);
 app.get("/api/v2/studentledgerinstallment/students", studentledgerinstallmentctlrds.searchInstallmentStudents);
 app.get("/api/v2/studentledgerinstallment/ledger", studentledgerinstallmentctlrds.getStudentInstallmentLedger);
