@@ -91,14 +91,14 @@ exports.mbBulkCreateUsers = async (req, res) => {
 exports.mbGetUsers = async (req, res) => {
     try {
         const { colid } = req.query;
-        console.log(req.query);
+        //console.log(req.query);
 
         const users = await User.find({
             colid,
             role: { $ne: 'Student' }
         }).lean();
 
-        console.log(users);
+        //console.log(users);
 
         res.json(users);
     } catch (err) {

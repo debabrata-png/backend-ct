@@ -96,7 +96,25 @@ exports.getMFeesOptions = async (req, res) => {
     if (regulation) subjectQuery.regulation = regulation;
     if (programcode) subjectQuery.programcode = programcode;
 
-    const [feebooks, cashbooks, programs, masterRegulations, subjectRegulations, majors, minors, idcs] = await Promise.all([
+    const [
+      feebooks,
+      cashbooks,
+      programs,
+      masterRegulations,
+      subjectRegulations,
+      majors,
+      minors,
+      idcs,
+      feeAcademicYears,
+      feeProgramRows,
+      feeRegulations,
+      feeMajors,
+      feeMinors,
+      feeIdcs,
+      feeGenders,
+      feeSemesters,
+      feeStatuses
+    ] = await Promise.all([
       FeeBook.find({ colid }).sort({ feebook: 1 }).lean(),
       CashBook.find({ colid }).sort({ cashnook: 1, cashbook: 1 }).lean(),
       MPrograms.find({ colid }).sort({ program: 1, programcode: 1 }).lean(),
@@ -104,7 +122,16 @@ exports.getMFeesOptions = async (req, res) => {
       RegulationSubject.distinct("regulation", { colid, ...(academicyear ? { academicyear } : {}) }),
       RegulationSubject.find({ ...subjectQuery, type: "Major", status: "Active" }).sort({ subject: 1 }).lean(),
       RegulationSubject.find({ ...subjectQuery, type: "Minor", status: "Active" }).sort({ subject: 1 }).lean(),
-      RegulationSubject.find({ ...subjectQuery, type: "IDC", status: "Active" }).sort({ subject: 1 }).lean()
+      RegulationSubject.find({ ...subjectQuery, type: "IDC", status: "Active" }).sort({ subject: 1 }).lean(),
+      Fees.distinct("academicyear", { colid }),
+      Fees.find({ colid }).select("program programcode").sort({ program: 1, programcode: 1 }).lean(),
+      Fees.distinct("regulation", { colid }),
+      Fees.distinct("major", { colid }),
+      Fees.distinct("minor", { colid }),
+      Fees.distinct("IDC", { colid }),
+      Fees.distinct("gender", { colid }),
+      Fees.distinct("semester", { colid }),
+      Fees.distinct("status", { colid })
     ]);
 
     const regulationNames = Array.from(new Set([
@@ -127,7 +154,21 @@ exports.getMFeesOptions = async (req, res) => {
       regulations: regulationNames,
       majors: majors.map((item) => item.subject).filter(Boolean),
       minors: minors.map((item) => item.subject).filter(Boolean),
-      idcs: idcs.map((item) => item.subject).filter(Boolean)
+      idcs: idcs.map((item) => item.subject).filter(Boolean),
+      feeFilterOptions: {
+        academicYears: feeAcademicYears.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })),
+        programs: Array.from(new Map(feeProgramRows
+          .filter((item) => item.programcode)
+          .map((item) => [item.programcode, { program: item.program || "", programcode: item.programcode || "" }])).values())
+          .sort((a, b) => String(a.program || "").localeCompare(String(b.program || "")) || String(a.programcode || "").localeCompare(String(b.programcode || ""))),
+        regulations: feeRegulations.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b))),
+        majors: feeMajors.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b))),
+        minors: feeMinors.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b))),
+        idcs: feeIdcs.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b))),
+        genders: feeGenders.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b))),
+        semesters: feeSemesters.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })),
+        statuses: feeStatuses.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b)))
+      }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

@@ -130,6 +130,7 @@ const awsConfigController = require('./controllers/awsconfigdsctlr');
 const mprogramsManagementController = require('./controllers/mprogramsmanagementctlrds');
 const studentActivityController = require('./controllers/studentactivityctlrds');
 const admissionDateSummaryController = require('./controllers/admissiondatesummaryctlrds');
+const admissionPaymentsReportController = require('./controllers/admissionpaymentsreportctlrds');
 const admissionAddressConfigurationController = require('./controllers/admissionaddressconfigurationctlr');
 const admissionBoardConfigurationController = require('./controllers/admissionboardconfigurationctlr');
 const admissionValidationCriteriaController = require('./controllers/admissionvalidationcriteriactlr');
@@ -205,6 +206,8 @@ app.get('/admission-dynamic/application-retrieve', admissionDynamicController.re
 app.post('/admission-dynamic/application-credential-retrieve', admissionDynamicController.retrieveApplicationByCredential);
 app.post('/admission-dynamic/application-forgot-password', admissionDynamicController.forgotApplicationPassword);
 app.get('/admission-dynamic/date-summary', admissionDateSummaryController.getAdmissionDateSummary);
+app.get('/admission-dynamic/payment-options', admissionPaymentsReportController.getAdmissionPaymentOptions);
+app.post('/admission-dynamic/payments-report', admissionPaymentsReportController.getAdmissionPayments);
 app.get('/admission-dynamic/filter-options', admissionDynamicController.getFilterOptions);
 app.post('/admission-dynamic/validate-application-ai', admissionDynamicController.validateApplicationWithAi);
 app.post('/admission-dynamic/applications', admissionDynamicController.createApplication);
