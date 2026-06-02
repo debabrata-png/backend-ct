@@ -27,6 +27,8 @@ const AdmissionApplicationDynamicSchema = new mongoose.Schema({
   },
   academicyear: String,
   name: String,
+  applicationid: String,
+  applicationnumber: String,
   username: String,
   password: String,
   email: String,

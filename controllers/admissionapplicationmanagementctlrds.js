@@ -12,6 +12,7 @@ const baseFields = [
   'academicyear',
   'name',
   'username',
+  'password',
   'email',
   'phone',
   'regno',
@@ -79,6 +80,7 @@ const labels = {
   academicyear: 'Academic Year',
   name: 'Name',
   username: 'Username',
+  password: 'Password',
   email: 'Email',
   phone: 'Phone',
   regno: 'Reg No',
@@ -500,6 +502,40 @@ exports.bulkDeleteApplications = async (req, res) => {
     if (!ids.length) return res.status(400).json({ msg: 'Select at least one application' });
     const result = await AdmissionApplication.deleteMany({ colid, _id: { $in: ids } });
     res.json({ msg: 'Deleted', deleted: result.deletedCount || 0 });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.bulkUpdateApplicationStatus = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    const ids = Array.isArray(req.body.ids) ? req.body.ids.filter(Boolean) : [];
+    const fromStatus = clean(req.body.fromStatus || req.body.currentstatus || req.body.currentStatus);
+    const applicationstatus = clean(req.body.applicationstatus);
+    const allowedStatuses = ['Draft', 'Applied', 'Admitted'];
+    if (colid === undefined) return res.status(400).json({ msg: 'colid is required' });
+    if (!ids.length) return res.status(400).json({ msg: 'Select at least one application' });
+    if (!allowedStatuses.includes(fromStatus)) {
+      return res.status(400).json({ msg: 'Select Draft, Applied or Admitted as source status' });
+    }
+    if (!allowedStatuses.includes(applicationstatus)) {
+      return res.status(400).json({ msg: 'Select Draft, Applied or Admitted as status' });
+    }
+    if (fromStatus === applicationstatus) {
+      return res.status(400).json({ msg: 'Source and target status should be different' });
+    }
+    const result = await AdmissionApplication.updateMany(
+      { colid, _id: { $in: ids }, applicationstatus: fromStatus },
+      { $set: { applicationstatus } }
+    );
+    res.json({
+      msg: `Application status changed from ${fromStatus} to ${applicationstatus}`,
+      matched: result.matchedCount || result.n || 0,
+      modified: result.modifiedCount || result.nModified || 0,
+      fromStatus,
+      applicationstatus
+    });
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }

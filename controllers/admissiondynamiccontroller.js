@@ -31,6 +31,32 @@ const textValue = (value) => String(value || '').trim();
 const randomUsername = () => `app${Date.now().toString(36)}${crypto.randomBytes(4).toString('hex')}`;
 const randomPassword = () => `Aa1!${crypto.randomBytes(8).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}`;
 
+const normalizeApplicationResponse = (application) => {
+  const data = typeof application?.toObject === 'function' ? application.toObject() : { ...(application || {}) };
+  const id = String(data._id || data.applicationid || data.applicationnumber || '').trim();
+  if (id) {
+    data.applicationid = String(data.applicationid || id);
+    data.applicationnumber = String(data.applicationnumber || id);
+  }
+  return data;
+};
+
+const ensureApplicationIdentifiers = async (application) => {
+  if (!application) return null;
+  const id = String(application._id || '').trim();
+  if (!id) return application;
+  const needsApplicationId = !String(application.applicationid || '').trim();
+  const needsApplicationNumber = !String(application.applicationnumber || '').trim();
+  if (needsApplicationId || needsApplicationNumber) {
+    if (needsApplicationId) application.applicationid = id;
+    if (needsApplicationNumber) application.applicationnumber = id;
+  }
+  if ((needsApplicationId || needsApplicationNumber) || (typeof application.isModified === 'function' && application.isModified())) {
+    await application.save();
+  }
+  return application;
+};
+
 const getNestedValueByHints = (source = {}, hints = []) => {
   const entries = Object.entries(source || {});
   const found = entries.find(([key]) => {
@@ -564,6 +590,8 @@ const applicationPayload = (body) => {
   return ({
   colid: Number(body.colid),
   formid: cleanFormId(body.formid),
+  applicationid: String(body.applicationid || body.applicationId || body.applicationnumber || body.applicationNumber || '').trim(),
+  applicationnumber: String(body.applicationnumber || body.applicationNumber || body.applicationid || body.applicationId || '').trim(),
   academicyear: body.academicyear,
   name: body.name,
   username: String(body.username || '').trim(),
@@ -804,6 +832,10 @@ ${JSON.stringify({
 exports.createApplication = async (req, res) => {
   try {
     const payload = applicationPayload(req.body);
+    const generatedId = new mongoose.Types.ObjectId();
+    payload._id = generatedId;
+    payload.applicationid = payload.applicationid || String(generatedId);
+    payload.applicationnumber = payload.applicationnumber || String(generatedId);
     if (!payload.email || !payload.phone) {
       return res.status(400).json({ msg: 'Email and phone are required' });
     }
@@ -819,7 +851,7 @@ exports.createApplication = async (req, res) => {
 
     const data = await AdmissionApplication.create(payload);
     const mailStatus = await sendAdmissionConfirmationMail(data);
-    const response = data.toObject();
+    const response = normalizeApplicationResponse(data);
     response.mailStatus = mailStatus;
     res.json(response);
   } catch (err) {
@@ -839,6 +871,10 @@ exports.saveDraftApplication = async (req, res) => {
     }
 
     const id = String(req.body.id || '').trim();
+    if (id) {
+      payload.applicationid = payload.applicationid || id;
+      payload.applicationnumber = payload.applicationnumber || id;
+    }
     const duplicateFilter = {
       colid: payload.colid,
       $or: [{ email: payload.email }, { phone: payload.phone }]
@@ -861,11 +897,16 @@ exports.saveDraftApplication = async (req, res) => {
         payload,
         { new: true }
       );
-      return res.json(data);
+      const repaired = await ensureApplicationIdentifiers(data);
+      return res.json(normalizeApplicationResponse(repaired));
     }
 
+    const generatedId = new mongoose.Types.ObjectId();
+    payload._id = generatedId;
+    payload.applicationid = payload.applicationid || String(generatedId);
+    payload.applicationnumber = payload.applicationnumber || String(generatedId);
     const data = await AdmissionApplication.create(payload);
-    res.json(data);
+    res.json(normalizeApplicationResponse(data));
   } catch (err) {
     if (err.code === 11000) return res.status(400).json({ msg: 'Duplicate email or phone is not allowed' });
     res.status(500).json({ msg: err.message });
@@ -879,6 +920,8 @@ exports.submitDraftApplication = async (req, res) => {
       applicationstatus: 'Applied'
     });
     if (!req.body.id) return res.status(400).json({ msg: 'Application id is required' });
+    payload.applicationid = payload.applicationid || String(req.body.id);
+    payload.applicationnumber = payload.applicationnumber || String(req.body.id);
     if (!payload.email || !payload.phone) {
       return res.status(400).json({ msg: 'Email and phone are required' });
     }
@@ -904,7 +947,8 @@ exports.submitDraftApplication = async (req, res) => {
       { new: true }
     );
     const mailStatus = await sendAdmissionConfirmationMail(data);
-    const response = data.toObject();
+    const repaired = await ensureApplicationIdentifiers(data);
+    const response = normalizeApplicationResponse(repaired);
     response.mailStatus = mailStatus;
     res.json(response);
   } catch (err) {
@@ -933,8 +977,8 @@ exports.bulkCreateApplications = async (req, res) => {
 
     payloads.forEach((item) => {
       const payload = item.data;
-      payload.username = String(payload.phone || payload.email || randomUsername()).trim();
-      payload.password = randomPassword();
+      payload.username = String(payload.username || payload.phone || payload.email || randomUsername()).trim();
+      payload.password = String(payload.password || randomPassword()).trim();
       if (!payload.email || !payload.phone) {
         errors.push({ rowNumber: item.rowNumber, msg: 'Email and phone are required' });
         return;
@@ -982,6 +1026,10 @@ exports.bulkCreateApplications = async (req, res) => {
           }
         }
         seenUsernames.add(item.data.username);
+        const generatedId = new mongoose.Types.ObjectId();
+        item.data._id = generatedId;
+        item.data.applicationid = item.data.applicationid || String(generatedId);
+        item.data.applicationnumber = item.data.applicationnumber || String(generatedId);
         insertable.push(item.data);
       }
     });
@@ -1000,6 +1048,10 @@ exports.bulkCreateApplications = async (req, res) => {
 exports.updateApplication = async (req, res) => {
   try {
     const payload = applicationPayload(req.body);
+    if (req.body.id) {
+      payload.applicationid = payload.applicationid || String(req.body.id);
+      payload.applicationnumber = payload.applicationnumber || String(req.body.id);
+    }
     const duplicate = await AdmissionApplication.findOne({
       _id: { $ne: req.body.id },
       colid: payload.colid,
@@ -1016,7 +1068,8 @@ exports.updateApplication = async (req, res) => {
       { new: true }
     );
 
-    res.json(data);
+    const repaired = await ensureApplicationIdentifiers(data);
+    res.json(normalizeApplicationResponse(repaired));
   } catch (err) {
     if (err.code === 11000) return res.status(400).json({ msg: 'Duplicate email or phone is not allowed' });
     res.status(500).json({ msg: err.message });
@@ -1088,15 +1141,17 @@ exports.getFilterOptions = async (req, res) => {
 exports.getApplicationById = async (req, res) => {
   try {
     const id = String(req.query.id || req.query.applicationnumber || '').trim();
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ msg: 'Invalid application number' });
-    }
-    const data = await AdmissionApplication.findOne({
-      _id: id,
-      colid: Number(req.query.colid)
-    });
+    const colid = Number(req.query.colid);
+    if (!id) return res.status(400).json({ msg: 'Application number is required' });
+    const idFilters = [
+      { applicationid: id },
+      { applicationnumber: id }
+    ];
+    if (mongoose.Types.ObjectId.isValid(id)) idFilters.unshift({ _id: id });
+    const data = await AdmissionApplication.findOne({ colid, $or: idFilters });
     if (!data) return res.status(404).json({ msg: 'Application not found' });
-    res.json(data);
+    const repaired = await ensureApplicationIdentifiers(data);
+    res.json(normalizeApplicationResponse(repaired));
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
@@ -1116,10 +1171,12 @@ exports.retrieveApplication = async (req, res) => {
     if (formid) filter.formid = formid;
 
     if (id) {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ msg: 'Invalid application number' });
-      }
-      filter._id = id;
+      const idFilters = [
+        { applicationid: id },
+        { applicationnumber: id }
+      ];
+      if (mongoose.Types.ObjectId.isValid(id)) idFilters.unshift({ _id: id });
+      filter.$or = idFilters;
     } else {
       if (!email || !phone) {
         return res.status(400).json({ msg: 'Enter application number or both email and phone' });
@@ -1130,7 +1187,8 @@ exports.retrieveApplication = async (req, res) => {
 
     const data = await AdmissionApplication.findOne(filter).sort({ createdAt: -1 });
     if (!data) return res.status(404).json({ msg: 'Application not found' });
-    res.json(data);
+    const repaired = await ensureApplicationIdentifiers(data);
+    res.json(normalizeApplicationResponse(repaired));
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
@@ -1146,12 +1204,48 @@ exports.retrieveApplicationByCredential = async (req, res) => {
     if (!colid) return res.status(400).json({ msg: 'College id is required' });
     if (!username || !password) return res.status(400).json({ msg: 'Username and password are required' });
 
-    const filter = { colid, username, password };
-    if (formid) filter.formid = formid;
+    const credentialMatch = {
+      $and: [
+        {
+          $or: [
+            { username },
+            { email: username.toLowerCase() },
+            { phone: username },
+            { 'extraFields.username': username },
+            { 'extraFields.Username': username },
+            { 'extraFields.userName': username },
+            { 'extraFields.UserName': username }
+          ]
+        },
+        {
+          $or: [
+            { password },
+            { 'extraFields.password': password },
+            { 'extraFields.Password': password }
+          ]
+        }
+      ]
+    };
+    const requestedFormFilter = formid ? { formid } : {};
+    const fallbackFormFilter = formid ? {
+      $or: [
+        { formid },
+        { formid: 'default' },
+        { formid: '' },
+        { formid: { $exists: false } }
+      ]
+    } : {};
 
-    const data = await AdmissionApplication.findOne(filter).sort({ updatedAt: -1, createdAt: -1 });
+    let data = await AdmissionApplication.findOne({ colid, ...credentialMatch, ...requestedFormFilter }).sort({ updatedAt: -1, createdAt: -1 });
+    if (!data && formid) {
+      data = await AdmissionApplication.findOne({ colid, ...credentialMatch, ...fallbackFormFilter }).sort({ updatedAt: -1, createdAt: -1 });
+      if (data && (!data.formid || data.formid === 'default')) {
+        data.formid = formid;
+      }
+    }
     if (!data) return res.status(404).json({ msg: 'Application not found or password is incorrect' });
-    res.json(data);
+    const repaired = await ensureApplicationIdentifiers(data);
+    res.json(normalizeApplicationResponse(repaired));
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }

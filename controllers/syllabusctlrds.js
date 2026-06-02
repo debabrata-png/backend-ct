@@ -1,5 +1,6 @@
 const Syllabus = require("../Models/syllabusds");
 const RegulationCourseMap = require("../Models/regulationcoursemapds");
+const AiConfiguration = require("../Models/aiconfigurationds");
 
 const text = (value) => String(value || "").trim();
 
@@ -10,6 +11,72 @@ const toNumber = (value) => {
 };
 
 const uniq = (items) => [...new Set(items.map(text).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+
+const clampPercent = (value, fallback = 0) => {
+  const parsed = toNumber(value);
+  const safeValue = parsed === undefined ? fallback : parsed;
+  return Math.max(0, Math.min(100, Math.round(safeValue)));
+};
+
+const parseGeminiJson = (value) => {
+  const raw = text(value);
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (fenced?.[1]) {
+      try {
+        return JSON.parse(fenced[1].trim());
+      } catch (innerError) {
+        return {};
+      }
+    }
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(raw.slice(start, end + 1));
+      } catch (innerError) {
+        return {};
+      }
+    }
+    return {};
+  }
+};
+
+const readGeminiText = (payload = {}) => (
+  payload.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("\n").trim()
+  || payload.text
+  || ""
+);
+
+const getDefaultGeminiConfig = async (colid) => (
+  await AiConfiguration.findOne({ colid, type: /^gemini$/i, active: /^yes$/i, default: /^yes$/i }).sort({ _id: -1 }).lean()
+  || await AiConfiguration.findOne({ colid, type: /^gemini$/i, active: /^yes$/i }).sort({ _id: -1 }).lean()
+);
+
+const callGeminiJson = async (apikey, prompt) => {
+  const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+  let lastError = "";
+  for (const model of models) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apikey)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: "application/json"
+        }
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) return parseGeminiJson(readGeminiText(data));
+    lastError = data.error?.message || `Gemini API request failed for ${model}`;
+  }
+  throw new Error(lastError || "Gemini API request failed");
+};
 
 const cleanPayload = (input = {}) => ({
   academicyear: text(input.academicyear || input.academicYear),
@@ -194,6 +261,106 @@ exports.bulkCreateSyllabi = async (req, res) => {
 
     if (valid.length) await Syllabus.insertMany(valid, { ordered: false });
     res.json({ success: true, inserted: valid.length, errors });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.assessSyllabusChange = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const newSyllabusChange = text(req.body.newSyllabusChange);
+    if (!newSyllabusChange) return res.status(400).json({ success: false, message: "New syllabus change is required" });
+
+    const query = buildQuery({ ...req.body.filters, colid });
+    const syllabusRows = await Syllabus.find(query).sort({ academicyear: 1, regulation: 1, program: 1, type: 1, subject: 1, semester: 1, course: 1, module: 1 }).lean();
+    if (!syllabusRows.length) return res.status(404).json({ success: false, message: "No existing syllabus found for the selected filters" });
+
+    const aiConfig = await getDefaultGeminiConfig(colid);
+    if (!aiConfig?.apikey) return res.status(400).json({ success: false, message: "Default active Gemini AI configuration is missing" });
+
+    const currentSyllabus = syllabusRows.map((row, index) => ({
+      index: index + 1,
+      academicyear: row.academicyear || "",
+      regulation: row.regulation || "",
+      program: row.program || "",
+      programcode: row.programcode || "",
+      type: row.type || "",
+      subject: row.subject || "",
+      semester: row.semester || "",
+      course: row.course || "",
+      coursecode: row.coursecode || "",
+      module: row.module || "",
+      syllabus: row.syllabus || ""
+    }));
+
+    const prompt = `
+You are an academic curriculum reviewer. Compare the current syllabus and the proposed new syllabus using meaning, topics, scope, learning content, and terminology.
+
+Return only valid JSON with this exact shape:
+{
+  "matchPercent": number,
+  "newPercent": number,
+  "opinion": "short academic review paragraph",
+  "matchedTerms": ["term"],
+  "newTerms": ["term"],
+  "moduleMatches": [
+    { "module": "module name", "course": "course name", "coursecode": "course code", "similarity": number, "syllabus": "brief existing syllabus excerpt or summary" }
+  ],
+  "newSentences": [
+    { "sentence": "new proposed concept or sentence", "score": number }
+  ],
+  "keySimilarities": ["point"],
+  "keyNewAdditions": ["point"],
+  "recommendation": "short recommendation"
+}
+
+Rules:
+- matchPercent is the estimated percentage of proposed syllabus content already covered by current syllabus.
+- newPercent is 100 - matchPercent.
+- Use percentages from 0 to 100.
+- moduleMatches should list the closest matching current modules with similarity from 0 to 100.
+- newSentences should list proposed content that appears materially new, with score showing how much it matches current syllabus.
+- Do not invent modules that are not present in current syllabus.
+
+Current syllabus JSON:
+${JSON.stringify(currentSyllabus)}
+
+Proposed new syllabus:
+${newSyllabusChange}
+`;
+
+    const aiResult = await callGeminiJson(aiConfig.apikey, prompt);
+    const matchPercent = clampPercent(aiResult.matchPercent);
+    const newPercent = clampPercent(aiResult.newPercent, 100 - matchPercent);
+
+    res.json({
+      success: true,
+      data: {
+        matchPercent,
+        newPercent,
+        opinion: text(aiResult.opinion) || text(aiResult.recommendation) || "Gemini completed the syllabus comparison.",
+        matchedTerms: Array.isArray(aiResult.matchedTerms) ? aiResult.matchedTerms.map(text).filter(Boolean).slice(0, 24) : [],
+        newTerms: Array.isArray(aiResult.newTerms) ? aiResult.newTerms.map(text).filter(Boolean).slice(0, 24) : [],
+        moduleMatches: Array.isArray(aiResult.moduleMatches) ? aiResult.moduleMatches.map((item) => ({
+          module: text(item.module) || "Module",
+          course: text(item.course),
+          coursecode: text(item.coursecode),
+          similarity: clampPercent(item.similarity),
+          syllabus: text(item.syllabus)
+        })).slice(0, 10) : [],
+        newSentences: Array.isArray(aiResult.newSentences) ? aiResult.newSentences.map((item) => ({
+          sentence: text(item.sentence),
+          score: clampPercent(item.score)
+        })).filter((item) => item.sentence).slice(0, 10) : [],
+        keySimilarities: Array.isArray(aiResult.keySimilarities) ? aiResult.keySimilarities.map(text).filter(Boolean).slice(0, 8) : [],
+        keyNewAdditions: Array.isArray(aiResult.keyNewAdditions) ? aiResult.keyNewAdditions.map(text).filter(Boolean).slice(0, 8) : [],
+        recommendation: text(aiResult.recommendation),
+        recordCount: syllabusRows.length,
+        courseCount: uniq(syllabusRows.map((row) => `${row.coursecode || ""} ${row.course || ""}`)).length
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
