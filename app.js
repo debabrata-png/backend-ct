@@ -134,6 +134,7 @@ const admissionPaymentsReportController = require('./controllers/admissionpaymen
 const admissionAddressConfigurationController = require('./controllers/admissionaddressconfigurationctlr');
 const admissionBoardConfigurationController = require('./controllers/admissionboardconfigurationctlr');
 const admissionValidationCriteriaController = require('./controllers/admissionvalidationcriteriactlr');
+const admissionFormDocumentController = require('./controllers/admissionformdocumentctlr');
 const researchSeedFundController = require('./controllers/researchseedfundctlrds');
 const mentoringController = require('./controllers/mentoringctlrds');
 const crmManagementController = require('./controllers/crmmanagementctlrds');
@@ -238,6 +239,11 @@ app.get('/admission-validation-criteria', admissionValidationCriteriaController.
 app.post('/admission-validation-criteria', admissionValidationCriteriaController.createValidationCriteria);
 app.post('/admission-validation-criteria-update', admissionValidationCriteriaController.updateValidationCriteria);
 app.post('/admission-validation-criteria-delete', admissionValidationCriteriaController.deleteValidationCriteria);
+app.get('/admission-form-documents', admissionFormDocumentController.getDocuments);
+app.post('/admission-form-documents', admissionFormDocumentController.createDocument);
+app.post('/admission-form-documents-update', admissionFormDocumentController.updateDocument);
+app.post('/admission-form-documents-delete', admissionFormDocumentController.deleteDocument);
+app.post('/admission-form-documents-bulk', admissionFormDocumentController.bulkDocuments);
 app.get('/api/v2/mprograms-management', mprogramsManagementController.getPrograms);
 app.get('/api/v2/mprograms-management/options', mprogramsManagementController.getProgramOptions);
 app.post('/api/v2/mprograms-management', mprogramsManagementController.createProgram);
@@ -5210,6 +5216,7 @@ const studentfeesreceiptctlr = require("./controllers/studentfeesreceiptctlr");
 const studentLedgerDetailReportController = require("./controllers/studentledgerdetailreportctlrds");
 const studentledgerinstallmentctlrds = require("./controllers/studentledgerinstallmentctlrds");
 const feespivotctlrds = require("./controllers/feespivotctlrds");
+const feespaidreportctlrds = require("./controllers/feespaidreportctlrds");
 const applicationfeectlrds = require("./controllers/applicationfeectlrds");
 const provisionaladmissionfeectlrds = require("./controllers/provisionaladmissionfeectlrds");
 const easebuzzgatewayctlrds = require("./controllers/easebuzzgatewayctlrds");
@@ -5246,6 +5253,8 @@ app.get("/api/v2/studentledgeranalytics", studentledgeranalyticsctlr.getStudentL
 app.get("/api/v2/studentledgerpaidanalytics", studentledgerpaidanalyticsctlr.getStudentLedgerPaidAnalytics);
 app.get("/api/v2/feespivot/options", feespivotctlrds.getFeesPivotOptions);
 app.get("/api/v2/feespivot", feespivotctlrds.getFeesPivot);
+app.get("/api/v2/feespaidreport/options", feespaidreportctlrds.getFeesPaidReportOptions);
+app.get("/api/v2/feespaidreport", feespaidreportctlrds.getFeesPaidReport);
 app.get("/api/v2/studentledgercounterpayment", studentledgercounterpaymentctlr.getCounterPaymentLedger);
 app.post("/api/v2/studentledgercounterpayment/pay", studentledgercounterpaymentctlr.postCounterPayment);
 app.get("/api/v2/studentfeesreceipt", studentfeesreceiptctlr.getFeesReceiptRows);
