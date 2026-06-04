@@ -19,6 +19,7 @@ const easebuzzPaymentSchema = new mongoose.Schema(
     description: { type: String },
     email: { type: String },
     phone: { type: String },
+    frontendcallbackurl: { type: String },
     status: { type: String, default: "INITIATED" },
     gatewayresponse: { type: Object, default: {} }
   },

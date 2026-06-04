@@ -22,10 +22,42 @@ function fallbackCallbackUrl(req) {
   return `${protocol}://${host}/api/v2/easebuzzpayment/callback`;
 }
 
-function callbackRedirectUrl(config) {
+function callbackRedirectUrl(config, payment) {
+  const frontendCallback = text(payment?.frontendcallbackurl);
+  if (frontendCallback) return frontendCallback;
   const configured = text(config?.returnurl);
   if (configured && !configured.includes("/api/v2/easebuzzpayment/callback")) return configured;
   return process.env.FRONTEND_URL || "/";
+}
+
+function admissionReceiptUrl(payment, config) {
+  const frontendCallback = text(payment?.frontendcallbackurl);
+  let origin = text(process.env.FRONTEND_URL);
+  if (!origin && frontendCallback) {
+    try {
+      origin = new URL(frontendCallback).origin;
+    } catch (error) {
+      origin = "";
+    }
+  }
+  if (!origin) {
+    const configured = text(config?.returnurl);
+    if (configured && !configured.includes("/api/v2/easebuzzpayment/callback")) {
+      try {
+        origin = new URL(configured).origin;
+      } catch (error) {
+        origin = configured.split("?")[0].replace(/\/$/, "");
+      }
+    }
+  }
+  const base = `${origin || ""}/admission-application-lookup`;
+  const params = new URLSearchParams({
+    colid: String(payment.colid || ""),
+    applicationid: text(payment.applicationid),
+    refno: text(payment.refno),
+    status: text(payment.status)
+  });
+  return `${base}?${params.toString()}`;
 }
 
 function queryFrom(source = {}) {
@@ -67,7 +99,10 @@ exports.initiateEasebuzzPayment = async (req, res) => {
     const refno = `EBZ_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
     const email = text(req.body.email) || "payment@example.com";
     const phone = text(req.body.phone).replace(/\D/g, "").slice(-10) || "9999999999";
-    const callbackUrl = text(config.returnurl) || fallbackCallbackUrl(req);
+    const configuredCallbackUrl = text(config.returnurl);
+    const callbackUrl = configuredCallbackUrl.includes("/api/v2/easebuzzpayment/callback")
+      ? configuredCallbackUrl
+      : fallbackCallbackUrl(req);
 
     const payment = await EasebuzzPayment.create({
       name: text(req.body.name),
@@ -84,6 +119,7 @@ exports.initiateEasebuzzPayment = async (req, res) => {
       description: text(req.body.description),
       email,
       phone,
+      frontendcallbackurl: text(req.body.frontendcallbackurl),
       status: "INITIATED"
     });
 
@@ -209,9 +245,12 @@ exports.handleEasebuzzPaymentCallback = async (req, res) => {
       );
     }
 
-    const redirectBase = callbackRedirectUrl(config);
+    if (payment.type === "Admission" && payment.applicationid) {
+      return res.redirect(admissionReceiptUrl(payment, config));
+    }
+    const redirectBase = callbackRedirectUrl(config, payment);
     const joiner = redirectBase.includes("?") ? "&" : "?";
-    res.redirect(`${redirectBase}${joiner}refno=${encodeURIComponent(refno)}&status=${encodeURIComponent(payment.status)}`);
+    return res.redirect(`${redirectBase}${joiner}refno=${encodeURIComponent(refno)}&status=${encodeURIComponent(payment.status)}`);
   } catch (error) {
     const fallback = process.env.FRONTEND_URL || "/";
     const joiner = fallback.includes("?") ? "&" : "?";
