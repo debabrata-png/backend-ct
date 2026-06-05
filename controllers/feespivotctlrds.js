@@ -3,6 +3,8 @@ const Ledgerstud = require("../Models/ledgerstud");
 const allowedFields = [
   "academicyear",
   "admissionyear",
+  "student",
+  "regno",
   "programcode",
   "regulation",
   "major",
