@@ -4602,6 +4602,7 @@ const neplmsfacultydashboardctlrds = require("./controllers/neplmsfacultydashboa
 const neplmsattendancectlrds = require("./controllers/neplmsattendancectlrds");
 const neplmsassessmentmarksctlrds = require("./controllers/neplmsassessmentmarksctlrds");
 const neplmsfinalmarksctlrds = require("./controllers/neplmsfinalmarksctlrds");
+const blockchainledgerctlrds = require("./controllers/blockchainledgerctlrds");
 const hostelmappingctlrds = require("./controllers/hostelmappingctlrds");
 const academicsubjectctlrds = require("./controllers/academicsubjectctlrds");
 const mfeesconfigctlrds = require("./controllers/mfeesconfigctlrds");
@@ -4915,6 +4916,11 @@ app.post("/api/v2/neplms/final-marks/bulk-delete", neplmsfinalmarksctlrds.bulkDe
 app.get("/api/v2/neplms/grade-card/options", neplmsfinalmarksctlrds.getGradeCardOptions);
 app.get("/api/v2/neplms/grade-card/students", neplmsfinalmarksctlrds.searchGradeCardStudents);
 app.get("/api/v2/neplms/grade-card", neplmsfinalmarksctlrds.getGradeCard);
+app.post("/api/v2/neplms/grade-card/blockchain-store", neplmsfinalmarksctlrds.storeGradeCardOnBlockchain);
+app.get("/api/v2/public/grade-card/blockchain-verify", neplmsfinalmarksctlrds.verifyGradeCardFromBlockchain);
+app.post("/api/v2/blockchain/append", blockchainledgerctlrds.createBlock);
+app.get("/api/v2/blockchain/blocks", blockchainledgerctlrds.getBlocks);
+app.get("/api/v2/blockchain/verify", blockchainledgerctlrds.verifyChain);
 app.get("/api/v2/hostelmapping/options", hostelmappingctlrds.getOptions);
 app.post("/api/v2/hostelmapping/building", hostelmappingctlrds.createBuilding);
 app.get("/api/v2/hostelmapping/buildings", hostelmappingctlrds.getBuildings);

@@ -5,6 +5,9 @@ const GradeConfiguration = require("../Models/gradeconfigurationds");
 const RelativeGradingConfiguration = require("../Models/relativegradingconfigurationds");
 const ZScoreConfiguration = require("../Models/zscoreconfigurationds");
 const User = require("../Models/user");
+const BlockchainLedger = require("../Models/blockchainledgerds");
+const { appendBlock } = require("./blockchainledgerctlrds");
+const crypto = require("crypto");
 
 const toNumber = (value) => {
   if (value === "" || value === null || value === undefined) return undefined;
@@ -15,6 +18,28 @@ const toNumber = (value) => {
 const text = (value) => String(value || "").trim();
 const normalizePassStatus = (value) => (text(value).toLowerCase() === "pass" ? "Pass" : "Fail");
 const getPassStatusFromGrade = (grade) => (text(grade).toUpperCase() === "F" ? "Fail" : "Pass");
+const stableStringify = (value) => {
+  if (value === null || value === undefined) return "";
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+  if (value instanceof Date) return JSON.stringify(value.toISOString());
+  if (typeof value === "object") {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+};
+const sha256 = (value) => crypto.createHash("sha256").update(String(value)).digest("hex");
+const buildBlockchainHash = ({ colid, blockindex, modelname, collectionname, recordid, action, datahash, previoushash, timestamp, user }) => sha256(stableStringify({
+  colid,
+  blockindex,
+  modelname,
+  collectionname,
+  recordid,
+  action,
+  datahash,
+  previoushash,
+  timestamp,
+  user
+}));
 
 const buildFinalMarkPayload = (source = {}, colid, user = "") => {
   const internalmarks = toNumber(source.internalmarks) || 0;
@@ -899,6 +924,148 @@ exports.getGradeCard = async (req, res) => {
       sgpa: getSummary(semesterMarks),
       cgpa: getSummary(cgpaRows),
       allMarks: cgpaRows
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const buildGradeCardPayload = async ({ colid, regno, semester }) => {
+  const [student, semesterMarks, allMarks] = await Promise.all([
+    User.findOne({ colid, regno }).select("name email phone regno rollno academicyear admissionyear program programcode semester section Major Minor category gender regulation colid").lean(),
+    NepLmsFinalMarks.find({ colid, regno, semester }).sort({ course: 1, coursecode: 1 }).lean(),
+    NepLmsFinalMarks.find({ colid, regno }).sort({ semester: 1, course: 1 }).lean()
+  ]);
+
+  const getSummary = (rows) => {
+    const totalCredits = rows.reduce((sum, row) => sum + (Number(row.credits) || 0), 0);
+    const totalGpa = rows.reduce((sum, row) => sum + (Number(row.gpa) || 0), 0);
+    return {
+      totalCredits: Number(totalCredits.toFixed(2)),
+      totalGpa: Number(totalGpa.toFixed(2)),
+      value: totalCredits ? Number((totalGpa / totalCredits).toFixed(2)) : 0
+    };
+  };
+
+  const selectedSemesterNumber = Number(semester);
+  const cgpaRows = Number.isNaN(selectedSemesterNumber)
+    ? allMarks
+    : allMarks.filter((row) => {
+      const rowSemester = Number(row.semester);
+      return !Number.isNaN(rowSemester) && rowSemester <= selectedSemesterNumber;
+    });
+
+  return {
+    student,
+    semester,
+    marks: semesterMarks,
+    sgpa: getSummary(semesterMarks),
+    cgpa: getSummary(cgpaRows),
+    allMarks: cgpaRows
+  };
+};
+
+exports.storeGradeCardOnBlockchain = async (req, res) => {
+  try {
+    const colid = toNumber(req.body.colid);
+    const regno = text(req.body.regno);
+    const semester = text(req.body.semester);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!regno) return res.status(400).json({ success: false, message: "regno is required" });
+    if (!semester) return res.status(400).json({ success: false, message: "semester is required" });
+
+    const payload = await buildGradeCardPayload({ colid, regno, semester });
+    if (!payload.student) return res.status(404).json({ success: false, message: "Student not found" });
+    if (!payload.marks.length) return res.status(400).json({ success: false, message: "No final marks found for this semester" });
+
+    const block = await appendBlock({
+      colid,
+      modelname: "neplmsgradecard",
+      collectionname: "neplmsfinalmarksds",
+      recordid: `${regno}::${semester}`,
+      action: "GRADE_CARD_STORE",
+      payload: {
+        ...payload,
+        storedAt: new Date().toISOString()
+      },
+      metadata: {
+        regno,
+        student: payload.student.name || "",
+        semester,
+        academicyear: payload.student.academicyear || "",
+        programcode: payload.student.programcode || ""
+      },
+      user: text(req.body.user)
+    });
+
+    res.json({ success: true, message: "Grade card stored in blockchain", data: block });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.verifyGradeCardFromBlockchain = async (req, res) => {
+  try {
+    const regno = text(req.query.regno);
+    const studentName = text(req.query.student || req.query.name);
+    const colid = toNumber(req.query.colid);
+    if (!regno) return res.status(400).json({ success: false, message: "regno is required" });
+    if (!studentName) return res.status(400).json({ success: false, message: "student name is required" });
+
+    const query = {
+      modelname: "neplmsgradecard",
+      recordid: { $regex: `^${regno.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}::`, $options: "i" }
+    };
+    if (colid !== undefined) query.colid = colid;
+
+    const blocks = await BlockchainLedger.find(query).sort({ timestamp: -1 }).lean();
+    const matches = [];
+    for (const block of blocks) {
+      const payloadName = text(block.payload?.student?.name);
+      const payloadRegno = text(block.payload?.student?.regno);
+      if (payloadRegno.toLowerCase() !== regno.toLowerCase()) continue;
+      if (payloadName.toLowerCase() !== studentName.toLowerCase()) continue;
+
+      const previousBlock = block.previoushash === "GENESIS"
+        ? null
+        : await BlockchainLedger.findOne({ colid: block.colid, blockindex: Number(block.blockindex) - 1 }).lean();
+      const expectedPreviousHash = previousBlock ? previousBlock.hash : "GENESIS";
+      const expectedDataHash = sha256(stableStringify(block.payload || {}));
+      const expectedHash = buildBlockchainHash({
+        colid: block.colid,
+        blockindex: block.blockindex,
+        modelname: block.modelname,
+        collectionname: block.collectionname,
+        recordid: block.recordid,
+        action: block.action,
+        datahash: block.datahash,
+        previoushash: block.previoushash,
+        timestamp: new Date(block.timestamp).toISOString(),
+        user: block.user
+      });
+      const errors = [];
+      if (block.previoushash !== expectedPreviousHash) errors.push("Previous hash mismatch");
+      if (block.datahash !== expectedDataHash) errors.push("Payload hash mismatch");
+      if (block.hash !== expectedHash) errors.push("Block hash mismatch");
+
+      matches.push({
+        blockid: block._id,
+        colid: block.colid,
+        blockindex: block.blockindex,
+        recordid: block.recordid,
+        hash: block.hash,
+        timestamp: block.timestamp,
+        valid: errors.length === 0,
+        errors,
+        payload: block.payload
+      });
+    }
+
+    res.json({
+      success: true,
+      verified: matches.some((item) => item.valid),
+      count: matches.length,
+      data: matches
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
