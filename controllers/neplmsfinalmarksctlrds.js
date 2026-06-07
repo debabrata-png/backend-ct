@@ -83,12 +83,18 @@ const buildQuery = (source = {}) => {
     "semester",
     "program",
     "programcode",
+    "regulation",
     "course",
     "coursecode",
     "major",
     "subject",
+    "student",
     "regno",
-    "passstatus"
+    "grade",
+    "passstatus",
+    "attempt",
+    "failmode",
+    "grademode"
   ].forEach((field) => {
     if (source[field]) query[field] = source[field];
   });
