@@ -5311,6 +5311,8 @@ app.post("/api/v2/academiccalendar/bulk", academiccalendarctlrds.bulk);
 app.get("/api/v2/studentledgercounterpayment", studentledgercounterpaymentctlr.getCounterPaymentLedger);
 app.post("/api/v2/studentledgercounterpayment/pay", studentledgercounterpaymentctlr.postCounterPayment);
 app.get("/api/v2/studentfeesreceipt", studentfeesreceiptctlr.getFeesReceiptRows);
+app.post("/api/v2/studentfeesreceipt/blockchain-store", studentfeesreceiptctlr.storeFeesReceiptOnBlockchain);
+app.get("/api/v2/public/studentfeesreceipt/blockchain-verify", studentfeesreceiptctlr.verifyFeesReceiptFromBlockchain);
 app.get("/api/v2/studentledgerdetail/options", studentLedgerDetailReportController.getStudentLedgerDetailOptions);
 app.post("/api/v2/studentledgerdetail/students", studentLedgerDetailReportController.searchStudentLedgerStudents);
 app.post("/api/v2/studentledgerdetail/ledger", studentLedgerDetailReportController.getStudentLedgerDetails);
