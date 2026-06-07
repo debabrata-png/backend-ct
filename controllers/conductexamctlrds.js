@@ -2,8 +2,11 @@ const ConductExam = require("../Models/conductexamds");
 const ConductExamCourse = require("../Models/conductexamcourseds");
 const ConductExamRoll = require("../Models/conductexamrollds");
 const ConductExamRoom = require("../Models/conductexamroomds");
+const ConductExamInvigilatorAllocation = require("../Models/conductexaminvigilatorallocationds");
 const RegulationCourseMap = require("../Models/regulationcoursemapds");
 const User = require("../Models/user");
+const AcademicCalendar = require("../Models/macadcal");
+const AiConfiguration = require("../Models/aiconfigurationds");
 
 const text = (value) => String(value || "").trim();
 const number = (value) => {
@@ -11,6 +14,154 @@ const number = (value) => {
   return Number.isNaN(parsed) ? undefined : parsed;
 };
 const uniq = (values) => [...new Set(values.map((item) => text(item)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+const dateKey = (value) => {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toISOString().slice(0, 10);
+};
+const parseDateOnly = (value) => {
+  const key = dateKey(value);
+  return key ? new Date(`${key}T00:00:00.000Z`) : null;
+};
+const sameOrBlank = (calendarValue, rowValue) => {
+  const left = text(calendarValue);
+  return !left || left === text(rowValue);
+};
+const getDefaultGeminiConfig = async (colid) => (
+  await AiConfiguration.findOne({ colid, type: /^gemini$/i, active: /^yes$/i, default: /^yes$/i }).sort({ _id: -1 }).lean()
+  || await AiConfiguration.findOne({ colid, type: /^gemini$/i, active: /^yes$/i }).sort({ _id: -1 }).lean()
+);
+
+const callGeminiText = async (apikey, prompt, requestedModel = "") => {
+  const allowedModels = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
+  const selectedModel = text(requestedModel);
+  const models = selectedModel && allowedModels.includes(selectedModel)
+    ? [selectedModel, ...allowedModels.filter((model) => model !== selectedModel)]
+    : allowedModels;
+  let lastError = "";
+  for (const model of models) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apikey)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.2 }
+      })
+    });
+    const data = await response.json();
+    if (response.ok) return data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("\n") || "";
+    lastError = data.error?.message || `Gemini request failed for ${model}`;
+  }
+  throw new Error(lastError || "Gemini request failed");
+};
+
+const buildExamCourseScheduleFilter = (body = {}) => {
+  const filter = buildFilter(body, ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode"]);
+  return filter;
+};
+
+const buildExamCodeOnlyScheduleFilter = (body = {}) => {
+  const colid = number(body.colid);
+  const examcode = text(body.examcode);
+  const filter = {};
+  if (colid !== undefined) filter.colid = colid;
+  if (examcode) filter.examcode = examcode;
+  return filter;
+};
+
+const loadHolidayRows = async (colid, fromDate, toDate) => {
+  const rows = await AcademicCalendar.find({
+    colid,
+    type: /^holiday$/i,
+    activitydate: { $gte: fromDate, $lte: toDate }
+  }).lean();
+  const map = new Map();
+  rows.forEach((row) => {
+    const key = dateKey(row.activitydate);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(row);
+  });
+  return map;
+};
+
+const isHolidayForCourse = (row, holidays = []) => holidays.some((holiday) => (
+  sameOrBlank(holiday.academicyear, row.academicyear)
+  && sameOrBlank(holiday.regulation, row.regulation)
+  && (sameOrBlank(holiday.programcode, row.programcode) || sameOrBlank(holiday.program, row.program))
+  && sameOrBlank(holiday.semester, row.semester)
+));
+
+const buildAvailableSlots = (rows, holidaysByDate, fromDate, toDate, slots) => {
+  const available = [];
+  const current = new Date(fromDate.getTime());
+  while (current <= toDate) {
+    const day = current.getUTCDay();
+    const key = current.toISOString().slice(0, 10);
+    if (day !== 0 && day !== 6) {
+      const holidays = holidaysByDate.get(key) || [];
+      rows.forEach((row) => {
+        if (!isHolidayForCourse(row, holidays)) {
+          slots.forEach((slot) => available.push({ date: key, slot, rowKey: String(row._id) }));
+        }
+      });
+    }
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+  return available;
+};
+
+const scheduleExamCourseRows = async ({ colid, filter, fromdate, todate, slot1, slot2, aiOrder = [] }) => {
+  const fromDate = parseDateOnly(fromdate);
+  const toDate = parseDateOnly(todate);
+  if (!fromDate || !toDate) throw new Error("Valid from date and to date are required");
+  if (fromDate > toDate) throw new Error("From date cannot be after to date");
+
+  const rows = await ConductExamCourse.find({ ...filter, colid }).sort({ semester: 1, program: 1, subject: 1, course: 1 }).lean();
+  if (!rows.length) throw new Error("No exam course rows found for scheduling");
+
+  const slots = [text(slot1) || "Slot 1", text(slot2) || "Slot 2"];
+  const holidaysByDate = await loadHolidayRows(colid, fromDate, toDate);
+  const rowAllowedSlotKeys = buildAvailableSlots(rows, holidaysByDate, fromDate, toDate, slots).reduce((acc, item) => {
+    if (!acc.has(item.rowKey)) acc.set(item.rowKey, []);
+    acc.get(item.rowKey).push(`${item.date}||${item.slot}`);
+    return acc;
+  }, new Map());
+
+  const orderMap = new Map(aiOrder.map((code, index) => [text(code), index]));
+  const sortedRows = [...rows].sort((a, b) => {
+    const aOrder = orderMap.has(text(a.coursecode)) ? orderMap.get(text(a.coursecode)) : Number.MAX_SAFE_INTEGER;
+    const bOrder = orderMap.has(text(b.coursecode)) ? orderMap.get(text(b.coursecode)) : Number.MAX_SAFE_INTEGER;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    const sem = text(a.semester).localeCompare(text(b.semester), undefined, { numeric: true });
+    if (sem) return sem;
+    return text(a.course).localeCompare(text(b.course));
+  });
+
+  const usedSemestersBySlot = new Map();
+  const assignments = [];
+  for (const row of sortedRows) {
+    const allowedKeys = rowAllowedSlotKeys.get(String(row._id)) || [];
+    const selectedKey = allowedKeys.find((key) => !usedSemestersBySlot.get(key)?.has(text(row.semester)));
+    if (!selectedKey) throw new Error(`No valid slot available for ${row.course || row.coursecode} semester ${row.semester}`);
+    const [examdate, examslot] = selectedKey.split("||");
+    if (!usedSemestersBySlot.has(selectedKey)) usedSemestersBySlot.set(selectedKey, new Set());
+    usedSemestersBySlot.get(selectedKey).add(text(row.semester));
+    assignments.push({ id: row._id, examdate, examslot });
+  }
+
+  if (assignments.length) {
+    await ConductExamCourse.bulkWrite(assignments.map((item) => ({
+      updateOne: {
+        filter: { _id: item.id, colid },
+        update: { $set: { examdate: item.examdate, examslot: item.examslot } }
+      }
+    })));
+  }
+
+  const updated = await ConductExamCourse.find({ ...filter, colid }).sort({ examdate: 1, examslot: 1, semester: 1, course: 1 }).lean();
+  return { saved: assignments.length, data: updated, assignments };
+};
 
 const examPayload = (body = {}) => ({
   colid: number(body.colid),
@@ -35,6 +186,8 @@ const examCoursePayload = (body = {}) => ({
   semester: text(body.semester),
   course: text(body.course),
   coursecode: text(body.coursecode),
+  coursetype: ["Theory", "Practical"].includes(text(body.coursetype || body.courseType)) ? text(body.coursetype || body.courseType) : "Theory",
+  coursemastercode: text(body.coursemastercode || body.courseMasterCode),
   examdate: text(body.examdate),
   examslot: text(body.examslot),
   user: text(body.user)
@@ -271,7 +424,7 @@ exports.bulkRooms = async (req, res) => {
 
 exports.getExamCourses = async (req, res) => {
   try {
-    const filter = buildFilter(req.query, ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode", "examdate", "examslot"]);
+    const filter = buildFilter(req.query, ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode", "coursetype", "coursemastercode", "examdate", "examslot"]);
     if (filter.colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
     const data = await ConductExamCourse.find(filter).sort({ academicyear: -1, exam: 1, program: 1, type: 1, semester: 1, course: 1 }).lean();
     res.json({ success: true, data });
@@ -337,6 +490,71 @@ exports.bulkExamCourses = async (req, res) => {
   }
 };
 
+exports.autoScheduleExamCourses = async (req, res) => {
+  try {
+    const colid = number(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!text(req.body.examcode)) return res.status(400).json({ success: false, message: "Exam code is required for scheduling" });
+    const filter = buildExamCodeOnlyScheduleFilter(req.body);
+    const result = await scheduleExamCourseRows({
+      colid,
+      filter,
+      fromdate: req.body.fromdate,
+      todate: req.body.todate,
+      slot1: req.body.slot1,
+      slot2: req.body.slot2
+    });
+    res.json({ success: true, ...result, message: `${result.saved} papers scheduled.` });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+exports.aiScheduleExamCourses = async (req, res) => {
+  try {
+    const colid = number(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!text(req.body.examcode)) return res.status(400).json({ success: false, message: "Exam code is required for Gemini scheduling" });
+    const filter = buildExamCodeOnlyScheduleFilter(req.body);
+    const rows = await ConductExamCourse.find({ ...filter, colid }).sort({ semester: 1, program: 1, subject: 1, course: 1 }).lean();
+    if (!rows.length) return res.status(400).json({ success: false, message: "No exam course rows found for scheduling" });
+    const config = await getDefaultGeminiConfig(colid);
+    if (!config?.apikey) return res.status(400).json({ success: false, message: "Default active Gemini AI configuration is missing" });
+    const prompt = [
+      "Create an exam paper scheduling order from the following papers.",
+      "Hard rules: only two slots per day, do not schedule two courses of the same semester in the same slot, no Saturday or Sunday, skip holidays handled separately by software.",
+      "Return a concise recommendation and a JSON array named coursecodes in preferred scheduling order.",
+      `User rules: ${text(req.body.rules) || "Use balanced scheduling."}`,
+      `Date range: ${text(req.body.fromdate)} to ${text(req.body.todate)}.`,
+      `Slots: ${text(req.body.slot1) || "Slot 1"}, ${text(req.body.slot2) || "Slot 2"}.`,
+      `Papers: ${JSON.stringify(rows.map((row) => ({ coursecode: row.coursecode, course: row.course, semester: row.semester, programcode: row.programcode, subject: row.subject })))}`
+    ].join("\n");
+    const aiText = await callGeminiText(config.apikey, prompt, req.body.geminiModel);
+    const jsonMatch = aiText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+    let aiOrder = [];
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[0]);
+        aiOrder = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.coursecodes) ? parsed.coursecodes : []);
+      } catch (parseErr) {
+        aiOrder = [];
+      }
+    }
+    const result = await scheduleExamCourseRows({
+      colid,
+      filter,
+      fromdate: req.body.fromdate,
+      todate: req.body.todate,
+      slot1: req.body.slot1,
+      slot2: req.body.slot2,
+      aiOrder
+    });
+    res.json({ success: true, ...result, aiText, message: `${result.saved} papers scheduled with Gemini guidance.` });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
 exports.getCourseMapOptions = async (req, res) => {
   try {
     const colid = number(req.query.colid);
@@ -358,7 +576,7 @@ exports.getCourseMapOptions = async (req, res) => {
       types: uniq(rows.map((r) => r.type)),
       subjects: uniq(rows.map((r) => r.subject)),
       semesters: uniq(rows.map((r) => r.semester)),
-      courses: rows.map((r) => ({ course: r.course, coursecode: r.coursecode, examdate: r.examdate, examslot: r.examslot, subject: r.subject, type: r.type, semester: r.semester, program: r.program, programcode: r.programcode, regulation: r.regulation }))
+      courses: rows.map((r) => ({ course: r.course, coursecode: r.coursecode, coursetype: r.coursetype, coursemastercode: r.coursemastercode, examdate: r.examdate, examslot: r.examslot, subject: r.subject, type: r.type, semester: r.semester, program: r.program, programcode: r.programcode, regulation: r.regulation }))
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -502,6 +720,105 @@ exports.bulkExamRolls = async (req, res) => {
       saved += 1;
     }
     res.json({ success: true, saved, errors });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getInvigilatorStudentAttendanceOptions = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    const invigilatoremail = text(req.query.invigilatoremail || req.query.user || req.query.email);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!invigilatoremail) return res.status(400).json({ success: false, message: "invigilator email is required" });
+    const allocations = await ConductExamInvigilatorAllocation.find({
+      colid,
+      invigilatoremail: new RegExp(`^${invigilatoremail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i")
+    }).sort({ academicyear: -1, examdate: 1, slot: 1, campus: 1, building: 1, room: 1 }).lean();
+    res.json({
+      success: true,
+      allocations,
+      academicyears: uniq(allocations.map((row) => row.academicyear)),
+      exams: uniq(allocations.map((row) => `${row.examcode}||${row.exam}`)).map((value) => {
+        const [examcode, exam] = value.split("||");
+        return { examcode, exam };
+      }),
+      examdates: uniq(allocations.map((row) => row.examdate)),
+      slots: uniq(allocations.map((row) => row.slot)),
+      rooms: allocations.map((row) => ({
+        campus: row.campus,
+        building: row.building,
+        room: row.room,
+        examdate: row.examdate,
+        slot: row.slot,
+        academicyear: row.academicyear,
+        exam: row.exam,
+        examcode: row.examcode
+      }))
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getInvigilatorRoomStudents = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    const invigilatoremail = text(req.query.invigilatoremail || req.query.user || req.query.email);
+    const academicyear = text(req.query.academicyear);
+    const examcode = text(req.query.examcode);
+    const examdate = text(req.query.examdate);
+    const slot = text(req.query.slot);
+    const campus = text(req.query.campus);
+    const building = text(req.query.building);
+    const room = text(req.query.room);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!invigilatoremail || !academicyear || !examcode || !examdate || !slot || !room) {
+      return res.status(400).json({ success: false, message: "Invigilator, academic year, exam, date, slot and room are required" });
+    }
+    const allocationFilter = {
+      colid,
+      academicyear,
+      examcode,
+      examdate,
+      slot,
+      room,
+      invigilatoremail: new RegExp(`^${invigilatoremail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i")
+    };
+    if (campus) allocationFilter.campus = campus;
+    if (building) allocationFilter.building = building;
+    const allocation = await ConductExamInvigilatorAllocation.findOne(allocationFilter).lean();
+    if (!allocation) return res.status(403).json({ success: false, message: "No invigilation allocation found for this room, date and slot." });
+    const filter = {
+      colid,
+      academicyear,
+      examcode,
+      examdate,
+      examslot: slot,
+      examroom: room
+    };
+    if (campus) filter.campus = campus;
+    if (building) filter.building = building;
+    const data = await ConductExamRoll.find(filter).sort({ seatno: 1, student: 1, regno: 1, course: 1 }).lean();
+    res.json({ success: true, data, allocation });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.markExamRollAttendance = async (req, res) => {
+  try {
+    const colid = number(req.body.colid);
+    const ids = Array.isArray(req.body.ids) ? req.body.ids.filter(Boolean) : [];
+    const attended = text(req.body.attended);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!ids.length) return res.status(400).json({ success: false, message: "Select at least one student" });
+    if (!["Yes", "No"].includes(attended)) return res.status(400).json({ success: false, message: "Attendance must be Yes or No" });
+    const result = await ConductExamRoll.updateMany(
+      { colid, _id: { $in: ids } },
+      { $set: { attended, user: text(req.body.user) } }
+    );
+    res.json({ success: true, updated: result.modifiedCount || result.nModified || 0 });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

@@ -23,6 +23,12 @@ type: String
 programcode: {
 type: String
 },
+regulation: {
+type: String
+},
+semester: {
+type: String
+},
 ativity: {
 type: String
 },
@@ -49,4 +55,3 @@ status1: {
 const macadcal=mongoose.model('macadcal',macadcalschema);
 
 module.exports=macadcal;
-
