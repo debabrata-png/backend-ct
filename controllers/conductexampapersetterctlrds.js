@@ -1,0 +1,414 @@
+const path = require("path");
+const multer = require("multer");
+const AWS = require("aws-sdk");
+const ConductExamCourse = require("../Models/conductexamcourseds");
+const PaperSetter = require("../Models/conductexampapersetterds");
+const QuestionPaper = require("../Models/conductexamquestionpaperds");
+const CourseOutcome = require("../Models/courseoutcomeds");
+const Syllabus = require("../Models/syllabusds");
+const NepLmsTimetable = require("../Models/neplmstimetableds");
+const AiConfiguration = require("../Models/aiconfigurationds");
+const Awsconfig = require("../Models/awsconfig");
+const User = require("../Models/user");
+
+const upload = multer({ storage: multer.memoryStorage() });
+exports.uploadMiddleware = upload.single("file");
+
+const text = (value) => String(value || "").trim();
+const number = (value) => {
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
+const escRegex = (value) => text(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const uniq = (values) => [...new Set(values.map(text).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+const arr = (value) => Array.isArray(value) ? value.map(text).filter(Boolean) : String(value || "").split(/[,;|]/).map(text).filter(Boolean);
+const stripCodeFence = (content) => text(content).replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "").trim();
+const splitTopics = (value) => String(value || "")
+  .split(/\r?\n|[,;|]/)
+  .map((item) => item.replace(/^\s*[-*0-9.)]+\s*/, "").trim())
+  .filter(Boolean);
+const parseJson = (content) => {
+  const clean = stripCodeFence(content);
+  const startObj = clean.indexOf("{");
+  const startArr = clean.indexOf("[");
+  const start = startArr >= 0 && (startObj < 0 || startArr < startObj) ? startArr : startObj;
+  const end = startArr >= 0 && start === startArr ? clean.lastIndexOf("]") : clean.lastIndexOf("}");
+  return JSON.parse(start >= 0 && end > start ? clean.slice(start, end + 1) : clean);
+};
+const encodeS3Key = (key) => String(key || "").split("/").map(encodeURIComponent).join("/");
+const s3Url = (bucket, region, key) => region === "us-east-1"
+  ? `https://${bucket}.s3.amazonaws.com/${encodeS3Key(key)}`
+  : `https://${bucket}.s3.${region}.amazonaws.com/${encodeS3Key(key)}`;
+
+const courseFields = ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "type", "subject", "semester", "course", "coursecode"];
+const setterFields = [...courseFields, "papersettername", "papersetteremail", "status"];
+
+const buildFilter = (source = {}, fields = []) => {
+  const filter = {};
+  const colid = number(source.colid);
+  if (colid !== undefined) filter.colid = colid;
+  fields.forEach((field) => {
+    if (text(source[field])) filter[field] = text(source[field]);
+  });
+  return filter;
+};
+
+const buildLooseCourseFilter = (source = {}) => {
+  const filter = {};
+  const colid = number(source.colid);
+  if (colid !== undefined) filter.colid = colid;
+  ["academicyear", "regulation", "program", "programcode", "type", "subject", "semester", "course", "coursecode"].forEach((field) => {
+    if (text(source[field])) filter[field] = text(source[field]);
+  });
+  return filter;
+};
+
+const groupedContext = (rows, topicReader) => {
+  const map = new Map();
+  rows.forEach((row) => {
+    const module = text(row.module) || "General";
+    const topics = topicReader(row).map(text).filter(Boolean);
+    if (!map.has(module)) map.set(module, new Set());
+    topics.forEach((topic) => map.get(module).add(topic));
+  });
+  return [...map.entries()].map(([module, topicSet]) => ({
+    module,
+    topics: [...topicSet].sort((a, b) => a.localeCompare(b))
+  })).sort((a, b) => a.module.localeCompare(b.module));
+};
+
+const baseCoursePayload = (body = {}) => ({
+  colid: number(body.colid),
+  academicyear: text(body.academicyear || body.academicYear),
+  regulation: text(body.regulation),
+  exam: text(body.exam || body.examname),
+  examcode: text(body.examcode),
+  program: text(body.program),
+  programcode: text(body.programcode),
+  type: text(body.type),
+  subject: text(body.subject),
+  semester: text(body.semester),
+  course: text(body.course),
+  coursecode: text(body.coursecode),
+  user: text(body.user)
+});
+
+const setterPayload = (body = {}) => ({
+  ...baseCoursePayload(body),
+  papersettername: text(body.papersettername || body.papersetter || body.name),
+  papersetteremail: text(body.papersetteremail || body.email).toLowerCase(),
+  status: text(body.status) || "assigned"
+});
+
+const validateSetter = (item) => {
+  if (item.colid === undefined) return "colid is required";
+  for (const field of ["academicyear", "regulation", "exam", "examcode", "program", "programcode", "course", "coursecode", "papersettername", "papersetteremail"]) {
+    if (!item[field]) return `${field} is required`;
+  }
+  return "";
+};
+
+const getAiConfig = async (colid) => (
+  await AiConfiguration.findOne({ colid: Number(colid), type: /^gemini$/i, active: /^yes$/i, default: /^yes$/i }).sort({ _id: -1 }).lean()
+  || await AiConfiguration.findOne({ colid: Number(colid), type: /^gemini$/i, active: /^yes$/i }).sort({ _id: -1 }).lean()
+);
+
+const callGemini = async (colid, model, prompt) => {
+  const config = await getAiConfig(colid);
+  if (!config?.apikey) throw new Error("Default active Gemini AI configuration is missing");
+  const models = model ? [model] : ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+  let lastError = "";
+  for (const geminiModel of models) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent?key=${encodeURIComponent(config.apikey)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.35, responseMimeType: "application/json" }
+      })
+    });
+    const data = await response.json();
+    if (response.ok) return data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("\n") || "";
+    lastError = data.error?.message || `Gemini API request failed for ${geminiModel}`;
+  }
+  throw new Error(lastError || "Gemini API request failed");
+};
+
+const getDefaultAwsConfig = async (colid) => Awsconfig.findOne({ colid: Number(colid), type: /^aws$/i, default: /^yes$/i }).sort({ _id: -1 }).lean();
+
+exports.options = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const courseFilter = buildFilter(req.query, courseFields);
+    const [courses, setters, users] = await Promise.all([
+      ConductExamCourse.find(courseFilter).sort({ academicyear: -1, examcode: 1, program: 1, course: 1 }).lean(),
+      PaperSetter.find({ colid }).sort({ papersettername: 1 }).lean(),
+      User.find({ colid, role: { $not: /^Student$/i } }).select("name email role department").sort({ name: 1, email: 1 }).lean()
+    ]);
+    res.json({ success: true, courses, setters, users, academicyears: uniq(courses.map((row) => row.academicyear)), examcodes: uniq(courses.map((row) => row.examcode)) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getSetters = async (req, res) => {
+  try {
+    const filter = buildFilter(req.query, setterFields);
+    if (filter.colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const data = await PaperSetter.find(filter).sort({ academicyear: -1, examcode: 1, program: 1, course: 1, papersettername: 1 }).lean();
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.saveSetter = async (req, res) => {
+  try {
+    const item = setterPayload(req.body);
+    const error = validateSetter(item);
+    if (error) return res.status(400).json({ success: false, message: error });
+    const data = req.body.id
+      ? await PaperSetter.findOneAndUpdate({ _id: req.body.id, colid: item.colid }, item, { new: true, runValidators: true })
+      : await PaperSetter.findOneAndUpdate(
+        { colid: item.colid, academicyear: item.academicyear, examcode: item.examcode, programcode: item.programcode, coursecode: item.coursecode, papersetteremail: item.papersetteremail },
+        item,
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.code === 11000 ? "This paper setter is already assigned for this course" : error.message });
+  }
+};
+
+exports.deleteSetter = async (req, res) => {
+  try {
+    await PaperSetter.findOneAndDelete({ _id: req.body.id, colid: number(req.body.colid) });
+    res.json({ success: true, message: "Deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.bulkSetters = async (req, res) => {
+  try {
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const errors = [];
+    let saved = 0;
+    for (let index = 0; index < items.length; index += 1) {
+      const item = setterPayload({ ...items[index], colid: req.body.colid || items[index].colid, user: req.body.user || items[index].user });
+      const error = validateSetter(item);
+      if (error) {
+        errors.push({ rowNumber: items[index].rowNumber || index + 2, message: error });
+        continue;
+      }
+      await PaperSetter.findOneAndUpdate(
+        { colid: item.colid, academicyear: item.academicyear, examcode: item.examcode, programcode: item.programcode, coursecode: item.coursecode, papersetteremail: item.papersetteremail },
+        item,
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      saved += 1;
+    }
+    res.json({ success: true, saved, errors });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.assignedPapers = async (req, res) => {
+  try {
+    const filter = buildFilter(req.query, ["academicyear", "exam", "examcode", "programcode", "coursecode", "status"]);
+    if (filter.colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (text(req.query.papersetteremail || req.query.email)) filter.papersetteremail = text(req.query.papersetteremail || req.query.email).toLowerCase();
+    const data = await PaperSetter.find(filter).sort({ academicyear: -1, examcode: 1, course: 1 }).lean();
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getQuestionPaper = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    const papersetterid = text(req.query.papersetterid);
+    if (colid === undefined || !papersetterid) return res.status(400).json({ success: false, message: "colid and papersetterid are required" });
+    const setter = await PaperSetter.findOne({ _id: papersetterid, colid }).lean();
+    if (!setter) return res.status(404).json({ success: false, message: "Paper setter assignment not found" });
+    const paper = await QuestionPaper.findOne({ colid, papersetterid }).lean();
+    const cos = await CourseOutcome.find({
+      colid,
+      academicyear: setter.academicyear,
+      regulation: setter.regulation,
+      programcode: setter.programcode,
+      coursecode: setter.coursecode,
+      status: /^Active$/i
+    }).sort({ conumber: 1 }).lean();
+    res.json({ success: true, setter, paper, cos });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getQuestionPaperSyllabusContext = async (req, res) => {
+  try {
+    const baseFilter = buildLooseCourseFilter(req.query);
+    if (baseFilter.colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!baseFilter.coursecode) return res.status(400).json({ success: false, message: "coursecode is required" });
+
+    const completeFilter = {
+      colid: baseFilter.colid,
+      coursecode: baseFilter.coursecode
+    };
+    ["academicyear", "regulation", "programcode", "semester"].forEach((field) => {
+      if (baseFilter[field]) completeFilter[field] = baseFilter[field];
+    });
+
+    const timetableFilter = {
+      colid: baseFilter.colid,
+      coursecode: baseFilter.coursecode,
+      workcompleted: { $exists: true, $ne: "" }
+    };
+    ["academicyear", "regulation", "programcode", "semester"].forEach((field) => {
+      if (baseFilter[field]) timetableFilter[field] = baseFilter[field];
+    });
+    const [syllabusRows, coveredRows] = await Promise.all([
+      Syllabus.find(completeFilter).sort({ module: 1 }).lean(),
+      NepLmsTimetable.find(timetableFilter).sort({ classdate: 1, classtime: 1 }).lean()
+    ]);
+
+    const complete = groupedContext(syllabusRows, (row) => {
+      const topics = splitTopics(row.syllabus);
+      return topics.length ? topics : [row.syllabus];
+    });
+    const covered = groupedContext(coveredRows, (row) => {
+      const topics = splitTopics(row.workcompleted);
+      return topics;
+    });
+
+    res.json({
+      success: true,
+      complete,
+      covered,
+      coveredWorkCompleted: uniq(coveredRows.map((row) => row.workcompleted)),
+      completeRows: syllabusRows,
+      coveredRows
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.saveQuestionPaper = async (req, res) => {
+  try {
+    const colid = number(req.body.colid);
+    const papersetterid = text(req.body.papersetterid);
+    if (colid === undefined || !papersetterid) return res.status(400).json({ success: false, message: "colid and papersetterid are required" });
+    const setter = await PaperSetter.findOne({ _id: papersetterid, colid }).lean();
+    if (!setter) return res.status(404).json({ success: false, message: "Paper setter assignment not found" });
+    const { _id, createdAt, updatedAt, __v, ...setterData } = setter;
+    const payload = {
+      ...setterData,
+      papersetterid: setter._id,
+      status: text(req.body.status) || "Draft",
+      paperattachmenturl: text(req.body.paperattachmenturl),
+      paperattachmentfilename: text(req.body.paperattachmentfilename),
+      sections: Array.isArray(req.body.sections) ? req.body.sections.map((section) => ({
+        title: text(section.title),
+        instructions: text(section.instructions),
+        marks: Number(section.marks || 0),
+        questions: Array.isArray(section.questions) ? section.questions.map((question) => ({
+          question: text(question.question),
+          answer: text(question.answer),
+          questiontype: text(question.questiontype) || "Short Answer Type",
+          difficultylevel: text(question.difficultylevel),
+          language: text(question.language),
+          marks: Number(question.marks || 0),
+          bloomlevels: arr(question.bloomlevels),
+          conumber: text(question.conumber),
+          co: text(question.co),
+          attachmenturl: text(question.attachmenturl),
+          attachmentfilename: text(question.attachmentfilename),
+          aimappingcomments: text(question.aimappingcomments)
+        })) : []
+      })) : [],
+      airesponse: text(req.body.airesponse),
+      user: text(req.body.user)
+    };
+    const data = await QuestionPaper.findOneAndUpdate(
+      { colid, papersetterid },
+      payload,
+      { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
+    );
+    await PaperSetter.findOneAndUpdate({ _id: papersetterid, colid }, { status: payload.status });
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.uploadAttachment = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    if (!colid) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!req.file) return res.status(400).json({ success: false, message: "File is required" });
+    const config = await getDefaultAwsConfig(colid);
+    if (!config?.username || !config?.password || !config?.bucket || !config?.region) return res.status(400).json({ success: false, message: "Default AWS configuration is incomplete" });
+    const cleanName = path.basename(req.file.originalname).replace(/[^\w.\-() ]/g, "_");
+    const key = `${colid}/conduct-exam/question-papers/${Date.now()}-${cleanName}`;
+    const s3 = new AWS.S3({ accessKeyId: config.username, secretAccessKey: config.password, region: config.region });
+    await s3.putObject({ Bucket: config.bucket, Key: key, Body: req.file.buffer, ContentType: req.file.mimetype }).promise();
+    res.json({ success: true, data: { filename: cleanName, originalname: req.file.originalname, url: s3Url(config.bucket, config.region, key), key } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.generateQuestions = async (req, res) => {
+  try {
+    const colid = number(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const selectedModules = arr(req.body.selectedModules);
+    const selectedTopics = arr(req.body.selectedTopics);
+    const syllabusMode = text(req.body.syllabusMode) || "Complete Syllabus";
+    const contextText = selectedModules.length || selectedTopics.length
+      ? `
+Syllabus source: ${syllabusMode}
+Selected modules: ${selectedModules.join(", ") || "Not specified"}
+Selected topics/content: ${selectedTopics.join(" | ") || "Not specified"}
+Important restriction: Generate questions only from the selected modules and selected topics/content above. Do not use topics outside this selected syllabus context.`
+      : "";
+    const prompt = `Return valid JSON only as {"questions":[...]}.
+Create ${Number(req.body.count || 5)} exam questions.
+Course: ${text(req.body.course)} (${text(req.body.coursecode)})
+Subject: ${text(req.body.subject)}
+Question type: ${text(req.body.questiontype)}
+Difficulty: ${text(req.body.difficultylevel)}
+Language: ${text(req.body.language)}
+Bloom levels allowed: ${arr(req.body.bloomlevels).join(", ")}
+Course outcomes available: ${JSON.stringify(req.body.cos || [])}
+${contextText}
+For each question include: question, marks, questiontype, difficultylevel, language, bloomlevels array, conumber, co.`;
+    const raw = await callGemini(colid, text(req.body.geminiModel), prompt);
+    const parsed = parseJson(raw);
+    res.json({ success: true, data: Array.isArray(parsed) ? parsed : (parsed.questions || []), raw });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.analyzeMapping = async (req, res) => {
+  try {
+    const colid = number(req.body.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    const prompt = `Return valid JSON only as {"sections":[...]}.
+Analyze the following question paper. For each question, choose the most suitable CO and Bloom taxonomy mapping from the available CO list and Bloom levels. Preserve the existing section/question order and text.
+Available CO list: ${JSON.stringify(req.body.cos || [])}
+Question paper sections: ${JSON.stringify(req.body.sections || [])}
+For each question return: question, questiontype, difficultylevel, language, marks, bloomlevels array, conumber, co, attachmenturl, attachmentfilename, aimappingcomments.`;
+    const raw = await callGemini(colid, text(req.body.geminiModel), prompt);
+    const parsed = parseJson(raw);
+    res.json({ success: true, data: Array.isArray(parsed) ? parsed : (parsed.sections || []), raw });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
