@@ -46,7 +46,10 @@ const buildFilter = (source = {}, fields = []) => {
 };
 
 const verificationUrl = (req, paperId, hash = "") => {
-  const origin = text(req.body?.origin || req.query?.origin) || `${req.protocol}://${req.get("host")}`;
+  const forwardedProto = text(req.get("x-forwarded-proto")).split(",")[0];
+  const forwardedHost = text(req.get("x-forwarded-host")).split(",")[0];
+  const forwardedOrigin = forwardedProto && forwardedHost ? `${forwardedProto}://${forwardedHost}` : "";
+  const origin = text(req.body?.origin || req.query?.origin || req.get("origin") || forwardedOrigin) || `${req.protocol}://${req.get("host")}`;
   const params = new URLSearchParams({ paperid: String(paperId || "") });
   if (hash) params.set("hash", hash);
   return `${origin}/verify-question-paper-blockchain?${params.toString()}`;

@@ -305,11 +305,19 @@ exports.saveQuestionPaper = async (req, res) => {
     if (colid === undefined || !papersetterid) return res.status(400).json({ success: false, message: "colid and papersetterid are required" });
     const setter = await PaperSetter.findOne({ _id: papersetterid, colid }).lean();
     if (!setter) return res.status(404).json({ success: false, message: "Paper setter assignment not found" });
+    const existingPaper = await QuestionPaper.findOne({ colid, papersetterid }).select("status").lean();
+    if (/^(InvigilatorSubmitted|Moderation In Progress|Moderation Submitted|Accepted)$/i.test(text(existingPaper?.status))) {
+      return res.status(400).json({ success: false, message: "Question paper is already submitted for moderation and cannot be edited" });
+    }
+    const requestedStatus = text(req.body.status) || "Draft";
+    if (/^(InvigilatorSubmitted|Moderation In Progress|Moderation Submitted|Accepted)$/i.test(requestedStatus)) {
+      return res.status(400).json({ success: false, message: "Use Submit Paper to send the question paper for moderation" });
+    }
     const { _id, createdAt, updatedAt, __v, ...setterData } = setter;
     const payload = {
       ...setterData,
       papersetterid: setter._id,
-      status: text(req.body.status) || "Draft",
+      status: requestedStatus,
       paperattachmenturl: text(req.body.paperattachmenturl),
       paperattachmentfilename: text(req.body.paperattachmentfilename),
       sections: Array.isArray(req.body.sections) ? req.body.sections.map((section) => ({
@@ -341,6 +349,27 @@ exports.saveQuestionPaper = async (req, res) => {
     );
     await PaperSetter.findOneAndUpdate({ _id: papersetterid, colid }, { status: payload.status });
     res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.submitQuestionPaper = async (req, res) => {
+  try {
+    const colid = number(req.body.colid);
+    const papersetterid = text(req.body.papersetterid);
+    if (colid === undefined || !papersetterid) return res.status(400).json({ success: false, message: "colid and papersetterid are required" });
+    const paper = await QuestionPaper.findOne({ colid, papersetterid });
+    if (!paper) return res.status(404).json({ success: false, message: "Save the question paper before submitting" });
+    if (/^(Moderation Submitted|Accepted)$/i.test(text(paper.status))) return res.status(400).json({ success: false, message: "This question paper is already locked" });
+    const hasQuestion = (paper.sections || []).some((section) => (section.questions || []).some((question) => text(question.question)));
+    if (!hasQuestion && !text(paper.paperattachmenturl)) return res.status(400).json({ success: false, message: "Add at least one question or upload the full question paper before submitting" });
+
+    paper.status = "InvigilatorSubmitted";
+    paper.user = text(req.body.user);
+    await paper.save();
+    await PaperSetter.findOneAndUpdate({ _id: papersetterid, colid }, { status: "InvigilatorSubmitted", user: text(req.body.user) });
+    res.json({ success: true, data: paper });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -2,6 +2,7 @@ const WorkloadAssignment = require("../Models/workloadassignmentds");
 const NepLmsTimetable = require("../Models/neplmstimetableds");
 const NepLmsAttendance = require("../Models/neplmsattendanceds");
 const User = require("../Models/user");
+const NepLmsClassGroup = require("../Models/neplmsclassgroupds");
 
 const text = (value) => String(value || "").trim();
 const number = (value) => {
@@ -101,6 +102,53 @@ exports.getStudentsForAttendance = async (req, res) => {
       };
     });
 
+    res.json({ success: true, count: data.length, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getClassGroupStudentsForAttendance = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!req.query.groupname) return res.status(400).json({ success: false, message: "groupname is required" });
+
+    const query = { colid, groupname: text(req.query.groupname) };
+    ["academicyear", "regulation", "programcode", "semester", "coursecode", "facultyemail"].forEach((field) => {
+      if (req.query[field]) query[field] = text(req.query[field]);
+    });
+
+    const [groupRows, attendanceRows] = await Promise.all([
+      NepLmsClassGroup.find(query).sort({ student: 1, regno: 1 }).lean(),
+      req.query.classid
+        ? NepLmsAttendance.find({ colid, classid: req.query.classid, type: text(req.query.type) || "Regular" }).lean()
+        : []
+    ]);
+
+    const attendanceByStudent = new Map(attendanceRows.map((row) => [String(row.studentid), row]));
+    const data = groupRows.map((row) => {
+      const studentKey = String(row.studentid || row._id);
+      const attendance = attendanceByStudent.get(studentKey);
+      return {
+        _id: row.studentid || row._id,
+        classgroupid: row._id,
+        name: row.student,
+        email: row.studentemail,
+        phone: row.studentphone,
+        regno: row.regno,
+        programcode: row.programcode,
+        regulation: row.regulation,
+        Major: row.subject,
+        semester: row.semester,
+        section: row.section,
+        category: row.category,
+        gender: row.gender,
+        existingAttendance: attendance?.attendance,
+        attendanceId: attendance?._id,
+        attendanceComments: attendance?.comments || ""
+      };
+    });
     res.json({ success: true, count: data.length, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

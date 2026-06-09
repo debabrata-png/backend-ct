@@ -725,6 +725,60 @@ exports.bulkExamRolls = async (req, res) => {
   }
 };
 
+exports.getStudentExamRegistration = async (req, res) => {
+  try {
+    const colid = number(req.query.colid);
+    const regno = text(req.query.regno);
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!regno) return res.status(400).json({ success: false, message: "regno is required" });
+    const filter = { colid, regno };
+    ["academicyear", "exam", "examcode"].forEach((field) => {
+      if (text(req.query[field])) filter[field] = text(req.query[field]);
+    });
+    const rows = await ConductExamRoll.find(filter).sort({ academicyear: -1, exam: 1, semester: 1, course: 1 }).lean();
+    const allRows = await ConductExamRoll.find({ colid, regno }).select("academicyear exam examcode").lean();
+    const exams = uniq(allRows.map((row) => `${row.academicyear}||${row.examcode}||${row.exam}`)).map((value) => {
+      const [academicyear, examcode, exam] = value.split("||");
+      return { academicyear, examcode, exam };
+    });
+    res.json({
+      success: true,
+      data: rows,
+      options: {
+        academicyears: uniq(allRows.map((row) => row.academicyear)),
+        exams
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.saveStudentExamRegistration = async (req, res) => {
+  try {
+    const colid = number(req.body.colid);
+    const regno = text(req.body.regno);
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    if (colid === undefined) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!regno) return res.status(400).json({ success: false, message: "regno is required" });
+    if (!items.length) return res.status(400).json({ success: false, message: "No courses selected for update" });
+    const ops = items
+      .filter((item) => item.id)
+      .map((item) => ({
+        updateOne: {
+          filter: { _id: item.id, colid, regno },
+          update: { $set: { applied: text(item.applied) === "Yes" ? "Yes" : "No", user: text(req.body.user) } }
+        }
+      }));
+    if (!ops.length) return res.status(400).json({ success: false, message: "No valid exam registration rows selected" });
+    const result = await ConductExamRoll.bulkWrite(ops);
+    const rows = await ConductExamRoll.find({ colid, regno, _id: { $in: items.map((item) => item.id).filter(Boolean) } }).sort({ semester: 1, course: 1 }).lean();
+    res.json({ success: true, updated: result.modifiedCount || 0, data: rows, message: "Exam registration updated" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 exports.getInvigilatorStudentAttendanceOptions = async (req, res) => {
   try {
     const colid = number(req.query.colid);

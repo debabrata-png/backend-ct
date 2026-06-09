@@ -92,12 +92,15 @@ const callGemini = async (colid, model, prompt) => {
   throw new Error(lastError || "Gemini API request failed");
 };
 
+const moderatorReadyStatuses = ["InvigilatorSubmitted", "Moderation In Progress", "Moderation Submitted"];
+
 const findPaperForModerator = async (moderator) => QuestionPaper.findOne({
   colid: moderator.colid,
   academicyear: moderator.academicyear,
   examcode: moderator.examcode,
   programcode: moderator.programcode,
-  coursecode: moderator.coursecode
+  coursecode: moderator.coursecode,
+  status: { $in: moderatorReadyStatuses }
 }).sort({ updatedAt: -1 }).lean();
 
 const auditBase = (moderator, paper, body = {}) => ({
@@ -205,7 +208,7 @@ exports.assignedPapers = async (req, res) => {
     const data = [];
     for (const moderator of moderators) {
       const paper = await findPaperForModerator(moderator);
-      data.push({ ...moderator, questionpaperid: paper?._id || "", paperstatus: paper?.status || "Not created", haspaper: !!paper });
+      if (paper) data.push({ ...moderator, questionpaperid: paper._id || "", paperstatus: paper.status || "", haspaper: true });
     }
     res.json({ success: true, data });
   } catch (error) {
@@ -221,7 +224,7 @@ exports.getModerationPaper = async (req, res) => {
     const moderator = await Moderator.findOne({ _id: moderatorid, colid }).lean();
     if (!moderator) return res.status(404).json({ success: false, message: "Moderator assignment not found" });
     const paper = await findPaperForModerator(moderator);
-    if (!paper) return res.status(404).json({ success: false, message: "Question paper is not available for this course" });
+    if (!paper) return res.status(404).json({ success: false, message: "Question paper is not submitted for moderation" });
     const audit = await ModerationAudit.find({ colid, moderatorid, questionpaperid: paper._id }).sort({ createdAt: -1 }).lean();
     res.json({ success: true, moderator, paper, audit });
   } catch (error) {
