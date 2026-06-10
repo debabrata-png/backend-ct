@@ -139,6 +139,7 @@ const researchSeedFundController = require('./controllers/researchseedfundctlrds
 const mentoringController = require('./controllers/mentoringctlrds');
 const crmManagementController = require('./controllers/crmmanagementctlrds');
 const counselorMappingController = require('./controllers/counselormappingctlrds');
+const idCardTemplateController = require('./controllers/idcardtemplatedsctlr');
 const recruitmentController = require('./controllers/recruitmentctlrds');
 const placementLeadsController = require('./controllers/placementleadsctlrds');
 const knowledgebaseController = require('./controllers/knowledgebasedsctlr');
@@ -304,6 +305,12 @@ app.get('/api/v2/crm-counselor-mapping/options', counselorMappingController.getC
 app.get('/api/v2/crm-counselor-mapping', counselorMappingController.getCounselorMappings);
 app.post('/api/v2/crm-counselor-mapping', counselorMappingController.saveCounselorMapping);
 app.post('/api/v2/crm-counselor-mapping-delete', counselorMappingController.deleteCounselorMapping);
+app.get('/api/v2/id-card/templates', idCardTemplateController.getTemplates);
+app.post('/api/v2/id-card/templates', idCardTemplateController.saveTemplate);
+app.post('/api/v2/id-card/templates-delete', idCardTemplateController.deleteTemplate);
+app.get('/api/v2/id-card/student-options', idCardTemplateController.getStudentOptions);
+app.post('/api/v2/id-card/students', idCardTemplateController.searchStudents);
+app.post('/api/v2/id-card/generate', idCardTemplateController.generateCard);
 app.get('/api/v2/user-custom-fields', userCustomFieldController.getAll);
 app.post('/api/v2/user-custom-fields', userCustomFieldController.create);
 app.post('/api/v2/user-custom-fields-update', userCustomFieldController.update);
@@ -324,6 +331,7 @@ app.post('/api/v2/student-data-upload-delete', studentDataUploadController.delet
 app.post('/api/v2/student-data-upload-bulk-delete', studentDataUploadController.bulkDeleteStudents);
 app.post('/api/v2/student-data-upload-bulk', studentDataUploadController.bulkStudents);
 app.post('/api/v2/student-data-upload-bulk-subject-update', studentDataUploadController.bulkUpdateSubject);
+app.post('/api/v2/student-data-upload-selected-subject-update', studentDataUploadController.bulkUpdateSelectedSubjects);
 app.post('/api/v2/student-data-upload-photo', studentDataUploadController.uploadPhotoMiddleware, studentDataUploadController.uploadPhoto);
 app.get('/api/v2/employee-database/meta', employeeDatabaseController.getMeta);
 app.get('/api/v2/employee-database-fields', employeeDatabaseController.getFields);
@@ -4589,6 +4597,7 @@ const conductexampaymentctlrds = require("./controllers/conductexampaymentctlrds
 const conductexamstationaryctlrds = require("./controllers/conductexamstationaryctlrds");
 const conductexamgeneratorctlrds = require("./controllers/conductexamgeneratorctlrds");
 const conductexamonscreenctlrds = require("./controllers/conductexamonscreenctlrds");
+const feedbackadvancedctlrds = require("./controllers/feedbackadvancedctlrds");
 const visitingfacultyctlrds = require("./controllers/visitingfacultyctlrds");
 const courseassessmentctlrds = require("./controllers/courseassessmentctlrds");
 const syllabusctlrds = require("./controllers/syllabusctlrds");
@@ -4756,6 +4765,15 @@ app.get("/api/v2/conductexam/onscreen-students", conductexamonscreenctlrds.loadS
 app.get("/api/v2/conductexam/onscreen-student-marks", conductexamonscreenctlrds.loadStudentMarks);
 app.post("/api/v2/conductexam/onscreen-marks-save", conductexamonscreenctlrds.saveQuestionMarks);
 app.post("/api/v2/conductexam/onscreen-finalize", conductexamonscreenctlrds.finalizeStudent);
+app.get("/api/v2/feedback-advanced/forms", feedbackadvancedctlrds.getForms);
+app.post("/api/v2/feedback-advanced/forms", feedbackadvancedctlrds.saveForm);
+app.post("/api/v2/feedback-advanced/forms-delete", feedbackadvancedctlrds.deleteForm);
+app.post("/api/v2/feedback-advanced/upload-image", feedbackadvancedctlrds.uploadImageMiddleware, feedbackadvancedctlrds.uploadImage);
+app.post("/api/v2/feedback-advanced/generate-questions", feedbackadvancedctlrds.generateQuestions);
+app.get("/api/v2/feedback-advanced/public-form", feedbackadvancedctlrds.publicForm);
+app.post("/api/v2/feedback-advanced/responses", feedbackadvancedctlrds.submitResponse);
+app.get("/api/v2/feedback-advanced/analysis", feedbackadvancedctlrds.analysis);
+app.post("/api/v2/feedback-advanced/analyze-sentiment", feedbackadvancedctlrds.analyzeSentiment);
 app.post("/api/v2/conductexam/examcourses-autoschedule", conductexamctlrds.autoScheduleExamCourses);
 app.post("/api/v2/conductexam/examcourses-ai-schedule", conductexamctlrds.aiScheduleExamCourses);
 app.get("/api/v2/conductexam/examrolls", conductexamctlrds.getExamRolls);

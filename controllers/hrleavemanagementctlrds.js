@@ -186,7 +186,13 @@ exports.bulkBalance = balanceCrud.bulk;
 exports.options = async (req, res) => {
   try {
     const colid = Number(req.query.colid);
-    const users = await User.find({ colid }).select("name email phone department role user").sort({ name: 1 }).lean();
+    const users = await User.find({
+      colid,
+      $or: [
+        { role: { $exists: false } },
+        { role: { $not: /^Student$/i } }
+      ]
+    }).select("name email phone department role user").sort({ name: 1 }).lean();
     const types = await LeaveType.find({ colid, status: "Active" }).sort({ leavetype: 1 }).lean();
     const cycles = await LeaveCycle.find({ colid, status: "Active" }).sort({ cyclename: -1 }).lean();
     res.json({ success: true, users, types, cycles });

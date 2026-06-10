@@ -313,4 +313,38 @@ exports.bulkUpdateSubject = async (req, res) => {
   }
 };
 
+exports.bulkUpdateSelectedSubjects = async (req, res) => {
+  try {
+    const colid = Number(req.body.colid);
+    const ids = Array.isArray(req.body.ids) ? req.body.ids.filter(Boolean) : [];
+    const update = {};
+    const major = clean(req.body.Major);
+    const minor = clean(req.body.Minor);
+    const idc = clean(req.body.IDC);
+    if (!colid) return res.status(400).json({ msg: 'colid is required' });
+    if (!ids.length) return res.status(400).json({ msg: 'Select at least one student' });
+    if (major) {
+      update.Major = major;
+      update.major = major;
+    }
+    if (minor) {
+      update.Minor = minor;
+      update.minor = minor;
+    }
+    if (idc) {
+      update.IDC = idc;
+      update.idc = idc;
+    }
+    if (!Object.keys(update).length) return res.status(400).json({ msg: 'Enter Major, Minor or IDC to update' });
+
+    const result = await User.updateMany(
+      { _id: { $in: ids }, ...colidFilter(colid) },
+      { $set: update }
+    );
+    res.json({ msg: 'Selected students updated', matched: result.matchedCount || 0, modified: result.modifiedCount || 0 });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
 exports.fields = fields;

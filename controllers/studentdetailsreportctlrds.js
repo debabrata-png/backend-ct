@@ -27,7 +27,7 @@ const allowedFields = new Set(filterFields.map((item) => item.field));
 const displayFields = [
   "name", "regno", "email", "phone", "academicyear", "admissionyear", "program", "programcode",
   "regulation", "semester", "section", "Major", "Minor", "IDC", "SEC", "VAC", "category",
-  "gender", "state", "city", "district", "pincode", "guardianname", "guardianmobile"
+  "gender", "state", "city", "district", "pincode", "guardianname", "guardianmobile", "password"
 ];
 
 const toNumber = (value) => {

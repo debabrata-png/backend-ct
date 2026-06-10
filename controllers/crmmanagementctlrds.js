@@ -203,8 +203,14 @@ exports.bulkStages = async (req, res) => {
 
 exports.searchLeads = async (req, res) => {
   try {
-    const rows = await Lead.find(leadSearchQuery(req.body)).sort({ updatedAt: -1 }).limit(1000).lean();
-    res.json({ success: true, data: rows });
+    const page = Math.max(0, Number(req.body.page || 0));
+    const limit = Math.min(100, Math.max(1, Number(req.body.limit || 100)));
+    const query = leadSearchQuery(req.body);
+    const [rows, total] = await Promise.all([
+      Lead.find(query).sort({ updatedAt: -1 }).skip(page * limit).limit(limit).lean(),
+      Lead.countDocuments(query)
+    ]);
+    res.json({ success: true, data: rows, total, page, limit, totalPages: Math.ceil(total / limit) });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
