@@ -8,9 +8,17 @@ const RecruitmentDocumentType = require('../Models/recruitmentdocumenttypeds');
 const RecruitmentValidationCriteria = require('../Models/recruitmentvalidationcriteriads');
 const RecruitmentJobPost = require('../Models/recruitmentjobpostds');
 const RecruitmentApplication = require('../Models/recruitmentapplicationds');
+const RecruitmentCandidateStatus = require('../Models/recruitmentcandidatestatusds');
+const RecruitmentApprovalLevel = require('../Models/recruitmentapprovallevelds');
+const RecruitmentInterviewPanel = require('../Models/recruitmentinterviewpanelds');
+const RecruitmentPanelMember = require('../Models/recruitmentpanelmemberds');
+const RecruitmentPanelJob = require('../Models/recruitmentpaneljobds');
+const RecruitmentInterviewSchedule = require('../Models/recruitmentinterviewscheduleds');
+const NepLmsTimetable = require('../Models/neplmstimetableds');
 const Awsconfig = require('../Models/awsconfig');
 const AiConfiguration = require('../Models/aiconfigurationds');
 const EmailConfiguration = require('../Models/emailconfigurationds');
+const User = require('../Models/user');
 
 const upload = multer({ storage: multer.memoryStorage() });
 exports.uploadMiddleware = upload.single('document');
@@ -21,6 +29,7 @@ const normalizeOptions = (options) => Array.isArray(options)
   ? options.map((item) => clean(item)).filter(Boolean)
   : clean(options).split(',').map((item) => clean(item)).filter(Boolean);
 const numberOrZero = (value) => Number(value || 0);
+const defaultCandidateStatuses = ['Submitted', 'Shortlisted', 'Rejected', 'Confirmed', 'On Hold', 'Selected', 'Waiting'];
 const encodeS3Key = (key) => String(key || '').split('/').map(encodeURIComponent).join('/');
 const s3Url = (bucket, region, key) => region === 'us-east-1'
   ? `https://${bucket}.s3.amazonaws.com/${encodeS3Key(key)}`
@@ -118,6 +127,9 @@ const applicationPayload = (body = {}) => ({
   username: clean(body.username || body.email).toLowerCase(),
   password: clean(body.password),
   status: clean(body.status || 'Submitted'),
+  photourl: clean(body.photourl),
+  approvalstatus: clean(body.approvalstatus || 'Pending'),
+  approvallevel: numberOrZero(body.approvallevel),
   customfields: body.customfields || {},
   documents: Array.isArray(body.documents) ? body.documents : [],
   validationstatus: clean(body.validationstatus),
@@ -125,6 +137,11 @@ const applicationPayload = (body = {}) => ({
   mandatoryvalidationstatus: clean(body.mandatoryvalidationstatus),
   mandatoryvalidationcomments: clean(body.mandatoryvalidationcomments)
 });
+
+const hasPhoto = (payload = {}) => {
+  if (payload.photourl) return true;
+  return (payload.documents || []).some((doc) => /photo/i.test(clean(doc.documenttype || doc.originalname || doc.filename)) && doc.url);
+};
 
 exports.createForm = async (req, res) => {
   try {
@@ -216,6 +233,75 @@ exports.getDocumentTypes = async (req, res) => {
 
 exports.deleteDocumentType = async (req, res) => {
   try { await RecruitmentDocumentType.deleteOne({ _id: req.body.id, colid: getColid(req) }); res.json({ success: true }); }
+  catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.getCandidateStatuses = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const data = await RecruitmentCandidateStatus.find({ colid }).sort({ status: 1 }).lean();
+    if (data.length) return res.json(data);
+    res.json(defaultCandidateStatuses.map((status) => ({ colid, status, description: '', isactive: 'Yes', isdefault: true })));
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.saveCandidateStatus = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const payload = {
+      colid,
+      status: clean(req.body.status),
+      description: clean(req.body.description),
+      isactive: clean(req.body.isactive || 'Yes'),
+      user: clean(req.body.user)
+    };
+    if (!payload.status) return res.status(400).json({ msg: 'Status is required' });
+    const data = req.body.id
+      ? await RecruitmentCandidateStatus.findOneAndUpdate({ _id: req.body.id, colid }, payload, { new: true, runValidators: true })
+      : await RecruitmentCandidateStatus.findOneAndUpdate({ colid, status: payload.status }, payload, { upsert: true, new: true, runValidators: true });
+    res.json(data);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.deleteCandidateStatus = async (req, res) => {
+  try { await RecruitmentCandidateStatus.deleteOne({ _id: req.body.id, colid: getColid(req) }); res.json({ success: true }); }
+  catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.getApprovalLevels = async (req, res) => {
+  try {
+    const query = { colid: getColid(req) };
+    if (req.query.jobid) query.jobid = clean(req.query.jobid);
+    res.json(await RecruitmentApprovalLevel.find(query).sort({ jobid: 1, level: 1 }).lean());
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.saveApprovalLevel = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const payload = {
+      colid,
+      jobid: clean(req.body.jobid),
+      jobtitle: clean(req.body.jobtitle),
+      level: Number(req.body.level || 1),
+      approverrole: clean(req.body.approverrole),
+      approvername: clean(req.body.approvername),
+      approveremail: clean(req.body.approveremail).toLowerCase(),
+      description: clean(req.body.description),
+      isactive: clean(req.body.isactive || 'Yes'),
+      user: clean(req.body.user)
+    };
+    if (!payload.jobid) return res.status(400).json({ msg: 'Job is required' });
+    if (!payload.level) return res.status(400).json({ msg: 'Level is required' });
+    const data = req.body.id
+      ? await RecruitmentApprovalLevel.findOneAndUpdate({ _id: req.body.id, colid }, payload, { new: true, runValidators: true })
+      : await RecruitmentApprovalLevel.findOneAndUpdate({ colid, jobid: payload.jobid, level: payload.level }, payload, { upsert: true, new: true, runValidators: true });
+    res.json(data);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.deleteApprovalLevel = async (req, res) => {
+  try { await RecruitmentApprovalLevel.deleteOne({ _id: req.body.id, colid: getColid(req) }); res.json({ success: true }); }
   catch (err) { res.status(500).json({ msg: err.message }); }
 };
 
@@ -345,6 +431,7 @@ exports.validateApplication = async (req, res) => {
     if (!payload.applicantname) issues.push('Applicant name is required.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) issues.push('Valid email is required.');
     if (String(payload.phone || '').replace(/\D/g, '').length < 10) issues.push('Valid phone number is required.');
+    if (!hasPhoto(payload)) issues.push('Candidate photo is required.');
     fields.filter((f) => /^yes$/i.test(f.isrequired)).forEach((field) => {
       if (!clean(payload.customfields?.[field.fieldname])) issues.push(`${field.label || field.fieldname} is required.`);
     });
@@ -397,6 +484,7 @@ exports.submitApplication = async (req, res) => {
     const payload = applicationPayload(req.body);
     if (!payload.colid || !payload.jobid || !payload.formid) return res.status(400).json({ msg: 'Job, form and college id are required' });
     if (!payload.email || !payload.phone) return res.status(400).json({ msg: 'Email and phone are required' });
+    if (!hasPhoto(payload)) return res.status(400).json({ msg: 'Candidate photo is required' });
     const existing = await RecruitmentApplication.findOne({ colid: payload.colid, jobid: payload.jobid, $or: [{ email: payload.email }, { phone: payload.phone }] });
     if (existing && clean(req.body.mode) !== 'update') return res.status(400).json({ msg: 'Application already exists for this email or phone' });
     if (!payload.applicationno) payload.applicationno = `REC-${payload.jobid}-${Date.now()}`;
@@ -435,7 +523,7 @@ exports.updateApplicationStatus = async (req, res) => {
     const status = clean(req.body.status);
     const data = await RecruitmentApplication.findOneAndUpdate(
       { _id: req.body.id, colid: getColid(req) },
-      { status, shortlistcomments: clean(req.body.shortlistcomments) },
+      { status, shortlistcomments: clean(req.body.shortlistcomments), ...(req.body.approvalstatus ? { approvalstatus: clean(req.body.approvalstatus) } : {}) },
       { new: true }
     );
 
@@ -454,6 +542,50 @@ exports.updateApplicationStatus = async (req, res) => {
     }
 
     res.json({ ...data.toObject(), mailSent });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.updateApplicationApproval = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const action = clean(req.body.action);
+    const comments = clean(req.body.comments);
+    const application = await RecruitmentApplication.findOne({ _id: req.body.id, colid });
+    if (!application) return res.status(404).json({ msg: 'Candidate not found' });
+
+    const levels = await RecruitmentApprovalLevel.find({ colid, jobid: application.jobid, isactive: /^yes$/i }).sort({ level: 1 }).lean();
+    const currentIndex = levels.findIndex((level) => Number(level.level) > Number(application.approvallevel || 0));
+    const currentLevel = currentIndex >= 0 ? levels[currentIndex] : levels[levels.length - 1];
+    const historyItem = {
+      action,
+      comments,
+      level: currentLevel?.level || application.approvallevel || 0,
+      approvername: clean(req.body.approvername),
+      approveremail: clean(req.body.approveremail),
+      time: new Date()
+    };
+
+    if (/reject/i.test(action)) {
+      application.approvalstatus = 'Rejected';
+      application.status = clean(req.body.status || 'Rejected');
+    } else if (/approve/i.test(action)) {
+      if (!levels.length || currentIndex === levels.length - 1) {
+        application.approvalstatus = 'Approved';
+        application.status = clean(req.body.status || 'Approved');
+        application.approvallevel = currentLevel?.level || application.approvallevel || 0;
+      } else {
+        application.approvalstatus = 'Pending';
+        application.status = clean(req.body.status || `Pending Level ${levels[currentIndex + 1].level}`);
+        application.approvallevel = currentLevel?.level || 0;
+      }
+    } else {
+      return res.status(400).json({ msg: 'Action must be Approve or Reject' });
+    }
+
+    application.shortlistcomments = comments || application.shortlistcomments;
+    application.approvalhistory = [...(application.approvalhistory || []), historyItem];
+    await application.save();
+    res.json(application);
   } catch (err) { res.status(500).json({ msg: err.message }); }
 };
 
@@ -489,5 +621,237 @@ ${JSON.stringify(applications.map((app) => ({
       );
     }
     res.json({ success: true, ai, selectedCount: selected.length });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+const regex = (value) => ({ $regex: clean(value), $options: 'i' });
+
+exports.searchRecruitmentUsers = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const term = clean(req.query.search);
+    const query = { colid };
+    if (term) {
+      query.$or = [
+        { name: regex(term) },
+        { email: regex(term) },
+        { phone: regex(term) },
+        { department: regex(term) },
+        { designation: regex(term) }
+      ];
+    }
+    const data = await User.find(query)
+      .select('name email phone department designation role colid')
+      .sort({ name: 1 })
+      .limit(100)
+      .lean();
+    res.json(data);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.saveInterviewPanel = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const panelid = clean(req.body.panelid || `PANEL${Date.now()}`);
+    const payload = {
+      colid,
+      panelid,
+      panelname: clean(req.body.panelname),
+      description: clean(req.body.description),
+      status: clean(req.body.status || 'Active'),
+      user: clean(req.body.user),
+      createdByName: clean(req.body.createdByName)
+    };
+    if (!payload.panelname) return res.status(400).json({ msg: 'Panel name is required' });
+    const data = req.body.id
+      ? await RecruitmentInterviewPanel.findOneAndUpdate({ _id: req.body.id, colid }, payload, { new: true, runValidators: true })
+      : await RecruitmentInterviewPanel.findOneAndUpdate({ colid, panelid }, payload, { upsert: true, new: true, runValidators: true });
+    res.json(data);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.getInterviewPanels = async (req, res) => {
+  try {
+    const query = { colid: getColid(req) };
+    if (req.query.status) query.status = clean(req.query.status);
+    res.json(await RecruitmentInterviewPanel.find(query).sort({ createdAt: -1 }).lean());
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.deleteInterviewPanel = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const panel = await RecruitmentInterviewPanel.findOne({ _id: req.body.id, colid }).lean();
+    await RecruitmentInterviewPanel.deleteOne({ _id: req.body.id, colid });
+    if (panel?.panelid) {
+      await RecruitmentPanelMember.deleteMany({ colid, panelid: panel.panelid });
+      await RecruitmentPanelJob.deleteMany({ colid, panelid: panel.panelid });
+    }
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.savePanelMember = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const payload = {
+      colid,
+      panelid: clean(req.body.panelid),
+      panelname: clean(req.body.panelname),
+      membername: clean(req.body.membername || req.body.name),
+      memberemail: clean(req.body.memberemail || req.body.email).toLowerCase(),
+      memberphone: clean(req.body.memberphone || req.body.phone),
+      designation: clean(req.body.designation),
+      department: clean(req.body.department),
+      qualification: clean(req.body.qualification),
+      remunerationtype: clean(req.body.remunerationtype),
+      remunerationamount: Number(req.body.remunerationamount || 0),
+      remarks: clean(req.body.remarks),
+      user: clean(req.body.user)
+    };
+    if (!payload.panelid) return res.status(400).json({ msg: 'Panel is required' });
+    if (!payload.membername || !payload.memberemail) return res.status(400).json({ msg: 'Member name and email are required' });
+    const data = req.body.id
+      ? await RecruitmentPanelMember.findOneAndUpdate({ _id: req.body.id, colid }, payload, { new: true, runValidators: true })
+      : await RecruitmentPanelMember.findOneAndUpdate({ colid, panelid: payload.panelid, memberemail: payload.memberemail }, payload, { upsert: true, new: true, runValidators: true });
+    res.json(data);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.getPanelMembers = async (req, res) => {
+  try {
+    const query = { colid: getColid(req) };
+    if (req.query.panelid) query.panelid = clean(req.query.panelid);
+    res.json(await RecruitmentPanelMember.find(query).sort({ panelname: 1, membername: 1 }).lean());
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.deletePanelMember = async (req, res) => {
+  try { await RecruitmentPanelMember.deleteOne({ _id: req.body.id, colid: getColid(req) }); res.json({ success: true }); }
+  catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.savePanelJob = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const payload = {
+      colid,
+      panelid: clean(req.body.panelid),
+      panelname: clean(req.body.panelname),
+      jobid: clean(req.body.jobid),
+      jobtitle: clean(req.body.jobtitle),
+      department: clean(req.body.department),
+      status: clean(req.body.status || 'Active'),
+      remarks: clean(req.body.remarks),
+      user: clean(req.body.user)
+    };
+    if (!payload.panelid || !payload.jobid) return res.status(400).json({ msg: 'Panel and job are required' });
+    const data = req.body.id
+      ? await RecruitmentPanelJob.findOneAndUpdate({ _id: req.body.id, colid }, payload, { new: true, runValidators: true })
+      : await RecruitmentPanelJob.findOneAndUpdate({ colid, panelid: payload.panelid, jobid: payload.jobid }, payload, { upsert: true, new: true, runValidators: true });
+    res.json(data);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.getPanelJobs = async (req, res) => {
+  try {
+    const query = { colid: getColid(req) };
+    if (req.query.panelid) query.panelid = clean(req.query.panelid);
+    if (req.query.jobid) query.jobid = clean(req.query.jobid);
+    res.json(await RecruitmentPanelJob.find(query).sort({ createdAt: -1 }).lean());
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.deletePanelJob = async (req, res) => {
+  try { await RecruitmentPanelJob.deleteOne({ _id: req.body.id, colid: getColid(req) }); res.json({ success: true }); }
+  catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.getInterviewPanelJobs = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const jobid = clean(req.query.jobid);
+    if (!jobid) return res.json([]);
+    res.json(await RecruitmentPanelJob.find({ colid, jobid, status: /^active$/i }).sort({ panelname: 1 }).lean());
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.saveInterviewSchedule = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const selected = Array.isArray(req.body.candidates) ? req.body.candidates : [req.body];
+    const common = {
+      colid,
+      jobid: clean(req.body.jobid),
+      jobtitle: clean(req.body.jobtitle),
+      panelid: clean(req.body.panelid),
+      panelname: clean(req.body.panelname),
+      interviewdate: req.body.interviewdate || null,
+      interviewtime: clean(req.body.interviewtime),
+      mode: clean(req.body.mode || 'Offline'),
+      venue: clean(req.body.venue),
+      meetinglink: clean(req.body.meetinglink),
+      status: clean(req.body.status || 'Scheduled'),
+      remarks: clean(req.body.remarks),
+      user: clean(req.body.user)
+    };
+    if (!common.jobid || !common.panelid || !common.interviewdate) return res.status(400).json({ msg: 'Job, panel and interview date are required' });
+    const saved = [];
+    for (const candidate of selected) {
+      const payload = {
+        ...common,
+        applicationid: clean(candidate.applicationid || candidate._id || req.body.applicationid),
+        applicationno: clean(candidate.applicationno || req.body.applicationno),
+        candidate: clean(candidate.candidate || candidate.applicantname || req.body.candidate),
+        candidateemail: clean(candidate.candidateemail || candidate.email || req.body.candidateemail).toLowerCase(),
+        candidatephone: clean(candidate.candidatephone || candidate.phone || req.body.candidatephone)
+      };
+      if (!payload.applicationid && !payload.candidateemail) continue;
+      const data = req.body.id && selected.length === 1
+        ? await RecruitmentInterviewSchedule.findOneAndUpdate({ _id: req.body.id, colid }, payload, { new: true, runValidators: true })
+        : await RecruitmentInterviewSchedule.findOneAndUpdate(
+          { colid, jobid: payload.jobid, panelid: payload.panelid, applicationid: payload.applicationid },
+          payload,
+          { upsert: true, new: true, runValidators: true }
+        );
+      saved.push(data);
+    }
+    res.json({ success: true, saved });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.getInterviewSchedules = async (req, res) => {
+  try {
+    const query = { colid: getColid(req) };
+    if (req.query.jobid) query.jobid = clean(req.query.jobid);
+    if (req.query.panelid) query.panelid = clean(req.query.panelid);
+    if (req.query.status) query.status = clean(req.query.status);
+    res.json(await RecruitmentInterviewSchedule.find(query).sort({ interviewdate: -1, interviewtime: 1 }).lean());
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.deleteInterviewSchedule = async (req, res) => {
+  try { await RecruitmentInterviewSchedule.deleteOne({ _id: req.body.id, colid: getColid(req) }); res.json({ success: true }); }
+  catch (err) { res.status(500).json({ msg: err.message }); }
+};
+
+exports.getPanelClassCalendar = async (req, res) => {
+  try {
+    const colid = getColid(req);
+    const panelid = clean(req.query.panelid);
+    const classdate = clean(req.query.classdate || req.query.interviewdate);
+    if (!panelid || !classdate) return res.json({ members: [], classes: [] });
+
+    const members = await RecruitmentPanelMember.find({ colid, panelid }).sort({ membername: 1 }).lean();
+    const emails = members.map((member) => clean(member.memberemail).toLowerCase()).filter(Boolean);
+    if (!emails.length) return res.json({ members, classes: [] });
+
+    const classes = await NepLmsTimetable.find({
+      colid,
+      classdate,
+      facultyemail: { $in: emails.map((email) => new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) }
+    }).sort({ classtime: 1, faculty: 1 }).lean();
+
+    res.json({ members, classes });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 };

@@ -70,6 +70,12 @@ const userschema = new mongoose.Schema({
         type: String,
         required: [true,'Please enter role']
     },
+    designation: {
+        type: String
+    },
+    pan: {
+        type: String
+    },
     photo: {
         type: String
     },

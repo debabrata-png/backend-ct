@@ -8,6 +8,8 @@ const InstitutionSchema = new mongoose.Schema({
   presidentname: String,
   vcname: String,
   registrarname: String,
+  pan: String,
+  tan: String,
   tandclink: String,
   contactusdetails: String,
   privacypolicylink: String,

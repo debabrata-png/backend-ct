@@ -2,9 +2,11 @@ const path = require("path");
 const multer = require("multer");
 const AWS = require("aws-sdk");
 const Awsconfig = require("../Models/awsconfig");
+const AiConfiguration = require("../Models/aiconfigurationds");
 const NepLmsResource = require("../Models/neplmsresourceds");
 const NepLmsTimetable = require("../Models/neplmstimetableds");
 const NepLmsAssignmentSubmission = require("../Models/neplmsassignmentsubmissionds");
+const Syllabus = require("../Models/syllabusds");
 
 const upload = multer({ storage: multer.memoryStorage() });
 exports.uploadMiddleware = upload.single("file");
@@ -94,6 +96,128 @@ const courseFilter = (source = {}) => {
 };
 
 const getDefaultAwsConfig = async (colid) => Awsconfig.findOne({ colid: Number(colid), type: /^aws$/i, default: /^yes$/i }).sort({ _id: -1 }).lean();
+const escapeRegex = (value) => String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const safeHtml = (value) => String(value || "").replace(/[&<>"']/g, (char) => ({
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  "\"": "&quot;",
+  "'": "&#39;"
+}[char]));
+const stripCodeFence = (content) => text(content)
+  .replace(/^```html\s*/i, "")
+  .replace(/^```\s*/i, "")
+  .replace(/```$/i, "")
+  .trim();
+
+const getAiConfig = async (colid, provider = "Gemini") => {
+  const providerRegex = new RegExp(`^${escapeRegex(provider)}$`, "i");
+  return AiConfiguration.findOne({ colid: Number(colid), type: providerRegex, active: /^yes$/i, default: /^yes$/i }).sort({ _id: -1 }).lean()
+    || AiConfiguration.findOne({ colid: Number(colid), type: providerRegex, active: /^yes$/i }).sort({ _id: -1 }).lean();
+};
+
+const callGemini = async (apikey, prompt, preferredModel = "gemini-2.5-flash") => {
+  const fallbackModels = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
+  const models = [...new Set([text(preferredModel), ...fallbackModels].filter(Boolean))];
+  let lastError = "";
+  for (const model of models) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apikey)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.45 }
+      })
+    });
+    const data = await response.json();
+    if (response.ok) return data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("\n") || "";
+    lastError = data.error?.message || `Gemini API request failed for ${model}`;
+  }
+  throw new Error(lastError || "Gemini API request failed");
+};
+
+const selectedSyllabusRows = async (body = {}) => {
+  const modules = Array.isArray(body.modules) ? body.modules.map(text).filter(Boolean) : text(body.module).split(",").map(text).filter(Boolean);
+  const topics = Array.isArray(body.topics) ? body.topics.map(text).filter(Boolean) : text(body.topic).split(",").map(text).filter(Boolean);
+  const query = {
+    colid: Number(body.colid),
+    academicyear: text(body.academicyear),
+    regulation: text(body.regulation),
+    program: text(body.program),
+    programcode: text(body.programcode),
+    type: text(body.type),
+    subject: text(body.major || body.subject),
+    semester: text(body.semester),
+    course: text(body.course),
+    coursecode: text(body.coursecode)
+  };
+  Object.keys(query).forEach((key) => {
+    if (!query[key]) delete query[key];
+  });
+  if (modules.length) query.module = { $in: modules };
+  if (topics.length) query.syllabus = { $in: topics };
+  return Syllabus.find(query).sort({ module: 1, syllabus: 1 }).lean();
+};
+
+const buildAiResourcePrompt = ({ body, rows }) => {
+  const resourceType = text(body.resourcetype);
+  const kind = resourceType === "Assignment" ? "assignment" : resourceType === "Lesson Plan" ? "lesson plan" : "course material";
+  const selectedText = rows.map((row, index) => `${index + 1}. Module: ${row.module}\nTopic/Syllabus: ${row.syllabus}`).join("\n\n");
+  const extraInstructions = {
+    assignment: `Create a student-ready assignment with clear instructions, expected output, evaluation rubric, submission guidelines, practical/application-oriented tasks, and difficulty level ${text(body.difficulty) || "Medium"}. If full marks are provided, align the rubric to ${text(body.fullmarks)} marks.`,
+    "course material": "Create detailed student-ready course material with explanation, examples, practical applications, employability links, exercises, recap questions, and useful YouTube search links in the selected language.",
+    "lesson plan": `Create a teacher-ready classwise lesson plan for ${Math.max(1, Number(body.noofclasses || 1))} classes. Include class number, module/topic coverage, learning outcomes, teaching methods, activities, resources, assessment/check for understanding, homework/follow-up, and expected duration. Difficulty level: ${text(body.difficulty) || "Medium"}.`
+  };
+
+  return `Create ${kind} in ${text(body.language) || "English"}.
+
+Course context:
+Academic year: ${text(body.academicyear)}
+Program: ${text(body.program)} (${text(body.programcode)})
+Regulation: ${text(body.regulation)}
+Semester: ${text(body.semester)}
+Subject/Major: ${text(body.major || body.subject)}
+Course: ${text(body.course)} (${text(body.coursecode)})
+
+Selected module and topics:
+${selectedText}
+
+Requirements:
+1. Return a complete clean HTML document only, no markdown fences.
+2. Use a professional academic layout.
+3. ${extraInstructions[kind]}
+4. Keep the language strictly ${text(body.language) || "English"}.
+5. Include course title, module/topic title, and date generated.`;
+};
+
+const wrapAiHtml = (body, content) => {
+  const cleanContent = stripCodeFence(content);
+  if (/<!doctype html|<html[\s>]/i.test(cleanContent)) return cleanContent;
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${safeHtml(body.title || body.course || body.resourcetype)}</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.55; color: #1f2937; margin: 32px; }
+    h1, h2, h3 { color: #12377a; }
+    .meta { border: 1px solid #d6dbe7; padding: 14px; margin-bottom: 18px; background: #f7f9ff; }
+    @media print { body { margin: 18mm; } }
+  </style>
+</head>
+<body>
+  <h1>${safeHtml(body.title || `${body.resourcetype} - ${body.course}`)}</h1>
+  <div class="meta">
+    <strong>Course:</strong> ${safeHtml(body.course)} (${safeHtml(body.coursecode)})<br />
+    <strong>Program:</strong> ${safeHtml(body.program)} (${safeHtml(body.programcode)})<br />
+    <strong>Semester:</strong> ${safeHtml(body.semester)}<br />
+    <strong>Language:</strong> ${safeHtml(body.language)}<br />
+    <strong>Difficulty:</strong> ${safeHtml(body.difficulty)}
+  </div>
+  ${cleanContent}
+</body>
+</html>`;
+};
 
 exports.getResources = async (req, res) => {
   try {
@@ -210,6 +334,72 @@ exports.uploadResource = async (req, res) => {
 
     const data = await NepLmsResource.create({ ...payload, ...filePayload });
     res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.generateAiResource = async (req, res) => {
+  try {
+    const payload = resourcePayload(req.body);
+    if (!payload.colid) return res.status(400).json({ success: false, message: "colid is required" });
+    if (!payload.coursecode) return res.status(400).json({ success: false, message: "Course is required" });
+    if (!["Assignment", "Course Material", "Lesson Plan"].includes(payload.resourcetype)) {
+      return res.status(400).json({ success: false, message: "AI generation is available for Assignment, Course Material and Lesson Plan only" });
+    }
+
+    const rows = await selectedSyllabusRows({ ...req.body, ...payload });
+    if (!rows.length) return res.status(400).json({ success: false, message: "Select at least one module/topic from syllabus" });
+
+    const provider = text(req.body.provider || "Gemini");
+    if (provider.toLowerCase() !== "gemini") return res.status(400).json({ success: false, message: "Only Gemini is supported here" });
+    const aiConfig = await getAiConfig(payload.colid, provider);
+    if (!aiConfig?.apikey) return res.status(400).json({ success: false, message: "Active/default Gemini AI configuration is missing" });
+
+    const awsConfig = await getDefaultAwsConfig(payload.colid);
+    if (!awsConfig?.username || !awsConfig?.password || !awsConfig?.bucket || !awsConfig?.region) {
+      return res.status(400).json({ success: false, message: "Default AWS configuration is incomplete" });
+    }
+
+    const prompt = buildAiResourcePrompt({ body: { ...req.body, ...payload }, rows });
+    const generated = await callGemini(aiConfig.apikey, prompt, req.body.model);
+    const html = wrapAiHtml({ ...req.body, ...payload }, generated);
+    const buffer = Buffer.from(html, "utf8");
+    const cleanCourse = path.basename(payload.coursecode || "course").replace(/[^\w.\-() ]/g, "_");
+    const cleanType = payload.resourcetype.replace(/[^\w.\-() ]/g, "_");
+    const fileName = `${cleanCourse}-${Date.now()}-ai-${cleanType.toLowerCase().replace(/\s+/g, "-")}.html`;
+    const key = `${payload.colid}/nep-lms/${payload.academicyear || "year"}/${payload.coursecode || "course"}/${payload.resourcetype}/${fileName}`;
+
+    const s3 = new AWS.S3({
+      accessKeyId: awsConfig.username,
+      secretAccessKey: awsConfig.password,
+      region: awsConfig.region
+    });
+    await s3.putObject({
+      Bucket: awsConfig.bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: "text/html; charset=utf-8"
+    }).promise();
+
+    const data = await NepLmsResource.create({
+      ...payload,
+      title: payload.title || `AI ${payload.resourcetype} - ${payload.course}`,
+      module: rows.map((row) => row.module).filter(Boolean).join(", "),
+      topic: rows.map((row) => row.syllabus).filter(Boolean).join(", "),
+      description: payload.description || `AI generated ${payload.resourcetype} using Gemini in ${text(req.body.language || "English")} (${text(req.body.difficulty || "Medium")}).`,
+      filename: fileName,
+      originalname: fileName,
+      mimetype: "text/html",
+      size: buffer.length,
+      bucket: awsConfig.bucket,
+      region: awsConfig.region,
+      key,
+      url: s3Url(awsConfig.bucket, awsConfig.region, key),
+      status: "Active"
+    });
+
+    res.json({ success: true, data, url: data.url });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
